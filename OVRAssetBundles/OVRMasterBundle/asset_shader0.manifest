@@ -1,0 +1,18 @@
+ManifestFileVersion: 0
+CRC: 66332195
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 5a19044d3c6ee80b5ace32b75efa8a45
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 87b0bba9d18ffc75f60c50b410bd4a4e
+HashAppended: 0
+ClassTypes:
+- Class: 48
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/TextMesh Pro/Shaders/TMP_SDF-Mobile.shader
+- Assets/Oculus/Interaction/Runtime/Shaders/OculusHand.shader
+Dependencies: []
