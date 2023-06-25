@@ -2,16 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(LineRenderer))]
+//[RequireComponent(typeof(LineRenderer))]
 public class Recordable : MonoBehaviour
 {
     public GameObject playbackObject;
     public List<TransformData> recordedData = new List<TransformData>();
     private LineRenderer lineRenderer;
+    private LineRendererSmoother lineRendererSmoother;
 
     private void Awake()
     {
-        lineRenderer = GetComponent<LineRenderer>();
+        lineRenderer = playbackObject.GetComponent<LineRenderer>();
+        lineRendererSmoother = playbackObject.GetComponent<LineRendererSmoother>();
     }
 
     // Record the current state.
@@ -40,6 +42,12 @@ public class Recordable : MonoBehaviour
             {
                 lineRenderer.SetPosition(i, recordedData[i].position);
             }
+        }
+        if (lineRendererSmoother != null)
+        {
+                
+            lineRendererSmoother.SimplifyAndSmooth();            
+            //lineRendererSmoother.GenerateMeshCollider();
         }
     }
 }

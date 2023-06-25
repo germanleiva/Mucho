@@ -34,7 +34,7 @@ public class Recorder : MonoBehaviour
         {
             recordable.playbackObject.SetActive(false);
             //Turn off the line renderer
-            recordable.GetComponent<LineRenderer>().enabled = false;            
+            recordable.playbackObject.GetComponent<LineRenderer>().enabled = false;            
             recordable.ResetData();
         }
         isRecording = false;
@@ -73,7 +73,7 @@ public class Recorder : MonoBehaviour
         foreach (var recordable in objectsToRecord)
         {
             recordable.playbackObject.SetActive(true);
-            recordable.GetComponent<LineRenderer>().enabled = true;
+            recordable.playbackObject.GetComponent<LineRenderer>().enabled = true;
             if (recordable.recordedData.Count > 0)
             {
                 //duration = Mathf.Max(duration, recordable.recordedData.Last().timestamp);
