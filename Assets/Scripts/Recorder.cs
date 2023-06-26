@@ -11,12 +11,13 @@ public class Recorder : MonoBehaviour
     private bool isPlayingBack = false;
     private float recordStartTime;
 
-
+    public GameObject rootPlaybackArea;
 
 
     // Start recording.
     public void StartRecording()
     {
+        rootPlaybackArea.SetActive(false);
         DebugLogger.Instance.Log("StartRecording");
         foreach (var recordable in objectsToRecord)
         {
@@ -29,12 +30,13 @@ public class Recorder : MonoBehaviour
     //Reset recording
     public void ResetRecording()
     {
+        rootPlaybackArea.SetActive(false);
         DebugLogger.Instance.Log("ResetRecording");
         foreach (var recordable in objectsToRecord)
         {
             recordable.playbackObject.SetActive(false);
             //Turn off the line renderer
-            recordable.playbackObject.GetComponent<LineRenderer>().enabled = false;            
+            recordable.lineObject.GetComponent<LineRenderer>().enabled = false;            
             recordable.ResetData();
         }
         isRecording = false;
@@ -44,6 +46,7 @@ public class Recorder : MonoBehaviour
     // Stop recording.
     public void StopRecording()
     {
+        rootPlaybackArea.SetActive(true);
         DebugLogger.Instance.Log("Size of recordedData head: " + objectsToRecord[0].recordedData.Count);
         DebugLogger.Instance.Log("Size of recordedData leftHand: " + objectsToRecord[1].recordedData.Count);
         DebugLogger.Instance.Log("Size of recordedData rightHand: " + objectsToRecord[2].recordedData.Count);
@@ -73,7 +76,7 @@ public class Recorder : MonoBehaviour
         foreach (var recordable in objectsToRecord)
         {
             recordable.playbackObject.SetActive(true);
-            recordable.playbackObject.GetComponent<LineRenderer>().enabled = true;
+            recordable.lineObject.GetComponent<LineRenderer>().enabled = true;
             if (recordable.recordedData.Count > 0)
             {
                 //duration = Mathf.Max(duration, recordable.recordedData.Last().timestamp);
@@ -136,14 +139,14 @@ public class Recorder : MonoBehaviour
                     {
                         // Interpolate between the two frames.
                         float t = (currentTime - previousFrame.timestamp) / (nextFrame.timestamp - previousFrame.timestamp);
-                        recordable.playbackObject.transform.position = Vector3.Lerp(previousFrame.position, nextFrame.position, t);
-                        recordable.playbackObject.transform.rotation = Quaternion.Lerp(previousFrame.rotation, nextFrame.rotation, t);
+                        recordable.playbackObject.transform.localPosition = Vector3.Lerp(previousFrame.position, nextFrame.position, t);
+                        recordable.playbackObject.transform.localRotation = Quaternion.Lerp(previousFrame.rotation, nextFrame.rotation, t);
                     }
                     else if (previousFrame != null)
                     {
                         // If there's no next frame, use the data from the previous frame.
-                        recordable.playbackObject.transform.position = previousFrame.position;
-                        recordable.playbackObject.transform.rotation = previousFrame.rotation;
+                        recordable.playbackObject.transform.localPosition = previousFrame.position;
+                        recordable.playbackObject.transform.localRotation = previousFrame.rotation;
                     }
                 }
             }

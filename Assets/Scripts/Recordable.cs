@@ -7,19 +7,20 @@ public class Recordable : MonoBehaviour
 {
     public GameObject playbackObject;
     public List<TransformData> recordedData = new List<TransformData>();
+    public GameObject lineObject;
     private LineRenderer lineRenderer;
     private LineRendererSmoother lineRendererSmoother;
 
     private void Awake()
     {
-        lineRenderer = playbackObject.GetComponent<LineRenderer>();
-        lineRendererSmoother = playbackObject.GetComponent<LineRendererSmoother>();
+        lineRenderer = lineObject.GetComponent<LineRenderer>();
+        lineRendererSmoother = lineObject.GetComponent<LineRendererSmoother>();
     }
 
     // Record the current state.
     public void Record(float timestamp)
     {
-        recordedData.Add(new TransformData(transform.position, transform.rotation, timestamp));
+        recordedData.Add(new TransformData(transform.localPosition, transform.localRotation, timestamp));
     }
 
     // Clear the recorded data.
