@@ -30,4 +30,9 @@ public class DebugLogger : MonoBehaviour
     {
         Debug.Log("ProtoXR_Test" + message);
     }
+
+    public void LogException(System.Exception e)
+    {
+        Debug.LogException(e);
+    }
 }

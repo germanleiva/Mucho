@@ -34,6 +34,8 @@ public class Recorder : MonoBehaviour
         DebugLogger.Instance.Log("ResetRecording");
         foreach (var recordable in objectsToRecord)
         {
+            //recordable.playbackObject.GetComponent<QuickTransformDebug>().enabled = false;
+            //recordable.GetComponent<QuickTransformDebug>().enabled = true;
             recordable.playbackObject.SetActive(false);
             //Turn off the line renderer
             recordable.lineObject.GetComponent<LineRenderer>().enabled = false;            
@@ -68,30 +70,39 @@ public class Recorder : MonoBehaviour
     // Start playback.
     public void StartPlayback()
     {
-        if (isRecording) return; // Don't allow playback while recording.
-
-        DebugLogger.Instance.Log("StartPlayback");
-        // Determine the duration of the recording.
-        float duration = 0f;
-        foreach (var recordable in objectsToRecord)
+        try
         {
-            recordable.playbackObject.SetActive(true);
-            recordable.lineObject.GetComponent<LineRenderer>().enabled = true;
-            if (recordable.recordedData.Count > 0)
+            if (isRecording) return; // Don't allow playback while recording.
+
+            DebugLogger.Instance.Log("StartPlayback");
+            // Determine the duration of the recording.
+            float duration = 0f;
+            foreach (var recordable in objectsToRecord)
             {
-                //duration = Mathf.Max(duration, recordable.recordedData.Last().timestamp);
-                //Find last element of recordedData and get its timestamp
-                duration = Mathf.Max(duration, recordable.recordedData[recordable.recordedData.Count - 1].timestamp);
+                recordable.playbackObject.SetActive(true);
+                //recordable.playbackObject.GetComponent<QuickTransformDebug>().enabled = true;
+                //recordable.GetComponent<QuickTransformDebug>().enabled = false;
+                recordable.lineObject.GetComponent<LineRenderer>().enabled = true;
+                if (recordable.recordedData.Count > 0)
+                {
+                    //duration = Mathf.Max(duration, recordable.recordedData.Last().timestamp);
+                    //Find last element of recordedData and get its timestamp
+                    duration = Mathf.Max(duration, recordable.recordedData[recordable.recordedData.Count - 1].timestamp);
+                }
             }
+
+            // Set up the slider.
+            playbackSlider.minValue = 0f;
+            playbackSlider.maxValue = duration;
+            playbackSlider.value = 0f;
+
+            isPlayingBack = true;
+            recordStartTime = Time.time;
         }
-
-        // Set up the slider.
-        playbackSlider.minValue = 0f;
-        playbackSlider.maxValue = duration;
-        playbackSlider.value = 0f;
-
-        isPlayingBack = true;
-        recordStartTime = Time.time;
+        catch (System.Exception e)
+        {
+            DebugLogger.Instance.LogException(e);
+        }
     }
 
     // Stop playback.
@@ -139,8 +150,33 @@ public class Recorder : MonoBehaviour
                     {
                         // Interpolate between the two frames.
                         float t = (currentTime - previousFrame.timestamp) / (nextFrame.timestamp - previousFrame.timestamp);
-                        recordable.playbackObject.transform.localPosition = Vector3.Lerp(previousFrame.position, nextFrame.position, t);
-                        recordable.playbackObject.transform.localRotation = Quaternion.Lerp(previousFrame.rotation, nextFrame.rotation, t);
+                        if(recordable.playbackObject.GetComponent<HandPlaybackObjectScript>() != null) //TODO:Can also check if the child objects to record is not null
+                        {
+
+                            recordable.playbackObject.transform.localPosition = Vector3.Lerp(previousFrame.position, nextFrame.position, t);
+                            recordable.playbackObject.transform.localRotation = Quaternion.Lerp(previousFrame.rotation, nextFrame.rotation, t) * Quaternion.Euler(recordable.rotationCorrection);//Modify the rotation in the recorded data to add 180 degrees to the  axis
+                        
+                            recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().indexFinger.transform.localPosition = Vector3.Lerp(previousFrame.indexFingerPos, nextFrame.indexFingerPos, t);
+                            recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().indexFinger.transform.localRotation = Quaternion.Lerp(previousFrame.indexFingerRot, nextFrame.indexFingerRot, t);
+                            recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().middleFinger.transform.localPosition = Vector3.Lerp(previousFrame.middleFingerPos, nextFrame.middleFingerPos, t);
+                            recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().middleFinger.transform.localRotation = Quaternion.Lerp(previousFrame.middleFingerRot, nextFrame.middleFingerRot, t);
+                            recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().ringFinger.transform.localPosition = Vector3.Lerp(previousFrame.ringFingerPos, nextFrame.ringFingerPos, t);
+                            recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().ringFinger.transform.localRotation = Quaternion.Lerp(previousFrame.ringFingerRot, nextFrame.ringFingerRot, t);
+                            recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().pinkyFinger.transform.localPosition = Vector3.Lerp(previousFrame.pinkyFingerPos, nextFrame.pinkyFingerPos, t);
+                            recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().pinkyFinger.transform.localRotation = Quaternion.Lerp(previousFrame.pinkyFingerRot, nextFrame.pinkyFingerRot, t);
+                            recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().thumbFinger.transform.localPosition = Vector3.Lerp(previousFrame.thumbFingerPos, nextFrame.thumbFingerPos, t);
+                            recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().thumbFinger.transform.localRotation = Quaternion.Lerp(previousFrame.thumbFingerRot, nextFrame.thumbFingerRot, t);
+
+                        }
+                        else 
+                        {
+                            recordable.playbackObject.transform.localPosition = Vector3.Lerp(previousFrame.position, nextFrame.position, t);
+                            recordable.playbackObject.transform.localRotation = Quaternion.Lerp(previousFrame.rotation, nextFrame.rotation, t) * Quaternion.Euler(recordable.rotationCorrection);//Modify the rotation in the recorded data to add 180 degrees to the  axis
+                        }
+                        //recordable.playbackObject.transform.localPosition = Vector3.Lerp(previousFrame.position, nextFrame.position, t);
+                        //recordable.playbackObject.transform.localRotation = Quaternion.Lerp(previousFrame.rotation, nextFrame.rotation, t);
+                        
+                        
                     }
                     else if (previousFrame != null)
                     {
