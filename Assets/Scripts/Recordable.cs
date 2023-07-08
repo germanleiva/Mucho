@@ -7,7 +7,7 @@ using UnityEngine;
 public class Recordable : MonoBehaviour
 {
     public GameObject playbackObject;
-    public List<RecordFrameData> recordedData = new List<RecordFrameData>();
+    public List<TransformData> recordedData = new List<TransformData>();
     public GameObject lineObject;
     private LineRenderer lineRenderer;
     private LineRendererSmoother lineRendererSmoother;
@@ -18,18 +18,18 @@ public class Recordable : MonoBehaviour
     public List<GameObject> childObjectsToRecord;
 
     [Header("Recordable Index Finger Joints")]
-    public GameObject indexJoint0;
     public GameObject indexJoint1;
     public GameObject indexJoint2;
+    public GameObject indexJoint3;
     [Header("Recordable Middle Finger Joints")]
-    public GameObject middleJoint0;
     public GameObject middleJoint1;
     public GameObject middleJoint2;
+    public GameObject middleJoint3;
 
     [Header("Recordable Ring Finger Joints")]
-    public GameObject ringJoint0;
     public GameObject ringJoint1;
     public GameObject ringJoint2;
+    public GameObject ringJoint3;
 
     [Header("Recordable Pinky Finger Joints")]
     public GameObject pinkyJoint0;
@@ -56,18 +56,15 @@ public class Recordable : MonoBehaviour
         bool isNullOrEmpty = childObjectsToRecord?.Any() != true;
         if(isNullOrEmpty == true)
         {
-            recordedData.Add(new RecordFrameData(transform.localPosition, transform.localRotation, timestamp));
+            recordedData.Add(new TransformData(transform.localPosition, transform.localRotation, timestamp));
         }
         else
         {   
-            recordedData.Add(new RecordFrameData(transform.localPosition, transform.localRotation, 
-                            indexJoint0, indexJoint1, indexJoint2, 
-                            middleJoint0, middleJoint1, middleJoint2, 
-                            ringJoint0, ringJoint1, ringJoint2, 
-                            pinkyJoint0, pinkyJoint1, pinkyJoint2, pinkyJoint3, 
-                            thumbJoint0, thumbJoint1, thumbJoint2, thumbJoint3, 
-                            timestamp));  
+            //recordedData.Add(new TransformData(transform.localPosition, transform.localRotation, childObjectsToRecord[0].transform.localPosition, childObjectsToRecord[1].transform.localPosition, childObjectsToRecord[2].transform.localPosition, childObjectsToRecord[3].transform.localPosition, childObjectsToRecord[4].transform.localPosition, childObjectsToRecord[0].transform.localRotation, childObjectsToRecord[1].transform.localRotation, childObjectsToRecord[2].transform.localRotation, childObjectsToRecord[3].transform.localRotation, childObjectsToRecord[4].transform.localRotation, timestamp));
+            recordedData.Add(new TransformData(transform.localPosition, transform.localRotation, indexJoint1, middleJoint1, ringJoint1, pinkyJoint0, thumbJoint0, timestamp));
         }
+        //recordedData.Add(new TransformData(transform.localPosition, transform.localRotation, timestamp));
+        //recordedData.Add(new TransformData(transform.localPosition, transform.localRotation, timestamp));
     }
 
     // Clear the recorded data.
@@ -88,7 +85,7 @@ public class Recordable : MonoBehaviour
             lineRenderer.positionCount = recordedData.Count;
             for (int i = 0; i < recordedData.Count; i++)
             {
-                lineRenderer.SetPosition(i, recordedData[i].rootPosition);
+                lineRenderer.SetPosition(i, recordedData[i].position);
             }
         }
         if (lineRendererSmoother != null)
@@ -118,57 +115,52 @@ public class FingerJoint
     }
 }
 
-//Store the data for each frame
 //[System.Serializable]
-public class RecordFrameData
+public class TransformData
 {
-    public Vector3 rootPosition;
-    public Quaternion rootRotation;
+    public Vector3 position;
+    public Quaternion rotation;
     public float timestamp;
 
-    public FingerJoint indexJoint0, indexJoint1, indexJoint2;
-    public FingerJoint middleJoint0, middleJoint1, middleJoint2;
-    public FingerJoint ringJoint0, ringJoint1, ringJoint2;
-    public FingerJoint pinkyJoint0, pinkyJoint1, pinkyJoint2, pinkyJoint3;
-    public FingerJoint thumbJoint0, thumbJoint1, thumbJoint2, thumbJoint3;
+    //public Vector3 indexFinger1Pos, middleFingerPos, ringFingerPos, pinkyFingerPos, thumbFingerPos;
+    //public Quaternion indexFingerRot, middleFingerRot, ringFingerRot, pinkyFingerRot, thumbFingerRot;
 
-    //public string gestureName;
-    
+    public FingerJoint indexJoint1, middleJoint1, ringJoint1, pinkyJoint0, thumbJoint0;
 
-    public RecordFrameData(Vector3 _position, Quaternion _rotation, float _timestamp)
+
+    public TransformData(Vector3 _position, Quaternion _rotation, float _timestamp)
     {
-        rootPosition = _position;
-        rootRotation = _rotation;
+        position = _position;
+        rotation = _rotation;
         timestamp = _timestamp;
     }
-    
-    public RecordFrameData(Vector3 _position, Quaternion _rotation, GameObject _indexJoint0, GameObject _indexJoint1, GameObject _indexJoint2, GameObject _middleJoint0, GameObject _middleJoint1, GameObject _middleJoint2, GameObject _ringJoint0, GameObject _ringJoint1, GameObject _ringJoint2, GameObject _pinkyJoint0, GameObject _pinkyJoint1, GameObject _pinkyJoint2, GameObject _pinkyJoint3, GameObject _thumbJoint0, GameObject _thumbJoint1, GameObject _thumbJoint2, GameObject _thumbJoint3, float _timestamp)
+
+    //Method TransformData should also take in Vector3 position and Quaternion rotation parameters for indexFinger, middleFinger, ringFinger, pinkyFinger, thumbFinger
+    /*public TransformData(Vector3 _position, Quaternion _rotation, Vector3 _indexFingerPos, Vector3 _middleFingerPos, Vector3 _ringFingerPos, Vector3 _pinkyFingerPos, Vector3 _thumbFingerPos, Quaternion _indexFingerRot, Quaternion _middleFingerRot, Quaternion _ringFingerRot, Quaternion _pinkyFingerRot, Quaternion _thumbFingerRot, float _timestamp)
     {
-        rootPosition = _position;
-        rootRotation = _rotation;
+        position = _position;
+        rotation = _rotation;
 
-        indexJoint0 = new FingerJoint(_indexJoint0);
-        indexJoint1 = new FingerJoint(_indexJoint1);
-        indexJoint2 = new FingerJoint(_indexJoint2);
+        indexJoint1 = new FingerJoint(_indexFingerPos, _indexFingerRot);
+        middleJoint1 = new FingerJoint(_middleFingerPos, _middleFingerRot);
+        ringJoint1 = new FingerJoint(_ringFingerPos, _ringFingerRot);
+        pinkyJoint0 = new FingerJoint(_pinkyFingerPos, _pinkyFingerRot);
+        thumbJoint0 = new FingerJoint(_thumbFingerPos, _thumbFingerRot);
+        
+        timestamp = _timestamp;
+    }*/
 
-        middleJoint0 = new FingerJoint(_middleJoint0);
-        middleJoint1 = new FingerJoint(_middleJoint1);
-        middleJoint2 = new FingerJoint(_middleJoint2);
+    public TransformData(Vector3 _position, Quaternion _rotation, GameObject _indexFinger, GameObject _middleFinger, GameObject _ringFinger, GameObject _pinkyFinger, GameObject _thumbFinger, float _timestamp)
+    {
+        position = _position;
+        rotation = _rotation;
 
-        ringJoint0 = new FingerJoint(_ringJoint0);
-        ringJoint1 = new FingerJoint(_ringJoint1);
-        ringJoint2 = new FingerJoint(_ringJoint2);
-
-        pinkyJoint0 = new FingerJoint(_pinkyJoint0);
-        pinkyJoint1 = new FingerJoint(_pinkyJoint1);
-        pinkyJoint2 = new FingerJoint(_pinkyJoint2);
-        pinkyJoint3 = new FingerJoint(_pinkyJoint3);
-
-        thumbJoint0 = new FingerJoint(_thumbJoint0);
-        thumbJoint1 = new FingerJoint(_thumbJoint1);
-        thumbJoint2 = new FingerJoint(_thumbJoint2);
-        thumbJoint3 = new FingerJoint(_thumbJoint3);
-
+        indexJoint1 = new FingerJoint(_indexFinger);
+        middleJoint1 = new FingerJoint(_middleFinger);
+        ringJoint1 = new FingerJoint(_ringFinger);
+        pinkyJoint0 = new FingerJoint(_pinkyFinger);
+        thumbJoint0 = new FingerJoint(_thumbFinger);
+        
         timestamp = _timestamp;
     }
 }
