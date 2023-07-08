@@ -56,13 +56,29 @@ public class HandPlaybackObjectScript : MonoBehaviour
         joint.transform.localRotation = Quaternion.Lerp(previousFrameJoint.rotation, nextFrameJoint.rotation, t);
     }
 
-    public void interpolatePoseForAllFingerJoints(TransformData previousFrame, TransformData nextFrame, float t)
+    public void interpolatePoseForAllFingerJoints(RecordFrameData previousFrame, RecordFrameData nextFrame, float t)
     {
         LerpBetweenFrames(indexJoint1.transform, previousFrame.indexJoint1, nextFrame.indexJoint1, t);
+        LerpBetweenFrames(indexJoint2.transform, previousFrame.indexJoint2, nextFrame.indexJoint2, t);
+        LerpBetweenFrames(indexJoint3.transform, previousFrame.indexJoint3, nextFrame.indexJoint3, t);
+
         LerpBetweenFrames(middleJoint1.transform, previousFrame.middleJoint1, nextFrame.middleJoint1, t);
+        LerpBetweenFrames(middleJoint2.transform, previousFrame.middleJoint2, nextFrame.middleJoint2, t);
+        LerpBetweenFrames(middleJoint3.transform, previousFrame.middleJoint3, nextFrame.middleJoint3, t);
+
         LerpBetweenFrames(ringJoint1.transform, previousFrame.ringJoint1, nextFrame.ringJoint1, t);
+        LerpBetweenFrames(ringJoint2.transform, previousFrame.ringJoint2, nextFrame.ringJoint2, t);
+        LerpBetweenFrames(ringJoint3.transform, previousFrame.ringJoint3, nextFrame.ringJoint3, t);
+
         LerpBetweenFrames(pinkyJoint0.transform, previousFrame.pinkyJoint0, nextFrame.pinkyJoint0, t);
+        LerpBetweenFrames(pinkyJoint1.transform, previousFrame.pinkyJoint1, nextFrame.pinkyJoint1, t);
+        LerpBetweenFrames(pinkyJoint2.transform, previousFrame.pinkyJoint2, nextFrame.pinkyJoint2, t);
+        LerpBetweenFrames(pinkyJoint3.transform, previousFrame.pinkyJoint3, nextFrame.pinkyJoint3, t);
+
         LerpBetweenFrames(thumbJoint0.transform, previousFrame.thumbJoint0, nextFrame.thumbJoint0, t);
+        LerpBetweenFrames(thumbJoint1.transform, previousFrame.thumbJoint1, nextFrame.thumbJoint1, t);
+        LerpBetweenFrames(thumbJoint2.transform, previousFrame.thumbJoint2, nextFrame.thumbJoint2, t);
+        LerpBetweenFrames(thumbJoint3.transform, previousFrame.thumbJoint3, nextFrame.thumbJoint3, t);
     }
 
 
