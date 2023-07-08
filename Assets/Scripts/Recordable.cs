@@ -146,21 +146,6 @@ public class RecordFrameData
         timestamp = _timestamp;
     }
 
-    //Method TransformData should also take in Vector3 position and Quaternion rotation parameters for indexFinger, middleFinger, ringFinger, pinkyFinger, thumbFinger
-    /*public TransformData(Vector3 _position, Quaternion _rotation, Vector3 _indexFingerPos, Vector3 _middleFingerPos, Vector3 _ringFingerPos, Vector3 _pinkyFingerPos, Vector3 _thumbFingerPos, Quaternion _indexFingerRot, Quaternion _middleFingerRot, Quaternion _ringFingerRot, Quaternion _pinkyFingerRot, Quaternion _thumbFingerRot, float _timestamp)
-    {
-        position = _position;
-        rotation = _rotation;
-
-        indexJoint1 = new FingerJoint(_indexFingerPos, _indexFingerRot);
-        middleJoint1 = new FingerJoint(_middleFingerPos, _middleFingerRot);
-        ringJoint1 = new FingerJoint(_ringFingerPos, _ringFingerRot);
-        pinkyJoint0 = new FingerJoint(_pinkyFingerPos, _pinkyFingerRot);
-        thumbJoint0 = new FingerJoint(_thumbFingerPos, _thumbFingerRot);
-        
-        timestamp = _timestamp;
-    }*/
-
     public RecordFrameData(Vector3 _position, Quaternion _rotation, GameObject _indexJoint0, GameObject _indexJoint1, GameObject _indexJoint2, GameObject _middleJoint0, GameObject _middleJoint1, GameObject _middleJoint2, GameObject _ringJoint0, GameObject _ringJoint1, GameObject _ringJoint2, GameObject _pinkyJoint0, GameObject _pinkyJoint1, GameObject _pinkyJoint2, GameObject _pinkyJoint3, GameObject _thumbJoint0, GameObject _thumbJoint1, GameObject _thumbJoint2, GameObject _thumbJoint3, float _timestamp)
     {
         rootPosition = _position;

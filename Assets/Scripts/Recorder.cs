@@ -13,6 +13,8 @@ public class Recorder : MonoBehaviour
 
     public GameObject rootPlaybackArea;
 
+    public GameObject triggerStartObj;
+    public GameObject triggerStopObj;
 
     // Start recording.
     public void StartRecording()
@@ -112,6 +114,25 @@ public class Recorder : MonoBehaviour
         isPlayingBack = false;
     }
 
+    public void SetStartTrigger()
+    {
+        DebugLogger.Instance.Log("Set StartTrigger");
+        foreach (var recordable in objectsToRecord)
+        {
+            Instantiate(triggerStartObj, recordable.playbackObject.transform.position, Quaternion.identity);
+        }
+        
+    }
+
+    public void SetStopTrigger()
+    {
+        DebugLogger.Instance.Log("Set StopTrigger");
+        foreach (var recordable in objectsToRecord)
+        {
+            Instantiate(triggerStopObj, recordable.playbackObject.transform.position, Quaternion.identity);
+        }
+    }
+
     private void Update()
     {
         if (isRecording)
@@ -157,27 +178,14 @@ public class Recorder : MonoBehaviour
                             recordable.playbackObject.transform.localRotation = Quaternion.Lerp(previousFrame.rootRotation, nextFrame.rootRotation, t) * Quaternion.Euler(recordable.rotationCorrection);//Modify the rotation in the recorded data to add 180 degrees to the  axis
                         
                             recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().interpolatePoseForAllFingerJoints(previousFrame, nextFrame, t);
-                            /*recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().indexFinger.transform.localPosition = Vector3.Lerp(previousFrame.indexJoint1.position, nextFrame.indexJoint1.position, t);
-                            recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().indexFinger.transform.localRotation = Quaternion.Lerp(previousFrame.indexJoint1.rotation, nextFrame.indexJoint1.rotation, t);
-                            recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().middleFinger.transform.localPosition = Vector3.Lerp(previousFrame.middleJoint1.position, nextFrame.middleJoint1.position, t);
-                            recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().middleFinger.transform.localRotation = Quaternion.Lerp(previousFrame.middleJoint1.rotation, nextFrame.middleJoint1.rotation, t);
-                            recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().ringFinger.transform.localPosition = Vector3.Lerp(previousFrame.ringJoint1.position, nextFrame.ringJoint1.position, t);
-                            recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().ringFinger.transform.localRotation = Quaternion.Lerp(previousFrame.ringJoint1.rotation, nextFrame.ringJoint1.rotation, t);
-                            recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().pinkyFinger.transform.localPosition = Vector3.Lerp(previousFrame.pinkyJoint0.position, nextFrame.pinkyJoint0.position, t);
-                            recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().pinkyFinger.transform.localRotation = Quaternion.Lerp(previousFrame.pinkyJoint0.rotation, nextFrame.pinkyJoint0.rotation, t);
-                            recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().thumbFinger.transform.localPosition = Vector3.Lerp(previousFrame.thumbJoint0.position, nextFrame.thumbJoint0.position, t);
-                            recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().thumbFinger.transform.localRotation = Quaternion.Lerp(previousFrame.thumbJoint0.rotation, nextFrame.thumbJoint0.rotation, t);
-                            */
+
                         }
                         else 
                         {
                             recordable.playbackObject.transform.localPosition = Vector3.Lerp(previousFrame.rootPosition, nextFrame.rootPosition, t);
                             recordable.playbackObject.transform.localRotation = Quaternion.Lerp(previousFrame.rootRotation, nextFrame.rootRotation, t) * Quaternion.Euler(recordable.rotationCorrection);//Modify the rotation in the recorded data to add 180 degrees to the  axis
                         }
-                        //recordable.playbackObject.transform.localPosition = Vector3.Lerp(previousFrame.position, nextFrame.position, t);
-                        //recordable.playbackObject.transform.localRotation = Quaternion.Lerp(previousFrame.rotation, nextFrame.rotation, t);
-                        
-                        
+        
                     }
                     else if (previousFrame != null)
                     {
