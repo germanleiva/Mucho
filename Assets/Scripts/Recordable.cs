@@ -177,3 +177,35 @@ public class RecordFrameData
     }
 }
 
+public class CustomGesture
+{
+    public string gestureName;
+    public List<RecordFrameData> gestureData;
+
+    public CustomGesture(string _gestureName, List<RecordFrameData> _gestureData)
+    {
+        gestureName = _gestureName;
+        gestureData = _gestureData;
+    }
+}
+
+public class Trigger
+{
+    public float startTimestamp, endTimestamp;
+    public string triggerName;
+    public List<Gesture> gestures;
+    public Vector3 velocity;
+
+    public Vector3 acceleration;
+
+    public Trigger(float _startTimestamp, float _endTimestamp, string _triggerName, List<Gesture> _gestures, Vector3 _velocity, Vector3 _acceleration)
+    {
+        startTimestamp = _startTimestamp;
+        endTimestamp = _endTimestamp;
+        triggerName = _triggerName;
+        gestures = _gestures;
+        velocity = _velocity;
+        acceleration = _acceleration;
+    }
+}
+

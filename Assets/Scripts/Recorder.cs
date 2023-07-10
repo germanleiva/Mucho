@@ -16,6 +16,11 @@ public class Recorder : MonoBehaviour
     public GameObject triggerStartObj;
     public GameObject triggerStopObj;
 
+    public GestureRecognizer LeftHandGestureRecorder, RightHandGestureRecorder;
+
+    public GestureRecognizer LeftHandGestureRecognizer, RightHandGestureRecognizer;
+
+
     // Start recording.
     public void StartRecording()
     {
@@ -59,6 +64,20 @@ public class Recorder : MonoBehaviour
 
         VisualizePath();
         StartPlayback();
+    }
+
+    public void SaveLeftHandGesture()
+    {
+        DebugLogger.Instance.Log("Saving left hand gesture");
+        LeftHandGestureRecorder.SaveAsGesture();    
+        //LeftHandGestureRecognizer.CopySavedGestures(LeftHandGestureRecorder.GetSavedGestures());
+    }
+
+    public void SaveRightHandGesture()
+    {
+        DebugLogger.Instance.Log("Saving right hand gesture");
+        RightHandGestureRecorder.SaveAsGesture();
+        //RightHandGestureRecognizer.CopySavedGestures(RightHandGestureRecorder.GetSavedGestures());
     }
 
     void VisualizePath()

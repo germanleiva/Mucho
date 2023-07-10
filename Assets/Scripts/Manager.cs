@@ -5,9 +5,15 @@ using UnityEngine;
 public class Manager : MonoBehaviour
 {
     // Start is called before the first frame update
+    public TMPro.TMP_Text VRDebugText;
     void Start()
     {
         
+    }
+
+    public void ClearDebugText()
+    {
+        VRDebugText.text = "";
     }
 
     // Update is called once per frame
