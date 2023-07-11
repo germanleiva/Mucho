@@ -47,6 +47,7 @@ public class Gesture
 [DisallowMultipleComponent]
 public class GestureRecognizer : MonoBehaviour
 {
+    public bool isDebugOutput = false;
     [Header("Behaviour")]
     [SerializeField] private List<Gesture> savedGestures = new List<Gesture>();
     [SerializeField] private float threshold = 0.05f;
@@ -69,12 +70,19 @@ public class GestureRecognizer : MonoBehaviour
 
     private void Update()
     {
+        if (isDebugOutput)
+        {
+            DebugLogger.Instance.Log("Gesture checking in " + gameObject.name);
+        }
         gestureDetected = Recognize();
         
         if (gestureDetected != _previousGestureDetected)
         {
             if (gestureDetected != null)
+            {
+                DebugLogger.Instance.Log("Gesture detected: " + gestureDetected.gestureName + " detected in " + gameObject.name);
                 gestureDetected.onRecognized.Invoke(gameObject);
+            }
             else
                 onNothingDetected.Invoke();
 
@@ -87,6 +95,7 @@ public class GestureRecognizer : MonoBehaviour
         //List<Vector3> positions = fingers.Select(t => hand.transform.InverseTransformPoint(t.transform.position)).ToList();
         List<Vector3> positions = fingers.Select(t => hand.transform.InverseTransformPoint(t.transform.position)).ToList();
         savedGestures.Add(new Gesture("Gesture No." + savedGestures.Count, positions));
+        DebugLogger.Instance.Log("Positions saved: " + string.Join(", ", positions.Select(p => p.ToString()).ToArray()));
         //savedGestures.Last().onRecognized.AddListener(() => DebugLogger.Instance.LogInVR("Gesture No." + savedGestures.Count + " recognized in " + gameObject.name));   
     }
 
@@ -97,7 +106,15 @@ public class GestureRecognizer : MonoBehaviour
 
     public void CopySavedGestures(List<Gesture> gestures)
     {
-        savedGestures = new List<Gesture>(gestures);
+        savedGestures = new List<Gesture>(gestures.Count);
+        for(int i = 0; i < gestures.Count; i++)
+        {
+            savedGestures.Add(new Gesture(gestures[i].gestureName, gestures[i].positionsPerFinger));//gestures[i].positionsPerFinger.Select(position => hand.transform.TransformPoint(position)).ToList());
+            //savedGestures[i].onRecognized = new GestureDetectEvent();
+            //savedGestures.Last().onRecognized.AddListener(savedGestures.Last().GestureDetected);
+            //DebugLogger.Instance.Log("Positions loaded for " + savedGestures.Last().gestureName + ": " + string.Join(", ", savedGestures.Last().positionsPerFinger.Select(p => p.ToString()).ToArray()));
+        }
+        DebugLogger.Instance.Log("" + gestures.Count + " gestures copied");
     }
 
     private Gesture Recognize()

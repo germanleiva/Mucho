@@ -20,10 +20,17 @@ public class Recorder : MonoBehaviour
 
     public GestureRecognizer LeftHandGestureRecognizer, RightHandGestureRecognizer;
 
+    public Manager.AppState currAppState;
+
+    void Awake()
+    {
+        Manager.AppState currAppState = Manager.AppState.NONE;
+    }
 
     // Start recording.
     public void StartRecording()
     {
+        currAppState = Manager.AppState.RECORD;
         rootPlaybackArea.SetActive(false);
         DebugLogger.Instance.Log("StartRecording");
         foreach (var recordable in objectsToRecord)
@@ -37,6 +44,7 @@ public class Recorder : MonoBehaviour
     //Reset recording
     public void ResetRecording()
     {
+        currAppState = Manager.AppState.NONE;
         rootPlaybackArea.SetActive(false);
         DebugLogger.Instance.Log("ResetRecording");
         foreach (var recordable in objectsToRecord)
@@ -66,11 +74,24 @@ public class Recorder : MonoBehaviour
         StartPlayback();
     }
 
-    public void SaveLeftHandGesture()
+    public void SavePlaybackLeftHandGesture()
     {
-        DebugLogger.Instance.Log("Saving left hand gesture");
+        DebugLogger.Instance.Log("Saving playback left hand gesture in record mode");
         LeftHandGestureRecorder.SaveAsGesture();    
-        //LeftHandGestureRecognizer.CopySavedGestures(LeftHandGestureRecorder.GetSavedGestures());
+        //LeftHandGestureRecognizer.SaveAsGesture(); 
+    }
+
+    public void SaveRealtimeLeftHandGesture()
+    {
+        DebugLogger.Instance.Log("Saving realtime left hand gesture in record mode");
+        //LeftHandGestureRecorder.SaveAsGesture();    
+        LeftHandGestureRecognizer.SaveAsGesture(); 
+    }
+
+    public void CopyLeftHandGesture()
+    {
+        DebugLogger.Instance.Log("Copying left hand gesture");
+        LeftHandGestureRecognizer.CopySavedGestures(LeftHandGestureRecorder.GetSavedGestures());        
     }
 
     public void SaveRightHandGesture()
@@ -91,6 +112,7 @@ public class Recorder : MonoBehaviour
     // Start playback.
     public void StartPlayback()
     {
+        currAppState = Manager.AppState.PLAYBACK;
         try
         {
             if (isRecording) return; // Don't allow playback while recording.
@@ -131,6 +153,12 @@ public class Recorder : MonoBehaviour
     {
         DebugLogger.Instance.Log("StopPlayback");
         isPlayingBack = false;
+    }
+
+    public void StartTesting()
+    {
+        DebugLogger.Instance.Log("Start Testing");
+        currAppState = Manager.AppState.TEST;
     }
 
     public void SetStartTrigger()
