@@ -5,17 +5,19 @@ using UnityEngine.UI;
 
 public class Recorder : MonoBehaviour
 {
+
+    [Header("Record & Playback")]
+    public GameObject rootPlaybackArea, playbackUI;
     public Slider playbackSlider;
     public Recordable[] objectsToRecord;
     private bool isRecording = false;
     private bool isPlayingBack = false;
     private float recordStartTime;
 
-    public GameObject rootPlaybackArea;
-
     public GameObject triggerStartObj;
     public GameObject triggerStopObj;
 
+    [Header("Gesture Recognizers")]
     public GestureRecognizer LeftHandGestureRecorder, RightHandGestureRecorder;
 
     public GestureRecognizer LeftHandGestureRecognizer, RightHandGestureRecognizer;
@@ -27,10 +29,28 @@ public class Recorder : MonoBehaviour
         Manager.AppState currAppState = Manager.AppState.NONE;
     }
 
+    void Start()
+    {
+        initialize();
+    }
+
+    void initialize()
+    {
+        //currAppState = Manager.AppState.NONE;
+        rootPlaybackArea.SetActive(false);
+        //DebugLogger.Instance.Log("Initialize");
+        //foreach (var recordable in objectsToRecord)
+        //{
+        //    recordable.ResetData();
+        //}
+        //isRecording = false;
+        //isPlayingBack = false;
+    }
+
     // Start recording.
     public void StartRecording()
     {
-        currAppState = Manager.AppState.RECORD;
+        //currAppState = Manager.AppState.RECORD;
         rootPlaybackArea.SetActive(false);
         DebugLogger.Instance.Log("StartRecording");
         foreach (var recordable in objectsToRecord)
@@ -44,7 +64,7 @@ public class Recorder : MonoBehaviour
     //Reset recording
     public void ResetRecording()
     {
-        currAppState = Manager.AppState.NONE;
+        //currAppState = Manager.AppState.NONE;
         rootPlaybackArea.SetActive(false);
         DebugLogger.Instance.Log("ResetRecording");
         foreach (var recordable in objectsToRecord)
@@ -155,10 +175,21 @@ public class Recorder : MonoBehaviour
         isPlayingBack = false;
     }
 
-    public void StartTesting()
+    public void SetTestMode()
     {
         DebugLogger.Instance.Log("Start Testing");
         currAppState = Manager.AppState.TEST;
+        rootPlaybackArea.SetActive(false);
+        playbackUI.SetActive(false);
+        CopyLeftHandGesture();
+    }
+
+    public void SetRecordMode()
+    {
+        DebugLogger.Instance.Log("Set Record Mode");
+        currAppState = Manager.AppState.RECORD;
+        rootPlaybackArea.SetActive(false);
+        playbackUI.SetActive(true);        
     }
 
     public void SetStartTrigger()

@@ -110,8 +110,6 @@ public class GestureRecognizer : MonoBehaviour
         for(int i = 0; i < gestures.Count; i++)
         {
             savedGestures.Add(new Gesture(gestures[i].gestureName, gestures[i].positionsPerFinger));//gestures[i].positionsPerFinger.Select(position => hand.transform.TransformPoint(position)).ToList());
-            //savedGestures[i].onRecognized = new GestureDetectEvent();
-            //savedGestures.Last().onRecognized.AddListener(savedGestures.Last().GestureDetected);
             //DebugLogger.Instance.Log("Positions loaded for " + savedGestures.Last().gestureName + ": " + string.Join(", ", savedGestures.Last().positionsPerFinger.Select(p => p.ToString()).ToArray()));
         }
         DebugLogger.Instance.Log("" + gestures.Count + " gestures copied");
