@@ -38,6 +38,7 @@ public class Recorder : MonoBehaviour
     {
         //currAppState = Manager.AppState.NONE;
         rootPlaybackArea.SetActive(false);
+        playbackUI.SetActive(false);
         //DebugLogger.Instance.Log("Initialize");
         //foreach (var recordable in objectsToRecord)
         //{
@@ -98,15 +99,20 @@ public class Recorder : MonoBehaviour
     {
         DebugLogger.Instance.Log("Saving playback left hand gesture in record mode");
         LeftHandGestureRecorder.SaveAsGesture();    
-        //LeftHandGestureRecognizer.SaveAsGesture(); 
     }
 
-    public void SaveRealtimeLeftHandGesture()
+    public void SavePlaybackRightHandGesture()
+    {
+        DebugLogger.Instance.Log("Saving playback right hand gesture in record mode");
+        RightHandGestureRecorder.SaveAsGesture();    
+    }
+
+    /*public void SaveRealtimeLeftHandGesture()
     {
         DebugLogger.Instance.Log("Saving realtime left hand gesture in record mode");
         //LeftHandGestureRecorder.SaveAsGesture();    
         LeftHandGestureRecognizer.SaveAsGesture(); 
-    }
+    }*/
 
     public void CopyLeftHandGesture()
     {
@@ -114,12 +120,13 @@ public class Recorder : MonoBehaviour
         LeftHandGestureRecognizer.CopySavedGestures(LeftHandGestureRecorder.GetSavedGestures());        
     }
 
-    public void SaveRightHandGesture()
+    public void CopyRightHandGesture()
     {
-        DebugLogger.Instance.Log("Saving right hand gesture");
-        RightHandGestureRecorder.SaveAsGesture();
-        //RightHandGestureRecognizer.CopySavedGestures(RightHandGestureRecorder.GetSavedGestures());
+        DebugLogger.Instance.Log("Copying right hand gesture");
+        RightHandGestureRecognizer.CopySavedGestures(RightHandGestureRecorder.GetSavedGestures());        
     }
+
+
 
     void VisualizePath()
     {
@@ -182,6 +189,7 @@ public class Recorder : MonoBehaviour
         rootPlaybackArea.SetActive(false);
         playbackUI.SetActive(false);
         CopyLeftHandGesture();
+        CopyRightHandGesture();
     }
 
     public void SetRecordMode()
@@ -192,7 +200,7 @@ public class Recorder : MonoBehaviour
         playbackUI.SetActive(true);        
     }
 
-    public void SetStartTrigger()
+    /*public void SetStartTrigger()
     {
         DebugLogger.Instance.Log("Set StartTrigger");
         foreach (var recordable in objectsToRecord)
@@ -200,16 +208,28 @@ public class Recorder : MonoBehaviour
             Instantiate(triggerStartObj, recordable.playbackObject.transform.position, Quaternion.identity);
         }
         
+    }*/
+
+    public void SetStartTrigger(GameObject _playbackObject)
+    {
+        DebugLogger.Instance.Log("Set StartTrigger for " + _playbackObject.name);
+        Instantiate(triggerStartObj, _playbackObject.transform.position, Quaternion.identity);
     }
 
-    public void SetStopTrigger()
+    public void SetEndTrigger(GameObject _playbackObject)
     {
-        DebugLogger.Instance.Log("Set StopTrigger");
+        DebugLogger.Instance.Log("Set EndTrigger for " + _playbackObject.name);
+        Instantiate(triggerStopObj, _playbackObject.transform.position, Quaternion.identity);
+    }
+
+    /*public void SetEndTrigger()
+    {
+        DebugLogger.Instance.Log("Set EndTrigger");
         foreach (var recordable in objectsToRecord)
         {
             Instantiate(triggerStopObj, recordable.playbackObject.transform.position, Quaternion.identity);
         }
-    }
+    }*/
 
     private void Update()
     {
