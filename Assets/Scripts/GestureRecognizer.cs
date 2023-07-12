@@ -74,13 +74,18 @@ public class GestureRecognizer : MonoBehaviour
         {
             DebugLogger.Instance.Log("Gesture checking in " + gameObject.name);
         }
+        GestureDetectionLoop();
+    }
+
+    public void GestureDetectionLoop()
+    {
         gestureDetected = Recognize();
         
         if (gestureDetected != _previousGestureDetected)
         {
             if (gestureDetected != null)
             {
-                DebugLogger.Instance.Log("Gesture detected: " + gestureDetected.gestureName + " detected in " + gameObject.name);
+                //DebugLogger.Instance.Log("Gesture detected: " + gestureDetected.gestureName + " detected in " + gameObject.name);
                 gestureDetected.onRecognized.Invoke(gameObject);
             }
             else

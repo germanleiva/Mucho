@@ -16,6 +16,7 @@ public class Recorder : MonoBehaviour
 
     public GameObject triggerStartObj;
     public GameObject triggerStopObj;
+    public GameObject CylinderPrefab;
 
     [Header("Gesture Recognizers")]
     public GestureRecognizer LeftHandGestureRecorder, RightHandGestureRecorder;
@@ -210,16 +211,51 @@ public class Recorder : MonoBehaviour
         
     }*/
 
+    float startTriggerTime = 0f;
+    float endTriggerTime = 0f;
+    Vector3 startTriggerPos = Vector3.zero;
+    Vector3 endTriggerPos = Vector3.zero;
+
     public void SetStartTrigger(GameObject _playbackObject)
     {
         DebugLogger.Instance.Log("Set StartTrigger for " + _playbackObject.name);
         Instantiate(triggerStartObj, _playbackObject.transform.position, Quaternion.identity);
+        startTriggerTime = playbackSlider.value;
+        startTriggerPos = _playbackObject.transform.position;
     }
 
     public void SetEndTrigger(GameObject _playbackObject)
     {
         DebugLogger.Instance.Log("Set EndTrigger for " + _playbackObject.name);
         Instantiate(triggerStopObj, _playbackObject.transform.position, Quaternion.identity);
+        endTriggerTime = playbackSlider.value;
+        endTriggerPos = _playbackObject.transform.position;
+        DebugLogger.Instance.LogInVR("Start Trigger Time: " + startTriggerTime + " End Trigger Time: " + endTriggerTime);
+        DebugLogger.Instance.LogInVR("Trigger Duration: " + (endTriggerTime - startTriggerTime));
+        //Find direction between start and end trigger
+        Vector3 direction = endTriggerPos - startTriggerPos;
+        DebugLogger.Instance.LogInVR("Trigger Direction: " + direction);
+        CreateCylinderBetweenTwoPoints(startTriggerPos, endTriggerPos, 0.01f);
+
+        //Create a for loop which iterates from startTriggerTime to endTriggerTime and assigns the value to playbackSlider.value and in each iteration call the GestureDetectionLoop() function in the playback object's GestureRecognizer component
+        DebugLogger.Instance.LogInVR("Gesture within trigger duration: ");
+        for (float i = startTriggerTime; i <= endTriggerTime; i += 0.01f)
+        {
+            playbackSlider.value = i;
+            _playbackObject.GetComponent<GestureRecognizer>().GestureDetectionLoop();
+        }
+    }
+
+    public void CreateCylinderBetweenTwoPoints(Vector3 pointA, Vector3 pointB, float width)
+    {
+        Vector3 offset = pointB - pointA;
+        Vector3 scale = new Vector3(width, offset.magnitude / 2.0f, width);
+        Vector3 position = pointA + (offset / 2.0f) + new Vector3(0, 0.03f, 0);
+
+        GameObject cylinder = Instantiate(CylinderPrefab, position, Quaternion.identity);
+        cylinder.transform.up = offset;
+        cylinder.transform.localScale = scale;
+        cylinder.SetActive(true);
     }
 
     /*public void SetEndTrigger()
