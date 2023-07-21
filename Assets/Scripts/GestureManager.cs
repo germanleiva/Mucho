@@ -12,6 +12,7 @@ public class GestureManager : MonoBehaviour
 
     public void SetGesture(string gestureStr)
     {
+        DebugLogger.Instance.LogInVR("Gesture: " + gestureStr);
         currentGesture = (Gesture)System.Enum.Parse(typeof(Gesture), gestureStr);;
         SelectTaskForGesture(currentGesture);
     }
