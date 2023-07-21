@@ -19,9 +19,9 @@ public class Recorder : MonoBehaviour
     public GameObject CylinderPrefab;
 
     [Header("Gesture Recognizers")]
-    public GestureRecognizer LeftHandGestureRecorder, RightHandGestureRecorder;
+    //public GestureRecognizer LeftHandGestureRecorder, RightHandGestureRecorder;
 
-    public GestureRecognizer LeftHandGestureRecognizer, RightHandGestureRecognizer;
+    //public GestureRecognizer LeftHandGestureRecognizer, RightHandGestureRecognizer;
 
     public Manager.AppState currAppState;
 
@@ -99,13 +99,13 @@ public class Recorder : MonoBehaviour
     public void SavePlaybackLeftHandGesture()
     {
         DebugLogger.Instance.Log("Saving playback left hand gesture in record mode");
-        LeftHandGestureRecorder.SaveAsGesture();    
+        //LeftHandGestureRecorder.SaveAsGesture();    
     }
 
     public void SavePlaybackRightHandGesture()
     {
         DebugLogger.Instance.Log("Saving playback right hand gesture in record mode");
-        RightHandGestureRecorder.SaveAsGesture();    
+        //RightHandGestureRecorder.SaveAsGesture();    
     }
 
     /*public void SaveRealtimeLeftHandGesture()
@@ -118,13 +118,13 @@ public class Recorder : MonoBehaviour
     public void CopyLeftHandGesture()
     {
         DebugLogger.Instance.Log("Copying left hand gesture");
-        LeftHandGestureRecognizer.CopySavedGestures(LeftHandGestureRecorder.GetSavedGestures());        
+        //LeftHandGestureRecognizer.CopySavedGestures(LeftHandGestureRecorder.GetSavedGestures());        
     }
 
     public void CopyRightHandGesture()
     {
         DebugLogger.Instance.Log("Copying right hand gesture");
-        RightHandGestureRecognizer.CopySavedGestures(RightHandGestureRecorder.GetSavedGestures());        
+        //RightHandGestureRecognizer.CopySavedGestures(RightHandGestureRecorder.GetSavedGestures());        
     }
 
 
@@ -242,7 +242,7 @@ public class Recorder : MonoBehaviour
         for (float i = startTriggerTime; i <= endTriggerTime; i += 0.01f)
         {
             playbackSlider.value = i;
-            _playbackObject.GetComponent<GestureRecognizer>().GestureDetectionLoop();
+            //_playbackObject.GetComponent<GestureRecognizer>().GestureDetectionLoop();
         }
     }
 

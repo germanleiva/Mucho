@@ -43,6 +43,8 @@ public class Recordable : MonoBehaviour
     public GameObject thumbJoint2;
     public GameObject thumbJoint3;
 
+    
+
     private void Awake()
     {
         lineRenderer = lineObject.GetComponent<LineRenderer>();
@@ -193,17 +195,17 @@ public class Trigger
 {
     public float startTimestamp, endTimestamp;
     public string triggerName;
-    public List<Gesture> gestures;
+    //public List<Gesture> gestures;
     public Vector3 velocity;
 
     public Vector3 acceleration;
 
-    public Trigger(float _startTimestamp, float _endTimestamp, string _triggerName, List<Gesture> _gestures, Vector3 _velocity, Vector3 _acceleration)
+    public Trigger(float _startTimestamp, float _endTimestamp, string _triggerName, /*List<Gesture> _gestures,*/ Vector3 _velocity, Vector3 _acceleration)
     {
         startTimestamp = _startTimestamp;
         endTimestamp = _endTimestamp;
         triggerName = _triggerName;
-        gestures = _gestures;
+        //gestures = _gestures;
         velocity = _velocity;
         acceleration = _acceleration;
     }

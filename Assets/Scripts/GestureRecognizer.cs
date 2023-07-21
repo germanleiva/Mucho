@@ -6,7 +6,7 @@ using UnityEngine.Events;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
-
+/*
 public class GestureDetectEvent : UnityEvent<GameObject>
 {
 }
@@ -197,3 +197,5 @@ public class CustomInspectorGestureRecognizer : Editor
     }
 }
 #endif
+
+*/
