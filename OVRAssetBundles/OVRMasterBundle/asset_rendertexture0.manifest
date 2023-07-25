@@ -1,0 +1,18 @@
+ManifestFileVersion: 0
+CRC: 1213975548
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: c7c148d2142ab712a33d2e6dc4625f61
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 723d7b972e72461205a935bff5e6bf42
+HashAppended: 0
+ClassTypes:
+- Class: 84
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/Materials/HandCanvasRenderTexture.renderTexture
+- Assets/Materials/DrawCanvasRenderTexture.renderTexture
+Dependencies: []

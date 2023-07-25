@@ -1,32 +1,42 @@
 ManifestFileVersion: 0
-CRC: 2641597486
+CRC: 2015645719
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 14f1ac65f41a27108948e070d9933a24
+    Hash: d913b94c32d5d69d33be30e3bd6016c0
   TypeTreeHash:
     serializedVersion: 2
-    Hash: f7250e0453ea105d01a2d9335ccc1f3c
+    Hash: 5b6ebd69b5a94fac6a0c44c7b237fc8b
 HashAppended: 0
 ClassTypes:
 - Class: 21
   Script: {instanceID: 0}
 - Class: 28
   Script: {instanceID: 0}
+- Class: 43
+  Script: {instanceID: 0}
 - Class: 48
   Script: {instanceID: 0}
 - Class: 49
   Script: {instanceID: 0}
 - Class: 114
-  Script: {fileID: 11500000, guid: ab2114bdc8544297b417dfefe9f1e410, type: 3}
+  Script: {fileID: 11500000, guid: f955276368c7067498ef9ffabb02f585, type: 3}
 - Class: 114
   Script: {fileID: 11500000, guid: 2705215ac5b84b70bacc50632be6e391, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: ad074644ff568a14187a3690cfbd7534, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: b3d881e962d099f4a8eb492ef7e9a8c0, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: ab2114bdc8544297b417dfefe9f1e410, type: 3}
 - Class: 114
   Script: {fileID: 11500000, guid: 84a92b25f83d49b9bc132d206b370281, type: 3}
 - Class: 114
   Script: {fileID: 11500000, guid: 71c1514a6bd24e1e882cebbe1904ce04, type: 3}
 - Class: 114
   Script: {fileID: 11500000, guid: 3863570e7e6387a40ae4f323d83291e5, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 020e5f67a2e39c34cbb216db26697903, type: 3}
 - Class: 115
   Script: {instanceID: 0}
 - Class: 128
@@ -69,42 +79,204 @@ SerializeReferenceClassIdentifiers:
 - AssemblyName: UnityEngine.TextCoreFontEngineModule
   ClassName: UnityEngine.TextCore.GlyphRect
 Assets:
-- Assets/Oculus/VR/Resources/Unlit Transparent Color.shader
-- Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Drop Shadow.mat
-- Assets/Oculus/Interaction/Runtime/Resources/Shaders/Imposter_AlphaCutout.shader
-- Assets/Oculus/Interaction/Runtime/Resources/Shaders/Imposter_AlphaToMask.shader
-- Assets/Oculus/VR/Resources/OVRMRUnlitTransparent.shader
-- Assets/Oculus/Interaction/Runtime/Resources/Shaders/UIOverlay.shader
-- Assets/Oculus/Voice/Lib/Wit.ai/Resources/witai_texts_en-us.json
-- Assets/Resources/OculusRuntimeSettings.asset
-- Assets/Oculus/VR/Resources/OVRMRUnlit.shader
-- Assets/Oculus/Voice/Resources/voicesdk_heroart.png
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cuboid Subtractive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polyline 2D Opaque.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Triangle Additive.shader
+- Assets/Resources/OculusPlatformSettings.asset
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Rect Lighten.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cuboid ColorDodge.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Triangle Subtractive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Torus ColorBurn.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Triangle ColorDodge.shader
 - Assets/Oculus/Voice/Resources/voicesdk_texts_en-us.json
-- Assets/TextMesh Pro/Resources/Sprite Assets/EmojiOne.asset
-- Assets/Oculus/Interaction/Runtime/Resources/Shaders/DepthOverwrite.shader
-- Assets/Oculus/Voice/Lib/Wit.ai/Resources/wit-ai-title.png
-- Assets/TextMesh Pro/Resources/TMP Settings.asset
-- Assets/Oculus/VR/Resources/OVRMRCameraFrame.shader
-- Assets/Oculus/VR/Resources/OVRMRCameraFrameLit.shader
-- Assets/Oculus/Interaction/Runtime/Resources/Shaders/UnderlayTransparentOccluderImposter.shader
-- Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
-- Assets/Oculus/VR/Resources/Cubemap Blit.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Disc Multiplicative.shader
+- Assets/Shapes/Scripts/Editor/Resources/Shapes UI Assets.asset
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Rect Opaque.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Triangle Transparent.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Torus Subtractive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Sphere Transparent.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Texture LinearBurn.shader
 - Assets/Oculus/VR/Resources/Underlay Impostor.shader
-- Assets/Oculus/Interaction/Runtime/Resources/Shaders/Imposter_AlphaBlended.shader
-- Assets/Oculus/Interaction/Runtime/Resources/Shaders/Imposter_Underlay.shader
-- Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Outline.mat
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Regular Polygon Subtractive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Torus ColorDodge.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cone Darken.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Texture Darken.shader
 - Assets/Oculus/VR/Resources/Underlay Transparent Occluder.shader
-- Assets/Oculus/Interaction/Runtime/Resources/Shaders/Imposter_Underlay_AA.shader
-- Assets/Oculus/Interaction/Runtime/Resources/Shaders/Imposter_Opaque.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Sphere Multiplicative.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 3D Lighten.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 3D Additive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cuboid Opaque.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polygon ColorBurn.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 2D Lighten.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Texture Multiplicative.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Disc ColorBurn.shader
+- Assets/TextMesh Pro/Resources/LineBreaking Following Characters.txt
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Regular Polygon Screen.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Rect ColorDodge.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cone Subtractive.shader
+- Assets/Oculus/Voice/Lib/Wit.ai/Resources/witai_texts_en-us.json
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polyline 2D Subtractive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Triangle Screen.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cuboid Lighten.shader
+- Assets/Oculus/Voice/Resources/voicesdk_heroart.png
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Texture Additive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Quad ColorDodge.shader
+- Assets/Oculus/VR/Resources/OVRMRCameraFrame.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Torus Multiplicative.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Sphere ColorBurn.shader
+- Assets/Oculus/Interaction/Runtime/Resources/Shaders/UnderlayTransparentOccluderImposter.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polygon Darken.shader
 - Assets/Resources/OVRPlatformToolSettings.asset
 - Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset
-- Assets/Oculus/Voice/Lib/Wit.ai/Resources/continue-with-fb.png
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Sphere Screen.shader
 - Assets/TextMesh Pro/Resources/Style Sheets/Default Style Sheet.asset
+- Assets/Oculus/VR/Resources/Unlit Transparent Color.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Quad Additive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Sphere Darken.shader
+- Assets/Shapes/Resources/Shapes Config.asset
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polygon ColorDodge.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Torus Opaque.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cuboid Transparent.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polyline 2D LinearBurn.shader
+- Assets/TextMesh Pro/Resources/Sprite Assets/EmojiOne.asset
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cuboid Multiplicative.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Sphere LinearBurn.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Rect Darken.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 3D Darken.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Rect LinearBurn.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Disc ColorDodge.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Triangle Opaque.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cuboid ColorBurn.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Disc Transparent.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 2D Darken.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 3D Opaque.shader
+- Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Outline.mat
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Rect Additive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Triangle ColorBurn.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Torus Lighten.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Quad Opaque.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 2D Transparent.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Torus Additive.shader
+- Assets/Oculus/Interaction/Runtime/Resources/Shaders/Imposter_AlphaToMask.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polyline 2D ColorDodge.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polygon Lighten.shader
+- Assets/Oculus/Interaction/Runtime/Resources/Shaders/UIOverlay.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Disc Darken.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Quad LinearBurn.shader
+- Assets/Resources/OculusRuntimeSettings.asset
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Rect ColorBurn.shader
+- Assets/Oculus/VR/Resources/OVRMRUnlit.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Quad Darken.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Regular Polygon ColorDodge.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Quad Multiplicative.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Triangle Lighten.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Rect Multiplicative.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polygon LinearBurn.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Sphere Opaque.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cone Multiplicative.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cone Lighten.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Rect Subtractive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Texture ColorBurn.shader
 - Assets/TextMesh Pro/Resources/LineBreaking Leading Characters.txt
-- Assets/TextMesh Pro/Resources/LineBreaking Following Characters.txt
 - Assets/Oculus/VR/Resources/Texture2D Blit.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Triangle Multiplicative.shader
 - Assets/Oculus/Voice/Lib/Wit.ai/Resources/witai.png
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Disc Opaque.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cone Additive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Torus LinearBurn.shader
+- Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Drop Shadow.mat
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cone ColorBurn.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polygon Multiplicative.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Regular Polygon Multiplicative.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Quad Screen.shader
+- Assets/Oculus/Interaction/Runtime/Resources/Shaders/DepthOverwrite.shader
+- Assets/Oculus/Voice/Lib/Wit.ai/Resources/wit-ai-title.png
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cuboid Screen.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 2D Additive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Texture Opaque.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Disc Screen.shader
+- Assets/Oculus/VR/Resources/OVRMRCameraFrameLit.shader
+- Assets/Oculus/VR/Resources/Cubemap Blit.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polyline 2D Lighten.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cone Screen.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 3D Multiplicative.shader
+- Assets/Shapes/Resources/Shapes Import State.asset
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Disc Additive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Texture Transparent.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cone Opaque.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polyline 2D ColorBurn.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cuboid Additive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Sphere Subtractive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Texture Screen.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Sphere Lighten.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Regular Polygon Additive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Quad Transparent.shader
+- Assets/Oculus/VR/Resources/OVRMRUnlitTransparent.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Regular Polygon Opaque.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 3D Screen.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polyline 2D Darken.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Regular Polygon Darken.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Texture ColorDodge.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 2D ColorBurn.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 3D Transparent.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polygon Screen.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Disc Lighten.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polygon Transparent.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Regular Polygon Transparent.shader
+- Assets/Shapes/Resources/Shapes Assets.asset
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Sphere ColorDodge.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cuboid Darken.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Regular Polygon ColorBurn.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 2D Opaque.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cuboid LinearBurn.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Triangle Darken.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 2D Screen.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polygon Opaque.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 3D Subtractive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 2D LinearBurn.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 2D Subtractive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Texture Lighten.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cone Transparent.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Torus Screen.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Regular Polygon Lighten.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Torus Transparent.shader
+- Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 2D Multiplicative.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Regular Polygon LinearBurn.shader
+- Assets/Oculus/Interaction/Runtime/Resources/Shaders/Imposter_AlphaBlended.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 3D ColorDodge.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polygon Additive.shader
+- Assets/Oculus/Interaction/Runtime/Resources/Shaders/Imposter_Opaque.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Sphere Additive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Disc LinearBurn.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 2D ColorDodge.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Rect Screen.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Rect Transparent.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 3D LinearBurn.shader
+- Assets/Oculus/Interaction/Runtime/Resources/Shaders/Imposter_AlphaCutout.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polyline 2D Screen.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Quad Lighten.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Quad Subtractive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Torus Darken.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cone LinearBurn.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polyline 2D Transparent.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Cone ColorDodge.shader
+- Assets/TextMesh Pro/Resources/TMP Settings.asset
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polyline 2D Additive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Quad ColorBurn.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polygon Subtractive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Line 3D ColorBurn.shader
+- Assets/Resources/ONSPSettings.asset
+- Assets/Oculus/Interaction/Runtime/Resources/Shaders/Imposter_Underlay.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Disc Subtractive.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Polyline 2D Multiplicative.shader
+- Assets/Oculus/Interaction/Runtime/Resources/Shaders/Imposter_Underlay_AA.shader
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Texture Subtractive.shader
+- Assets/Oculus/Voice/Lib/Wit.ai/Resources/continue-with-fb.png
+- Assets/Shapes/Shaders/Generated Shaders/Resources/Triangle LinearBurn.shader
 - Assets/Resources/OVRBuildConfig.asset
 Dependencies:
-- C:/Users/Jyotsna Nambiar/Desktop/ProtoXR/OVRAssetBundles/OVRMasterBundle/asset_shader0
-- C:/Users/Jyotsna Nambiar/Desktop/ProtoXR/OVRAssetBundles/OVRMasterBundle/asset_ttf0
+- D:/Unni/Gitlab/ProtoXR/OVRAssetBundles/OVRMasterBundle/asset_asset0
+- D:/Unni/Gitlab/ProtoXR/OVRAssetBundles/OVRMasterBundle/asset_json0
+- D:/Unni/Gitlab/ProtoXR/OVRAssetBundles/OVRMasterBundle/asset_shader0
+- D:/Unni/Gitlab/ProtoXR/OVRAssetBundles/OVRMasterBundle/asset_ttf0

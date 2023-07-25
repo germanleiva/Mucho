@@ -1,24 +1,39 @@
 ManifestFileVersion: 0
-CRC: 4028319612
+CRC: 3944816351
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: f251e0b47a8bba1f86e4406c5a37aac3
+    Hash: e8cbc02eee0c3d538ffd50d51e13ddac
   TypeTreeHash:
     serializedVersion: 2
-    Hash: b0363f7088f9761414f730641bf9a24b
+    Hash: c21d61fe394c58399df3c6fb5c7c99b3
 HashAppended: 0
 ClassTypes:
 - Class: 28
   Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
 SerializeReferenceClassIdentifiers: []
 Assets:
+- Assets/Materials/paint.png
 - Assets/Oculus/VR/Textures/HandTracking/HandTracking_uvmap_2048.png
+- Assets/Materials/Images/detach.png
+- Assets/Materials/Images/stoprecord.png
 - Assets/Oculus/VR/Textures/MetaQuestTouchPro/controller_l_lo_Normal.png
+- Assets/Materials/Images/attach.png
 - Assets/Oculus/VR/Textures/OculusTouchForRift/touchController_albedo.png
 - Assets/Oculus/VR/Textures/MetaQuestTouchPro/controller_r_lo_Normal.png
 - Assets/Oculus/Interaction/Runtime/Textures/fingers_glow_mask.png
-- Assets/Oculus/VR/Textures/MetaQuestTouchPro/controller_r_lo_BaseColor.png
+- Assets/Materials/Images/show.png
 - Assets/Oculus/VR/Textures/MetaQuestTouchPro/controller_l_lo_BaseColor.png
+- Assets/Oculus/VR/Textures/MetaQuestTouchPro/controller_r_lo_BaseColor.png
+- Assets/Materials/Images/hide.png
 - Assets/Oculus/VR/Textures/MetaQuestTouchPro/batteryIndicatorTexture32.png
+- Assets/Materials/Images/reset.png
+- Assets/Oculus/Interaction/Samples/Textures/RoundCorners.png
+- Assets/Shapes/Textures/icon-polyline.png
+- Assets/Materials/Images/record.png
+- Assets/Oculus/Interaction/Runtime/Textures/Reticle-Dot.png
+- Assets/Materials/sphere.png
+- Assets/Shapes/Textures/icon-line.png
 Dependencies: []

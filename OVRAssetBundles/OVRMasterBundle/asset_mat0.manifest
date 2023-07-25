@@ -1,12 +1,12 @@
 ManifestFileVersion: 0
-CRC: 3738977639
+CRC: 3244623924
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 17994afed60597469d6a594af9280a80
+    Hash: 81d5ccad1359dbb7fa1f7e846b9ae639
   TypeTreeHash:
     serializedVersion: 2
-    Hash: f9f3d136959ac0e7043e721e899342fb
+    Hash: 49b21f629914b89de194a6d49b908f65
 HashAppended: 0
 ClassTypes:
 - Class: 21
@@ -15,18 +15,41 @@ ClassTypes:
   Script: {instanceID: 0}
 - Class: 48
   Script: {instanceID: 0}
+- Class: 84
+  Script: {instanceID: 0}
 SerializeReferenceClassIdentifiers: []
 Assets:
+- Assets/Shapes/Shaders/Generated Materials/Polyline 2D Transparent [JOIN_MITER].mat
 - Assets/Oculus/VR/Meshes/OculusTouchForQuestAndRiftS/Materials/OculusTouchForQuestAndRiftS_Material.mat
 - Assets/Oculus/VR/Materials/BasicHandMaterial.mat
+- Assets/Materials/YellowMat.mat
+- Assets/Materials/DragMat.mat
+- Assets/Oculus/Voice/Demo/Materials/Skybox.mat
+- Assets/Materials/DrawCanvasMaterial.mat
+- Assets/Materials/HandCanvasMaterial.mat
 - Assets/Oculus/VR/Meshes/MetaQuestTouchPro/Materials/MetaQuestProLeft_Material.mat
+- Assets/Materials/BlueMat.mat
+- Assets/Shapes/Shaders/Generated Materials/Line 3D Transparent [CAP_ROUND].mat
+- Assets/Oculus/Interaction/Runtime/Materials/OculusHandPinchMaterial.mat
 - Assets/Oculus/VR/Meshes/OculusTouchForRift/Materials/OculusTouchForRift_Material.mat
-- Assets/Oculus/Interaction/Runtime/Materials/OculusHand.mat
+- Assets/Materials/GrayMat.mat
+- Assets/Shapes/Shaders/Generated Materials/Line 2D Transparent [CAP_ROUND].mat
+- Assets/Materials/RedMat.mat
+- Assets/Oculus/Interaction/Runtime/Materials/OculusHandCursor.mat
+- Assets/Materials/BrownMat.mat
 - Assets/Oculus/VR/Meshes/MetaQuestTouchPro/Materials/batteryIndicator_mat.mat
+- Assets/Oculus/Interaction/Runtime/Materials/OculusControllerRayCursor.mat
 - Assets/Oculus/VR/Meshes/OculusTouchForQuest2/Materials/OculusTouchForQuest2_MAT.mat
+- Assets/Oculus/Interaction/Runtime/Materials/OculusHand.mat
+- Assets/Materials/MarkerMaterial.mat
 - Assets/Oculus/VR/Meshes/MetaQuestTouchPro/Materials/MetaQuestProRight_Material.mat
-- Assets/Oculus/Interaction/Runtime/Materials/Unlit Material.mat
+- Assets/Materials/LeftControllerLineMat.mat
+- Assets/Oculus/Interaction/Runtime/Materials/OculusControllerRayMaterial.mat
+- Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
 Dependencies:
-- C:/Users/Jyotsna Nambiar/Desktop/ProtoXR/OVRAssetBundles/OVRMasterBundle/asset_png0
-- C:/Users/Jyotsna Nambiar/Desktop/ProtoXR/OVRAssetBundles/OVRMasterBundle/asset_shader0
-- C:/Users/Jyotsna Nambiar/Desktop/ProtoXR/OVRAssetBundles/OVRMasterBundle/asset_tga0
+- D:/Unni/Gitlab/ProtoXR/OVRAssetBundles/OVRMasterBundle/asset_png0
+- D:/Unni/Gitlab/ProtoXR/OVRAssetBundles/OVRMasterBundle/asset_rendertexture0
+- D:/Unni/Gitlab/ProtoXR/OVRAssetBundles/OVRMasterBundle/asset_resources
+- D:/Unni/Gitlab/ProtoXR/OVRAssetBundles/OVRMasterBundle/asset_shader0
+- D:/Unni/Gitlab/ProtoXR/OVRAssetBundles/OVRMasterBundle/asset_shadergraph0
+- D:/Unni/Gitlab/ProtoXR/OVRAssetBundles/OVRMasterBundle/asset_tga0

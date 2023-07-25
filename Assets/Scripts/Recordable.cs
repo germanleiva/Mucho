@@ -8,9 +8,9 @@ public class Recordable : MonoBehaviour
 {
     public GameObject playbackObject;
     public List<RecordFrameData> recordedData = new List<RecordFrameData>();
-    public GameObject lineObject;
-    private LineRenderer lineRenderer;
-    private LineRendererSmoother lineRendererSmoother;
+    //public GameObject lineObject;
+    //private LineRenderer lineRenderer;
+    //private LineRendererSmoother lineRendererSmoother;
 
     public Vector3 rotationCorrection; 
     public Vector3 positionCorrection;
@@ -47,8 +47,8 @@ public class Recordable : MonoBehaviour
 
     private void Awake()
     {
-        lineRenderer = lineObject.GetComponent<LineRenderer>();
-        lineRendererSmoother = lineObject.GetComponent<LineRendererSmoother>();
+        //lineRenderer = lineObject.GetComponent<LineRenderer>();
+        //lineRendererSmoother = lineObject.GetComponent<LineRendererSmoother>();
     }
 
     // Record the current state.
@@ -80,14 +80,14 @@ public class Recordable : MonoBehaviour
     public void ResetData()
     {
         recordedData.Clear();
-        if (lineRenderer != null)
+        /*if (lineRenderer != null)
         {
             lineRenderer.positionCount = 0;
-        }
+        }*/
     }
 
     // Visualize the path with lines.
-    public void VisualizePath()
+    /*public void VisualizePath()
     {
         if (lineRenderer != null)
         {
@@ -103,7 +103,7 @@ public class Recordable : MonoBehaviour
             lineRendererSmoother.SimplifyAndSmooth();            
             //lineRendererSmoother.GenerateMeshCollider();
         }
-    }
+    }*/
 }
 
 public class FingerJoint

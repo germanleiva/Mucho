@@ -1,12 +1,12 @@
 ManifestFileVersion: 0
-CRC: 3601779218
+CRC: 1671645718
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: c56a7fdb12b426e5d2904ede6392c669
+    Hash: eb39114959f5978329ea35e3e19de5d4
   TypeTreeHash:
     serializedVersion: 2
-    Hash: 04828ab164ffd4b933da9b1f434450c8
+    Hash: ae4cef3d292199ffdfcec417cb047ab5
 HashAppended: 0
 ClassTypes:
 - Class: 1
@@ -14,6 +14,10 @@ ClassTypes:
 - Class: 4
   Script: {instanceID: 0}
 - Class: 21
+  Script: {instanceID: 0}
+- Class: 23
+  Script: {instanceID: 0}
+- Class: 33
   Script: {instanceID: 0}
 - Class: 43
   Script: {instanceID: 0}
@@ -30,14 +34,17 @@ ClassTypes:
 SerializeReferenceClassIdentifiers: []
 Assets:
 - Assets/Oculus/VR/Meshes/OculusTouchForQuest2/OculusTouchForQuest2_Right.fbx
-- Assets/Oculus/VR/Meshes/MetaQuestTouchPro/MetaQuestTouchPro_Right.fbx
 - Assets/Oculus/VR/Meshes/OculusTouchForQuest2/OculusTouchForQuest2_Left.fbx
+- Assets/Oculus/VR/Meshes/MetaQuestTouchPro/MetaQuestTouchPro_Right.fbx
 - Assets/Oculus/VR/Meshes/OculusTouchForQuestAndRiftS/OculusTouchForQuestAndRiftS_Left.fbx
+- Assets/Models/Quest2_HMD.fbx
 - Assets/Oculus/VR/Meshes/OculusTouchForQuestAndRiftS/OculusTouchForQuestAndRiftS_Right.fbx
 - Assets/Oculus/VR/Meshes/HandTracking/OculusHand_R.fbx
+- Assets/Oculus/Interaction/Runtime/Meshes/OculusHandPinchArrowBlended.fbx
 - Assets/Oculus/VR/Meshes/HandTracking/OculusHand_L.fbx
 - Assets/Oculus/VR/Meshes/OculusTouchForRift/left_touch_controller_model_skel.fbx
 - Assets/Oculus/VR/Meshes/OculusTouchForRift/right_touch_controller_model_skel.fbx
 - Assets/Oculus/VR/Meshes/MetaQuestTouchPro/MetaQuestTouchPro_Left.fbx
 Dependencies:
-- C:/Users/Jyotsna Nambiar/Desktop/ProtoXR/OVRAssetBundles/OVRMasterBundle/asset_mat0
+- D:/Unni/Gitlab/ProtoXR/OVRAssetBundles/OVRMasterBundle/asset_mat0
+- D:/Unni/Gitlab/ProtoXR/OVRAssetBundles/OVRMasterBundle/asset_shader0

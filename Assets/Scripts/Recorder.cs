@@ -13,6 +13,7 @@ public class Recorder : MonoBehaviour
     private bool isRecording = false;
     private bool isPlayingBack = false;
     private float recordStartTime;
+    public float recordingDuration;
 
     public GameObject triggerStartObj;
     public GameObject triggerStopObj;
@@ -75,7 +76,7 @@ public class Recorder : MonoBehaviour
             //recordable.GetComponent<QuickTransformDebug>().enabled = true;
             recordable.playbackObject.SetActive(false);
             //Turn off the line renderer
-            recordable.lineObject.GetComponent<LineRenderer>().enabled = false;            
+            //recordable.lineObject.GetComponent<LineRenderer>().enabled = false;            
             recordable.ResetData();
         }
         isRecording = false;
@@ -133,7 +134,7 @@ public class Recorder : MonoBehaviour
     {
         foreach (var recordable in objectsToRecord)
         {
-            recordable.VisualizePath();
+            //recordable.VisualizePath();
         }
     }
 
@@ -153,7 +154,7 @@ public class Recorder : MonoBehaviour
                 recordable.playbackObject.SetActive(true);
                 //recordable.playbackObject.GetComponent<QuickTransformDebug>().enabled = true;
                 //recordable.GetComponent<QuickTransformDebug>().enabled = false;
-                recordable.lineObject.GetComponent<LineRenderer>().enabled = true;
+                //recordable.lineObject.GetComponent<LineRenderer>().enabled = true;
                 if (recordable.recordedData.Count > 0)
                 {
                     //duration = Mathf.Max(duration, recordable.recordedData.Last().timestamp);
@@ -166,6 +167,7 @@ public class Recorder : MonoBehaviour
             playbackSlider.minValue = 0f;
             playbackSlider.maxValue = duration;
             playbackSlider.value = 0f;
+            recordingDuration = duration;
 
             isPlayingBack = true;
             recordStartTime = Time.time;

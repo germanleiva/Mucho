@@ -1,26 +1,78 @@
 ManifestFileVersion: 0
-CRC: 2804266457
+CRC: 3411388998
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: e145db67288690d5322656e5d39ca241
+    Hash: 404ae3a311c470663a46c1682f28dd98
   TypeTreeHash:
     serializedVersion: 2
-    Hash: 96e360f119e572ef9eb29447ef69b73d
+    Hash: 5453288c4019a4c74662bd316addb904
 HashAppended: 0
 ClassTypes:
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 114
+  Script: {fileID: 11500000, guid: 4cfe1df7ed391a24fbe2a2d275e81b06, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 71c1514a6bd24e1e882cebbe1904ce04, type: 3}
 - Class: 114
   Script: {fileID: 11500000, guid: c5af6ab9d1bd4a47970ad151090281f3, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: ac666f23650b94b4ea891467ab3677e5, type: 3}
 - Class: 115
+  Script: {instanceID: 0}
+- Class: 128
   Script: {instanceID: 0}
 SerializeReferenceClassIdentifiers:
 - AssemblyName: Oculus.Interaction
   ClassName: Oculus.Interaction.PoseDetection.FingerFeatureStateThreshold
 - AssemblyName: Oculus.Interaction
   ClassName: Oculus.Interaction.PoseDetection.FingerFeatureThresholds
+- AssemblyName: Oculus.Interaction
+  ClassName: Oculus.Interaction.PoseDetection.ShapeRecognizer/FingerFeatureConfig
+- AssemblyName: Oculus.Interaction
+  ClassName: Oculus.Interaction.PoseDetection.ShapeRecognizer/FingerFeatureConfigList
+- AssemblyName: Oculus.Interaction
+  ClassName: Oculus.Interaction.PoseDetection.TransformFeatureStateThreshold
+- AssemblyName: Oculus.Interaction
+  ClassName: Oculus.Interaction.PoseDetection.TransformFeatureThresholds
+- AssemblyName: Unity.TextMeshPro
+  ClassName: TMPro.FaceInfo_Legacy
+- AssemblyName: Unity.TextMeshPro
+  ClassName: TMPro.FontAssetCreationSettings
+- AssemblyName: Unity.TextMeshPro
+  ClassName: TMPro.KerningTable
+- AssemblyName: Unity.TextMeshPro
+  ClassName: TMPro.TMP_Character
+- AssemblyName: Unity.TextMeshPro
+  ClassName: TMPro.TMP_FontFeatureTable
+- AssemblyName: Unity.TextMeshPro
+  ClassName: TMPro.TMP_FontWeightPair
+- AssemblyName: Unity.TextMeshPro
+  ClassName: TMPro.TMP_Glyph
+- AssemblyName: UnityEngine.TextCoreFontEngineModule
+  ClassName: UnityEngine.TextCore.FaceInfo
+- AssemblyName: UnityEngine.TextCoreFontEngineModule
+  ClassName: UnityEngine.TextCore.Glyph
+- AssemblyName: UnityEngine.TextCoreFontEngineModule
+  ClassName: UnityEngine.TextCore.GlyphMetrics
+- AssemblyName: UnityEngine.TextCoreFontEngineModule
+  ClassName: UnityEngine.TextCore.GlyphRect
 Assets:
 - Assets/Oculus/Interaction/Runtime/DefaultSettings/PoseDetection/MiddleFingerFeatureStateThresholds.asset
+- Assets/Oculus/Interaction/Samples/Poses/Shapes/FingersAllOpen.asset
 - Assets/Oculus/Interaction/Runtime/DefaultSettings/PoseDetection/DefaultThumbFeatureStateThresholds.asset
+- Assets/Oculus/Interaction/Samples/Poses/Shapes/FingersAllClosed.asset
 - Assets/Oculus/Interaction/Runtime/DefaultSettings/PoseDetection/DefaultFingerFeatureStateThresholds.asset
+- Assets/Hand Poses/LeftHandMenuOpen.asset
+- Assets/Oculus/Interaction/Runtime/DefaultSettings/PoseDetection/DefaultTransformFeatureStateThresholds.asset
+- Assets/Shapes/Textures/Inconsolata/Inconsolata-SemiBold SDF.asset
+- Assets/Oculus/Interaction/Samples/Fonts/Roboto-Regular SDF.asset
 - Assets/Oculus/Interaction/Runtime/DefaultSettings/PoseDetection/IndexFingerFeatureStateThresholds.asset
-Dependencies: []
+Dependencies:
+- D:/Unni/Gitlab/ProtoXR/OVRAssetBundles/OVRMasterBundle/asset_shader0
+- D:/Unni/Gitlab/ProtoXR/OVRAssetBundles/OVRMasterBundle/asset_ttf0
