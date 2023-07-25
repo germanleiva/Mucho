@@ -19,16 +19,15 @@ public class Recorder : MonoBehaviour
     public GameObject triggerStopObj;
     public GameObject CylinderPrefab;
 
-    [Header("Gesture Recognizers")]
+    //[Header("Gesture Recognizers")]
     //public GestureRecognizer LeftHandGestureRecorder, RightHandGestureRecorder;
 
     //public GestureRecognizer LeftHandGestureRecognizer, RightHandGestureRecognizer;
 
-    public Manager.AppState currAppState;
 
     void Awake()
     {
-        Manager.AppState currAppState = Manager.AppState.NONE;
+        
     }
 
     void Start()
@@ -56,6 +55,7 @@ public class Recorder : MonoBehaviour
         //currAppState = Manager.AppState.RECORD;
         rootPlaybackArea.SetActive(false);
         DebugLogger.Instance.Log("StartRecording");
+        AssetPoseRecorder.Instance.disableGrabForAllAssets();
         foreach (var recordable in objectsToRecord)
         {
             recordable.ResetData();
@@ -93,11 +93,13 @@ public class Recorder : MonoBehaviour
         DebugLogger.Instance.Log("StopRecording");
         isRecording = false;
 
+        AssetPoseRecorder.Instance.enableGrabForAllAssets();
+
         VisualizePath();
         StartPlayback();
     }
 
-    public void SavePlaybackLeftHandGesture()
+    /*public void SavePlaybackLeftHandGesture()
     {
         DebugLogger.Instance.Log("Saving playback left hand gesture in record mode");
         //LeftHandGestureRecorder.SaveAsGesture();    
@@ -109,12 +111,12 @@ public class Recorder : MonoBehaviour
         //RightHandGestureRecorder.SaveAsGesture();    
     }
 
-    /*public void SaveRealtimeLeftHandGesture()
+    public void SaveRealtimeLeftHandGesture()
     {
         DebugLogger.Instance.Log("Saving realtime left hand gesture in record mode");
         //LeftHandGestureRecorder.SaveAsGesture();    
         LeftHandGestureRecognizer.SaveAsGesture(); 
-    }*/
+    }
 
     public void CopyLeftHandGesture()
     {
@@ -128,7 +130,7 @@ public class Recorder : MonoBehaviour
         //RightHandGestureRecognizer.CopySavedGestures(RightHandGestureRecorder.GetSavedGestures());        
     }
 
-
+    */
 
     void VisualizePath()
     {
@@ -141,7 +143,7 @@ public class Recorder : MonoBehaviour
     // Start playback.
     public void StartPlayback()
     {
-        currAppState = Manager.AppState.PLAYBACK;
+        Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         try
         {
             if (isRecording) return; // Don't allow playback while recording.
@@ -188,17 +190,17 @@ public class Recorder : MonoBehaviour
     public void SetTestMode()
     {
         DebugLogger.Instance.Log("Start Testing");
-        currAppState = Manager.AppState.TEST;
+        Manager.Instance.currAppState = Manager.AppState.TEST;
         rootPlaybackArea.SetActive(false);
         playbackUI.SetActive(false);
-        CopyLeftHandGesture();
-        CopyRightHandGesture();
+        //CopyLeftHandGesture();
+        //CopyRightHandGesture();
     }
 
     public void SetRecordMode()
     {
         DebugLogger.Instance.Log("Set Record Mode");
-        currAppState = Manager.AppState.RECORD;
+        Manager.Instance.currAppState = Manager.AppState.RECORDING;
         rootPlaybackArea.SetActive(false);
         playbackUI.SetActive(true);        
     }

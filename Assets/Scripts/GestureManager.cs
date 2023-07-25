@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class GestureManager : MonoBehaviour
 {
-    public enum Gesture { RIGHTHANDNONE, LEFTHANDMENUOPEN, RIGHTHANDGRAB, RIGHTHANDTHROW, RIGHTHANDPINCH};
+    public enum Gesture { RIGHTHANDNONE, LEFTHANDNONE, LEFTHANDMENUOPEN, RIGHTHANDGRAB, RIGHTHANDTHROW, RIGHTHANDPINCH};
     public Gesture currentGesture = Gesture.RIGHTHANDNONE;
 
     public TMPro.TMP_Text rightHandGestureText, leftHandGestureText;
@@ -25,6 +25,9 @@ public class GestureManager : MonoBehaviour
         {
             case Gesture.RIGHTHANDNONE:
                 rightHandGestureText.text = "None";
+                break;
+            case Gesture.LEFTHANDNONE:
+                leftHandGestureText.text = "None";
                 break;
             case Gesture.LEFTHANDMENUOPEN:
                 leftHandGestureText.text = "Menu Open";

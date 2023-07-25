@@ -10,20 +10,42 @@ public class Manager : MonoBehaviour
     public GameObject hmd;
 
     public GameObject leftHandMenu;
+
+    public GameObject forceArrowPrefab;
+
+    public AppState currAppState;
+
     public enum AppState
     {
         NONE,
-        RECORD,
+        RECORDING,
         PLAYBACK,
+        ASSETRECORDING,
         TEST,
         LIVE
     }
+
+    public static Manager Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
 
     // Start is called before the first frame update
     public TMPro.TMP_Text VRDebugText;
     void Start()
     {
-        
+        currAppState = Manager.AppState.NONE;
     }
 
     public void ClearDebugText()
@@ -37,18 +59,6 @@ public class Manager : MonoBehaviour
         
     }
 
-    public void SpawnSphere()
-    {
-        DebugLogger.Instance.LogInVR("Spawned Sphere");
-        Instantiate(spherePrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
-    }
-
-    public void SpawnCube()
-    {
-        DebugLogger.Instance.LogInVR("Spawned Cube");
-        Instantiate(cubePrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
-    }
-
     public void OpenLeftHandMenu()
     {
         leftHandMenu.SetActive(true);
@@ -58,6 +68,14 @@ public class Manager : MonoBehaviour
     {
         leftHandMenu.SetActive(false);
     }
+
+    public void CreateForceArrow()
+    {
+        //GameObject obj = Instantiate(cubePrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
+        GameObject forceArrow = Instantiate(forceArrowPrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
+        forceArrow.SetActive(true);
+    }
+
 }
 
 

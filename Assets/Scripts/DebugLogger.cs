@@ -4,27 +4,19 @@ using UnityEngine;
 
 public class DebugLogger : MonoBehaviour
 {
-    private static DebugLogger instance = null;
-    private static readonly object padlock = new object();
+    public static DebugLogger Instance { get; private set; }
     private static TMPro.TMP_Text debugText;
     
-    DebugLogger()
+    private void Awake()
     {
-                  
-    }
-
-    public static DebugLogger Instance
-    {
-        get
+        if (Instance == null)
         {
-            lock (padlock)
-            {
-                if (instance == null)
-                {
-                    instance = new DebugLogger();
-                }
-                return instance;
-            }
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
         }
     }
     
@@ -35,7 +27,7 @@ public class DebugLogger : MonoBehaviour
 
     public void Log(string message)
     {
-        Debug.Log("ProtoXR_Test" + message);
+        Debug.Log("ProtoXR_Test : " + message);
     }
 
     //Log in debug text
