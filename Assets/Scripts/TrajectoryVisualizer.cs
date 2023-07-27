@@ -11,7 +11,27 @@ public class TrajectoryVisualizer : MonoBehaviour
     public int numberOfPoints = 10;
     public float timeInterval = 5f;
 
+    int layerMask = 1 << 6;
+    
+    void Start()
+    {
+    
+    }
+
     void LateUpdate()
+    {
+        //Draw the trajectory only if there is a change in the position of the objects
+        if (object1.transform.hasChanged || object2.transform.hasChanged)
+        {
+            DebugLogger.Instance.Log("Object position changed");
+            DrawTrajectory();
+            object1.transform.hasChanged = false;
+            object2.transform.hasChanged = false;
+        }
+        
+    }
+
+    void DrawTrajectory()
     {
         Vector3 position1 = object1.transform.position;
         Vector3 position2 = object2.transform.position;
@@ -23,12 +43,38 @@ public class TrajectoryVisualizer : MonoBehaviour
         // Set the number of points in the LineRenderer
         lineRenderer.positionCount = numberOfPoints;
 
+        // Initialize the previous point position to the start point
+        Vector3 previousPointPosition = position2;
+
         // Calculate and set the position of each point in the trajectory
         for (int i = 0; i < numberOfPoints; i++)
         {
             float t = i * timeInterval;
             Vector3 pointPosition = CalculateTrajectoryPoint(position2, initialVelocity, t);
-            lineRenderer.SetPosition(i, pointPosition);
+
+            // Perform raycast from the previous point to the current point
+            Vector3 raycastDirection = (pointPosition - previousPointPosition).normalized;
+            float raycastDistance = Vector3.Distance(pointPosition, previousPointPosition);
+
+            if (Physics.Raycast(previousPointPosition, raycastDirection, raycastDistance, layerMask))
+            {
+                DebugLogger.Instance.Log("Hit surface, stopping trajectory generation");
+                // If there is a hit, set the number of points to i + 1 (since i starts from 0)
+                lineRenderer.positionCount = i + 1;
+
+                // Set the current point in the LineRenderer and then break
+                lineRenderer.SetPosition(i, pointPosition);
+                break;
+            }
+            else
+            {
+                DebugLogger.Instance.Log("No hit, continuing trajectory generation");
+                // If there is no hit, set the current point in the LineRenderer
+                lineRenderer.SetPosition(i, pointPosition);
+
+                // Update the previous point position
+                previousPointPosition = pointPosition;
+            }
         }
     }
 
@@ -37,6 +83,12 @@ public class TrajectoryVisualizer : MonoBehaviour
         Vector3 gravity = Physics.gravity;
         Vector3 position = startPoint + initialVelocity * time + 0.5f * gravity * time * time;
         return position;
+    }
+
+    public void ArrowSelected()
+    {
+        DebugLogger.Instance.Log("Arrow selected");
+        DrawTrajectory();
     }
 }
 
