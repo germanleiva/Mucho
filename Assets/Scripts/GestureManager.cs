@@ -4,11 +4,56 @@ using UnityEngine;
 
 public class GestureManager : MonoBehaviour
 {
-    public enum Gesture { RIGHTHANDNONE, LEFTHANDNONE, LEFTHANDMENUOPEN, RIGHTHANDGRAB, RIGHTHANDTHROW, RIGHTHANDPINCH};
+    public enum Gesture { LEFTHANDNONE, LEFTHANDMENUOPEN, LEFTHANDGRAB, LEFTHANDPINCH, LEFTHANDTHROW, RIGHTHANDNONE, RIGHTHANDGRAB, RIGHTHANDTHROW, RIGHTHANDPINCH};
     public Gesture currentGesture = Gesture.RIGHTHANDNONE;
 
     public TMPro.TMP_Text rightHandGestureText, leftHandGestureText;
     // Start is called before the first frame update
+
+    public OVRHand leftHand, rightHand;
+
+    private bool setRightHandNone = false;
+    private bool setLeftHandNone = false;
+
+    private void Update() 
+    {
+        if((rightHand.GetFingerIsPinching(OVRHand.HandFinger.Index)))
+        {
+            //DebugLogger.Instance.LogInVR("Pinch detected on right hand with pinch strength: " + rightHand.GetFingerPinchStrength(OVRHand.HandFinger.Index));
+            SetGesture("RIGHTHANDPINCH");
+            setRightHandNone = true;
+        }
+        else
+        {
+            //Check if the flag setRightHandNone is set to true
+            if(setRightHandNone)
+            {
+                //Set the gesture to NONE
+                SetGesture("RIGHTHANDNONE");
+                //Reset the flag
+                setRightHandNone = false;
+            }
+        }
+
+        if((leftHand.GetFingerIsPinching(OVRHand.HandFinger.Index)))
+        {
+            //DebugLogger.Instance.LogInVR("Pinch detected on left hand with pinch strength: " + rightHand.GetFingerPinchStrength(OVRHand.HandFinger.Index));
+            SetGesture("LEFTHANDPINCH");
+            setLeftHandNone = true;
+        }
+        else
+        {
+            //Check if the flag setLeftHandNone is set to true
+            if(setLeftHandNone)
+            {
+                //Set the gesture to NONE
+                SetGesture("LEFTHANDNONE");
+                //Reset the flag
+                setLeftHandNone = false;
+            }
+        }
+        
+    }
 
     public void SetGesture(string gestureStr)
     {
@@ -23,20 +68,29 @@ public class GestureManager : MonoBehaviour
         
         switch (gesture)
         {
-            case Gesture.RIGHTHANDNONE:
-                rightHandGestureText.text = "None";
-                break;
             case Gesture.LEFTHANDNONE:
                 leftHandGestureText.text = "None";
                 break;
             case Gesture.LEFTHANDMENUOPEN:
                 leftHandGestureText.text = "Menu Open";
                 break;
+            case Gesture.LEFTHANDGRAB:
+                leftHandGestureText.text = "Closed";
+                break;    
+            case Gesture.LEFTHANDPINCH:
+                leftHandGestureText.text = "Pinch";
+                break;
+            case Gesture.LEFTHANDTHROW:
+                leftHandGestureText.text = "Open";
+                break;
             case Gesture.RIGHTHANDGRAB:
-                rightHandGestureText.text = "Grab";
+                rightHandGestureText.text = "Closed";
+                break;
+            case Gesture.RIGHTHANDNONE:
+                rightHandGestureText.text = "None";
                 break;
             case Gesture.RIGHTHANDTHROW:
-                rightHandGestureText.text = "Throw";
+                rightHandGestureText.text = "Open";
                 break;
             case Gesture.RIGHTHANDPINCH:
                 rightHandGestureText.text = "Pinch";

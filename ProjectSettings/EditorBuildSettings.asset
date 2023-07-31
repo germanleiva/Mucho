@@ -17,6 +17,9 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Oculus/Interaction/Samples/Scenes/Features/RayCanvasFlat.unity
     guid: 7f5c84932632e2a4eb3d90db823935f1
+  - enabled: 0
+    path: Assets/Oculus/Interaction/Samples/Scenes/Examples/PokeExamples.unity
+    guid: ada3086bde0ab18459589e22d8d9e182
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: 0ac61dce53bb66d4996b1a47758ee265, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 3e00bc50672976c4a94b99703db68db9, type: 2}

@@ -13,26 +13,11 @@ public class TrajectoryVisualizer : MonoBehaviour
 
     int layerMask = 1 << 6;
     
-    void Start()
-    {
-    
-    }
-
-    void LateUpdate()
-    {
-        //Draw the trajectory only if there is a change in the position of the objects
-        if (object1.transform.hasChanged || object2.transform.hasChanged)
-        {
-            DebugLogger.Instance.Log("Object position changed");
-            DrawTrajectory();
-            object1.transform.hasChanged = false;
-            object2.transform.hasChanged = false;
-        }
-        
-    }
 
     void DrawTrajectory()
     {
+        lineRenderer.enabled = true;
+        
         Vector3 position1 = object1.transform.position;
         Vector3 position2 = object2.transform.position;
         Vector3 direction = (position2 - position1);

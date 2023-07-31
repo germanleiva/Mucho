@@ -7,6 +7,8 @@ public class Manager : MonoBehaviour
     public GameObject spherePrefab;
     public GameObject cubePrefab;
     public GameObject cylinderPrefab;
+    public GameObject textAssetPrefab;
+
     public GameObject hmd;
 
     public GameObject leftHandMenu;
@@ -74,6 +76,12 @@ public class Manager : MonoBehaviour
         //GameObject obj = Instantiate(cubePrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
         GameObject forceArrow = Instantiate(forceArrowPrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
         forceArrow.SetActive(true);
+    }
+
+    public void CreateTextAsset()
+    {
+        GameObject textAsset = Instantiate(textAssetPrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
+        textAsset.SetActive(true);
     }
 
 }
