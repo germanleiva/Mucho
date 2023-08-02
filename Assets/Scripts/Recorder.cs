@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,11 +20,9 @@ public class Recorder : MonoBehaviour
     public GameObject triggerStopObj;
     public GameObject CylinderPrefab;
 
-    //[Header("Gesture Recognizers")]
-    //public GestureRecognizer LeftHandGestureRecorder, RightHandGestureRecorder;
+    private bool isAutomaticPlayback = false;
 
-    //public GestureRecognizer LeftHandGestureRecognizer, RightHandGestureRecognizer;
-
+    List<float> handGuideTimePoints = new List<float>();
 
     void Awake()
     {
@@ -81,6 +80,7 @@ public class Recorder : MonoBehaviour
         }
         isRecording = false;
         isPlayingBack = false;
+        isAutomaticPlayback = false;
     }
 
     // Stop recording.
@@ -99,38 +99,10 @@ public class Recorder : MonoBehaviour
         StartPlayback();
     }
 
-    /*public void SavePlaybackLeftHandGesture()
+    public void SetAutomaticPlayMode(bool isAutomatic)
     {
-        DebugLogger.Instance.Log("Saving playback left hand gesture in record mode");
-        //LeftHandGestureRecorder.SaveAsGesture();    
+        isAutomaticPlayback = isAutomatic;
     }
-
-    public void SavePlaybackRightHandGesture()
-    {
-        DebugLogger.Instance.Log("Saving playback right hand gesture in record mode");
-        //RightHandGestureRecorder.SaveAsGesture();    
-    }
-
-    public void SaveRealtimeLeftHandGesture()
-    {
-        DebugLogger.Instance.Log("Saving realtime left hand gesture in record mode");
-        //LeftHandGestureRecorder.SaveAsGesture();    
-        LeftHandGestureRecognizer.SaveAsGesture(); 
-    }
-
-    public void CopyLeftHandGesture()
-    {
-        DebugLogger.Instance.Log("Copying left hand gesture");
-        //LeftHandGestureRecognizer.CopySavedGestures(LeftHandGestureRecorder.GetSavedGestures());        
-    }
-
-    public void CopyRightHandGesture()
-    {
-        DebugLogger.Instance.Log("Copying right hand gesture");
-        //RightHandGestureRecognizer.CopySavedGestures(RightHandGestureRecorder.GetSavedGestures());        
-    }
-
-    */
 
     void VisualizePath()
     {
@@ -143,11 +115,10 @@ public class Recorder : MonoBehaviour
     // Start playback.
     public void StartPlayback()
     {
-        Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         try
         {
             if (isRecording) return; // Don't allow playback while recording.
-
+            Manager.Instance.currAppState = Manager.AppState.PLAYBACK;    
             DebugLogger.Instance.Log("StartPlayback");
             // Determine the duration of the recording.
             float duration = 0f;
@@ -172,13 +143,29 @@ public class Recorder : MonoBehaviour
             recordingDuration = duration;
 
             isPlayingBack = true;
+            isAutomaticPlayback = false;
             recordStartTime = Time.time;
+            CalculateHandGuideTimePoints();
         }
         catch (System.Exception e)
         {
             DebugLogger.Instance.LogException(e);
         }
     }
+
+    private void CalculateHandGuideTimePoints()
+    {
+        //Find 20 time points equally spaced out from 0 to recordingDuration
+        float timeInterval = recordingDuration / 20;
+        float currentTime = 0f;
+        
+        while (currentTime < recordingDuration)
+        {
+            handGuideTimePoints.Add(currentTime);
+            currentTime += timeInterval;
+        }  
+        DebugLogger.Instance.Log("Size of handGuideTimePoints: " + handGuideTimePoints.Count);
+    }    
 
     // Stop playback.
     public void StopPlayback()
@@ -205,72 +192,28 @@ public class Recorder : MonoBehaviour
         playbackUI.SetActive(true);        
     }
 
-    /*public void SetStartTrigger()
+    private void FindPrevandNextFrames(List<RecordFrameData> recordedData, float currentTime, out RecordFrameData previousFrame, out RecordFrameData nextFrame)
     {
-        DebugLogger.Instance.Log("Set StartTrigger");
-        foreach (var recordable in objectsToRecord)
+        previousFrame = null;
+        nextFrame = null;
+        for (int i = 0; i < recordedData.Count; i++) //TODO: Replace with binary search?
         {
-            Instantiate(triggerStartObj, recordable.playbackObject.transform.position, Quaternion.identity);
-        }
-        
-    }*/
-
-    float startTriggerTime = 0f;
-    float endTriggerTime = 0f;
-    Vector3 startTriggerPos = Vector3.zero;
-    Vector3 endTriggerPos = Vector3.zero;
-
-    public void SetStartTrigger(GameObject _playbackObject)
-    {
-        DebugLogger.Instance.Log("Set StartTrigger for " + _playbackObject.name);
-        Instantiate(triggerStartObj, _playbackObject.transform.position, Quaternion.identity);
-        startTriggerTime = playbackSlider.value;
-        startTriggerPos = _playbackObject.transform.position;
+            var data = recordedData[i];
+            if (data.timestamp <= currentTime)
+            {
+                previousFrame = data;
+            }
+            else
+            {
+                nextFrame = data;
+                break;
+            }
+        } 
     }
 
-    public void SetEndTrigger(GameObject _playbackObject)
-    {
-        DebugLogger.Instance.Log("Set EndTrigger for " + _playbackObject.name);
-        Instantiate(triggerStopObj, _playbackObject.transform.position, Quaternion.identity);
-        endTriggerTime = playbackSlider.value;
-        endTriggerPos = _playbackObject.transform.position;
-        DebugLogger.Instance.LogInVR("Start Trigger Time: " + startTriggerTime + " End Trigger Time: " + endTriggerTime);
-        DebugLogger.Instance.LogInVR("Trigger Duration: " + (endTriggerTime - startTriggerTime));
-        //Find direction between start and end trigger
-        Vector3 direction = endTriggerPos - startTriggerPos;
-        DebugLogger.Instance.LogInVR("Trigger Direction: " + direction);
-        CreateCylinderBetweenTwoPoints(startTriggerPos, endTriggerPos, 0.01f);
 
-        //Create a for loop which iterates from startTriggerTime to endTriggerTime and assigns the value to playbackSlider.value and in each iteration call the GestureDetectionLoop() function in the playback object's GestureRecognizer component
-        DebugLogger.Instance.LogInVR("Gesture within trigger duration: ");
-        for (float i = startTriggerTime; i <= endTriggerTime; i += 0.01f)
-        {
-            playbackSlider.value = i;
-            //_playbackObject.GetComponent<GestureRecognizer>().GestureDetectionLoop();
-        }
-    }
-
-    public void CreateCylinderBetweenTwoPoints(Vector3 pointA, Vector3 pointB, float width)
-    {
-        Vector3 offset = pointB - pointA;
-        Vector3 scale = new Vector3(width, offset.magnitude / 2.0f, width);
-        Vector3 position = pointA + (offset / 2.0f) + new Vector3(0, 0.03f, 0);
-
-        GameObject cylinder = Instantiate(CylinderPrefab, position, Quaternion.identity);
-        cylinder.transform.up = offset;
-        cylinder.transform.localScale = scale;
-        cylinder.SetActive(true);
-    }
-
-    /*public void SetEndTrigger()
-    {
-        DebugLogger.Instance.Log("Set EndTrigger");
-        foreach (var recordable in objectsToRecord)
-        {
-            Instantiate(triggerStopObj, recordable.playbackObject.transform.position, Quaternion.identity);
-        }
-    }*/
-
+    int firstInterFrameInterval = 5;
+    int secondInterFrameInterval = 10;
     private void Update()
     {
         if (isRecording)
@@ -282,26 +225,28 @@ public class Recorder : MonoBehaviour
         }
         else if (isPlayingBack)
         {
+            if(isAutomaticPlayback)
+            {
+                playbackSlider.value += Time.deltaTime;
+                if(playbackSlider.value >= recordingDuration)
+                {
+                    playbackSlider.value = 0f;
+                }
+            }
+            
             //float currentTime = Time.time - recordStartTime;
             float currentTime = playbackSlider.value;
+
+            //Find the first two items in handGuideTimePoints that are greater than currentTime
+            var result = handGuideTimePoints.Where(x => x > currentTime).Take(2).ToList();
 
             foreach (var recordable in objectsToRecord)
             {
                 // Find the two frames to interpolate between.
-                RecordFrameData previousFrame = null;
-                RecordFrameData nextFrame = null;
-                foreach (var data in recordable.recordedData)
-                {
-                    if (data.timestamp <= currentTime)
-                    {
-                        previousFrame = data;
-                    }
-                    else
-                    {
-                        nextFrame = data;
-                        break;
-                    }
-                }
+                //foreach (var data in recordable.recordedData) 
+                FindPrevandNextFrames(recordable.recordedData, currentTime, out RecordFrameData previousFrame, out RecordFrameData nextFrame);
+                FindPrevandNextFrames(recordable.recordedData, result[0], out RecordFrameData previousFrame2, out RecordFrameData nextFrame2);  
+                FindPrevandNextFrames(recordable.recordedData, result[1], out RecordFrameData previousFrame3, out RecordFrameData nextFrame3); 
 
                 if (recordable.playbackObject != null)
                 {
@@ -311,17 +256,40 @@ public class Recorder : MonoBehaviour
                         float t = (currentTime - previousFrame.timestamp) / (nextFrame.timestamp - previousFrame.timestamp);
                         if(recordable.playbackObject.GetComponent<HandPlaybackObjectScript>() != null) //TODO:Can also check if the child objects to record is not null
                         {
-
+                            //This frame
+                            //Hand root
                             recordable.playbackObject.transform.localPosition = Vector3.Lerp(previousFrame.rootPosition, nextFrame.rootPosition, t);
                             recordable.playbackObject.transform.localRotation = Quaternion.Lerp(previousFrame.rootRotation, nextFrame.rootRotation, t) * Quaternion.Euler(recordable.rotationCorrection);//Modify the rotation in the recorded data to add 180 degrees to the  axis
-                        
+
+                            //Fingers
                             recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().interpolatePoseForAllFingerJoints(previousFrame, nextFrame, t);
+
+                            //Next frame 
+                            recordable.playbackObject2.transform.localPosition = Vector3.Lerp(previousFrame2.rootPosition, nextFrame2.rootPosition, t);
+                            recordable.playbackObject2.transform.localRotation = Quaternion.Lerp(previousFrame2.rootRotation, nextFrame2.rootRotation, t) * Quaternion.Euler(recordable.rotationCorrection);//Modify the rotation in the recorded data to add 180 degrees to the  axis
+
+                            //Fingers
+                            recordable.playbackObject2.GetComponent<HandPlaybackObjectScript>().interpolatePoseForAllFingerJoints(previousFrame2, nextFrame2, t);
+
+                            //Next frame
+                            recordable.playbackObject3.transform.localPosition = Vector3.Lerp(previousFrame3.rootPosition, nextFrame3.rootPosition, t);
+                            recordable.playbackObject3.transform.localRotation = Quaternion.Lerp(previousFrame3.rootRotation, nextFrame3.rootRotation, t) * Quaternion.Euler(recordable.rotationCorrection);//Modify the rotation in the recorded data to add 180 degrees to the  axis
+
+                            //Fingers
+                            recordable.playbackObject3.GetComponent<HandPlaybackObjectScript>().interpolatePoseForAllFingerJoints(previousFrame3, nextFrame3, t);
+                                                      
+                            
+                            //Focus Square
+                            recordable.playbackFocusSquare.transform.position = Vector3.Lerp(previousFrame.focusSquarePosition, nextFrame.focusSquarePosition, t);
+                            recordable.playbackFocusSquare.transform.rotation = Quaternion.Lerp(previousFrame.focusSquareRotation, nextFrame.focusSquareRotation, t);                            
 
                         }
                         else 
                         {
                             recordable.playbackObject.transform.localPosition = Vector3.Lerp(previousFrame.rootPosition, nextFrame.rootPosition, t);
                             recordable.playbackObject.transform.localRotation = Quaternion.Lerp(previousFrame.rootRotation, nextFrame.rootRotation, t) * Quaternion.Euler(recordable.rotationCorrection);//Modify the rotation in the recorded data to add 180 degrees to the  axis
+                            recordable.playbackFocusSquare.transform.position = Vector3.Lerp(previousFrame.focusSquarePosition, nextFrame.focusSquarePosition, t);
+                            recordable.playbackFocusSquare.transform.rotation = Quaternion.Lerp(previousFrame.focusSquareRotation, nextFrame.focusSquareRotation, t);
                         }
         
                     }

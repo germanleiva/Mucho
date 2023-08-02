@@ -15,7 +15,7 @@ public class AssetPoseRecorder : MonoBehaviour
 
     //public Recordable recordable; //Should be a list of recordables
 
-    public List <Recordable> recordables = new List<Recordable>();
+    public List <Recordable> recordableAssets = new List<Recordable>();
     
     public Recordable currentActiveRecordable;
 
@@ -109,7 +109,7 @@ public class AssetPoseRecorder : MonoBehaviour
             //float currentTime = Time.time - recordStartTime;
             float currentTime = mainRecorder.playbackSlider.value;
             
-            foreach (var recordable in recordables)
+            foreach (var recordable in recordableAssets)
             {
                 //DebugLogger.Instance.Log("Playing back " + recordable.playbackObject.name + " at " + currentTime);
                 // Find the two frames to interpolate between.
@@ -152,7 +152,7 @@ public class AssetPoseRecorder : MonoBehaviour
     public void enableGrabForAllAssets()
     {
         DebugLogger.Instance.Log("Enabling grab for all assets");
-        foreach (var recordable in recordables)
+        foreach (var recordable in recordableAssets)
         {
             DebugLogger.Instance.Log("Enabling grab for " + recordable.playbackObject.name);
             recordable.playbackObject.GetComponent<BoxCollider>().enabled = true;
@@ -162,7 +162,7 @@ public class AssetPoseRecorder : MonoBehaviour
     public void disableGrabForAllAssets()
     {
         DebugLogger.Instance.Log("Disabling grab for all assets");
-        foreach (var recordable in recordables)
+        foreach (var recordable in recordableAssets)
         {
             DebugLogger.Instance.Log("Disabling grab for " + recordable.playbackObject.name);
             recordable.playbackObject.GetComponent<BoxCollider>().enabled = false;
@@ -174,7 +174,7 @@ public class AssetPoseRecorder : MonoBehaviour
         DebugLogger.Instance.LogInVR("Spawned Sphere");
         GameObject obj = Instantiate(spherePrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
         obj.SetActive(true);
-        recordables.Add(obj.GetComponent<Recordable>());
+        recordableAssets.Add(obj.GetComponent<Recordable>());
         //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
     }
 
@@ -183,7 +183,7 @@ public class AssetPoseRecorder : MonoBehaviour
         DebugLogger.Instance.LogInVR("Spawned Cube");
         GameObject obj = Instantiate(cubePrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
         obj.SetActive(true);
-        recordables.Add(obj.GetComponent<Recordable>());
+        recordableAssets.Add(obj.GetComponent<Recordable>());
         //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
     }
    
