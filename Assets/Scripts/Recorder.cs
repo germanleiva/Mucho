@@ -54,7 +54,7 @@ public class Recorder : MonoBehaviour
         //currAppState = Manager.AppState.RECORD;
         rootPlaybackArea.SetActive(false);
         DebugLogger.Instance.Log("StartRecording");
-        AssetPoseRecorder.Instance.disableGrabForAllAssets();
+        AssetPoseRecorder.Instance.DisableGrabForAllAssets();
         foreach (var recordable in objectsToRecord)
         {
             recordable.ResetData();
@@ -93,7 +93,7 @@ public class Recorder : MonoBehaviour
         DebugLogger.Instance.Log("StopRecording");
         isRecording = false;
 
-        AssetPoseRecorder.Instance.enableGrabForAllAssets();
+        AssetPoseRecorder.Instance.EnableGrabForAllAssets();
 
         VisualizePath();
         StartPlayback();
@@ -244,10 +244,13 @@ public class Recorder : MonoBehaviour
             {
                 // Find the two frames to interpolate between.
                 //foreach (var data in recordable.recordedData) 
-                FindPrevandNextFrames(recordable.recordedData, currentTime, out RecordFrameData previousFrame, out RecordFrameData nextFrame);
-                FindPrevandNextFrames(recordable.recordedData, result[0], out RecordFrameData previousFrame2, out RecordFrameData nextFrame2);  
-                FindPrevandNextFrames(recordable.recordedData, result[1], out RecordFrameData previousFrame3, out RecordFrameData nextFrame3); 
-
+                RecordFrameData previousFrame = null, nextFrame = null, previousFrame2 = null, nextFrame2 = null, previousFrame3 = null, nextFrame3 = null;
+                FindPrevandNextFrames(recordable.recordedData, currentTime, out previousFrame, out nextFrame);
+                if(result.Count == 2)
+                {
+                    FindPrevandNextFrames(recordable.recordedData, result[0], out previousFrame2, out nextFrame2);  
+                    FindPrevandNextFrames(recordable.recordedData, result[1], out previousFrame3, out nextFrame3); 
+                }
                 if (recordable.playbackObject != null)
                 {
                     if (previousFrame != null && nextFrame != null)
@@ -264,20 +267,22 @@ public class Recorder : MonoBehaviour
                             //Fingers
                             recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().interpolatePoseForAllFingerJoints(previousFrame, nextFrame, t);
 
-                            //Next frame 
-                            recordable.playbackObject2.transform.localPosition = Vector3.Lerp(previousFrame2.rootPosition, nextFrame2.rootPosition, t);
-                            recordable.playbackObject2.transform.localRotation = Quaternion.Lerp(previousFrame2.rootRotation, nextFrame2.rootRotation, t) * Quaternion.Euler(recordable.rotationCorrection);//Modify the rotation in the recorded data to add 180 degrees to the  axis
+                            if(result.Count == 2)
+                            {
+                                //Next frame 
+                                recordable.playbackObject2.transform.localPosition = Vector3.Lerp(nextFrame2.rootPosition, nextFrame2.rootPosition, t);
+                                recordable.playbackObject2.transform.localRotation = Quaternion.Lerp(nextFrame2.rootRotation, nextFrame2.rootRotation, t) * Quaternion.Euler(recordable.rotationCorrection);//Modify the rotation in the recorded data to add 180 degrees to the  axis
 
-                            //Fingers
-                            recordable.playbackObject2.GetComponent<HandPlaybackObjectScript>().interpolatePoseForAllFingerJoints(previousFrame2, nextFrame2, t);
+                                //Fingers
+                                recordable.playbackObject2.GetComponent<HandPlaybackObjectScript>().interpolatePoseForAllFingerJoints(nextFrame2, nextFrame2, t);
 
-                            //Next frame
-                            recordable.playbackObject3.transform.localPosition = Vector3.Lerp(previousFrame3.rootPosition, nextFrame3.rootPosition, t);
-                            recordable.playbackObject3.transform.localRotation = Quaternion.Lerp(previousFrame3.rootRotation, nextFrame3.rootRotation, t) * Quaternion.Euler(recordable.rotationCorrection);//Modify the rotation in the recorded data to add 180 degrees to the  axis
+                                //Next frame
+                                recordable.playbackObject3.transform.localPosition = Vector3.Lerp(nextFrame3.rootPosition, nextFrame3.rootPosition, t);
+                                recordable.playbackObject3.transform.localRotation = Quaternion.Lerp(nextFrame3.rootRotation, nextFrame3.rootRotation, t) * Quaternion.Euler(recordable.rotationCorrection);//Modify the rotation in the recorded data to add 180 degrees to the  axis
 
-                            //Fingers
-                            recordable.playbackObject3.GetComponent<HandPlaybackObjectScript>().interpolatePoseForAllFingerJoints(previousFrame3, nextFrame3, t);
-                                                      
+                                //Fingers
+                                recordable.playbackObject3.GetComponent<HandPlaybackObjectScript>().interpolatePoseForAllFingerJoints(nextFrame3, nextFrame3, t);
+                            }                    
                             
                             //Focus Square
                             recordable.playbackFocusSquare.transform.position = Vector3.Lerp(previousFrame.focusSquarePosition, nextFrame.focusSquarePosition, t);

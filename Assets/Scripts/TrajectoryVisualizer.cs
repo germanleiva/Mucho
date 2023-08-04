@@ -10,6 +10,9 @@ public class TrajectoryVisualizer : MonoBehaviour
     public float mass = 0.01f;
     public int numberOfPoints = 10;
     public float timeInterval = 5f;
+    public bool isConnectedToAsset = false;
+    public Vector3 initialVelocity = new Vector3(0, 0, 0);
+    public GameObject connectedAsset;
 
     int layerMask = 1 << 6;
     
@@ -23,7 +26,7 @@ public class TrajectoryVisualizer : MonoBehaviour
         Vector3 direction = (position2 - position1);
 
         // Initial velocity is just the direction
-        Vector3 initialVelocity = direction * 10f;
+        initialVelocity = direction * 10f;
 
         // Set the number of points in the LineRenderer
         lineRenderer.positionCount = numberOfPoints;
@@ -69,11 +72,17 @@ public class TrajectoryVisualizer : MonoBehaviour
         Vector3 position = startPoint + initialVelocity * time + 0.5f * gravity * time * time;
         return position;
     }
+    bool makeThisHappenOnce = true;
 
     public void ArrowSelected()
     {
         DebugLogger.Instance.Log("Arrow selected");
-        DrawTrajectory();
+        if (isConnectedToAsset && makeThisHappenOnce)
+        {
+            //makeThisHappenOnce = false;
+            DrawTrajectory();
+            AssetPoseRecorder.Instance.RecordForceOnAsset(connectedAsset.GetComponent<Recordable>(), initialVelocity);
+        }
     }
 }
 

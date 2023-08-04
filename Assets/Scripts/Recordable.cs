@@ -47,9 +47,11 @@ public class Recordable : MonoBehaviour
     [Header("Recordable Ray and Focus squares")]
     public LineRenderer ray;
     public GameObject focusSquare;
+    public GameObject playbackFocusSquare; 
 
-    [Header("Playback")]
-    public GameObject playbackFocusSquare;    
+    [Header("Misc Properties")]
+    public bool showStatus = true;
+    public Vector3 appliedForce;
     
 
     private void Awake()
@@ -90,8 +92,7 @@ public class Recordable : MonoBehaviour
             if (Physics.Raycast(firstPoint, (secondPoint - firstPoint).normalized, out RaycastHit hit, 10, 1 << 6))        
             {
                 //hit.transform.gameObject.GetComponent<EnvironmentContext>().contextName;
-                //DebugLogger.Instance.Log("Hit something");
-                //GameObject decal = Instantiate(decalPrefab, hit.point, Quaternion.identity);
+
                 focusSquare.transform.position = hit.point;
                 //Raise the focus square by 0.01 units
                 focusSquare.transform.position += new Vector3(0, 0.01f, 0);
@@ -113,12 +114,16 @@ public class Recordable : MonoBehaviour
     {
         //If childObjectsToRecord is not empty, then record the position and rotation of each child object
         bool isNullOrEmpty = childObjectsToRecord?.Any() != true;
-        if(isNullOrEmpty == true)//Head
+        if(isNullOrEmpty == true)//Head or Assets
         { 
-            if(focusSquare != null)
-                recordedData.Add(new RecordFrameData(transform.localPosition, transform.localRotation, focusSquare.transform.position, focusSquare.transform.rotation, timestamp));
-            else
-                recordedData.Add(new RecordFrameData(transform.localPosition, transform.localRotation, timestamp));            
+            if(focusSquare != null)//Head
+            {
+                recordedData.Add(new RecordFrameData(transform.localPosition, transform.localRotation, focusSquare.transform.position, focusSquare.transform.rotation, timestamp));       
+            }
+            else //Assets
+            {
+                recordedData.Add(new RecordFrameData(transform.localPosition, transform.localRotation, showStatus, timestamp)); 
+            }           
         }
         else//Hands
         {   
@@ -200,13 +205,20 @@ public class RecordFrameData
     public Vector3 focusSquarePosition;
     public Quaternion focusSquareRotation;
 
-    public RecordFrameData(Vector3 _position, Quaternion _rotation, float _timestamp)
+    public bool currentShowStatus = true;
+
+    //public Vector3 force;
+
+    //Assets 
+    public RecordFrameData(Vector3 _position, Quaternion _rotation, bool _showStatus, float _timestamp) 
     {
         rootPosition = _position;
         rootRotation = _rotation;
+        currentShowStatus = _showStatus;
         timestamp = _timestamp;
     }
 
+    //Head
     public RecordFrameData(Vector3 _position, Quaternion _rotation, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, float _timestamp)
     {
         rootPosition = _position;
@@ -216,6 +228,7 @@ public class RecordFrameData
         timestamp = _timestamp;
     }
 
+    //Hands
     public RecordFrameData(Vector3 _position, Quaternion _rotation, GameObject _indexJoint0, GameObject _indexJoint1, GameObject _indexJoint2, GameObject _middleJoint0, GameObject _middleJoint1, GameObject _middleJoint2, GameObject _ringJoint0, GameObject _ringJoint1, GameObject _ringJoint2, GameObject _pinkyJoint0, GameObject _pinkyJoint1, GameObject _pinkyJoint2, GameObject _pinkyJoint3, GameObject _thumbJoint0, GameObject _thumbJoint1, GameObject _thumbJoint2, GameObject _thumbJoint3, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, float _timestamp)
     {
         rootPosition = _position;

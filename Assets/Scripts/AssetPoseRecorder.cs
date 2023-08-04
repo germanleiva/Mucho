@@ -30,7 +30,10 @@ public class AssetPoseRecorder : MonoBehaviour
     public GameObject spherePrefab;
     public GameObject cubePrefab;
     public GameObject cylinderPrefab;
+    public GameObject textAsset;
     public GameObject hmd;
+
+    public Material defaultMaterial, transparentMaterial;
     
     private void Awake()
     {
@@ -48,6 +51,72 @@ public class AssetPoseRecorder : MonoBehaviour
     void Start()
     {
         lastLocalPosition = transform.localPosition;
+    }
+
+    public void SetRigidbodyConstraints(Recordable recordable, bool setConstraints)
+    {
+        if(setConstraints)
+        {
+            recordable.playbackObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
+            recordable.playbackObject.GetComponent<Rigidbody>().useGravity = false;
+        }
+        else
+        {
+            recordable.playbackObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+            recordable.playbackObject.GetComponent<Rigidbody>().useGravity = true;
+        }
+    }
+
+    public void ApplyForce(Recordable recordable, Vector3 force)
+    {
+        DebugLogger.Instance.Log("Applying force to " + recordable.playbackObject.name);
+        //Reset rigidbody constraints
+        SetRigidbodyConstraints(recordable, false);
+        recordable.playbackObject.GetComponent<Rigidbody>().AddForce(force*0.01f, ForceMode.VelocityChange);
+    }
+
+    public void RecordForceOnAsset(Recordable recordable, Vector3 force)
+    {
+        
+        //Reset rigidbody constraints
+        //SetRigidbodyConstraints(recordable, true);
+        //recordable.playbackObject.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 5, ForceMode.VelocityChange);
+        if (isRecording)
+        {
+            DebugLogger.Instance.Log("Recorded force on " + recordable.playbackObject.name);
+            //recordable.appliedForce = force;
+            recordable.Record(mainRecorder.playbackSlider.value);
+        }
+        else
+        {
+            DebugLogger.Instance.Log("Recording off, could not record force on " + recordable.playbackObject.name);
+        }
+    }
+
+    public void Hide(Recordable recordable)
+    {
+        
+        //Turn the material in recordable.playbackObject to 0.5 alpha
+        recordable.playbackObject.GetComponent<MeshRenderer>().material = transparentMaterial;
+        recordable.showStatus = false;
+        if(isRecording)
+        {
+            DebugLogger.Instance.Log("Recorded hide for  " + recordable.playbackObject.name);
+            recordable.Record(mainRecorder.playbackSlider.value);
+        }
+    }
+
+    public void Show(Recordable recordable)
+    {
+        
+        //Turn the material in recordable.playbackObject to 1 alpha
+        recordable.playbackObject.GetComponent<MeshRenderer>().material = defaultMaterial;
+        recordable.showStatus = true;
+        if (isRecording)
+        {
+            DebugLogger.Instance.Log("Recorded show for " + recordable.playbackObject.name);
+            recordable.Record(mainRecorder.playbackSlider.value);
+        }
     }
 
     public void StartRecording(Recordable recordable)
@@ -80,6 +149,18 @@ public class AssetPoseRecorder : MonoBehaviour
         //mainRecorder.playbackSlider.value = 0;
     }
    
+   public float distanceFromHand = 0.0001f;
+   public float playbackSpeed = 0.003f;
+
+   public void SetPlaybackSpeed(float speed)
+    {
+         playbackSpeed = speed;
+    }
+
+    public void SetDistanceFromHand(float distance)
+    {
+        distanceFromHand = distance;
+    }
 
     private void Update()
     {
@@ -88,7 +169,7 @@ public class AssetPoseRecorder : MonoBehaviour
             //DebugLogger.Instance.Log("Current Position: " + currentActiveRecordable.playbackObject.transform.localPosition + " Last Recorded Position: " + lastLocalPosition);
             //Check if there is a difference between the current position and the last recorded position and if the difference is greater than 0.01 then record the current position
             //DebugLogger.Instance.Log("Distance: " + Vector3.Distance(currentActiveRecordable.playbackObject.transform.localPosition, lastLocalPosition));
-            if (Vector3.Distance(currentActiveRecordable.playbackObject.transform.localPosition, lastLocalPosition) > 0.0001f)            
+            if (Vector3.Distance(currentActiveRecordable.playbackObject.transform.localPosition, lastLocalPosition) > distanceFromHand)            
             {
                 
                 //print into debugger.instance.log both the current position and the last recorded position
@@ -97,7 +178,7 @@ public class AssetPoseRecorder : MonoBehaviour
                 //recordable.Record(Time.time - recordStartTime);
                 currentActiveRecordable.Record(mainRecorder.playbackSlider.value);
                 //Increment the slider value by a small value proportional to the total recording time
-                mainRecorder.playbackSlider.value += 0.003f;// / (mainRecorder.recordingDuration * 100);
+                mainRecorder.playbackSlider.value += playbackSpeed;// / (mainRecorder.recordingDuration * 100);
                 
             }
             lastLocalPosition = currentActiveRecordable.playbackObject.transform.localPosition;
@@ -136,7 +217,22 @@ public class AssetPoseRecorder : MonoBehaviour
                         float t = (currentTime - previousFrame.timestamp) / (nextFrame.timestamp - previousFrame.timestamp);
                         recordable.playbackObject.transform.localPosition = Vector3.Lerp(previousFrame.rootPosition, nextFrame.rootPosition, t);
                         recordable.playbackObject.transform.localRotation = Quaternion.Lerp(previousFrame.rootRotation, nextFrame.rootRotation, t) * Quaternion.Euler(recordable.rotationCorrection);//Modify the rotation in the recorded data to add 180 degrees to the  axis
-                                
+                        if (previousFrame.currentShowStatus)
+                        {
+                            //DebugLogger.Instance.Log("Playing back show for " + recordable.playbackObject.name);
+                            recordable.playbackObject.GetComponent<MeshRenderer>().material = defaultMaterial;
+                        }
+                        else
+                        {
+                            //DebugLogger.Instance.Log("Playing back hide for " + recordable.playbackObject.name);
+                            recordable.playbackObject.GetComponent<MeshRenderer>().material = transparentMaterial;
+                        } 
+
+                        /*if(nextFrame.force != Vector3.zero)
+                        {
+                            DebugLogger.Instance.Log("Playing back force " + nextFrame.force + " for " + recordable.playbackObject.name);
+                            ApplyForce(recordable, nextFrame.force);
+                        }*/
                     }
                     else if (previousFrame != null)
                     {
@@ -149,7 +245,7 @@ public class AssetPoseRecorder : MonoBehaviour
         }
     }
 
-    public void enableGrabForAllAssets()
+    public void EnableGrabForAllAssets()
     {
         DebugLogger.Instance.Log("Enabling grab for all assets");
         foreach (var recordable in recordableAssets)
@@ -159,7 +255,7 @@ public class AssetPoseRecorder : MonoBehaviour
         }
     }
 
-    public void disableGrabForAllAssets()
+    public void DisableGrabForAllAssets()
     {
         DebugLogger.Instance.Log("Disabling grab for all assets");
         foreach (var recordable in recordableAssets)
@@ -182,6 +278,15 @@ public class AssetPoseRecorder : MonoBehaviour
     {
         DebugLogger.Instance.LogInVR("Spawned Cube");
         GameObject obj = Instantiate(cubePrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
+        obj.SetActive(true);
+        recordableAssets.Add(obj.GetComponent<Recordable>());
+        //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
+    }
+
+    public void SpawnText()
+    {
+        DebugLogger.Instance.LogInVR("Spawned Text");
+        GameObject obj = Instantiate(textAsset, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
         obj.SetActive(true);
         recordableAssets.Add(obj.GetComponent<Recordable>());
         //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
