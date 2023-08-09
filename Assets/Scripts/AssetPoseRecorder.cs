@@ -294,6 +294,15 @@ public class AssetPoseRecorder : MonoBehaviour
         //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
     }
 
+    public void SpawnSphere(Transform target)
+    {
+        DebugLogger.Instance.LogInVR("Spawned Sphere");
+        GameObject obj = Instantiate(spherePrefab, target.position, Quaternion.identity);
+        obj.SetActive(true);
+        recordableAssets.Add(obj.GetComponentInChildren<Recordable>());
+        //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
+    }
+
     public void SpawnCube()
     {
         DebugLogger.Instance.LogInVR("Spawned Cube");
@@ -303,10 +312,28 @@ public class AssetPoseRecorder : MonoBehaviour
         //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
     }
 
+    public void SpawnCube(Transform target)
+    {
+        DebugLogger.Instance.LogInVR("Spawned Cube");
+        GameObject obj = Instantiate(cubePrefab, target.position, Quaternion.identity);
+        obj.SetActive(true);
+        recordableAssets.Add(obj.GetComponentInChildren<Recordable>());
+        //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
+    }
+
     public void SpawnText()
     {
         DebugLogger.Instance.LogInVR("Spawned Text");
         GameObject obj = Instantiate(textAsset, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
+        obj.SetActive(true);
+        recordableAssets.Add(obj.GetComponentInChildren<Recordable>());
+        //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
+    }
+
+    public void SpawnText(Transform target)
+    {
+        DebugLogger.Instance.LogInVR("Spawned Text");
+        GameObject obj = Instantiate(textAsset, target.position, Quaternion.identity);
         obj.SetActive(true);
         recordableAssets.Add(obj.GetComponentInChildren<Recordable>());
         //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);

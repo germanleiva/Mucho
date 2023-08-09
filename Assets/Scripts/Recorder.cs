@@ -8,7 +8,9 @@ public class Recorder : MonoBehaviour
 {
 
     [Header("Record & Playback")]
-    public GameObject rootPlaybackArea, playbackUI;
+    public GameObject rootPlaybackArea;
+    //public GameObject playbackUI;
+    public GameObject controlUI;
     public Slider playbackSlider;
     public Recordable[] objectsToRecord;
     private bool isRecording = false;
@@ -195,11 +197,43 @@ public class Recorder : MonoBehaviour
         //playbackUI.SetActive(true);        
     }
 
-    public void DetachMainMenu()
+    public void DetachFromAllParents(Transform transform)
     {
-        DebugLogger.Instance.Log("Detach Main Menu");
-
+        transform.SetParent(null);
+        DebugLogger.Instance.Log("Detached " + transform.name + " from all parents");
+        //controlUI.transform.SetParent(null);
     }
+
+    public void CreateCopyOfObject(GameObject obj)
+    {
+        GameObject newObj = Instantiate(obj);
+        newObj.transform.SetParent(obj.transform.parent);
+        newObj.transform.localPosition = obj.transform.localPosition;
+        newObj.transform.localRotation = obj.transform.localRotation;
+        newObj.transform.localScale = obj.transform.localScale;
+        newObj.name = obj.name + "Copy";
+        DetachFromAllParents(obj.transform);
+    }
+
+    public void DestroyCopyAndSpawnSphere(GameObject obj)
+    {
+        if(obj.name.StartsWith("Sphere"))
+        {
+            AssetPoseRecorder.Instance.SpawnSphere(obj.transform);
+        }
+        Destroy(obj);
+    }
+
+    public void DestroyCopyAndSpawnCube(GameObject obj)
+    {
+        if(obj.name.StartsWith("Cube"))
+        {
+            AssetPoseRecorder.Instance.SpawnCube(obj.transform);
+        }
+        Destroy(obj);
+    }
+    
+
 
     private void FindPrevandNextFrames(List<RecordFrameData> recordedData, float currentTime, out RecordFrameData previousFrame, out RecordFrameData nextFrame)
     {
