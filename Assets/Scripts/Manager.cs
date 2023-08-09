@@ -71,19 +71,6 @@ public class Manager : MonoBehaviour
         leftHandMenu.SetActive(false);
     }
 
-    public void CreateForceArrow()
-    {
-        //GameObject obj = Instantiate(cubePrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
-        GameObject forceArrow = Instantiate(forceArrowPrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
-        forceArrow.SetActive(true);
-    }
-
-    public void CreateTextAsset()
-    {
-        GameObject textAsset = Instantiate(textAssetPrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
-        textAsset.SetActive(true);
-    }
-
 }
 
 

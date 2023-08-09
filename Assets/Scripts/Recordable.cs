@@ -6,9 +6,10 @@ using UnityEngine;
 //[RequireComponent(typeof(LineRenderer))]
 public class Recordable : MonoBehaviour
 {
-    public GameObject playbackObject, playbackObject2, playbackObject3;
-    public SkinnedMeshRenderer playbackObject2Renderer, playbackObject3Renderer;
+    public GameObject playbackObject, playbackObject2, playbackObject3, playbackObject4, playbackObject5;
+    public SkinnedMeshRenderer playbackObject2Renderer, playbackObject3Renderer, playbackObject4Renderer, playbackObject5Renderer;
     public List<RecordFrameData> recordedData = new List<RecordFrameData>();
+    public Collider grabCollider;
     //public GameObject lineObject;
     //private LineRenderer lineRenderer;
     //private LineRendererSmoother lineRendererSmoother;
@@ -52,6 +53,10 @@ public class Recordable : MonoBehaviour
     [Header("Misc Properties")]
     public bool showStatus = true;
     public Vector3 appliedForce;
+    public ForceArrow forceArrow;
+    public TMPro.TMP_Text playbackGestureText;
+    public GestureManager.Gesture currentGesture;
+    //public GestureManager.Gesture currentRightHandGesture = GestureManager.Gesture.RIGHTHANDNONE;
     
 
     private void Awake()
@@ -63,6 +68,8 @@ public class Recordable : MonoBehaviour
         {
             SetOpacity(playbackObject2Renderer, 0.25f);
             SetOpacity(playbackObject3Renderer, 0.15f);
+            SetOpacity(playbackObject4Renderer, 0.1f);
+            SetOpacity(playbackObject5Renderer, 0.05f);
         }
     }
 
@@ -84,30 +91,87 @@ public class Recordable : MonoBehaviour
     {
         if(focusSquare != null)
         {
-            Vector3 firstPoint = ray.transform.TransformPoint(ray.GetPosition(0));
-            Vector3 secondPoint = ray.transform.TransformPoint(ray.GetPosition(1));
-            
-            //Raycast from ray starting point, in the direction of the ray to intersect with layer 6
-            //Debug.DrawRay(firstPoint, (secondPoint - firstPoint).normalized * 100, Color.blue);
-            if (Physics.Raycast(firstPoint, (secondPoint - firstPoint).normalized, out RaycastHit hit, 10, 1 << 6))        
+            if(Manager.Instance.currAppState != Manager.AppState.PLAYBACK)
             {
-                //hit.transform.gameObject.GetComponent<EnvironmentContext>().contextName;
+                focusSquare.SetActive(true);
+                Vector3 firstPoint = ray.transform.TransformPoint(ray.GetPosition(0));
+                Vector3 secondPoint = ray.transform.TransformPoint(ray.GetPosition(1));
+                
+                //Raycast from ray starting point, in the direction of the ray to intersect with layer 6
+                //Debug.DrawRay(firstPoint, (secondPoint - firstPoint).normalized * 100, Color.blue);
+                if (Physics.Raycast(firstPoint, (secondPoint - firstPoint).normalized, out RaycastHit hit, 10, 1 << 6))        
+                {
+                    //hit.transform.gameObject.GetComponent<EnvironmentContext>().contextName;
 
-                focusSquare.transform.position = hit.point;
-                //Raise the focus square by 0.01 units
-                focusSquare.transform.position += new Vector3(0, 0.01f, 0);
-                focusSquare.transform.forward = hit.normal;
-                // Rotate 180 degrees around the Y-axis
-                focusSquare.transform.rotation *= Quaternion.Euler(0, 180, 180);
+                    focusSquare.transform.position = hit.point;
+                    //Raise the focus square by 0.01 units
+                    focusSquare.transform.position += new Vector3(0, 0.01f, 0);
+                    focusSquare.transform.forward = hit.normal;
+                    // Rotate 180 degrees around the Y-axis
+                    focusSquare.transform.rotation *= Quaternion.Euler(0, 180, 180);
+                }
+                else
+                {
+
+                    focusSquare.transform.position = Vector3.zero;
+                    focusSquare.transform.rotation = Quaternion.identity;
+                }
             }
             else
             {
-
-                focusSquare.transform.position = Vector3.zero;
-                focusSquare.transform.rotation = Quaternion.identity;
+                focusSquare.SetActive(false);
             }
         }
     }
+
+    public void InsertAssetRecordFrame(float _timestamp, bool propagateValueToSubsequentFrames = false)
+    {
+        //Print timestamps of first and last recorded frames
+        /*if (recordedData.Count > 0)
+        {
+            DebugLogger.Instance.Log("First recorded frame timestamp: " + recordedData[0].timestamp);
+            DebugLogger.Instance.Log("Last recorded frame timestamp: " + recordedData[recordedData.Count - 1].timestamp);
+        }
+        else
+        {
+            DebugLogger.Instance.Log("No recorded frames");
+        }*/
+        RecordFrameData item = new(transform.localPosition, transform.localRotation, showStatus, _timestamp);
+        int index = recordedData.BinarySearch(item, Comparer<RecordFrameData>.Create((x, y) => x.timestamp.CompareTo(y.timestamp)));
+        if (index < 0)
+        {
+            DebugLogger.Instance.Log("Item not found at _timestamp " + _timestamp + ", inserting at index " + ~index);
+            index = ~index; // if item is not found, BinarySearch returns the bitwise complement of the insert point
+            //recordedData.Insert(index, item);
+        }
+        else //copy the contents of item into the right position
+        {
+            DebugLogger.Instance.Log("Item found at _timestamp " + _timestamp + ", inserting at index " + index);
+            
+        }
+        if(index >= recordedData.Count)
+        {
+            DebugLogger.Instance.Log("Index exceeds count, inserting asset record frame at index " + index);
+            recordedData.Add(item);
+        }
+        else
+        {
+            recordedData[index] = item;
+        }
+        //recordedData[index] = item;
+        //DebugLogger.Instance.Log("Inserting asset record frame at index " + index);
+
+        if (propagateValueToSubsequentFrames) // Propagate the value to subsequent frames
+        {
+            for (int i = index + 1; i < recordedData.Count; i++)
+            {
+                recordedData[i].showStatusForThisFrame = item.showStatusForThisFrame;
+                recordedData[i].rootPosition = item.rootPosition;
+                recordedData[i].rootRotation = item.rootRotation;
+            }
+        }
+    }
+
 
     // Record the current state.
     public void Record(float timestamp)
@@ -122,7 +186,8 @@ public class Recordable : MonoBehaviour
             }
             else //Assets
             {
-                recordedData.Add(new RecordFrameData(transform.localPosition, transform.localRotation, showStatus, timestamp)); 
+                //recordedData.Add(new RecordFrameData(transform.localPosition, transform.localRotation, showStatus, timestamp)); 
+                //Insert recordframedata object into recordeddata list for a specific timestamp
             }           
         }
         else//Hands
@@ -133,7 +198,7 @@ public class Recordable : MonoBehaviour
                 ringJoint1, ringJoint2, ringJoint3, 
                 pinkyJoint0, pinkyJoint1, pinkyJoint2, pinkyJoint3, 
                 thumbJoint0, thumbJoint1, thumbJoint2, thumbJoint3, 
-                focusSquare.transform.position, focusSquare.transform.rotation, timestamp));
+                focusSquare.transform.position, focusSquare.transform.rotation, currentGesture, timestamp));
         }
     }
 
@@ -147,24 +212,11 @@ public class Recordable : MonoBehaviour
         }*/
     }
 
-    // Visualize the path with lines.
-    /*public void VisualizePath()
+    //OnCollisionEnter
+    void OnCollisionEnter(Collision collision)
     {
-        if (lineRenderer != null)
-        {
-            lineRenderer.positionCount = recordedData.Count;
-            for (int i = 0; i < recordedData.Count; i++)
-            {
-                lineRenderer.SetPosition(i, recordedData[i].rootPosition);
-            }
-        }
-        if (lineRendererSmoother != null)
-        {
-                
-            lineRendererSmoother.SimplifyAndSmooth();            
-            //lineRendererSmoother.GenerateMeshCollider();
-        }
-    }*/
+        DebugLogger.Instance.Log("Collision detected between " + gameObject.name + " and " + collision.collider.name);
+    }
 }
 
 public class FingerJoint
@@ -192,9 +244,6 @@ public class RecordFrameData
     public Quaternion rootRotation;
     public float timestamp;
 
-    //public Vector3 indexFinger1Pos, middleFingerPos, ringFingerPos, pinkyFingerPos, thumbFingerPos;
-    //public Quaternion indexFingerRot, middleFingerRot, ringFingerRot, pinkyFingerRot, thumbFingerRot;
-
     public FingerJoint indexJoint1, indexJoint2, indexJoint3;
     public FingerJoint middleJoint1, middleJoint2, middleJoint3;
     public FingerJoint ringJoint1, ringJoint2, ringJoint3;
@@ -205,7 +254,8 @@ public class RecordFrameData
     public Vector3 focusSquarePosition;
     public Quaternion focusSquareRotation;
 
-    public bool currentShowStatus = true;
+    public bool showStatusForThisFrame = true;
+    public GestureManager.Gesture gesture;
 
     //public Vector3 force;
 
@@ -214,7 +264,7 @@ public class RecordFrameData
     {
         rootPosition = _position;
         rootRotation = _rotation;
-        currentShowStatus = _showStatus;
+        showStatusForThisFrame = _showStatus;
         timestamp = _timestamp;
     }
 
@@ -229,7 +279,7 @@ public class RecordFrameData
     }
 
     //Hands
-    public RecordFrameData(Vector3 _position, Quaternion _rotation, GameObject _indexJoint0, GameObject _indexJoint1, GameObject _indexJoint2, GameObject _middleJoint0, GameObject _middleJoint1, GameObject _middleJoint2, GameObject _ringJoint0, GameObject _ringJoint1, GameObject _ringJoint2, GameObject _pinkyJoint0, GameObject _pinkyJoint1, GameObject _pinkyJoint2, GameObject _pinkyJoint3, GameObject _thumbJoint0, GameObject _thumbJoint1, GameObject _thumbJoint2, GameObject _thumbJoint3, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, float _timestamp)
+    public RecordFrameData(Vector3 _position, Quaternion _rotation, GameObject _indexJoint0, GameObject _indexJoint1, GameObject _indexJoint2, GameObject _middleJoint0, GameObject _middleJoint1, GameObject _middleJoint2, GameObject _ringJoint0, GameObject _ringJoint1, GameObject _ringJoint2, GameObject _pinkyJoint0, GameObject _pinkyJoint1, GameObject _pinkyJoint2, GameObject _pinkyJoint3, GameObject _thumbJoint0, GameObject _thumbJoint1, GameObject _thumbJoint2, GameObject _thumbJoint3, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, GestureManager.Gesture  _gesture, float _timestamp)
     {
         rootPosition = _position;
         rootRotation = _rotation;
@@ -259,8 +309,11 @@ public class RecordFrameData
         focusSquarePosition = _focusSquarePosition;
         focusSquareRotation = _focusSquareRotation;
 
+        gesture = _gesture;
+
         timestamp = _timestamp;
     }
+
 }
 
 /*public class CustomGesture

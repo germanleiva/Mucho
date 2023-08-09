@@ -56,7 +56,7 @@ public class HandPlaybackObjectScript : MonoBehaviour
         joint.transform.localRotation = Quaternion.Lerp(previousFrameJoint.rotation, nextFrameJoint.rotation, t);
     }
 
-    public void interpolatePoseForAllFingerJoints(RecordFrameData previousFrame, RecordFrameData nextFrame, float t)
+    public void InterpolatePoseForAllFingerJoints(RecordFrameData previousFrame, RecordFrameData nextFrame, float t)
     {
         LerpBetweenFrames(indexJoint1.transform, previousFrame.indexJoint1, nextFrame.indexJoint1, t);
         LerpBetweenFrames(indexJoint2.transform, previousFrame.indexJoint2, nextFrame.indexJoint2, t);
@@ -82,7 +82,7 @@ public class HandPlaybackObjectScript : MonoBehaviour
     }
 
 
-    /*public void interpolatePoseForAllFingerJoints(TransformData previousFrame, TransformData nextFrame, float t)
+    /*public void I(TransformData previousFrame, TransformData nextFrame, float t)
     {
         indexJoint1.transform.localPosition = Vector3.Lerp(previousFrame.indexJoint1.position, nextFrame.indexJoint1.position, t);
         indexJoint1.transform.localRotation = Quaternion.Lerp(previousFrame.indexJoint1.rotation, nextFrame.indexJoint1.rotation, t);

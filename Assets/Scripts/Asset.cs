@@ -5,6 +5,7 @@ using UnityEngine;
 public class Asset : MonoBehaviour
 {
     public GameObject AssetMenu;
+    
     // Start is called before the first frame update
 
     void Awake()

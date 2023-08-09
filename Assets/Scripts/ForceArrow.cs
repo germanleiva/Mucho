@@ -2,8 +2,22 @@ using UnityEngine;
 
 public class ForceArrow : MonoBehaviour
 {
-    public Transform ArrowEnd;
-    public Transform ArrowBody;
+    public Transform asset;
+    public Transform arrowHead;
+    public Transform arrowBody;
+    public LineRenderer lineRenderer;
+    public float mass = 0.01f;
+    public int numberOfPoints = 10;
+    public float timeInterval = 0.5f;
+    public bool isConnectedToAsset = false;
+    public Vector3 initialVelocity = new Vector3(0, 0, 0);
+    public GameObject connectedAsset;
+    public Material arrowTranslucentMaterial;
+
+    int layerMask = 1 << 6;
+    Vector3 previousArrowHeadPosition;
+
+    //public Transform ArrowEnd;
 
 
     //TODO: Make this event driven from grab
@@ -12,35 +26,116 @@ public class ForceArrow : MonoBehaviour
         // Position and Scale the cylinder
         PositionAndScaleCylinder();
 
-        // Rotate the arrow to point towards object1
+        // Rotate the arrow to point towards asset
         ReOrientArrow();
+
+        //Call DrawTrajectory() when the current position of arrowHead is different from the previous position
+        if ((arrowHead.position-previousArrowHeadPosition).magnitude > 0.0001f)
+        {
+            DrawTrajectory();
+        }
+        previousArrowHeadPosition = arrowHead.position;
+        
     }
 
     private void PositionAndScaleCylinder()
     {
         // Position the cylinder
-        ArrowBody.position = Vector3.Lerp(ArrowEnd.position, transform.position, 0.5f);
+        arrowBody.position = Vector3.Lerp(asset.position, arrowHead.position, 0.5f);
 
         // Scale the cylinder
-        float distance = Vector3.Distance(ArrowEnd.position, transform.position);
-        ArrowBody.localScale = new Vector3(ArrowBody.localScale.x, distance / 2, ArrowBody.localScale.z);
+        float distance = Vector3.Distance(asset.position, arrowHead.position);
+        arrowBody.localScale = new Vector3(arrowBody.localScale.x, distance / 2, arrowBody.localScale.z);
 
         // Rotate the cylinder
-        Vector3 direction = transform.position - ArrowEnd.position;
+        Vector3 direction = arrowHead.position - asset.position;
         Quaternion rotation = Quaternion.FromToRotation(Vector3.up, direction);
-        ArrowBody.rotation = rotation;
+        arrowBody.rotation = rotation;
     }
 
     private void ReOrientArrow()
     {
-        // Calculate the direction from object1 to the arrow (this)
-        Vector3 direction = transform.position - ArrowEnd.position;
+        // Calculate the direction from asset to the arrow (this)
+        Vector3 direction = arrowHead.position - asset.position;
 
         // Calculate the rotation to align the arrow with this direction
         Quaternion rotation = Quaternion.FromToRotation(Vector3.up, direction);
 
         // Apply the rotation to the arrow
-        transform.rotation = rotation;
+        arrowHead.rotation = rotation;
     }
+    
+
+    public void DrawTrajectory()
+    {
+        lineRenderer.enabled = true;
+        
+        Vector3 position1 = asset.position;
+        DebugLogger.Instance.Log("Arrow end position: " + position1);
+        Vector3 position2 = arrowHead.position;
+        DebugLogger.Instance.Log("Arrow head position: " + position2);
+        Vector3 direction = (position2 - position1);
+
+        // Initial velocity is just the direction
+        initialVelocity = direction * 10f;
+
+        // Set the number of points in the LineRenderer
+        lineRenderer.positionCount = numberOfPoints;
+
+        // Initialize the previous point position to the start point
+        Vector3 previousPointPosition = position1;
+
+        // Calculate and set the position of each point in the trajectory
+        for (int i = 0; i < numberOfPoints; i++)
+        {
+            float t = i * timeInterval;
+            Vector3 pointPosition = CalculateTrajectoryPoint(position1, initialVelocity, t);
+
+            // Perform raycast from the previous point to the current point
+            Vector3 raycastDirection = (pointPosition - previousPointPosition).normalized;
+            float raycastDistance = Vector3.Distance(pointPosition, previousPointPosition);
+
+            if (Physics.Raycast(previousPointPosition, raycastDirection, raycastDistance, layerMask))
+            {
+                DebugLogger.Instance.Log("Hit surface, stopping trajectory generation");
+                // If there is a hit, set the number of points to i + 1 (since i starts from 0)
+                lineRenderer.positionCount = i + 1;
+
+                // Set the current point in the LineRenderer and then break
+                lineRenderer.SetPosition(i, pointPosition);
+                break;
+            }
+            else
+            {
+                DebugLogger.Instance.Log("No hit, continuing trajectory generation");
+                // If there is no hit, set the current point in the LineRenderer
+                lineRenderer.SetPosition(i, pointPosition);
+
+                // Update the previous point position
+                previousPointPosition = pointPosition;
+            }
+        }
+    }
+
+    private Vector3 CalculateTrajectoryPoint(Vector3 startPoint, Vector3 initialVelocity, float time)
+    {
+        Vector3 gravity = Physics.gravity;
+        Vector3 position = startPoint + initialVelocity * time + 0.5f * gravity * time * time;
+        return position;
+    }
+
+
+    public void ThrowAsset()
+    {
+        GameObject throwableAsset = Instantiate(asset.gameObject, asset.position, asset.rotation);
+        throwableAsset.GetComponent<MeshRenderer>().material = arrowTranslucentMaterial;
+        throwableAsset.GetComponent<Rigidbody>().mass = 0f;
+        throwableAsset.GetComponent<Collider>().isTrigger = false;
+        throwableAsset.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        throwableAsset.GetComponent<Rigidbody>().useGravity = true;
+        throwableAsset.GetComponent<Rigidbody>().AddForce(initialVelocity, ForceMode.VelocityChange);
+
+    }
+
 }
 
