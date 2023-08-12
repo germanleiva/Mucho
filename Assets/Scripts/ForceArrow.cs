@@ -10,11 +10,11 @@ public class ForceArrow : MonoBehaviour
     public int numberOfPoints = 10;
     public float timeInterval = 0.5f;
     public bool isConnectedToAsset = false;
-    public Vector3 initialVelocity = new Vector3(0, 0, 0);
+    public Vector3 initialVelocity = new(0, 0, 0);
     public GameObject connectedAsset;
     public Material arrowTranslucentMaterial;
 
-    int layerMask = 1 << 6;
+    readonly int layerMask = 1 << 6;
     Vector3 previousArrowHeadPosition;
 
     //public Transform ArrowEnd;
@@ -23,22 +23,25 @@ public class ForceArrow : MonoBehaviour
     //TODO: Make this event driven from grab
     void Update()
     {
-        // Position and Scale the cylinder
-        PositionAndScaleCylinder();
-
-        // Rotate the arrow to point towards asset
-        ReOrientArrow();
-
         //Call DrawTrajectory() when the current position of arrowHead is different from the previous position
         if ((arrowHead.position-previousArrowHeadPosition).magnitude > 0.0001f)
         {
+            ReOrientArrow();
             DrawTrajectory();
         }
-        previousArrowHeadPosition = arrowHead.position;
-        
+        previousArrowHeadPosition = arrowHead.position;        
     }
 
-    private void PositionAndScaleCylinder()
+    public void ReOrientArrow()
+    {
+        // Position and Scale the cylinder
+        PositionAndScaleArrowBody();
+
+        // Rotate the arrow to point towards asset
+        ReOrientArrowHead();
+    }
+
+    private void PositionAndScaleArrowBody()
     {
         // Position the cylinder
         arrowBody.position = Vector3.Lerp(asset.position, arrowHead.position, 0.5f);
@@ -53,7 +56,7 @@ public class ForceArrow : MonoBehaviour
         arrowBody.rotation = rotation;
     }
 
-    private void ReOrientArrow()
+    private void ReOrientArrowHead()
     {
         // Calculate the direction from asset to the arrow (this)
         Vector3 direction = arrowHead.position - asset.position;
@@ -120,20 +123,41 @@ public class ForceArrow : MonoBehaviour
     private Vector3 CalculateTrajectoryPoint(Vector3 startPoint, Vector3 initialVelocity, float time)
     {
         Vector3 gravity = Physics.gravity;
-        Vector3 position = startPoint + initialVelocity * time + 0.5f * gravity * time * time;
+        Vector3 position = startPoint + initialVelocity * time + 0.5f * time * time * gravity;
         return position;
+    }
+
+    public void HideTrajectoryAndArrow()
+    {
+        lineRenderer.enabled = false;
+        arrowHead.gameObject.SetActive(false);
+        arrowBody.gameObject.SetActive(false);
+    }
+
+    public void ShowTrajectoryAndArrow()
+    {
+        lineRenderer.enabled = true;
+        arrowHead.gameObject.SetActive(true);
+        arrowBody.gameObject.SetActive(true);
     }
 
 
     public void ThrowAsset()
     {
-        GameObject throwableAsset = Instantiate(asset.gameObject, asset.position, asset.rotation);
+        /*GameObject throwableAsset = Instantiate(asset.gameObject, asset.position, asset.rotation);
         throwableAsset.GetComponent<MeshRenderer>().material = arrowTranslucentMaterial;
         throwableAsset.GetComponent<Rigidbody>().mass = 0f;
         throwableAsset.GetComponent<Collider>().isTrigger = false;
         throwableAsset.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
         throwableAsset.GetComponent<Rigidbody>().useGravity = true;
-        throwableAsset.GetComponent<Rigidbody>().AddForce(initialVelocity, ForceMode.VelocityChange);
+        throwableAsset.GetComponent<Rigidbody>().AddForce(initialVelocity, ForceMode.VelocityChange);*/
+
+
+        GameObject throwableAsset = asset.gameObject;
+        throwableAsset.GetComponent<Recordable>().ApplyForce(initialVelocity);
+
+        //throwableAsset.GetComponent<MeshRenderer>().material = arrowTranslucentMaterial;
+
 
     }
 

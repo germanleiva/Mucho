@@ -8,7 +8,15 @@ public class TextAsset : MonoBehaviour
     //textmesh pro text object
     public TMP_Text text;
     public TMP_InputField inputField;
+
+    public GameObject AssetMenu;
     // Start is called before the first frame update
+    
+    void Awake()
+    {
+        AssetMenu.SetActive(false);
+    }
+
     void Start()
     {
         
@@ -18,5 +26,10 @@ public class TextAsset : MonoBehaviour
     {
         DebugLogger.Instance.Log("Copying text from input field");
         text.text = inputField.text;
+    }
+
+    public void ToggleAssetMenu()
+    {
+        AssetMenu.SetActive(!AssetMenu.activeSelf);
     }
 }

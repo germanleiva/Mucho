@@ -13,8 +13,8 @@ public class Recorder : MonoBehaviour
     public GameObject controlUI;
     public Slider playbackSlider;
     public Recordable[] objectsToRecord;
-    private bool isRecording = false;
-    private bool isPlayingBack = false;
+    public bool isMainRecordingOn = false;
+    public bool isMainPlaybackOn = false;
     public float recordStartTime;
     public float recordingDuration;
 
@@ -24,7 +24,7 @@ public class Recorder : MonoBehaviour
 
     private bool isAutomaticPlayback = false;
 
-    List<float> handGuideTimePoints = new List<float>();
+    readonly List<float> handGuideTimePoints = new();
 
     void Awake()
     {
@@ -43,22 +43,13 @@ public class Recorder : MonoBehaviour
 
     void initialize()
     {
-        //currAppState = Manager.AppState.NONE;
         rootPlaybackArea.SetActive(false);
-        //playbackUI.SetActive(false);
-        //DebugLogger.Instance.Log("Initialize");
-        //foreach (var recordable in objectsToRecord)
-        //{
-        //    recordable.ResetData();
-        //}
-        //isRecording = false;
-        //isPlayingBack = false;
     }
 
     // Start recording.
     public void StartRecording()
     {
-        //currAppState = Manager.AppState.RECORD;
+        Manager.Instance.currAppState = Manager.AppState.RECORDING;
         rootPlaybackArea.SetActive(false);
         DebugLogger.Instance.Log("StartRecording");
         AssetPoseRecorder.Instance.DisableGrabForAllAssets();
@@ -66,7 +57,7 @@ public class Recorder : MonoBehaviour
         {
             recordable.ResetData();
         }
-        isRecording = true;
+        isMainRecordingOn = true;
         recordStartTime = Time.time;
     }
 
@@ -85,8 +76,8 @@ public class Recorder : MonoBehaviour
             //recordable.lineObject.GetComponent<LineRenderer>().enabled = false;            
             recordable.ResetData();
         }
-        isRecording = false;
-        isPlayingBack = false;
+        isMainRecordingOn = false;
+        isMainPlaybackOn = false;
         isAutomaticPlayback = false;
     }
 
@@ -97,8 +88,8 @@ public class Recorder : MonoBehaviour
         DebugLogger.Instance.Log("Size of recordedData head: " + objectsToRecord[0].recordedData.Count);
         DebugLogger.Instance.Log("Size of recordedData leftHand: " + objectsToRecord[1].recordedData.Count);
         DebugLogger.Instance.Log("Size of recordedData rightHand: " + objectsToRecord[2].recordedData.Count);
-        DebugLogger.Instance.Log("StopRecording");
-        isRecording = false;
+
+        isMainRecordingOn = false;
 
         AssetPoseRecorder.Instance.EnableGrabForAllAssets();
 
@@ -124,7 +115,7 @@ public class Recorder : MonoBehaviour
     {
         try
         {
-            if (isRecording) return; // Don't allow playback while recording.
+            if (isMainRecordingOn) return; // Don't allow playback while recording.
             Manager.Instance.currAppState = Manager.AppState.PLAYBACK;    
             DebugLogger.Instance.Log("StartPlayback");
             // Determine the duration of the recording.
@@ -148,8 +139,9 @@ public class Recorder : MonoBehaviour
             playbackSlider.maxValue = duration;
             playbackSlider.value = 0f;
             recordingDuration = duration;
+            DebugLogger.Instance.Log("Duration of recording: " + recordingDuration);
 
-            isPlayingBack = true;
+            isMainPlaybackOn = true;
             isAutomaticPlayback = false;
             recordStartTime = Time.time;
             CalculateHandGuideTimePoints();
@@ -178,7 +170,7 @@ public class Recorder : MonoBehaviour
     public void StopPlayback()
     {
         DebugLogger.Instance.Log("StopPlayback");
-        isPlayingBack = false;
+        isMainPlaybackOn = false;
     }
 
     public void SetTestMode()
@@ -187,14 +179,6 @@ public class Recorder : MonoBehaviour
         Manager.Instance.currAppState = Manager.AppState.TEST;
         rootPlaybackArea.SetActive(false);
         //playbackUI.SetActive(false);
-    }
-
-    public void SetRecordMode()
-    {
-        DebugLogger.Instance.Log("Set Record Mode");
-        Manager.Instance.currAppState = Manager.AppState.RECORDING;
-        rootPlaybackArea.SetActive(false);
-        //playbackUI.SetActive(true);        
     }
 
     public void DetachFromAllParents(Transform transform)
@@ -215,26 +199,23 @@ public class Recorder : MonoBehaviour
         DetachFromAllParents(obj.transform);
     }
 
-    public void DestroyCopyAndSpawnSphere(GameObject obj)
+    public void DestroyCopyAndSpawnAsset(GameObject obj)
     {
         if(obj.name.StartsWith("Sphere"))
         {
             AssetPoseRecorder.Instance.SpawnSphere(obj.transform);
         }
-        Destroy(obj);
-    }
-
-    public void DestroyCopyAndSpawnCube(GameObject obj)
-    {
-        if(obj.name.StartsWith("Cube"))
+        else if(obj.name.StartsWith("Cube"))
         {
             AssetPoseRecorder.Instance.SpawnCube(obj.transform);
         }
+        else if(obj.name.StartsWith("Text"))
+        {
+            AssetPoseRecorder.Instance.SpawnText(obj.transform);
+        }
         Destroy(obj);
     }
-    
-
-
+ 
     private void FindPrevandNextFrames(List<RecordFrameData> recordedData, float currentTime, out RecordFrameData previousFrame, out RecordFrameData nextFrame)
     {
         previousFrame = null;
@@ -256,14 +237,14 @@ public class Recorder : MonoBehaviour
 
     private void Update()
     {
-        if (isRecording)
+        if (isMainRecordingOn)
         {
             foreach (var recordable in objectsToRecord)
             {
                 recordable.Record(Time.time - recordStartTime);
             }
         }
-        else if (isPlayingBack)
+        else if (isMainPlaybackOn)
         {
             if(isAutomaticPlayback)
             {

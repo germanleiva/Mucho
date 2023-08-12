@@ -7,19 +7,15 @@ using UnityEngine.UI;
 public class AssetPoseRecorder : MonoBehaviour
 {   
     public static AssetPoseRecorder Instance { get; private set; }
-    //public Slider playbackSlider;
-    //private float recordStartTime;
 
-    private bool isRecording = false;
-    private bool isPlayingBack = false;
-
-    //public Recordable recordable; //Should be a list of recordables
-
-    public List <Recordable> recordableAssets = new List<Recordable>();
+    public List <Recordable> recordableAssets = new();
     
     public Recordable currentActiveRecordable;
 
     public Recorder mainRecorder;
+
+    //List of all force arrow components
+    public List<ForceArrow> forceArrowsInScene = new();
 
     Vector3 lastLocalPosition = Vector3.zero;
 
@@ -54,70 +50,32 @@ public class AssetPoseRecorder : MonoBehaviour
         lastLocalPosition = transform.localPosition;
     }
 
-    public void SetRigidbodyConstraints(Recordable recordable, bool setConstraints)
-    {
-        if(setConstraints)
-        {
-            recordable.playbackObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
-            recordable.playbackObject.GetComponent<Rigidbody>().useGravity = false;
-        }
-        else
-        {
-            recordable.playbackObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
-            recordable.playbackObject.GetComponent<Rigidbody>().useGravity = true;
-        }
-    }
-
-    public void ApplyForce(Recordable recordable, Vector3 force)
-    {
-        DebugLogger.Instance.Log("Applying force to " + recordable.playbackObject.name);
-        //Reset rigidbody constraints
-        SetRigidbodyConstraints(recordable, false);
-        recordable.playbackObject.GetComponent<Rigidbody>().AddForce(force*0.01f, ForceMode.VelocityChange);
-    }
-
-    public void RecordForceOnAsset(Recordable recordable, Vector3 force)
-    {
-        
-        //Reset rigidbody constraints
-        //SetRigidbodyConstraints(recordable, true);
-        //recordable.playbackObject.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 5, ForceMode.VelocityChange);
-        if (isRecording)
-        {
-            DebugLogger.Instance.Log("Recorded force on " + recordable.playbackObject.name);
-            //recordable.appliedForce = force;
-            //recordable.Record(mainRecorder.playbackSlider.value);
-        }
-        else
-        {
-            DebugLogger.Instance.Log("Recording off, could not record force on " + recordable.playbackObject.name);
-        }
-    }
-
     public void Hide(Recordable recordable)
     {
-        
         //Turn the material in recordable.playbackObject to 0.5 alpha
         recordable.playbackObject.GetComponent<MeshRenderer>().material = transparentMaterial;
         recordable.showStatus = false;
-        if(isRecording)
+        //if(recordable.isAssetRecordingOn)
+        if(mainRecorder.GetSizeOfMainRecordedData() > 0)
         {
-            DebugLogger.Instance.Log("Recorded hide for  " + recordable.playbackObject.name);
-            recordable.InsertAssetRecordFrame(mainRecorder.playbackSlider.value,true);
+            DebugLogger.Instance.Log("Recorded hide for  " + recordable.playbackObject.name + " at " + mainRecorder.playbackSlider.value);
+            recordable.PropagateShowStatusToSubsequentFrames(mainRecorder.playbackSlider.value, false);
+            //recordable.InsertAssetRecordFrame(mainRecorder.playbackSlider.value,true);
             //recordable.Record(mainRecorder.playbackSlider.value);
         }
     }
 
     public void Show(Recordable recordable)
     {
-        
         //Turn the material in recordable.playbackObject to 1 alpha
         recordable.playbackObject.GetComponent<MeshRenderer>().material = defaultMaterial;
         recordable.showStatus = true;
-        if (isRecording)
+        //if (recordable.isAssetRecordingOn)
+        if(mainRecorder.GetSizeOfMainRecordedData() > 0)
         {
             DebugLogger.Instance.Log("Recorded show for " + recordable.playbackObject.name);
-            recordable.InsertAssetRecordFrame(mainRecorder.playbackSlider.value,true);
+            recordable.PropagateShowStatusToSubsequentFrames(mainRecorder.playbackSlider.value, true);
+            //recordable.InsertAssetRecordFrame(mainRecorder.playbackSlider.value,true);
             //recordable.Record(mainRecorder.playbackSlider.value);
             //Re
         }
@@ -125,21 +83,20 @@ public class AssetPoseRecorder : MonoBehaviour
 
     public void StartRecording(Recordable recordable)
     {
+        Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
         //currAppState = Manager.AppState.RECORD;
         //rootPlaybackArea.SetActive(false);
         DebugLogger.Instance.Log("StartRecording in " + recordable.playbackObject.name);
         currentActiveRecordable = recordable;
-        if (currentActiveRecordable.recordedData == null)
-        {
-            currentActiveRecordable.recordedData = new List<RecordFrameData>(mainRecorder.GetSizeOfMainRecordedData());
-        }
+        currentActiveRecordable.recordingMode = Recordable.RecordingMode.ManualAnimation;
+        currentActiveRecordable.recordedData ??= new List<RecordFrameData>(mainRecorder.GetSizeOfMainRecordedData());
+        DebugLogger.Instance.Log("Size of main recorded data: " + mainRecorder.GetSizeOfMainRecordedData());
         CopyTimeStampsFromMainRecorder(currentActiveRecordable);
-        //recordStartTime = mainRecorder.re
-        //currentActiveRecordable.
+
         //currentActiveRecordable.ResetData();        
-        isRecording = true;
-        isPlayingBack = false;
-        //recordStartTime = mainRecorder.playbackSlider.value;
+        recordable.isAssetRecordingOn = true;
+        recordable.isAssetPlaybackOn = false;
+
     }
 
     private void CopyTimeStampsFromMainRecorder(Recordable recordable)
@@ -152,9 +109,10 @@ public class AssetPoseRecorder : MonoBehaviour
 
     public void StopRecording(Recordable recordable)
     {
+        Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         DebugLogger.Instance.Log("StopRecording in " + recordable.playbackObject.name);
-        isRecording = false;
-        isPlayingBack = true;
+        recordable.isAssetRecordingOn = false;
+        recordable.isAssetPlaybackOn = true;
         //mainRecorder.playbackSlider.value = 0;
 
     }
@@ -162,13 +120,13 @@ public class AssetPoseRecorder : MonoBehaviour
     public void ResetRecording(Recordable recordable)
     {
         DebugLogger.Instance.Log("ResetRecording in " + recordable.playbackObject.name);
-        isRecording = false;
-        isPlayingBack = false;
+        recordable.isAssetRecordingOn = false;
+        recordable.isAssetPlaybackOn = false;
         recordable.ResetData();
         //mainRecorder.playbackSlider.value = 0;
     }
    
-   public float distanceFromHand = 0.0001f;
+   public float movementRecordThreshold = 0.0001f;
    public float playbackSpeed = 0.003f;
 
    public void SetPlaybackSpeed(float speed)
@@ -178,87 +136,97 @@ public class AssetPoseRecorder : MonoBehaviour
 
     public void SetDistanceFromHand(float distance)
     {
-        distanceFromHand = distance;
+        movementRecordThreshold = distance;
     }
 
     private void Update()
     {
-        if (isRecording)
+        if(currentActiveRecordable != null)
         {
-            //DebugLogger.Instance.Log("Current Position: " + currentActiveRecordable.playbackObject.transform.localPosition + " Last Recorded Position: " + lastLocalPosition);
-            //Check if there is a difference between the current position and the last recorded position and if the difference is greater than 0.01 then record the current position
-            //DebugLogger.Instance.Log("Distance: " + Vector3.Distance(currentActiveRecordable.playbackObject.transform.localPosition, lastLocalPosition));
-            if (Vector3.Distance(currentActiveRecordable.playbackObject.transform.localPosition, lastLocalPosition) > distanceFromHand)            
+            if (currentActiveRecordable.isAssetRecordingOn)
             {
-                
-                //print into debugger.instance.log both the current position and the last recorded position
-                
-                DebugLogger.Instance.Log("Added new frame data for " + currentActiveRecordable.playbackObject.name + " at " + mainRecorder.playbackSlider.value);
-                //recordable.Record(Time.time - recordStartTime);
-                //currentActiveRecordable.Record(mainRecorder.playbackSlider.value);
-                currentActiveRecordable.InsertAssetRecordFrame(mainRecorder.playbackSlider.value);
-                //Increment the slider value by a small value proportional to the total recording time
-                mainRecorder.playbackSlider.value += playbackSpeed;// / (mainRecorder.recordingDuration * 100);
-                
-            }
-            lastLocalPosition = currentActiveRecordable.playbackObject.transform.localPosition;
-
-            //recordable.Record(Time.time - recordStartTime);
-        }
-        else if (isPlayingBack)
-        {
-            //float currentTime = Time.time - recordStartTime;
-            float currentTime = mainRecorder.playbackSlider.value;
-            
-            foreach (var recordable in recordableAssets)
-            {
-                //DebugLogger.Instance.Log("Playing back " + recordable.playbackObject.name + " at " + currentTime);
-                // Find the two frames to interpolate between.
-                RecordFrameData previousFrame = null;
-                RecordFrameData nextFrame = null;
-                foreach (var data in recordable.recordedData)
+                if(currentActiveRecordable.recordingMode == Recordable.RecordingMode.ManualAnimation)
                 {
-                    if (data.timestamp <= currentTime)
+                    //DebugLogger.Instance.Log("Current Position: " + currentActiveRecordable.playbackObject.transform.localPosition + " Last Recorded Position: " + lastLocalPosition);
+                    //Check if there is a difference between the current position and the last recorded position and if the difference is greater than 0.01 then record the current position
+                    //DebugLogger.Instance.Log("Distance: " + Vector3.Distance(currentActiveRecordable.playbackObject.transform.localPosition, lastLocalPosition));
+                    if (Vector3.Distance(currentActiveRecordable.playbackObject.transform.localPosition, lastLocalPosition) > movementRecordThreshold)            
                     {
-                        previousFrame = data;
+                        
+                        //print into debugger.instance.log both the current position and the last recorded position
+                        
+                        DebugLogger.Instance.Log("Added new frame data for " + currentActiveRecordable.playbackObject.name + " at " + mainRecorder.playbackSlider.value);
+                        //recordable.Record(Time.time - recordStartTime);
+                        //currentActiveRecordable.Record(mainRecorder.playbackSlider.value);
+                        currentActiveRecordable.InsertAssetRecordFrame(mainRecorder.playbackSlider.value);
+                        //Increment the slider value by a small value proportional to the total recording time
+                        mainRecorder.playbackSlider.value += playbackSpeed;// / (mainRecorder.recordingDuration * 100);
+                        
                     }
-                    else
-                    {
-                        nextFrame = data;
-                        break;
-                    }
+                    lastLocalPosition = currentActiveRecordable.playbackObject.transform.localPosition;
                 }
-
-                if (recordable.playbackObject != null)
+                else if(currentActiveRecordable.recordingMode == Recordable.RecordingMode.Physics)
                 {
-                    if (previousFrame != null && nextFrame != null)
+                    currentActiveRecordable.InsertAssetRecordFrame(mainRecorder.playbackSlider.value);
+                    //Increment the slider value by frame duration
+                    mainRecorder.playbackSlider.value += Time.deltaTime;
+
+                }
+                else if(currentActiveRecordable.recordingMode == Recordable.RecordingMode.Attach)
+                {
+                    
+                }
+                //recordable.Record(Time.time - recordStartTime);
+            }
+            else if (currentActiveRecordable.isAssetPlaybackOn)
+            {
+                //float currentTime = Time.time - recordStartTime;
+                float currentTime = mainRecorder.playbackSlider.value;
+                
+                foreach (var recordable in recordableAssets)
+                {
+                    //DebugLogger.Instance.Log("Playing back " + recordable.playbackObject.name + " at " + currentTime);
+                    // Find the two frames to interpolate between.
+                    RecordFrameData previousFrame = null;
+                    RecordFrameData nextFrame = null;
+                    foreach (var data in recordable.recordedData)
                     {
-                        // Interpolate between the two frames.
-                        float t = (currentTime - previousFrame.timestamp) / (nextFrame.timestamp - previousFrame.timestamp);
-                        recordable.playbackObject.transform.localPosition = Vector3.Lerp(previousFrame.rootPosition, nextFrame.rootPosition, t);
-                        recordable.playbackObject.transform.localRotation = Quaternion.Lerp(previousFrame.rootRotation, nextFrame.rootRotation, t) * Quaternion.Euler(recordable.rotationCorrection);//Modify the rotation in the recorded data to add 180 degrees to the  axis
-                        if (previousFrame.showStatusForThisFrame)
+                        if (data.timestamp <= currentTime)
                         {
-                            DebugLogger.Instance.Log("Playing back show for " + recordable.playbackObject.name);
-                            recordable.playbackObject.GetComponent<MeshRenderer>().material = defaultMaterial;
+                            previousFrame = data;
                         }
                         else
                         {
-                            DebugLogger.Instance.Log("Playing back hide for " + recordable.playbackObject.name);
-                            recordable.playbackObject.GetComponent<MeshRenderer>().material = transparentMaterial;
-                        } 
-
-                        /*if(nextFrame.force != Vector3.zero)
-                        {
-                            DebugLogger.Instance.Log("Playing back force " + nextFrame.force + " for " + recordable.playbackObject.name);
-                            ApplyForce(recordable, nextFrame.force);
-                        }*/
+                            nextFrame = data;
+                            break;
+                        }
                     }
-                    else if (previousFrame != null)
+
+                    if (recordable.playbackObject != null)
                     {
-                        // If there's no next frame, use the data from the previous frame.
-                        recordable.playbackObject.transform.localPosition = previousFrame.rootPosition;
-                        recordable.playbackObject.transform.localRotation = previousFrame.rootRotation;
+                        if (previousFrame != null && nextFrame != null)
+                        {
+                            // Interpolate between the two frames.
+                            float t = (currentTime - previousFrame.timestamp) / (nextFrame.timestamp - previousFrame.timestamp);
+                            recordable.playbackObject.transform.localPosition = Vector3.Lerp(previousFrame.rootPosition, nextFrame.rootPosition, t);
+                            recordable.playbackObject.transform.localRotation = Quaternion.Lerp(previousFrame.rootRotation, nextFrame.rootRotation, t) * Quaternion.Euler(recordable.rotationCorrection);//Modify the rotation in the recorded data to add 180 degrees to the  axis
+                            if (previousFrame.showStatusForThisFrame)
+                            {
+                                //DebugLogger.Instance.Log("Playing back show for " + recordable.playbackObject.name);
+                                recordable.playbackObject.GetComponent<MeshRenderer>().material = defaultMaterial;
+                            }
+                            else
+                            {
+                                //DebugLogger.Instance.Log("Playing back hide for " + recordable.playbackObject.name);
+                                recordable.playbackObject.GetComponent<MeshRenderer>().material = transparentMaterial;
+                            } 
+                        }
+                        else if (previousFrame != null)
+                        {
+                            // If there's no next frame, use the data from the previous frame.
+                            recordable.playbackObject.transform.localPosition = previousFrame.rootPosition;
+                            recordable.playbackObject.transform.localRotation = previousFrame.rootRotation;
+                        }
                     }
                 }
             }
@@ -339,16 +307,42 @@ public class AssetPoseRecorder : MonoBehaviour
         //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
     }
 
+    public void HideMiscObjs()
+    {
+        foreach (ForceArrow forceArrow in forceArrowsInScene)
+        {
+            forceArrow.HideTrajectoryAndArrow();
+        }
+        foreach (Recordable recordable in recordableAssets)
+        {
+            recordable.assetMenu.SetActive(false);
+        }
+    }
+
+    public void ShowMiscObjs()
+    {
+        foreach (ForceArrow forceArrow in forceArrowsInScene)
+        {
+            forceArrow.ShowTrajectoryAndArrow();
+        }
+        foreach (Recordable recordable in recordableAssets)
+        {
+            recordable.assetMenu.SetActive(true);
+        }
+    }
+
     public void AddForceArrowToAsset(Recordable recordable)
     {
         //GameObject obj = Instantiate(cubePrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
-        GameObject forceArrow = Instantiate(forceArrowPrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
-        forceArrow.SetActive(true);
+        GameObject forceArrow = Instantiate(forceArrowPrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);   
+        forceArrow.SetActive(true);     
         ForceArrow forceArrowScript = forceArrow.GetComponent<ForceArrow>();
+        forceArrowsInScene.Add(forceArrowScript);
         forceArrowScript.asset = recordable.playbackObject.transform;
         //forceArrowScript.arrowHead should be positioned 1 unit above the arrowEnd in the y axis
-        forceArrowScript.arrowHead.position = recordable.playbackObject.transform.position + new Vector3(0,0.1f,0);
-        
+        forceArrowScript.arrowHead.position = recordable.playbackObject.transform.position + new Vector3(0.2f,0.2f,0);
+        forceArrowScript.ReOrientArrow();
+             
     }
    
 }

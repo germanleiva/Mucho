@@ -8,14 +8,36 @@ public class Recordable : MonoBehaviour
 {
     public GameObject playbackObject, playbackObject2, playbackObject3, playbackObject4, playbackObject5;
     public SkinnedMeshRenderer playbackObject2Renderer, playbackObject3Renderer, playbackObject4Renderer, playbackObject5Renderer;
-    public List<RecordFrameData> recordedData = new List<RecordFrameData>();
+    public List<RecordFrameData> recordedData = new();
     public Collider grabCollider;
+    public GameObject assetMenu;
+    //public ForceArrow lastAttachedForceArrow;
     //public GameObject lineObject;
     //private LineRenderer lineRenderer;
     //private LineRendererSmoother lineRendererSmoother;
 
+    public enum RecordingMode
+    {
+        None,
+        ManualAnimation,
+        Physics,
+        Attach
+    }
+
+    public RecordingMode recordingMode = RecordingMode.None;
+
     public Vector3 rotationCorrection; 
     public Vector3 positionCorrection;
+
+    public Vector3 initPosBeforePhysicsSimulation;
+    public Quaternion initRotBeforePhysicsSimulation;
+
+    private float oldMainPlaybackSliderValue = 0;
+
+    public bool isSimulationOn = false;
+
+    public bool isAssetRecordingOn = false;
+    public bool isAssetPlaybackOn = false;
 
     public List<GameObject> childObjectsToRecord;
 
@@ -112,9 +134,9 @@ public class Recordable : MonoBehaviour
                 }
                 else
                 {
-
                     focusSquare.transform.position = Vector3.zero;
                     focusSquare.transform.rotation = Quaternion.identity;
+
                 }
             }
             else
@@ -140,22 +162,23 @@ public class Recordable : MonoBehaviour
         int index = recordedData.BinarySearch(item, Comparer<RecordFrameData>.Create((x, y) => x.timestamp.CompareTo(y.timestamp)));
         if (index < 0)
         {
-            DebugLogger.Instance.Log("Item not found at _timestamp " + _timestamp + ", inserting at index " + ~index);
+            //DebugLogger.Instance.Log("Item not found at _timestamp " + _timestamp + ", inserting at index " + ~index);
             index = ~index; // if item is not found, BinarySearch returns the bitwise complement of the insert point
             //recordedData.Insert(index, item);
         }
         else //copy the contents of item into the right position
         {
-            DebugLogger.Instance.Log("Item found at _timestamp " + _timestamp + ", inserting at index " + index);
+            //DebugLogger.Instance.Log("Item found at _timestamp " + _timestamp + ", inserting at index " + index);
             
         }
         if(index >= recordedData.Count)
         {
-            DebugLogger.Instance.Log("Index exceeds count, inserting asset record frame at index " + index);
+            //DebugLogger.Instance.Log("Index exceeds count, adding asset record frame at the end");
             recordedData.Add(item);
         }
         else
         {
+            //DebugLogger.Instance.Log("Index does not exceed count, inserting asset record frame at index " + index);
             recordedData[index] = item;
         }
         //recordedData[index] = item;
@@ -163,6 +186,7 @@ public class Recordable : MonoBehaviour
 
         if (propagateValueToSubsequentFrames) // Propagate the value to subsequent frames
         {
+            DebugLogger.Instance.Log("Propagating value to subsequent frames, starting from index " + index + " to " + recordedData.Count);
             for (int i = index + 1; i < recordedData.Count; i++)
             {
                 recordedData[i].showStatusForThisFrame = item.showStatusForThisFrame;
@@ -171,6 +195,37 @@ public class Recordable : MonoBehaviour
             }
         }
     }
+
+    public void PropagateShowStatusToSubsequentFrames(float _timestamp, bool _status)
+    {
+        int index = 0;
+        //Traverse the list of recordedData and find the index of the frame with the given timestamp
+        for (int i = 0; i < recordedData.Count; i++)
+        {
+            if (_timestamp < recordedData[i].timestamp)
+            {
+                index = i;
+                //PropagateShowStatusToSubsequentFrames(i);
+                DebugLogger.Instance.Log("Found index " + index + " with timestamp " + recordedData[i].timestamp + " greater than " + _timestamp);
+                break;
+            }
+        }
+        if(index == 0)
+        {
+            DebugLogger.Instance.Log("No index found with timestamp " + _timestamp + " with last recorded frame timestamp " + recordedData[^1].timestamp);
+            return;
+        }
+        else
+        {
+            DebugLogger.Instance.Log("Propagating " + _status + " to subsequent frames, starting from index " + index + " to " + recordedData.Count);
+            for (int i = index + 1; i < recordedData.Count; i++)
+            {
+                recordedData[i].showStatusForThisFrame = _status;
+                //recordedData[i].rootPosition = recordedData[index].rootPosition;
+                //recordedData[i].rootRotation = recordedData[index].rootRotation;
+            }
+        }
+    }    
 
 
     // Record the current state.
@@ -215,7 +270,44 @@ public class Recordable : MonoBehaviour
     //OnCollisionEnter
     void OnCollisionEnter(Collision collision)
     {
-        DebugLogger.Instance.Log("Collision detected between " + gameObject.name + " and " + collision.collider.name);
+        if(isAssetRecordingOn)
+        {
+            DebugLogger.Instance.Log("Collision detected between " + gameObject.name + " and " + collision.collider.name);
+            isAssetRecordingOn = false;
+            //isSimulationOn = false;
+            ResetPhysicsProperties();
+            recordingMode = Recordable.RecordingMode.None;
+            Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
+        }
+    }
+
+
+
+    public void ApplyForce(Vector3 initialVelocity)
+    {
+        oldMainPlaybackSliderValue = AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value; //This is so awkward, but it works
+        recordingMode = Recordable.RecordingMode.Physics;
+        isAssetRecordingOn = true;
+        initPosBeforePhysicsSimulation = transform.position;
+        initRotBeforePhysicsSimulation = transform.rotation;
+        Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
+        //isSimulationOn = true;
+        GetComponent<Rigidbody>().mass = 0f;
+        GetComponent<Collider>().isTrigger = false;
+        GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        GetComponent<Rigidbody>().useGravity = true;
+        GetComponent<Rigidbody>().AddForce(initialVelocity, ForceMode.VelocityChange);
+    }
+
+    public void ResetPhysicsProperties()
+    {
+        AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value = oldMainPlaybackSliderValue;
+        transform.position = initPosBeforePhysicsSimulation;
+        transform.rotation = initRotBeforePhysicsSimulation;
+        GetComponent<Rigidbody>().mass = 1f;
+        GetComponent<Collider>().isTrigger = true;
+        GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
+        GetComponent<Rigidbody>().useGravity = false;
     }
 }
 
