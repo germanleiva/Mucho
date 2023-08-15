@@ -36,8 +36,8 @@ public class Recordable : MonoBehaviour
 
     public bool isSimulationOn = false;
 
-    public bool isAssetRecordingOn = false;
-    public bool isAssetPlaybackOn = false;
+    //public bool isAssetRecordingOn = false;
+    //public bool isAssetPlaybackOn = false;
 
     public List<GameObject> childObjectsToRecord;
 
@@ -146,104 +146,40 @@ public class Recordable : MonoBehaviour
         }
     }
 
-    public void InsertAssetRecordFrame(float _timestamp, bool propagateValueToSubsequentFrames = false)
+    public void InsertAssetRecordFrame(int _frameNumber, bool propagateValueToSubsequentFrames = false)
     {
-        //Print timestamps of first and last recorded frames
-        /*if (recordedData.Count > 0)
-        {
-            DebugLogger.Instance.Log("First recorded frame timestamp: " + recordedData[0].timestamp);
-            DebugLogger.Instance.Log("Last recorded frame timestamp: " + recordedData[recordedData.Count - 1].timestamp);
-        }
-        else
-        {
-            DebugLogger.Instance.Log("No recorded frames");
-        }*/
-        RecordFrameData item = new(transform.localPosition, transform.localRotation, showStatus, _timestamp);
-        int index = recordedData.BinarySearch(item, Comparer<RecordFrameData>.Create((x, y) => x.timestamp.CompareTo(y.timestamp)));
-        if (index < 0)
-        {
-            //DebugLogger.Instance.Log("Item not found at _timestamp " + _timestamp + ", inserting at index " + ~index);
-            index = ~index; // if item is not found, BinarySearch returns the bitwise complement of the insert point
-            //recordedData.Insert(index, item);
-        }
-        else //copy the contents of item into the right position
-        {
-            //DebugLogger.Instance.Log("Item found at _timestamp " + _timestamp + ", inserting at index " + index);
-            
-        }
-        if(index >= recordedData.Count)
-        {
-            //DebugLogger.Instance.Log("Index exceeds count, adding asset record frame at the end");
-            recordedData.Add(item);
-        }
-        else
-        {
-            //DebugLogger.Instance.Log("Index does not exceed count, inserting asset record frame at index " + index);
-            recordedData[index] = item;
-        }
-        //recordedData[index] = item;
-        //DebugLogger.Instance.Log("Inserting asset record frame at index " + index);
+        RecordFrameData item = new(transform.localPosition, transform.localRotation, showStatus, _frameNumber);
+        DebugLogger.Instance.Log("Inserting asset record frame at a specific frame number " + _frameNumber);
+        recordedData[_frameNumber] = item;
 
         if (propagateValueToSubsequentFrames) // Propagate the value to subsequent frames
         {
-            DebugLogger.Instance.Log("Propagating value to subsequent frames, starting from index " + index + " to " + recordedData.Count);
-            for (int i = index + 1; i < recordedData.Count; i++)
+            DebugLogger.Instance.Log("Propagating value to subsequent frames, starting from index " + _frameNumber + " to " + recordedData.Count);
+            for (int i = _frameNumber + 1; i < recordedData.Count; i++)
             {
-                recordedData[i].showStatusForThisFrame = item.showStatusForThisFrame;
+                //recordedData[i].showStatusForThisFrame = item.showStatusForThisFrame;
                 recordedData[i].rootPosition = item.rootPosition;
                 recordedData[i].rootRotation = item.rootRotation;
             }
         }
     }
 
-    public void PropagateShowStatusToSubsequentFrames(float _timestamp, bool _status)
+    public void RecordAndPropagateAssetShowStatus(int _frameNumber)
     {
-        int index = 0;
-        //Traverse the list of recordedData and find the index of the frame with the given timestamp
-        for (int i = 0; i < recordedData.Count; i++)
+        DebugLogger.Instance.Log("Changing asset show status at a specific frame number " + _frameNumber);
+        for (int i = _frameNumber + 1; i < recordedData.Count; i++)
         {
-            if (_timestamp < recordedData[i].timestamp)
-            {
-                index = i;
-                //PropagateShowStatusToSubsequentFrames(i);
-                DebugLogger.Instance.Log("Found index " + index + " with timestamp " + recordedData[i].timestamp + " greater than " + _timestamp);
-                break;
-            }
+                recordedData[i].showStatusForThisFrame = showStatus;
         }
-        if(index == 0)
-        {
-            DebugLogger.Instance.Log("No index found with timestamp " + _timestamp + " with last recorded frame timestamp " + recordedData[^1].timestamp);
-            return;
-        }
-        else
-        {
-            DebugLogger.Instance.Log("Propagating " + _status + " to subsequent frames, starting from index " + index + " to " + recordedData.Count);
-            for (int i = index + 1; i < recordedData.Count; i++)
-            {
-                recordedData[i].showStatusForThisFrame = _status;
-                //recordedData[i].rootPosition = recordedData[index].rootPosition;
-                //recordedData[i].rootRotation = recordedData[index].rootRotation;
-            }
-        }
-    }    
+    }
 
-
-    // Record the current state.
-    public void Record(float timestamp)
+    public void Record(int frameNum)
     {
         //If childObjectsToRecord is not empty, then record the position and rotation of each child object
         bool isNullOrEmpty = childObjectsToRecord?.Any() != true;
         if(isNullOrEmpty == true)//Head or Assets
         { 
-            if(focusSquare != null)//Head
-            {
-                recordedData.Add(new RecordFrameData(transform.localPosition, transform.localRotation, focusSquare.transform.position, focusSquare.transform.rotation, timestamp));       
-            }
-            else //Assets
-            {
-                //recordedData.Add(new RecordFrameData(transform.localPosition, transform.localRotation, showStatus, timestamp)); 
-                //Insert recordframedata object into recordeddata list for a specific timestamp
-            }           
+            recordedData.Add(new RecordFrameData(transform.localPosition, transform.localRotation, focusSquare.transform.position, focusSquare.transform.rotation, frameNum));       
         }
         else//Hands
         {   
@@ -253,7 +189,7 @@ public class Recordable : MonoBehaviour
                 ringJoint1, ringJoint2, ringJoint3, 
                 pinkyJoint0, pinkyJoint1, pinkyJoint2, pinkyJoint3, 
                 thumbJoint0, thumbJoint1, thumbJoint2, thumbJoint3, 
-                focusSquare.transform.position, focusSquare.transform.rotation, currentGesture, timestamp));
+                focusSquare.transform.position, focusSquare.transform.rotation, currentGesture, frameNum));
         }
     }
 
@@ -270,10 +206,10 @@ public class Recordable : MonoBehaviour
     //OnCollisionEnter
     void OnCollisionEnter(Collision collision)
     {
-        if(isAssetRecordingOn)
+        if(recordingMode == RecordingMode.Physics)
         {
             DebugLogger.Instance.Log("Collision detected between " + gameObject.name + " and " + collision.collider.name);
-            isAssetRecordingOn = false;
+            //isAssetRecordingOn = false;
             //isSimulationOn = false;
             ResetPhysicsProperties();
             recordingMode = Recordable.RecordingMode.None;
@@ -287,7 +223,7 @@ public class Recordable : MonoBehaviour
     {
         oldMainPlaybackSliderValue = AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value; //This is so awkward, but it works
         recordingMode = Recordable.RecordingMode.Physics;
-        isAssetRecordingOn = true;
+        //isAssetRecordingOn = true;
         initPosBeforePhysicsSimulation = transform.position;
         initRotBeforePhysicsSimulation = transform.rotation;
         Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
@@ -334,7 +270,8 @@ public class RecordFrameData
 {
     public Vector3 rootPosition;
     public Quaternion rootRotation;
-    public float timestamp;
+    //public float timestamp;
+    public int frameNumber;
 
     public FingerJoint indexJoint1, indexJoint2, indexJoint3;
     public FingerJoint middleJoint1, middleJoint2, middleJoint3;
@@ -352,26 +289,28 @@ public class RecordFrameData
     //public Vector3 force;
 
     //Assets 
-    public RecordFrameData(Vector3 _position, Quaternion _rotation, bool _showStatus, float _timestamp) 
+    public RecordFrameData(Vector3 _position, Quaternion _rotation, bool _showStatus, int _frameNumber)
     {
         rootPosition = _position;
         rootRotation = _rotation;
         showStatusForThisFrame = _showStatus;
-        timestamp = _timestamp;
+        frameNumber = _frameNumber;
+        //timestamp = _timestamp;
     }
 
     //Head
-    public RecordFrameData(Vector3 _position, Quaternion _rotation, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, float _timestamp)
+    public RecordFrameData(Vector3 _position, Quaternion _rotation, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, int _frameNumber)
     {
         rootPosition = _position;
         rootRotation = _rotation;
         focusSquarePosition = _focusSquarePosition;
         focusSquareRotation = _focusSquareRotation;
-        timestamp = _timestamp;
+        frameNumber = _frameNumber;
+        //timestamp = _timestamp;
     }
 
     //Hands
-    public RecordFrameData(Vector3 _position, Quaternion _rotation, GameObject _indexJoint0, GameObject _indexJoint1, GameObject _indexJoint2, GameObject _middleJoint0, GameObject _middleJoint1, GameObject _middleJoint2, GameObject _ringJoint0, GameObject _ringJoint1, GameObject _ringJoint2, GameObject _pinkyJoint0, GameObject _pinkyJoint1, GameObject _pinkyJoint2, GameObject _pinkyJoint3, GameObject _thumbJoint0, GameObject _thumbJoint1, GameObject _thumbJoint2, GameObject _thumbJoint3, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, GestureManager.Gesture  _gesture, float _timestamp)
+    public RecordFrameData(Vector3 _position, Quaternion _rotation, GameObject _indexJoint0, GameObject _indexJoint1, GameObject _indexJoint2, GameObject _middleJoint0, GameObject _middleJoint1, GameObject _middleJoint2, GameObject _ringJoint0, GameObject _ringJoint1, GameObject _ringJoint2, GameObject _pinkyJoint0, GameObject _pinkyJoint1, GameObject _pinkyJoint2, GameObject _pinkyJoint3, GameObject _thumbJoint0, GameObject _thumbJoint1, GameObject _thumbJoint2, GameObject _thumbJoint3, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, GestureManager.Gesture  _gesture, int _frameNumber)
     {
         rootPosition = _position;
         rootRotation = _rotation;
@@ -403,7 +342,9 @@ public class RecordFrameData
 
         gesture = _gesture;
 
-        timestamp = _timestamp;
+        frameNumber = _frameNumber;
+
+        //timestamp = _timestamp;
     }
 
 }
