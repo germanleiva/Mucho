@@ -11,10 +11,6 @@ public class Recordable : MonoBehaviour
     public List<RecordFrameData> recordedData = new();
     public Collider grabCollider;
     public GameObject assetMenu;
-    //public ForceArrow lastAttachedForceArrow;
-    //public GameObject lineObject;
-    //private LineRenderer lineRenderer;
-    //private LineRendererSmoother lineRendererSmoother;
 
     public enum RecordingMode
     {
@@ -148,7 +144,7 @@ public class Recordable : MonoBehaviour
 
     public void InsertAssetRecordFrame(int _frameNumber, bool propagateValueToSubsequentFrames = false)
     {
-        RecordFrameData item = new(transform.localPosition, transform.localRotation, showStatus, _frameNumber);
+        RecordFrameData item = new(transform.position, transform.rotation, showStatus, _frameNumber);
         DebugLogger.Instance.Log("Inserting asset record frame at a specific frame number " + _frameNumber);
         recordedData[_frameNumber] = item;
 
@@ -173,13 +169,37 @@ public class Recordable : MonoBehaviour
         }
     }
 
+    public void CopyPoseFrom(Recordable other, int _frameNumber, bool copyFirstRecord = false)
+    {
+        if (copyFirstRecord)
+        {
+            DebugLogger.Instance.Log("Copying first pose from " + other.gameObject.name + " to " + gameObject.name + " from frame number " + _frameNumber + " to " + recordedData.Count);
+            for (int i = _frameNumber + 1; i < recordedData.Count; i++)
+            {
+                recordedData[i].rootPosition = other.recordedData[_frameNumber].rootPosition;
+                recordedData[i].rootRotation = other.recordedData[_frameNumber].rootRotation;
+            }
+        }
+        else
+        {
+            Vector3 offset = transform.position - other.gameObject.transform.position;
+            DebugLogger.Instance.Log("Copying all pose data from " + other.gameObject.name + " to " + gameObject.name + " from frame number " + _frameNumber + " to " + recordedData.Count);
+            for (int i = _frameNumber + 1; i < recordedData.Count; i++)
+            {
+                recordedData[i].rootPosition = other.recordedData[i].rootPosition;
+                recordedData[i].rootRotation = other.recordedData[i].rootRotation;
+            }
+        }
+    }
+
+
     public void Record(int frameNum)
     {
         //If childObjectsToRecord is not empty, then record the position and rotation of each child object
         bool isNullOrEmpty = childObjectsToRecord?.Any() != true;
         if(isNullOrEmpty == true)//Head or Assets
         { 
-            recordedData.Add(new RecordFrameData(transform.localPosition, transform.localRotation, focusSquare.transform.position, focusSquare.transform.rotation, frameNum));       
+            recordedData.Add(new RecordFrameData(transform.position, transform.rotation, focusSquare.transform.position, focusSquare.transform.rotation, frameNum));       
         }
         else//Hands
         {   
@@ -349,17 +369,4 @@ public class RecordFrameData
 
 }
 
-/*public class CustomGesture
-{
-    public string gestureName;
-    public List<RecordFrameData> gestureData;
-
-    public CustomGesture(string _gestureName, List<RecordFrameData> _gestureData)
-    {
-        gestureName = _gestureName;
-        gestureData = _gestureData;
-    }
-}
-
-*/
 

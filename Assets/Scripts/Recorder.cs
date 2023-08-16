@@ -212,6 +212,26 @@ public class Recorder : MonoBehaviour
         }
         Destroy(obj);
     }
+
+    public int GetSizeOfMainRecordedData(int index)
+    {
+        return objectsToRecord[index].recordedData.Count;
+    }
+
+    public void ExpandRecordedData(int size)
+    {
+        // For each recordable object, expand the recordedData list to the given size by copying the last element
+        foreach (var recordable in objectsToRecord)
+        {
+            RecordFrameData lastElement = recordable.recordedData[recordable.recordedData.Count - 1];
+            for (int i = 0; i < size - recordable.recordedData.Count; i++)
+            {
+                recordable.recordedData.Add(lastElement);
+            }
+        }
+        AssetPoseRecorder.Instance.ExpandRecordFramesForAssets(size);
+        AssetPoseRecorder.Instance.DoRecordSizesMatch();
+    }
  
     /*private void FindPrevandNextFrames(List<RecordFrameData> recordedData, float currentTime, out RecordFrameData previousFrame, out RecordFrameData nextFrame)
     {

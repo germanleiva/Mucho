@@ -144,21 +144,8 @@ public class ForceArrow : MonoBehaviour
 
     public void ThrowAsset()
     {
-        /*GameObject throwableAsset = Instantiate(asset.gameObject, asset.position, asset.rotation);
-        throwableAsset.GetComponent<MeshRenderer>().material = arrowTranslucentMaterial;
-        throwableAsset.GetComponent<Rigidbody>().mass = 0f;
-        throwableAsset.GetComponent<Collider>().isTrigger = false;
-        throwableAsset.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
-        throwableAsset.GetComponent<Rigidbody>().useGravity = true;
-        throwableAsset.GetComponent<Rigidbody>().AddForce(initialVelocity, ForceMode.VelocityChange);*/
-
-
         GameObject throwableAsset = asset.gameObject;
         throwableAsset.GetComponent<Recordable>().ApplyForce(initialVelocity);
-
-        //throwableAsset.GetComponent<MeshRenderer>().material = arrowTranslucentMaterial;
-
-
     }
 
 }
