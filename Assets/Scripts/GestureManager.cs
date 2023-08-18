@@ -144,3 +144,10 @@ public class GestureManager : MonoBehaviour
         }
     }*/
 }
+
+public class GestureSequence
+{
+    public int StartIndex { get; set; }
+    public int Length { get; set; }
+    public GestureManager.Gesture GestureType { get; set; }
+}

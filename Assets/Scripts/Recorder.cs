@@ -12,6 +12,8 @@ public class Recorder : MonoBehaviour
     //public GameObject playbackUI;
     public GameObject controlUI;
     public Slider playbackSlider;
+    public Slider timelinePlaybackSlider;
+    public GameObject playButton;
     public Recordable[] objectsToRecord;
     public bool isMainRecordingOn = false;
     public bool isMainPlaybackOn = false;
@@ -91,7 +93,7 @@ public class Recorder : MonoBehaviour
         AssetPoseRecorder.Instance.InitializeRecordFramesForAssets();
 
         VisualizePath();
-        StartPlayback();
+        PreparePlayback();
     }
 
     public void SetAutomaticPlayMode(bool isAutomatic)
@@ -108,7 +110,7 @@ public class Recorder : MonoBehaviour
     }
 
     // Start playback.
-    public void StartPlayback()
+    public void PreparePlayback()
     {
         try
         {
@@ -131,10 +133,12 @@ public class Recorder : MonoBehaviour
                 }
             }
 
+            playButton.SetActive(true);
+
             // Set up the slider.
-            playbackSlider.minValue = 0;
-            playbackSlider.maxValue = framesTotal;
-            playbackSlider.value = 0;
+            playbackSlider.minValue = timelinePlaybackSlider.minValue = 0;
+            playbackSlider.maxValue = timelinePlaybackSlider.maxValue = framesTotal;
+            playbackSlider.value = timelinePlaybackSlider.value = 0;
             recordedFramesTotal = framesTotal;
             DebugLogger.Instance.Log("Duration of recording: " + recordedFramesTotal);
 
@@ -232,6 +236,65 @@ public class Recorder : MonoBehaviour
         AssetPoseRecorder.Instance.ExpandRecordFramesForAssets(size);
         AssetPoseRecorder.Instance.DoRecordSizesMatch();
     }
+
+public static List<GestureSequence> GetContinuousGestureSequences(List<GestureManager.Gesture> gestures)
+{
+    List<GestureSequence> sequences = new List<GestureSequence>();
+
+    int startIndex = -1;
+    GestureManager.Gesture? currentGesture = null;
+
+    for (int i = 0; i < gestures.Count; i++)
+    {
+        if (gestures[i] != GestureManager.Gesture.LEFTHANDNONE && gestures[i] != GestureManager.Gesture.RIGHTHANDNONE)
+        {
+            if (currentGesture == null || currentGesture == gestures[i])
+            {
+                if (currentGesture == null)
+                {
+                    currentGesture = gestures[i];
+                    startIndex = i;
+                }
+            }
+            else
+            {
+                sequences.Add(new GestureSequence
+                {
+                    StartIndex = startIndex,
+                    Length = i - startIndex,
+                    GestureType = currentGesture.Value
+                });
+
+                startIndex = i;
+                currentGesture = gestures[i];
+            }
+        }
+        else if (currentGesture != null)
+        {
+            sequences.Add(new GestureSequence
+            {
+                StartIndex = startIndex,
+                Length = i - startIndex,
+                GestureType = currentGesture.Value
+            });
+
+            startIndex = -1;
+            currentGesture = null;
+        }
+    }
+
+    if (currentGesture != null)
+    {
+        sequences.Add(new GestureSequence
+        {
+            StartIndex = startIndex,
+            Length = gestures.Count - startIndex,
+            GestureType = currentGesture.Value
+        });
+    }
+
+    return sequences;
+}
  
     /*private void FindPrevandNextFrames(List<RecordFrameData> recordedData, float currentTime, out RecordFrameData previousFrame, out RecordFrameData nextFrame)
     {

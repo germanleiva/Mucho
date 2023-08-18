@@ -62,7 +62,7 @@ public class TimelineUIElement : MonoBehaviour
     public void OnClick(BaseEventData data)
     {
         DebugLogger.Instance.Log("Panel clicked");
-        SetColor(Color.blue);
+        //SetColor(Color.blue);
     }
 
     void Update()
