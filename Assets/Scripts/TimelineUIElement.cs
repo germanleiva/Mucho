@@ -96,6 +96,17 @@ public class TimelineUIElement : MonoBehaviour
         rectTransform.anchoredPosition = pos;
     }
 
+    public void SetDimensions(float x, float width)
+    {
+        Vector2 pos = rectTransform.anchoredPosition;       
+        pos.x = x;
+        rectTransform.anchoredPosition = pos;
+
+        Vector2 size = rectTransform.sizeDelta;
+        size.x = width;
+        rectTransform.sizeDelta = size;
+    }
+
     public void SetWidth(float width)
     {
         Vector2 size = rectTransform.sizeDelta;
@@ -108,6 +119,15 @@ public class TimelineUIElement : MonoBehaviour
         GetComponent<UnityEngine.UI.Image>().color = color;
     }
 
+    public void test1()
+    {
+        SetDimensions(0, 100);
+    }
+
+    public void test2()
+    {
+        SetDimensions(100, 500);
+    }
 
 
 }
