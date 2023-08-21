@@ -13,6 +13,8 @@ public class TimelineUIElement : MonoBehaviour
     private RectTransform rootRectTransform;
     private RectTransform rectTransform;
     float defaultY;
+    [SerializeField]
+    TMPro.TMP_Text eventText;
 
     public void Start()
     {
@@ -56,7 +58,6 @@ public class TimelineUIElement : MonoBehaviour
         Vector2 pos = rectTransform.anchoredPosition;       
         pos.y= defaultY;
         rectTransform.anchoredPosition = pos;
-
     }
 
     public void OnClick(BaseEventData data)
@@ -69,6 +70,11 @@ public class TimelineUIElement : MonoBehaviour
     {
                     
 
+    }
+
+    public void SetEvent(string text)
+    {
+        eventText.text = text;
     }
 
     //Function to check whether a Vector2 is within the bounds of the RectTransform
@@ -121,6 +127,9 @@ public class TimelineUIElement : MonoBehaviour
 
     public void test1()
     {
+        DebugLogger.Instance.Log("Test1: ");
+        DebugLogger.Instance.Log("Root panel width: " + rootRectTransform.GetComponent<RectTransform>().rect.width);
+        //DebugLogger.Instance.Log("Root panel");
         SetDimensions(0, 100);
     }
 

@@ -23,6 +23,15 @@ public class Recorder : MonoBehaviour
     private bool isAutomaticPlayback = false;
 
     readonly List<float> handGuideTimePoints = new();
+    [Header("Timeline UI")]
+    [SerializeField]
+    RectTransform rightHandTimelinePanel;
+    [SerializeField]
+    RectTransform leftHandTimelinePanel;
+    [SerializeField]
+    GameObject rightHandTimelineElementPrefab;
+    [SerializeField]
+    GameObject leftHandTimelineElementPrefab;
 
     void Awake()
     {
@@ -91,6 +100,9 @@ public class Recorder : MonoBehaviour
 
         AssetPoseRecorder.Instance.EnableGrabForAllAssets();
         AssetPoseRecorder.Instance.InitializeRecordFramesForAssets();
+
+        GenerateGestureSequences(leftHandTimelinePanel, objectsToRecord[1]);
+        GenerateGestureSequences(rightHandTimelinePanel, objectsToRecord[2]);
 
         VisualizePath();
         PreparePlayback();
@@ -237,26 +249,39 @@ public class Recorder : MonoBehaviour
         AssetPoseRecorder.Instance.DoRecordSizesMatch();
     }
 
-public static List<GestureSequence> GetContinuousGestureSequences(List<GestureManager.Gesture> gestures)
-{
-    List<GestureSequence> sequences = new List<GestureSequence>();
-
-    int startIndex = -1;
-    GestureManager.Gesture? currentGesture = null;
-
-    for (int i = 0; i < gestures.Count; i++)
+    public List<GestureSequence> GetContinuousGestureSequences(List<GestureManager.Gesture> gestures)
     {
-        if (gestures[i] != GestureManager.Gesture.LEFTHANDNONE && gestures[i] != GestureManager.Gesture.RIGHTHANDNONE)
+        List<GestureSequence> sequences = new List<GestureSequence>();
+
+        int startIndex = -1;
+        GestureManager.Gesture? currentGesture = null;
+
+        for (int i = 0; i < gestures.Count; i++)
         {
-            if (currentGesture == null || currentGesture == gestures[i])
+            if (gestures[i] != GestureManager.Gesture.LEFTHANDNONE && gestures[i] != GestureManager.Gesture.RIGHTHANDNONE)
             {
-                if (currentGesture == null)
+                if (currentGesture == null || currentGesture == gestures[i])
                 {
-                    currentGesture = gestures[i];
+                    if (currentGesture == null)
+                    {
+                        currentGesture = gestures[i];
+                        startIndex = i;
+                    }
+                }
+                else
+                {
+                    sequences.Add(new GestureSequence
+                    {
+                        StartIndex = startIndex,
+                        Length = i - startIndex,
+                        GestureType = currentGesture.Value
+                    });
+
                     startIndex = i;
+                    currentGesture = gestures[i];
                 }
             }
-            else
+            else if (currentGesture != null)
             {
                 sequences.Add(new GestureSequence
                 {
@@ -265,36 +290,55 @@ public static List<GestureSequence> GetContinuousGestureSequences(List<GestureMa
                     GestureType = currentGesture.Value
                 });
 
-                startIndex = i;
-                currentGesture = gestures[i];
+                startIndex = -1;
+                currentGesture = null;
             }
         }
-        else if (currentGesture != null)
+
+        if (currentGesture != null)
         {
             sequences.Add(new GestureSequence
             {
                 StartIndex = startIndex,
-                Length = i - startIndex,
+                Length = gestures.Count - startIndex,
                 GestureType = currentGesture.Value
             });
-
-            startIndex = -1;
-            currentGesture = null;
         }
+
+        return sequences;
     }
 
-    if (currentGesture != null)
+    public void GenerateGestureSequences(RectTransform timelinePanel, Recordable recordable)
     {
-        sequences.Add(new GestureSequence
+        List<GestureManager.Gesture> gestures = recordable.recordedData.Select(x => x.gesture).ToList();
+        List<GestureSequence> sequences = GetContinuousGestureSequences(gestures);
+        foreach (GestureSequence sequence in sequences)
         {
-            StartIndex = startIndex,
-            Length = gestures.Count - startIndex,
-            GestureType = currentGesture.Value
-        });
+            DebugLogger.Instance.Log("Sequence name: " + GestureManager.Instance.GestureToString(sequence.GestureType) + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
+            DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
+            GameObject timelineElement = Instantiate(rightHandTimelineElementPrefab, timelinePanel);
+            timelineElement.SetActive(true);
+            timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
+            timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
+            timelineElement.GetComponent<TimelineUIElement>().SetEvent(GestureManager.Instance.GestureToString(sequence.GestureType));
+        }
+    }    
+
+    public float MapIndexToTimelinePosition(RectTransform _rectTransform, int index)
+    {
+        float rectStartX = 0;
+        float rectEndX =  _rectTransform.GetComponent<RectTransform>().rect.width;
+        int indexStart = 0;
+        int indexEnd = GetSizeOfMainRecordedData(0);
+        //Map index to value scaled between rectStartX and rectEndX
+        float mappedValue = Map(index, indexStart, indexEnd, rectStartX, rectEndX);
+        return mappedValue;
     }
 
-    return sequences;
-}
+    public float Map(float x, float in_min, float in_max, float out_min, float out_max) //From https://forum.unity.com/threads/mapping-or-scaling-values-to-a-new-range.180090/#post-2241099
+    {
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    }
  
     /*private void FindPrevandNextFrames(List<RecordFrameData> recordedData, float currentTime, out RecordFrameData previousFrame, out RecordFrameData nextFrame)
     {
