@@ -259,6 +259,11 @@ public class AssetPoseRecorder : MonoBehaviour
         }
     }
 
+    public void PokeTest()
+    {
+        Debug.Log("Poke test called");
+    }
+
 
     public void SpawnSphere(Transform target)
     {

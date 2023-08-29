@@ -10,7 +10,7 @@ public class Asset : MonoBehaviour
 
     void Awake()
     {
-        AssetMenu.SetActive(false);
+        //AssetMenu.SetActive(false);
     }
 
     void Start()
