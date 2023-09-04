@@ -292,6 +292,13 @@ public class AssetPoseRecorder : MonoBehaviour
         //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
     }
 
+    public void DeleteAsset(GameObject obj)
+    {
+        DebugLogger.Instance.LogInVR("Deleted " + obj.name);        
+        recordableAssets.Remove(obj.GetComponentInChildren<Recordable>());
+        Destroy(obj);
+    }
+
     public void HideMiscObjs()
     {
         foreach (ForceArrow forceArrow in forceArrowsInScene)

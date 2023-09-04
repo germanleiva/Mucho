@@ -42,4 +42,9 @@ public class AssetMenu : MonoBehaviour
     {
         gameObject.SetActive(!gameObject.activeSelf);
     }
+
+    public void hideAssetMenu()
+    {
+        gameObject.SetActive(false);
+    }
 }
