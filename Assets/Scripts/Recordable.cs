@@ -17,7 +17,7 @@ public class Recordable : MonoBehaviour
         None,
         ManualAnimation,
         Physics,
-        Attach
+        Follow
     }
 
     public RecordingMode recordingMode = RecordingMode.None;
@@ -74,6 +74,8 @@ public class Recordable : MonoBehaviour
     public ForceArrow forceArrow;
     public TMPro.TMP_Text playbackGestureText;
     public GestureManager.Gesture currentGesture;
+    
+
     //public GestureManager.Gesture currentRightHandGesture = GestureManager.Gesture.RIGHTHANDNONE;
     
 
@@ -142,9 +144,9 @@ public class Recordable : MonoBehaviour
         }
     }
 
-    public void InsertAssetRecordFrame(int _frameNumber, bool propagateValueToSubsequentFrames = false)
+    public void InsertAssetRecordFrame(int _frameNumber, string _sourceOfAssetChange, bool propagateValueToSubsequentFrames = false)
     {
-        RecordFrameData item = new(transform.position, transform.rotation, showStatus, _frameNumber);
+        RecordFrameData item = new(transform.position, transform.rotation, showStatus, _sourceOfAssetChange, _frameNumber);
         DebugLogger.Instance.Log("Inserting asset record frame at a specific frame number " + _frameNumber);
         recordedData[_frameNumber] = item;
 
@@ -154,6 +156,10 @@ public class Recordable : MonoBehaviour
             for (int i = _frameNumber + 1; i < recordedData.Count; i++)
             {
                 //recordedData[i].showStatusForThisFrame = item.showStatusForThisFrame;
+                if (recordedData[i].SourceOfAssetChange == "Physics")
+                {
+                    break;
+                }
                 recordedData[i].rootPosition = item.rootPosition;
                 recordedData[i].rootRotation = item.rootRotation;
             }
@@ -306,16 +312,18 @@ public class RecordFrameData
     public bool showStatusForThisFrame = true;
     public GestureManager.Gesture gesture;
 
+    public string SourceOfAssetChange = "None";
+
     //public Vector3 force;
 
     //Assets 
-    public RecordFrameData(Vector3 _position, Quaternion _rotation, bool _showStatus, int _frameNumber)
+    public RecordFrameData(Vector3 _position, Quaternion _rotation, bool _showStatus, string _sourceOfAssetChange, int _frameNumber)
     {
         rootPosition = _position;
         rootRotation = _rotation;
         showStatusForThisFrame = _showStatus;
         frameNumber = _frameNumber;
-        //timestamp = _timestamp;
+        SourceOfAssetChange = _sourceOfAssetChange;
     }
 
     //Head
@@ -326,7 +334,7 @@ public class RecordFrameData
         focusSquarePosition = _focusSquarePosition;
         focusSquareRotation = _focusSquareRotation;
         frameNumber = _frameNumber;
-        //timestamp = _timestamp;
+        
     }
 
     //Hands
@@ -364,7 +372,6 @@ public class RecordFrameData
 
         frameNumber = _frameNumber;
 
-        //timestamp = _timestamp;
     }
 
 }

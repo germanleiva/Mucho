@@ -105,44 +105,6 @@ public class GestureManager : MonoBehaviour
         };
     }
 
-
-    /*public void SelectTaskForGesture(Gesture gesture)
-    {
-        //Typecast gestureStr to Gesture
-        
-        switch (gesture)
-        {
-            case Gesture.LEFTHANDNONE:
-                leftHandGestureText.text = "None";
-                break;
-            case Gesture.LEFTHANDMENUOPEN:
-                leftHandGestureText.text = "Menu Open";
-                break;
-            case Gesture.LEFTHANDGRAB:
-                leftHandGestureText.text = "Closed";
-                break;    
-            case Gesture.LEFTHANDPINCH:
-                leftHandGestureText.text = "Pinch";
-                break;
-            case Gesture.LEFTHANDTHROW:
-                leftHandGestureText.text = "Open";
-                break;
-            case Gesture.RIGHTHANDGRAB:
-                rightHandGestureText.text = "Closed";
-                break;
-            case Gesture.RIGHTHANDNONE:
-                rightHandGestureText.text = "None";
-                break;
-            case Gesture.RIGHTHANDTHROW:
-                rightHandGestureText.text = "Open";
-                break;
-            case Gesture.RIGHTHANDPINCH:
-                rightHandGestureText.text = "Pinch";
-                break;
-            default:
-                break;
-        }
-    }*/
 }
 
 public class GestureSequence

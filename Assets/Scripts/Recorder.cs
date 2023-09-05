@@ -19,7 +19,7 @@ public class Recorder : MonoBehaviour
     public bool isMainPlaybackOn = false;
     public int recordStartFrame;
     public int recordedFramesTotal;
-
+  
     private bool isAutomaticPlayback = false;
 
     readonly List<float> handGuideTimePoints = new();
@@ -29,9 +29,11 @@ public class Recorder : MonoBehaviour
     [SerializeField]
     RectTransform leftHandTimelinePanel;
     [SerializeField]
-    GameObject rightHandTimelineElementPrefab;
+    GameObject handTimelineElementPrefab;
     [SerializeField]
-    GameObject leftHandTimelineElementPrefab;
+    GameObject assetTimelineElementPrefab;
+    [SerializeField]
+     RectTransform playbackPanelTransform;
 
     void Awake()
     {
@@ -104,7 +106,7 @@ public class Recorder : MonoBehaviour
         GenerateGestureSequences(leftHandTimelinePanel, objectsToRecord[1]);
         GenerateGestureSequences(rightHandTimelinePanel, objectsToRecord[2]);
 
-        VisualizePath();
+        //VisualizePath();
         PreparePlayback();
     }
 
@@ -316,13 +318,105 @@ public class Recorder : MonoBehaviour
         {
             DebugLogger.Instance.Log("Sequence name: " + GestureManager.Instance.GestureToString(sequence.GestureType) + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
             DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
-            GameObject timelineElement = Instantiate(rightHandTimelineElementPrefab, timelinePanel);
+            GameObject timelineElement = Instantiate(handTimelineElementPrefab, timelinePanel);
             timelineElement.SetActive(true);
             timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
             timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
             timelineElement.GetComponent<TimelineUIElement>().SetEvent(GestureManager.Instance.GestureToString(sequence.GestureType));
         }
     }    
+
+    public List<AssetChangeSequence> GetContinuousChangeSequences(List<string> changes)
+    {
+        List<AssetChangeSequence> sequences = new List<AssetChangeSequence>();
+
+        int startIndex = -1;
+        string currentChange = null;
+
+        for (int i = 0; i < changes.Count; i++)
+        {
+            if (changes[i] != "None")
+            {
+                if (currentChange == null || currentChange == changes[i])
+                {
+                    if (currentChange == null)
+                    {
+                        currentChange = changes[i];
+                        startIndex = i;
+                    }
+                }
+                else
+                {
+                    sequences.Add(new AssetChangeSequence
+                    {
+                        StartIndex = startIndex,
+                        Length = i - startIndex,
+                        SourceOfAssetChange = currentChange
+                    });
+
+                    startIndex = i;
+                    currentChange = changes[i];
+                }
+            }
+            else if (currentChange != null)
+            {
+                sequences.Add(new AssetChangeSequence
+                {
+                    StartIndex = startIndex,
+                    Length = i - startIndex,
+                    SourceOfAssetChange = currentChange
+                });
+
+                startIndex = -1;
+                currentChange = null;
+            }
+        }
+
+        if (currentChange != null)
+        {
+            sequences.Add(new AssetChangeSequence
+            {
+                StartIndex = startIndex,
+                Length = changes.Count - startIndex,
+                SourceOfAssetChange = currentChange
+            });
+        }
+
+        return sequences;
+    }
+
+    public void GenerateAssetChangeSequences(RectTransform timelinePanel, Recordable recordable)
+    {
+        List<string> changes = recordable.recordedData.Select(x => x.SourceOfAssetChange).ToList();
+        List<AssetChangeSequence> sequences = GetContinuousChangeSequences(changes);
+        foreach (AssetChangeSequence sequence in sequences)
+        {
+            DebugLogger.Instance.Log("Sequence name: " + sequence.SourceOfAssetChange + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
+            DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
+            GameObject timelineElement = Instantiate(assetTimelineElementPrefab, timelinePanel);
+            timelineElement.SetActive(true);
+            timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
+            timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
+            timelineElement.GetComponent<TimelineUIElement>().SetEvent(sequence.SourceOfAssetChange);
+        }
+    }
+
+    public void CreateAssetTimeline(GameObject timelinePanelPrefab)
+    {
+        //GenerateGestureSequences(timelinePanel, recordable);
+        int recordableCounter = 0;
+        foreach (var recordable in AssetPoseRecorder.Instance.recordableAssets)
+        {
+            ++recordableCounter;
+            if (recordable.recordedData.Count > 0)
+            {
+                GameObject timelinePanel = Instantiate(timelinePanelPrefab, playbackPanelTransform);
+                timelinePanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(timelinePanel.GetComponent<RectTransform>().anchoredPosition.x, timelinePanel.GetComponent<RectTransform>().anchoredPosition.y - recordableCounter * 100);
+                timelinePanel.SetActive(true);
+                GenerateAssetChangeSequences(timelinePanel.GetComponent<RectTransform>(), recordable);
+            }   
+        }
+    }
 
     public float MapIndexToTimelinePosition(RectTransform _rectTransform, int index)
     {
@@ -340,25 +434,6 @@ public class Recorder : MonoBehaviour
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
  
-    /*private void FindPrevandNextFrames(List<RecordFrameData> recordedData, float currentTime, out RecordFrameData previousFrame, out RecordFrameData nextFrame)
-    {
-        previousFrame = null;
-        nextFrame = null;
-        for (int i = 0; i < recordedData.Count; i++) //TODO: Replace with binary search?
-        {
-            var data = recordedData[i];
-            if (data.timestamp <= currentTime)
-            {
-                previousFrame = data;
-            }
-            else
-            {
-                nextFrame = data;
-                break;
-            }
-        } 
-    }*/
-
     int frameCount = 0;
 
     private void FixedUpdate()

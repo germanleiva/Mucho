@@ -9,8 +9,6 @@ public class AssetPoseRecorder : MonoBehaviour
     public static AssetPoseRecorder Instance { get; private set; }
 
     public List <Recordable> recordableAssets = new();
-    
-    //public Recordable currentActiveRecordable;
 
     public Recorder mainRecorder;
 
@@ -18,8 +16,6 @@ public class AssetPoseRecorder : MonoBehaviour
     public List<ForceArrow> forceArrowsInScene = new();
 
     Vector3 lastAssetPosition = Vector3.zero;
-
-    //public Recordable[] objectsToRecord;
 
     // Start is called before the first frame update
 
@@ -78,7 +74,7 @@ public class AssetPoseRecorder : MonoBehaviour
     public void AttachToLeftHand(Recordable recordable)
     {
         DebugLogger.Instance.Log("Attach called for " + recordable.playbackObject.name);
-        recordable.recordingMode = Recordable.RecordingMode.Attach;
+        recordable.recordingMode = Recordable.RecordingMode.Follow;
         recordable.CopyPoseFrom(mainRecorder.objectsToRecord[1], (int)mainRecorder.playbackSlider.value);
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[1].playbackObject.transform);
     }
@@ -86,7 +82,7 @@ public class AssetPoseRecorder : MonoBehaviour
     public void AttachToRightHand(Recordable recordable)
     {
         DebugLogger.Instance.Log("Attach called for " + recordable.playbackObject.name);
-        recordable.recordingMode = Recordable.RecordingMode.Attach;
+        recordable.recordingMode = Recordable.RecordingMode.Follow;
         recordable.CopyPoseFrom(mainRecorder.objectsToRecord[2], (int)mainRecorder.playbackSlider.value);
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[2].playbackObject.transform);
     }
@@ -94,7 +90,7 @@ public class AssetPoseRecorder : MonoBehaviour
     public void Detach(Recordable recordable)
     {
         DebugLogger.Instance.Log("Detach called for " + recordable.playbackObject.name);
-        recordable.recordingMode = Recordable.RecordingMode.Attach;
+        recordable.recordingMode = Recordable.RecordingMode.Follow;
         recordable.CopyPoseFrom(recordable, (int)mainRecorder.playbackSlider.value, true);
         //recordable.playbackObject.transform.SetParent(null);
     }
@@ -137,7 +133,7 @@ public class AssetPoseRecorder : MonoBehaviour
         {
             foreach(var data in mainRecorder.objectsToRecord[0].recordedData)
             {
-                recordable.recordedData.Add(new RecordFrameData(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, data.frameNumber));
+                recordable.recordedData.Add(new RecordFrameData(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", data.frameNumber));
             }
         }
     }
@@ -147,20 +143,13 @@ public class AssetPoseRecorder : MonoBehaviour
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         DebugLogger.Instance.Log("StopRecording in " + recordable.playbackObject.name);
         recordable.recordingMode = Recordable.RecordingMode.None;
-        //recordable.isAssetRecordingOn = false;
-        //recordable.isAssetPlaybackOn = true;
-        //mainRecorder.playbackSlider.value = 0;
-
     }
 
     public void ResetRecording(Recordable recordable)
     {
         DebugLogger.Instance.Log("ResetRecording in " + recordable.playbackObject.name);
         recordable.recordingMode = Recordable.RecordingMode.None;
-        //recordable.isAssetRecordingOn = false;
-        //recordable.isAssetPlaybackOn = false;
         recordable.ResetData();
-        //mainRecorder.playbackSlider.value = 0;
     }
    
    public float movementRecordThreshold;
@@ -186,7 +175,7 @@ public class AssetPoseRecorder : MonoBehaviour
                 {
                     DebugLogger.Instance.Log("Added new frame data for " + recordable.playbackObject.name + " at " + mainRecorder.playbackSlider.value);
 
-                    recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, true);
+                    recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "None", true);
                     //Increment the slider value by a small value proportional to the total recording time
                     mainRecorder.playbackSlider.value += playbackSpeed;
                 }
@@ -195,11 +184,11 @@ public class AssetPoseRecorder : MonoBehaviour
             }
             else if(recordable.recordingMode == Recordable.RecordingMode.Physics)
             {
-                recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, true);
+                recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "Physics", true);
                 //Increment the slider value by frame duration
                 mainRecorder.playbackSlider.value += 1;//Time.deltaTime;
             }
-            else if(recordable.recordingMode == Recordable.RecordingMode.Attach)
+            else if(recordable.recordingMode == Recordable.RecordingMode.Follow)
             {
                 //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, true);
                 //Increment the slider value by frame duration
@@ -216,7 +205,7 @@ public class AssetPoseRecorder : MonoBehaviour
             
             foreach (var recordable in recordableAssets)
             {
-                if (recordable.playbackObject != null)
+                if (recordable.playbackObject != null && recordable.recordedData.Count > 0)
                 {
                     //DebugLogger.Instance.Log("Playing back " + recordable.playbackObject.name + " at " + currentFrameNum);
                     recordable.playbackObject.transform.position = recordable.recordedData[currentFrameNum].rootPosition;
@@ -337,4 +326,12 @@ public class AssetPoseRecorder : MonoBehaviour
              
     }
    
+}
+
+public class AssetChangeSequence
+{
+    public string SourceOfAssetChange { get; set; } //None, Physics, Follow
+    public int StartIndex { get; set; }
+    public int Length { get; set; }
+    //public GestureManager.Gesture GestureType { get; set; }
 }
