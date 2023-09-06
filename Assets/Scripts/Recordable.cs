@@ -175,29 +175,83 @@ public class Recordable : MonoBehaviour
         }
     }
 
-    public void CopyPoseFrom(Recordable other, int _frameNumber, bool copyFirstRecord = false)
+    public void CopyPoseFromRecordable(Recordable other, int _frameStart, int _frameEnd = 0, bool copyFirstRecord = false, bool copyRotation = false)
     {
         if (copyFirstRecord)
         {
-            DebugLogger.Instance.Log("Copying first pose from " + other.gameObject.name + " to " + gameObject.name + " from frame number " + _frameNumber + " to " + recordedData.Count);
-            for (int i = _frameNumber + 1; i < recordedData.Count; i++)
+            DebugLogger.Instance.Log("Copying first pose from " + other.gameObject.name + " to " + gameObject.name + " from frame number " + _frameStart + " to " + recordedData.Count);
+            recordedData[_frameStart].SourceOfAssetChange = "Unfollow()";
+            for (int i = _frameStart + 1; i < recordedData.Count; i++)
             {
-                recordedData[i].rootPosition = other.recordedData[_frameNumber].rootPosition;
-                recordedData[i].rootRotation = other.recordedData[_frameNumber].rootRotation;
+                if(recordedData[i].SourceOfAssetChange == "Physics")
+                {
+                    break;
+                }
+                recordedData[i].rootPosition = other.recordedData[_frameStart].rootPosition;
+                //recordedData[i].SourceOfAssetChange = "Unfollow(" + other.gameObject.name + ")";
+                if(copyRotation) recordedData[i].rootRotation = other.recordedData[_frameStart].rootRotation;
             }
         }
         else
         {
-            Vector3 offset = transform.position - other.gameObject.transform.position;
-            DebugLogger.Instance.Log("Copying all pose data from " + other.gameObject.name + " to " + gameObject.name + " from frame number " + _frameNumber + " to " + recordedData.Count);
-            for (int i = _frameNumber + 1; i < recordedData.Count; i++)
+            Vector3 offset = recordedData[_frameStart].rootPosition - other.recordedData[_frameStart].rootPosition;
+            DebugLogger.Instance.Log("Copying all pose data from " + other.gameObject.name + " to " + gameObject.name + " from frame number " + _frameStart + " to " + recordedData.Count);
+            if(_frameEnd == 0)
             {
-                recordedData[i].rootPosition = other.recordedData[i].rootPosition;
-                recordedData[i].rootRotation = other.recordedData[i].rootRotation;
+                _frameEnd = recordedData.Count;
+            }
+            for (int i = _frameStart + 1; i < _frameEnd; i++)
+            {
+                if(recordedData[i].SourceOfAssetChange == "Physics")
+                {
+                    break;
+                }
+                recordedData[i].rootPosition = other.recordedData[i].rootPosition + offset;
+                recordedData[i].SourceOfAssetChange = "Follow(" + other.gameObject.name.Remove(other.gameObject.name.Length - 6) + ")"; //Remove the last five characters from the string other.gameObject.name  
+                         
+                if(copyRotation) recordedData[i].rootRotation = other.recordedData[i].rootRotation;
             }
         }
     }
 
+    public void CopyPoseFromFocusSquare(Recordable other, int _frameStart, int _frameEnd = 0, bool copyFirstRecord = false, bool copyRotation = false)
+    {
+        if (copyFirstRecord)
+        {
+            DebugLogger.Instance.Log("Copying first pose from " + other.gameObject.name + " to " + gameObject.name + " from frame number " + _frameStart + " to " + recordedData.Count);
+            recordedData[_frameStart].SourceOfAssetChange = "Unfollow()";
+            for (int i = _frameStart + 1; i < recordedData.Count; i++)
+            {
+                if(recordedData[i].SourceOfAssetChange == "Physics")
+                {
+                    break;
+                }
+                recordedData[i].rootPosition = other.recordedData[_frameStart].focusSquarePosition;
+                //recordedData[i].SourceOfAssetChange = "Unfollow(" + other.gameObject.name + ")";
+                if(copyRotation) recordedData[i].rootRotation = other.recordedData[_frameStart].focusSquareRotation;
+            }
+        }
+        else
+        {
+            Vector3 offset = recordedData[_frameStart].rootPosition - other.recordedData[_frameStart].focusSquarePosition;
+            DebugLogger.Instance.Log("Copying all pose data from " + other.gameObject.name + " to " + gameObject.name + " from frame number " + _frameStart + " to " + recordedData.Count);
+            if(_frameEnd == 0)
+            {
+                _frameEnd = recordedData.Count;
+            }
+            for (int i = _frameStart + 1; i < _frameEnd; i++)
+            {
+                if(recordedData[i].SourceOfAssetChange == "Physics")
+                {
+                    break;
+                }
+                recordedData[i].rootPosition = other.recordedData[i].focusSquarePosition + offset;
+                recordedData[i].SourceOfAssetChange = "Follow(" + other.gameObject.name.Remove(other.gameObject.name.Length - 6) + ")"; //Remove the last five characters from the string other.gameObject.name  
+                         
+                if(copyRotation) recordedData[i].rootRotation = other.recordedData[i].focusSquareRotation;
+            }
+        }
+    }
 
     public void Record(int frameNum)
     {
@@ -238,6 +292,7 @@ public class Recordable : MonoBehaviour
             //isAssetRecordingOn = false;
             //isSimulationOn = false;
             ResetPhysicsProperties();
+            InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, "Collide(" + collision.collider.name + ")", false);
             recordingMode = Recordable.RecordingMode.None;
             Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         }

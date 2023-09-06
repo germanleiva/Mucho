@@ -27,6 +27,8 @@ public class AssetPoseRecorder : MonoBehaviour
     public GameObject hmd;
 
     public Material defaultMaterial, transparentMaterial;
+
+    int firstFrameOfManualRecording, lastFrameOfManualRecording;
     
     private void Awake()
     {
@@ -75,7 +77,7 @@ public class AssetPoseRecorder : MonoBehaviour
     {
         DebugLogger.Instance.Log("Attach called for " + recordable.playbackObject.name);
         recordable.recordingMode = Recordable.RecordingMode.Follow;
-        recordable.CopyPoseFrom(mainRecorder.objectsToRecord[1], (int)mainRecorder.playbackSlider.value);
+        recordable.CopyPoseFromRecordable(mainRecorder.objectsToRecord[1], (int)mainRecorder.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[1].playbackObject.transform);
     }
 
@@ -83,15 +85,31 @@ public class AssetPoseRecorder : MonoBehaviour
     {
         DebugLogger.Instance.Log("Attach called for " + recordable.playbackObject.name);
         recordable.recordingMode = Recordable.RecordingMode.Follow;
-        recordable.CopyPoseFrom(mainRecorder.objectsToRecord[2], (int)mainRecorder.playbackSlider.value);
+        recordable.CopyPoseFromRecordable(mainRecorder.objectsToRecord[2], (int)mainRecorder.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
+        //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[2].playbackObject.transform);
+    }
+
+    public void AttachToLeftHandFocusSquare(Recordable recordable)
+    {
+        DebugLogger.Instance.Log("Attach called for " + recordable.playbackObject.name);
+        recordable.recordingMode = Recordable.RecordingMode.Follow;
+        recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[1], (int)mainRecorder.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
+        //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[1].playbackObject.transform);
+    }
+
+    public void AttachToRightHandFocusSquare(Recordable recordable)
+    {
+        DebugLogger.Instance.Log("Attach called for " + recordable.playbackObject.name);
+        recordable.recordingMode = Recordable.RecordingMode.Follow;
+        recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[2], (int)mainRecorder.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[2].playbackObject.transform);
     }
 
     public void Detach(Recordable recordable)
     {
         DebugLogger.Instance.Log("Detach called for " + recordable.playbackObject.name);
-        recordable.recordingMode = Recordable.RecordingMode.Follow;
-        recordable.CopyPoseFrom(recordable, (int)mainRecorder.playbackSlider.value, true);
+        recordable.recordingMode = Recordable.RecordingMode.None;
+        recordable.CopyPoseFromRecordable(recordable, (int)mainRecorder.playbackSlider.value, copyFirstRecord:true, copyRotation:false);
         //recordable.playbackObject.transform.SetParent(null);
     }
 
@@ -100,6 +118,7 @@ public class AssetPoseRecorder : MonoBehaviour
         Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
 
         DebugLogger.Instance.Log("StartRecording in " + recordable.playbackObject.name);
+        firstFrameOfManualRecording = (int)mainRecorder.playbackSlider.value;
         //currentActiveRecordable = recordable;
         recordable.recordingMode = Recordable.RecordingMode.ManualAnimation;
     }
@@ -142,8 +161,80 @@ public class AssetPoseRecorder : MonoBehaviour
     {
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         DebugLogger.Instance.Log("StopRecording in " + recordable.playbackObject.name);
+        lastFrameOfManualRecording = (int)mainRecorder.playbackSlider.value;
+        DebugLogger.Instance.Log("First frame: " + firstFrameOfManualRecording + " Last frame: " + lastFrameOfManualRecording);
+        CheckIfAssetIsFollowingAnything(recordable);
         recordable.recordingMode = Recordable.RecordingMode.None;
     }
+
+    public void CheckIfAssetIsFollowingAnything(Recordable recordable)
+    {
+        // Initialize variables to keep track of the count of the closest objects
+        int leftHandCount = 0;
+        int rightHandCount = 0;
+        int leftFocusSquareCount = 0;
+        int rightFocusSquareCount = 0;
+        int headFocusSquareCount = 0;
+
+        // Iterate over the frames from firstFrameOfManualRecording to lastFrameOfManualRecording
+        for (int i = firstFrameOfManualRecording; i <= lastFrameOfManualRecording; i++)
+        {
+            // Get the RecordFrameData for the current frame
+            var assetFrameData = recordable.recordedData[i];
+            var headFrameData = mainRecorder.objectsToRecord[0].recordedData[i];
+            var leftHandFrameData = mainRecorder.objectsToRecord[1].recordedData[i];
+            var rightHandFrameData = mainRecorder.objectsToRecord[2].recordedData[i];
+
+            // Calculate the distances to the left hand, right hand, left focus square, and right focus square
+            // Note: We need to replace the placeholders below with the actual way to access the positions of these objects
+            float distanceToLeftHand = Vector3.Distance(assetFrameData.rootPosition, leftHandFrameData.rootPosition);
+            float distanceToRightHand = Vector3.Distance(assetFrameData.rootPosition, rightHandFrameData.rootPosition);
+            float distanceToLeftFocusSquare = Vector3.Distance(assetFrameData.rootPosition, leftHandFrameData.focusSquarePosition);
+            float distanceToRightFocusSquare = Vector3.Distance(assetFrameData.rootPosition, rightHandFrameData.focusSquarePosition);
+            float distanceToHeadFocusSquare = Vector3.Distance(assetFrameData.rootPosition, headFrameData.focusSquarePosition);
+
+            // Find the minimum distance and increment the count for the corresponding object
+            float minDistance = Mathf.Min(distanceToLeftHand, distanceToRightHand, distanceToLeftFocusSquare, distanceToRightFocusSquare, distanceToHeadFocusSquare);
+            if (minDistance == distanceToLeftHand) leftHandCount++;
+            else if (minDistance == distanceToRightHand) rightHandCount++;
+            else if (minDistance == distanceToLeftFocusSquare) leftFocusSquareCount++;
+            else if (minDistance == distanceToRightFocusSquare) rightFocusSquareCount++;
+            else headFocusSquareCount++;
+        }
+
+        // Determine which object was closest most frequently and return that information
+        int maxCount = Mathf.Max(leftHandCount, rightHandCount, leftFocusSquareCount, rightFocusSquareCount, headFocusSquareCount);
+        if (maxCount == leftHandCount)
+        {
+            DebugLogger.Instance.Log("Asset is following left hand");            
+            recordable.CopyPoseFromRecordable(mainRecorder.objectsToRecord[1], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
+            recordable.CopyPoseFromRecordable(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
+        }
+        else if (maxCount == rightHandCount)
+        {
+            DebugLogger.Instance.Log("Asset is following right hand");
+            recordable.CopyPoseFromRecordable(mainRecorder.objectsToRecord[2], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
+            recordable.CopyPoseFromRecordable(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
+        }
+        else if (maxCount == leftFocusSquareCount)
+        {
+            DebugLogger.Instance.Log("Asset is following left focus square");
+            //recordable.CopyPoseFrom(mainRecorder.objectsToRecord[1], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
+        }
+        else if (maxCount == rightFocusSquareCount)
+        {
+            DebugLogger.Instance.Log("Asset is following right focus square");
+            //recordable.CopyPoseFrom(mainRecorder.objectsToRecord[2], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
+        }
+        else
+        {
+            DebugLogger.Instance.Log("Asset is following head focus square");
+            //recordable.CopyPoseFrom(mainRecorder.objectsToRecord[0], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
+        }
+  
+    }
+
+
 
     public void ResetRecording(Recordable recordable)
     {
