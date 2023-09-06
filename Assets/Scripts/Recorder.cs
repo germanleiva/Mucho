@@ -401,8 +401,16 @@ public class Recorder : MonoBehaviour
         }
     }
 
+    //List of asset timelines
+    List<GameObject> assetTimelines = new List<GameObject>();
+
     public void CreateAssetTimeline(GameObject timelinePanelPrefab)
     {
+        //Delete all existing asset timelines
+        foreach (var timeline in assetTimelines)
+        {
+            Destroy(timeline);
+        }
         //GenerateGestureSequences(timelinePanel, recordable);
         int recordableCounter = 0;
         foreach (var recordable in AssetPoseRecorder.Instance.recordableAssets)
@@ -411,6 +419,7 @@ public class Recorder : MonoBehaviour
             if (recordable.recordedData.Count > 0)
             {
                 GameObject timelinePanel = Instantiate(timelinePanelPrefab, playbackPanelTransform);
+                assetTimelines.Add(timelinePanel);
                 timelinePanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(timelinePanel.GetComponent<RectTransform>().anchoredPosition.x, timelinePanel.GetComponent<RectTransform>().anchoredPosition.y - recordableCounter * 100);
                 timelinePanel.SetActive(true);
                 GenerateAssetChangeSequences(timelinePanel.GetComponent<RectTransform>(), recordable);

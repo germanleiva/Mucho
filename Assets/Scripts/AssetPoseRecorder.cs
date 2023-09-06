@@ -105,6 +105,14 @@ public class AssetPoseRecorder : MonoBehaviour
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[2].playbackObject.transform);
     }
 
+    public void AttachToHeadFocusSquare(Recordable recordable)
+    {
+        DebugLogger.Instance.Log("Attach called for " + recordable.playbackObject.name);
+        recordable.recordingMode = Recordable.RecordingMode.Follow;
+        recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[0], (int)mainRecorder.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
+        //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[0].playbackObject.transform);
+    }
+
     public void Detach(Recordable recordable)
     {
         DebugLogger.Instance.Log("Detach called for " + recordable.playbackObject.name);
@@ -219,17 +227,20 @@ public class AssetPoseRecorder : MonoBehaviour
         else if (maxCount == leftFocusSquareCount)
         {
             DebugLogger.Instance.Log("Asset is following left focus square");
-            //recordable.CopyPoseFrom(mainRecorder.objectsToRecord[1], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
+            recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[1], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
+            recordable.CopyPoseFromFocusSquare(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
         }
         else if (maxCount == rightFocusSquareCount)
         {
             DebugLogger.Instance.Log("Asset is following right focus square");
-            //recordable.CopyPoseFrom(mainRecorder.objectsToRecord[2], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
+            recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[2], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
+            recordable.CopyPoseFromFocusSquare(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
         }
         else
         {
             DebugLogger.Instance.Log("Asset is following head focus square");
-            //recordable.CopyPoseFrom(mainRecorder.objectsToRecord[0], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
+            recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[0], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
+            recordable.CopyPoseFromFocusSquare(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
         }
   
     }

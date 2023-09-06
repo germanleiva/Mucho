@@ -246,7 +246,7 @@ public class Recordable : MonoBehaviour
                     break;
                 }
                 recordedData[i].rootPosition = other.recordedData[i].focusSquarePosition + offset;
-                recordedData[i].SourceOfAssetChange = "Follow(" + other.gameObject.name.Remove(other.gameObject.name.Length - 6) + ")"; //Remove the last five characters from the string other.gameObject.name  
+                recordedData[i].SourceOfAssetChange = "Follow(" + other.gameObject.name.Remove(other.gameObject.name.Length - 6) + "FocusSquare)"; //Remove the last five characters from the string other.gameObject.name  
                          
                 if(copyRotation) recordedData[i].rootRotation = other.recordedData[i].focusSquareRotation;
             }
@@ -291,8 +291,8 @@ public class Recordable : MonoBehaviour
             DebugLogger.Instance.Log("Collision detected between " + gameObject.name + " and " + collision.collider.name);
             //isAssetRecordingOn = false;
             //isSimulationOn = false;
-            ResetPhysicsProperties();
             InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, "Collide(" + collision.collider.name + ")", false);
+            ResetPhysicsProperties();            
             recordingMode = Recordable.RecordingMode.None;
             Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         }
