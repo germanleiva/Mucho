@@ -156,7 +156,7 @@ public class Recordable : MonoBehaviour
             for (int i = _frameNumber + 1; i < recordedData.Count; i++)
             {
                 //recordedData[i].showStatusForThisFrame = item.showStatusForThisFrame;
-                if (recordedData[i].SourceOfAssetChange == "Physics")
+                if (recordedData[i].SourceOfAssetChange == "ApplyForce()")
                 {
                     break;
                 }
@@ -172,6 +172,15 @@ public class Recordable : MonoBehaviour
         for (int i = _frameNumber + 1; i < recordedData.Count; i++)
         {
                 recordedData[i].showStatusForThisFrame = showStatus;
+                //Assign Hide or Show to recordedData[i].SourceOfAssetChange depending on the value of showStatus
+                if(showStatus)
+                {
+                    recordedData[i].SourceOfAssetChange = "Show()";
+                }
+                else
+                {
+                    recordedData[i].SourceOfAssetChange = "Hide()";
+                }
         }
     }
 
@@ -180,10 +189,10 @@ public class Recordable : MonoBehaviour
         if (copyFirstRecord)
         {
             DebugLogger.Instance.Log("Copying first pose from " + other.gameObject.name + " to " + gameObject.name + " from frame number " + _frameStart + " to " + recordedData.Count);
-            recordedData[_frameStart].SourceOfAssetChange = "Unfollow()";
+            //recordedData[_frameStart].SourceOfAssetChange = "Unfollow()";
             for (int i = _frameStart + 1; i < recordedData.Count; i++)
             {
-                if(recordedData[i].SourceOfAssetChange == "Physics")
+                if(recordedData[i].SourceOfAssetChange == "ApplyForce()")
                 {
                     break;
                 }
@@ -202,7 +211,7 @@ public class Recordable : MonoBehaviour
             }
             for (int i = _frameStart + 1; i < _frameEnd; i++)
             {
-                if(recordedData[i].SourceOfAssetChange == "Physics")
+                if(recordedData[i].SourceOfAssetChange == "ApplyForce()")
                 {
                     break;
                 }
@@ -219,10 +228,10 @@ public class Recordable : MonoBehaviour
         if (copyFirstRecord)
         {
             DebugLogger.Instance.Log("Copying first pose from " + other.gameObject.name + " to " + gameObject.name + " from frame number " + _frameStart + " to " + recordedData.Count);
-            recordedData[_frameStart].SourceOfAssetChange = "Unfollow()";
+            //recordedData[_frameStart].SourceOfAssetChange = "Unfollow()";
             for (int i = _frameStart + 1; i < recordedData.Count; i++)
             {
-                if(recordedData[i].SourceOfAssetChange == "Physics")
+                if(recordedData[i].SourceOfAssetChange == "ApplyForce()")
                 {
                     break;
                 }
@@ -241,7 +250,7 @@ public class Recordable : MonoBehaviour
             }
             for (int i = _frameStart + 1; i < _frameEnd; i++)
             {
-                if(recordedData[i].SourceOfAssetChange == "Physics")
+                if(recordedData[i].SourceOfAssetChange == "ApplyForce()")
                 {
                     break;
                 }

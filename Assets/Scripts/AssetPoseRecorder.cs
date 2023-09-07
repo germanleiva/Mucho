@@ -172,6 +172,7 @@ public class AssetPoseRecorder : MonoBehaviour
         lastFrameOfManualRecording = (int)mainRecorder.playbackSlider.value;
         DebugLogger.Instance.Log("First frame: " + firstFrameOfManualRecording + " Last frame: " + lastFrameOfManualRecording);
         CheckIfAssetIsFollowingAnything(recordable);
+        mainRecorder.RefreshAssetsTimeline(mainRecorder.assetTimelinePanelPrefab);
         recordable.recordingMode = Recordable.RecordingMode.None;
     }
 
@@ -362,6 +363,7 @@ public class AssetPoseRecorder : MonoBehaviour
         GameObject obj = Instantiate(spherePrefab, target.position, Quaternion.identity);
         obj.SetActive(true);
         recordableAssets.Add(obj.GetComponentInChildren<Recordable>());
+        mainRecorder.RefreshAssetsTimeline(mainRecorder.assetTimelinePanelPrefab);
         //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
     }
 

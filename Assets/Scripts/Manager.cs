@@ -4,16 +4,7 @@ using UnityEngine;
 
 public class Manager : MonoBehaviour
 {
-    public GameObject spherePrefab;
-    public GameObject cubePrefab;
-    public GameObject cylinderPrefab;
-    public GameObject textAssetPrefab;
-
-    public GameObject hmd;
-
     public GameObject leftHandMenu;
-
-    public GameObject forceArrowPrefab;
 
     public AppState currAppState;
 

@@ -12,7 +12,6 @@ public class Recorder : MonoBehaviour
     //public GameObject playbackUI;
     public GameObject controlUI;
     public Slider playbackSlider;
-    public Slider timelinePlaybackSlider;
     public GameObject playButton;
     public Recordable[] objectsToRecord;
     public bool isMainRecordingOn = false;
@@ -34,6 +33,13 @@ public class Recorder : MonoBehaviour
     GameObject assetTimelineElementPrefab;
     [SerializeField]
      RectTransform playbackPanelTransform;
+     [SerializeField]
+    GameObject hideTimelinePanelPrefab;
+    [SerializeField]
+    GameObject showTimelinePanelPrefab;
+     public GameObject assetTimelinePanelPrefab;
+     public GameObject collisionTimelinePanel;
+    
 
     void Awake()
     {
@@ -150,9 +156,9 @@ public class Recorder : MonoBehaviour
             playButton.SetActive(true);
 
             // Set up the slider.
-            playbackSlider.minValue = timelinePlaybackSlider.minValue = 0;
-            playbackSlider.maxValue = timelinePlaybackSlider.maxValue = framesTotal;
-            playbackSlider.value = timelinePlaybackSlider.value = 0;
+            playbackSlider.minValue = 0;
+            playbackSlider.maxValue = framesTotal;
+            playbackSlider.value = 0;
             recordedFramesTotal = framesTotal;
             DebugLogger.Instance.Log("Duration of recording: " + recordedFramesTotal);
 
@@ -393,18 +399,47 @@ public class Recorder : MonoBehaviour
         {
             DebugLogger.Instance.Log("Sequence name: " + sequence.SourceOfAssetChange + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
             DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
-            GameObject timelineElement = Instantiate(assetTimelineElementPrefab, timelinePanel);
-            timelineElement.SetActive(true);
-            timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
-            timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
-            timelineElement.GetComponent<TimelineUIElement>().SetEvent(sequence.SourceOfAssetChange);
+            if(sequence.SourceOfAssetChange.StartsWith("Collide"))
+            {
+                DebugLogger.Instance.Log("Collide event found");
+                RectTransform collisionTimelinePanelTransform = collisionTimelinePanel.GetComponent<RectTransform>();
+                GameObject timelineElement = Instantiate(assetTimelineElementPrefab, collisionTimelinePanelTransform);
+                timelineElement.SetActive(true);
+                timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
+                timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
+                timelineElement.GetComponent<TimelineUIElement>().SetEvent(sequence.SourceOfAssetChange);
+            }
+            else if(sequence.SourceOfAssetChange.StartsWith("Hide"))
+            {
+                GameObject hideElement = Instantiate(hideTimelinePanelPrefab, timelinePanel);
+                hideElement.SetActive(true);
+                hideElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), hideElement.GetComponent<RectTransform>().anchoredPosition.y);
+                //hideElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
+                //hideElement.GetComponent<TimelineUIElement>().SetEvent(sequence.SourceOfAssetChange);
+            }
+            else if(sequence.SourceOfAssetChange.StartsWith("Show"))
+            {
+                GameObject showElement = Instantiate(showTimelinePanelPrefab, timelinePanel);
+                showElement.SetActive(true);
+                showElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), showElement.GetComponent<RectTransform>().anchoredPosition.y);
+                //showElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
+                //showElement.GetComponent<TimelineUIElement>().SetEvent(sequence.SourceOfAssetChange);
+            }
+            else //Other types of events - physics, attach etc
+            {
+                GameObject timelineElement = Instantiate(assetTimelineElementPrefab, timelinePanel);
+                timelineElement.SetActive(true);
+                timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
+                timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
+                timelineElement.GetComponent<TimelineUIElement>().SetEvent(sequence.SourceOfAssetChange);
+            }
         }
     }
 
     //List of asset timelines
     List<GameObject> assetTimelines = new List<GameObject>();
 
-    public void CreateAssetTimeline(GameObject timelinePanelPrefab)
+    public void RefreshAssetsTimeline(GameObject timelinePanelPrefab)
     {
         //Delete all existing asset timelines
         foreach (var timeline in assetTimelines)
@@ -416,12 +451,12 @@ public class Recorder : MonoBehaviour
         foreach (var recordable in AssetPoseRecorder.Instance.recordableAssets)
         {
             ++recordableCounter;
+            GameObject timelinePanel = Instantiate(timelinePanelPrefab, playbackPanelTransform);
+            assetTimelines.Add(timelinePanel);
+            timelinePanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(timelinePanel.GetComponent<RectTransform>().anchoredPosition.x, timelinePanel.GetComponent<RectTransform>().anchoredPosition.y - recordableCounter * 100);
+            timelinePanel.SetActive(true);
             if (recordable.recordedData.Count > 0)
             {
-                GameObject timelinePanel = Instantiate(timelinePanelPrefab, playbackPanelTransform);
-                assetTimelines.Add(timelinePanel);
-                timelinePanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(timelinePanel.GetComponent<RectTransform>().anchoredPosition.x, timelinePanel.GetComponent<RectTransform>().anchoredPosition.y - recordableCounter * 100);
-                timelinePanel.SetActive(true);
                 GenerateAssetChangeSequences(timelinePanel.GetComponent<RectTransform>(), recordable);
             }   
         }
