@@ -52,6 +52,15 @@ public class Manager : MonoBehaviour
         
     }
 
+    public string CleanString(string str)
+    {        
+        if (str.IndexOf('-') == -1)
+        {
+            return str;
+        }
+        return str.Substring(0, str.IndexOf('-'));
+    }
+
     public void OpenLeftHandMenu()
     {
         leftHandMenu.SetActive(true);

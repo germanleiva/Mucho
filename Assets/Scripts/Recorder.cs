@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 public class Recorder : MonoBehaviour
 {
+    public static Recorder Instance { get; private set; }
 
     [Header("Record & Playback")]
     public GameObject rootPlaybackArea;
@@ -19,7 +20,7 @@ public class Recorder : MonoBehaviour
     public int recordStartFrame;
     public int recordedFramesTotal;
   
-    private bool isAutomaticPlayback = false;
+    public bool isAutomaticPlayback = false;
 
     readonly List<float> handGuideTimePoints = new();
     [Header("Timeline UI")]
@@ -43,7 +44,15 @@ public class Recorder : MonoBehaviour
 
     void Awake()
     {
-        
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        } 
     }
 
     void Start()
@@ -403,6 +412,11 @@ public class Recorder : MonoBehaviour
             {
                 DebugLogger.Instance.Log("Collide event found");
                 RectTransform collisionTimelinePanelTransform = collisionTimelinePanel.GetComponent<RectTransform>();
+                //Delete all children of collisionTimelinePanelTransform except the first one
+                for (int i = 1; i < collisionTimelinePanelTransform.childCount; i++)
+                {
+                    Destroy(collisionTimelinePanelTransform.GetChild(i).gameObject);
+                }
                 GameObject timelineElement = Instantiate(assetTimelineElementPrefab, collisionTimelinePanelTransform);
                 timelineElement.SetActive(true);
                 timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
@@ -455,6 +469,8 @@ public class Recorder : MonoBehaviour
             assetTimelines.Add(timelinePanel);
             timelinePanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(timelinePanel.GetComponent<RectTransform>().anchoredPosition.x, timelinePanel.GetComponent<RectTransform>().anchoredPosition.y - recordableCounter * 100);
             timelinePanel.SetActive(true);
+            timelinePanel.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text = Manager.Instance.CleanString(recordable.name);
+
             if (recordable.recordedData.Count > 0)
             {
                 GenerateAssetChangeSequences(timelinePanel.GetComponent<RectTransform>(), recordable);

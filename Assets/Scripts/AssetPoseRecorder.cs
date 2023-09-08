@@ -26,7 +26,7 @@ public class AssetPoseRecorder : MonoBehaviour
     public GameObject textAsset;
     public GameObject hmd;
 
-    public Material defaultMaterial, transparentMaterial;
+    public Material defaultMaterial, transparentMaterial, translucentMaterial;
 
     int firstFrameOfManualRecording, lastFrameOfManualRecording;
     
@@ -51,7 +51,7 @@ public class AssetPoseRecorder : MonoBehaviour
     public void Hide(Recordable recordable)
     {
         //Turn the material in recordable.playbackObject to 0.5 alpha
-        recordable.playbackObject.GetComponent<MeshRenderer>().material = transparentMaterial;
+        recordable.playbackObject.GetComponent<MeshRenderer>().material = translucentMaterial;
         recordable.showStatus = false;
         //if(recordable.isAssetRecordingOn)
         if(mainRecorder.GetSizeOfMainRecordedData() > 0)
@@ -59,6 +59,7 @@ public class AssetPoseRecorder : MonoBehaviour
             DebugLogger.Instance.Log("Recorded hide for  " + recordable.playbackObject.name + " at " + mainRecorder.playbackSlider.value);
             recordable.RecordAndPropagateAssetShowStatus((int)mainRecorder.playbackSlider.value);
         }
+        mainRecorder.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
     }
 
     public void Show(Recordable recordable)
@@ -71,6 +72,7 @@ public class AssetPoseRecorder : MonoBehaviour
             DebugLogger.Instance.Log("Recorded show for " + recordable.playbackObject.name + " at " + mainRecorder.playbackSlider.value);
             recordable.RecordAndPropagateAssetShowStatus((int)mainRecorder.playbackSlider.value);
         }
+        mainRecorder.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
     }
 
     public void AttachToLeftHand(Recordable recordable)
@@ -78,6 +80,7 @@ public class AssetPoseRecorder : MonoBehaviour
         DebugLogger.Instance.Log("Attach called for " + recordable.playbackObject.name);
         recordable.recordingMode = Recordable.RecordingMode.Follow;
         recordable.CopyPoseFromRecordable(mainRecorder.objectsToRecord[1], (int)mainRecorder.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
+        mainRecorder.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[1].playbackObject.transform);
     }
 
@@ -86,6 +89,7 @@ public class AssetPoseRecorder : MonoBehaviour
         DebugLogger.Instance.Log("Attach called for " + recordable.playbackObject.name);
         recordable.recordingMode = Recordable.RecordingMode.Follow;
         recordable.CopyPoseFromRecordable(mainRecorder.objectsToRecord[2], (int)mainRecorder.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
+        mainRecorder.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[2].playbackObject.transform);
     }
 
@@ -94,6 +98,7 @@ public class AssetPoseRecorder : MonoBehaviour
         DebugLogger.Instance.Log("Attach called for " + recordable.playbackObject.name);
         recordable.recordingMode = Recordable.RecordingMode.Follow;
         recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[1], (int)mainRecorder.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
+        mainRecorder.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[1].playbackObject.transform);
     }
 
@@ -102,6 +107,7 @@ public class AssetPoseRecorder : MonoBehaviour
         DebugLogger.Instance.Log("Attach called for " + recordable.playbackObject.name);
         recordable.recordingMode = Recordable.RecordingMode.Follow;
         recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[2], (int)mainRecorder.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
+        mainRecorder.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[2].playbackObject.transform);
     }
 
@@ -110,6 +116,7 @@ public class AssetPoseRecorder : MonoBehaviour
         DebugLogger.Instance.Log("Attach called for " + recordable.playbackObject.name);
         recordable.recordingMode = Recordable.RecordingMode.Follow;
         recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[0], (int)mainRecorder.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
+        mainRecorder.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[0].playbackObject.transform);
     }
 
@@ -118,6 +125,7 @@ public class AssetPoseRecorder : MonoBehaviour
         DebugLogger.Instance.Log("Detach called for " + recordable.playbackObject.name);
         recordable.recordingMode = Recordable.RecordingMode.None;
         recordable.CopyPoseFromRecordable(recordable, (int)mainRecorder.playbackSlider.value, copyFirstRecord:true, copyRotation:false);
+        mainRecorder.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
         //recordable.playbackObject.transform.SetParent(null);
     }
 
@@ -244,6 +252,8 @@ public class AssetPoseRecorder : MonoBehaviour
             recordable.CopyPoseFromFocusSquare(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
         }
   
+        //Finally, refresh the timeline
+        mainRecorder.RefreshAssetsTimeline(mainRecorder.assetTimelinePanelPrefab);
     }
 
 
@@ -278,7 +288,7 @@ public class AssetPoseRecorder : MonoBehaviour
                 {
                     DebugLogger.Instance.Log("Added new frame data for " + recordable.playbackObject.name + " at " + mainRecorder.playbackSlider.value);
 
-                    recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "None", true);
+                    recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "Collide(" + Manager.Instance.CleanString(recordable.gameObject.name) + ", hand)", true);
                     //Increment the slider value by a small value proportional to the total recording time
                     mainRecorder.playbackSlider.value += playbackSpeed;
                 }
@@ -287,7 +297,7 @@ public class AssetPoseRecorder : MonoBehaviour
             }
             else if(recordable.recordingMode == Recordable.RecordingMode.Physics)
             {
-                recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "Physics", true);
+                recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "ApplyForce()", true);
                 //Increment the slider value by frame duration
                 mainRecorder.playbackSlider.value += 1;//Time.deltaTime;
             }
@@ -322,13 +332,14 @@ public class AssetPoseRecorder : MonoBehaviour
                     else
                     {
                         //DebugLogger.Instance.Log("Hiding " + recordable.playbackObject.name + " at " + currentFrameNum);
-                        recordable.playbackObject.GetComponent<MeshRenderer>().material = transparentMaterial;
+                        if(mainRecorder.isAutomaticPlayback) 
+                            recordable.playbackObject.GetComponent<MeshRenderer>().material = transparentMaterial;
+                        else 
+                            recordable.playbackObject.GetComponent<MeshRenderer>().material = translucentMaterial;
                     }
-
                 }
             }
         }
-        //}
     }
 
     public void EnableGrabForAllAssets()
