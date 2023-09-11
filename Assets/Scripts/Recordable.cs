@@ -144,20 +144,21 @@ public class Recordable : MonoBehaviour
         }
     }
 
-    public void InsertAssetRecordFrame(int _frameNumber, string _sourceOfAssetChange, bool propagateValueToSubsequentFrames = false)
+    public void InsertAssetRecordFrame(int _frameNumber, string action = "None", string sourceOfAction = "None",  bool propagateValueToSubsequentFrames = false)
     {
-        RecordFrameData item = new(transform.position, transform.rotation, showStatus, _sourceOfAssetChange, _frameNumber);
+        RecordFrameData item = new(transform.position, transform.rotation, showStatus, action, sourceOfAction, _frameNumber);
         DebugLogger.Instance.Log("Inserting asset record frame at a specific frame number " + _frameNumber);
         recordedData[_frameNumber] = item;
 
         if (propagateValueToSubsequentFrames) // Propagate the value to subsequent frames
         {
-            DebugLogger.Instance.Log("Propagating value to subsequent frames, starting from index " + _frameNumber + " to " + recordedData.Count);
+            DebugLogger.Instance.Log("InsertAssetRecordFrame() - Propagating value to subsequent frames, starting from index " + _frameNumber + " to " + recordedData.Count);
             for (int i = _frameNumber + 1; i < recordedData.Count; i++)
             {
                 //recordedData[i].showStatusForThisFrame = item.showStatusForThisFrame;
-                if (recordedData[i].SourceOfAssetChange == "ApplyForce()")
+                if (recordedData[i].Action == "ApplyForce()")
                 {
+                    DebugLogger.Instance.Log("InsertAssetRecordFrame() - Encountered ApplyForce() at frame number " + i + ". Breaking out of the loop.");
                     break;
                 }
                 recordedData[i].rootPosition = item.rootPosition;
@@ -171,39 +172,62 @@ public class Recordable : MonoBehaviour
         DebugLogger.Instance.Log("Changing asset show status at a specific frame number " + _frameNumber);
         for (int i = _frameNumber + 1; i < recordedData.Count; i++)
         {
+                if (recordedData[i].Action == "ApplyForce()")
+                {
+                    DebugLogger.Instance.Log("RecordAndPropagateAssetShowStatus() - Encountered ApplyForce() at frame number " + i + ". Breaking out of the loop.");
+                    break;
+                }
                 recordedData[i].showStatusForThisFrame = showStatus;
+
                 //Assign Hide or Show to recordedData[i].SourceOfAssetChange depending on the value of showStatus
                 if(showStatus)
                 {
-                    recordedData[i].SourceOfAssetChange = "Show()";
+                    recordedData[i].Action = "Show()";
                 }
                 else
                 {
-                    recordedData[i].SourceOfAssetChange = "Hide()";
+                    recordedData[i].Action = "Hide()";
                 }
+        }
+    }
+
+    public void PropagateAssetNoneStatus(int _frameNumber)
+    {
+        //DebugLogger.Instance.Log("Changing asset show status at a specific frame number " + _frameNumber);
+        for (int i = _frameNumber + 1; i < recordedData.Count; i++)
+        {
+            if (recordedData[i].Action == "ApplyForce()")
+            {
+                DebugLogger.Instance.Log("PropagateAssetNoneStatus() - Encountered ApplyForce() at frame number " + i + ". Breaking out of the loop.");
+                break;
+            }
+                
+            recordedData[i].Action = "None";
         }
     }
 
     public void CopyPoseFromRecordable(Recordable other, int _frameStart, int _frameEnd = 0, bool copyFirstRecord = false, bool copyRotation = false)
     {
-        if (copyFirstRecord)
+        if (copyFirstRecord) //Copy the pose from "other" recordable (hands) at index _frameStart, to this asset and propagate the value to subsequent frames
         {
             DebugLogger.Instance.Log("Copying first pose from " + other.gameObject.name + " to " + gameObject.name + " from frame number " + _frameStart + " to " + recordedData.Count);
             //recordedData[_frameStart].SourceOfAssetChange = "Unfollow()";
-            recordedData[_frameStart].SourceOfAssetChange = "None";
+            recordedData[_frameStart].Action = "None";
             for (int i = _frameStart + 1; i < recordedData.Count; i++)
             {
-                if(recordedData[i].SourceOfAssetChange == "ApplyForce()")
+                if(recordedData[i].Action == "ApplyForce()")
                 {
+                    DebugLogger.Instance.Log("CopyPoseFromRecordable() - Encountered ApplyForce() at frame number " + i + ". Breaking out of the loop.");
                     break;
                 }
                 recordedData[i].rootPosition = other.recordedData[_frameStart].rootPosition;
-                recordedData[_frameStart].SourceOfAssetChange = "None";
+                recordedData[i].Action = "None";
+                recordedData[i].SourceOfAction = "None";
                 //recordedData[i].SourceOfAssetChange = "Unfollow(" + other.gameObject.name + ")";
                 if(copyRotation) recordedData[i].rootRotation = other.recordedData[_frameStart].rootRotation;
             }
         }
-        else
+        else //Copy all the poses from "other" recordable (hands, head focus) to this asset and propagate the value to subsequent frames
         {
             Vector3 offset = recordedData[_frameStart].rootPosition - other.recordedData[_frameStart].rootPosition;
             DebugLogger.Instance.Log("Copying all pose data from " + other.gameObject.name + " to " + gameObject.name + " from frame number " + _frameStart + " to " + recordedData.Count);
@@ -213,13 +237,14 @@ public class Recordable : MonoBehaviour
             }
             for (int i = _frameStart + 1; i < _frameEnd; i++)
             {
-                if(recordedData[i].SourceOfAssetChange == "ApplyForce()")
+                if(recordedData[i].Action == "ApplyForce()")
                 {
+                    DebugLogger.Instance.Log("CopyPoseFromRecordable() - Encountered ApplyForce() at frame number " + i + ". Breaking out of the loop.");
                     break;
                 }
                 recordedData[i].rootPosition = other.recordedData[i].rootPosition + offset;
-                recordedData[i].SourceOfAssetChange = "Follow(" + Manager.Instance.CleanString(other.gameObject.name) + ")"; //Remove the last five characters from the string other.gameObject.name  
-                         
+                recordedData[i].Action = "Follow(" + Manager.Instance.CleanString(other.gameObject.name) + ")"; 
+                recordedData[i].SourceOfAction = "Collide(" + Manager.Instance.CleanString(gameObject.name) + ", " + Manager.Instance.CleanString(other.gameObject.name) + ")";                         
                 if(copyRotation) recordedData[i].rootRotation = other.recordedData[i].rootRotation;
             }
         }
@@ -232,15 +257,16 @@ public class Recordable : MonoBehaviour
         {
             DebugLogger.Instance.Log("Copying first pose from " + other.gameObject.name + " to " + gameObject.name + " from frame number " + _frameStart + " to " + recordedData.Count);
             //recordedData[_frameStart].SourceOfAssetChange = "Unfollow()";
-            recordedData[_frameStart].SourceOfAssetChange = "None";
+            recordedData[_frameStart].Action = "None";
             for (int i = _frameStart + 1; i < recordedData.Count; i++)
             {
-                if(recordedData[i].SourceOfAssetChange == "ApplyForce()")
+                if(recordedData[i].Action == "ApplyForce()")
                 {
+                    DebugLogger.Instance.Log("CopyPoseFromFocusSquare() - Encountered ApplyForce() at frame number " + i + ". Breaking out of the loop.");
                     break;
                 }
                 recordedData[i].rootPosition = other.recordedData[_frameStart].focusSquarePosition;
-                recordedData[_frameStart].SourceOfAssetChange = "None";
+                recordedData[i].Action = "None";
                 //recordedData[i].SourceOfAssetChange = "Unfollow(" + other.gameObject.name + ")";
                 if(copyRotation) recordedData[i].rootRotation = other.recordedData[_frameStart].focusSquareRotation;
             }
@@ -255,12 +281,13 @@ public class Recordable : MonoBehaviour
             }
             for (int i = _frameStart + 1; i < _frameEnd; i++)
             {
-                if(recordedData[i].SourceOfAssetChange == "ApplyForce()")
+                if(recordedData[i].Action == "ApplyForce()")
                 {
+                    DebugLogger.Instance.Log("CopyPoseFromFocusSquare() - Encountered ApplyForce() at frame number " + i + ". Breaking out of the loop.");
                     break;
                 }
                 recordedData[i].rootPosition = other.recordedData[i].focusSquarePosition + offset;
-                recordedData[i].SourceOfAssetChange = "Follow(" + Manager.Instance.CleanString(other.gameObject.name) + "FocusSquare)"; //Remove the last five characters from the string other.gameObject.name  
+                recordedData[i].Action = "Follow(" + Manager.Instance.CleanString(other.gameObject.name) + ", FocusSquare)"; //Remove the last five characters from the string other.gameObject.name  
                          
                 if(copyRotation) recordedData[i].rootRotation = other.recordedData[i].focusSquareRotation;
             }
@@ -305,7 +332,11 @@ public class Recordable : MonoBehaviour
             DebugLogger.Instance.Log("Collision detected between " + gameObject.name + " and " + collision.collider.name);
             //isAssetRecordingOn = false;
             //isSimulationOn = false;
-            InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, "Collide(" + Manager.Instance.CleanString(collision.collider.name) + ")", false);
+            //InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, "Collide(" + Manager.Instance.CleanString(collision.collider.name) + ")", false);
+            InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "None", sourceOfAction: "Collide(" + Manager.Instance.CleanString(collision.collider.name) + ")", propagateValueToSubsequentFrames: false);
+            //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, action: "ApplyForce()", sourceOfAction: "None", propagateValueToSubsequentFrames: true);
+            
+            PropagateAssetNoneStatus((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value);
             ResetPhysicsProperties();             
             recordingMode = Recordable.RecordingMode.None;
             Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
@@ -332,7 +363,7 @@ public class Recordable : MonoBehaviour
 
     public void ResetPhysicsProperties()
     {
-        Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
+        DebugLogger.Instance.Log("Resetting physics properties");        
         AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value = oldMainPlaybackSliderValue;
         transform.position = initPosBeforePhysicsSimulation;
         transform.rotation = initRotBeforePhysicsSimulation;
@@ -340,6 +371,7 @@ public class Recordable : MonoBehaviour
         GetComponent<Collider>().isTrigger = true;
         GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
         GetComponent<Rigidbody>().useGravity = false;
+        Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
     }
 }
 
@@ -382,18 +414,20 @@ public class RecordFrameData
     public bool showStatusForThisFrame = true;
     public GestureManager.Gesture gesture;
 
-    public string SourceOfAssetChange = "None";
+    public string Action = "None";
+    public string SourceOfAction = "None";
 
     //public Vector3 force;
 
     //Assets 
-    public RecordFrameData(Vector3 _position, Quaternion _rotation, bool _showStatus, string _sourceOfAssetChange, int _frameNumber)
+    public RecordFrameData(Vector3 _position, Quaternion _rotation, bool _showStatus, string _action, string _sourceOfAction, int _frameNumber)
     {
         rootPosition = _position;
         rootRotation = _rotation;
         showStatusForThisFrame = _showStatus;
         frameNumber = _frameNumber;
-        SourceOfAssetChange = _sourceOfAssetChange;
+        Action = _action;
+        SourceOfAction = _sourceOfAction;
     }
 
     //Head

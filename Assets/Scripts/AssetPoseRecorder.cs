@@ -168,7 +168,8 @@ public class AssetPoseRecorder : MonoBehaviour
         {
             foreach(var data in mainRecorder.objectsToRecord[0].recordedData)
             {
-                recordable.recordedData.Add(new RecordFrameData(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", data.frameNumber));
+                //recordable.recordedData.Add(new RecordFrameData(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", data.frameNumber));
+                recordable.recordedData.Add(new RecordFrameData(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", "None", data.frameNumber));
             }
         }
     }
@@ -288,7 +289,8 @@ public class AssetPoseRecorder : MonoBehaviour
                 {
                     DebugLogger.Instance.Log("Added new frame data for " + recordable.playbackObject.name + " at " + mainRecorder.playbackSlider.value);
 
-                    recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "Collide(" + Manager.Instance.CleanString(recordable.gameObject.name) + ", hand)", true);
+                    //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "Collide(" + Manager.Instance.CleanString(recordable.gameObject.name) + ", hand)", true);
+                    recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, action: "None", sourceOfAction: "None", propagateValueToSubsequentFrames: true);
                     //Increment the slider value by a small value proportional to the total recording time
                     mainRecorder.playbackSlider.value += playbackSpeed;
                 }
@@ -297,7 +299,8 @@ public class AssetPoseRecorder : MonoBehaviour
             }
             else if(recordable.recordingMode == Recordable.RecordingMode.Physics)
             {
-                recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "ApplyForce()", true);
+                //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "ApplyForce()", true);
+                recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, action: "ApplyForce()", sourceOfAction: "None", propagateValueToSubsequentFrames: true);
                 //Increment the slider value by frame duration
                 mainRecorder.playbackSlider.value += 1;//Time.deltaTime;
             }
@@ -443,9 +446,9 @@ public class AssetPoseRecorder : MonoBehaviour
    
 }
 
-public class AssetChangeSequence
+public class AssetSequence
 {
-    public string SourceOfAssetChange { get; set; } //None, Physics, Follow
+    public string Action { get; set; } //None, Physics, Follow
     public int StartIndex { get; set; }
     public int Length { get; set; }
     //public GestureManager.Gesture GestureType { get; set; }

@@ -33,6 +33,8 @@ public class Recorder : MonoBehaviour
     [SerializeField]
     GameObject assetTimelineElementPrefab;
     [SerializeField]
+    GameObject collisionTimelineElementPrefab;
+    [SerializeField]
      RectTransform playbackPanelTransform;
      [SerializeField]
     GameObject hideTimelinePanelPrefab;
@@ -341,89 +343,75 @@ public class Recorder : MonoBehaviour
         }
     }    
 
-    public List<AssetChangeSequence> GetContinuousChangeSequences(List<string> changes)
+    public List<AssetSequence> GetContinuousChangeSequences(List<string> actions)
     {
-        List<AssetChangeSequence> sequences = new List<AssetChangeSequence>();
+        List<AssetSequence> sequences = new List<AssetSequence>();
 
         int startIndex = -1;
-        string currentChange = null;
+        string currentAction = null;
 
-        for (int i = 0; i < changes.Count; i++)
+        for (int i = 0; i < actions.Count; i++)
         {
-            if (changes[i] != "None")
+            if (actions[i] != "None")
             {
-                if (currentChange == null || currentChange == changes[i])
+                if (currentAction == null || currentAction == actions[i])
                 {
-                    if (currentChange == null)
+                    if (currentAction == null)
                     {
-                        currentChange = changes[i];
+                        currentAction = actions[i];
                         startIndex = i;
                     }
                 }
                 else
                 {
-                    sequences.Add(new AssetChangeSequence
+                    sequences.Add(new AssetSequence
                     {
                         StartIndex = startIndex,
                         Length = i - startIndex,
-                        SourceOfAssetChange = currentChange
+                        Action = currentAction
                     });
 
                     startIndex = i;
-                    currentChange = changes[i];
+                    currentAction = actions[i];
                 }
             }
-            else if (currentChange != null)
+            else if (currentAction != null)
             {
-                sequences.Add(new AssetChangeSequence
+                sequences.Add(new AssetSequence
                 {
                     StartIndex = startIndex,
                     Length = i - startIndex,
-                    SourceOfAssetChange = currentChange
+                    Action = currentAction
                 });
 
                 startIndex = -1;
-                currentChange = null;
+                currentAction = null;
             }
         }
 
-        if (currentChange != null)
+        if (currentAction != null)
         {
-            sequences.Add(new AssetChangeSequence
+            sequences.Add(new AssetSequence
             {
                 StartIndex = startIndex,
-                Length = changes.Count - startIndex,
-                SourceOfAssetChange = currentChange
+                Length = actions.Count - startIndex,
+                Action = currentAction
             });
         }
 
         return sequences;
     }
 
-    public void GenerateAssetChangeSequences(RectTransform timelinePanel, Recordable recordable)
+    public void GenerateAssetActionSequences(RectTransform timelinePanel, Recordable recordable)
     {
-        List<string> changes = recordable.recordedData.Select(x => x.SourceOfAssetChange).ToList();
-        List<AssetChangeSequence> sequences = GetContinuousChangeSequences(changes);
-        foreach (AssetChangeSequence sequence in sequences)
+        List<string> changes = recordable.recordedData.Select(x => x.Action).ToList();
+        List<AssetSequence> sequences = GetContinuousChangeSequences(changes);
+        foreach (AssetSequence sequence in sequences)
         {
-            DebugLogger.Instance.Log("Sequence name: " + sequence.SourceOfAssetChange + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
+            DebugLogger.Instance.Log("Sequence name: " + sequence.Action + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
             DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
-            if(sequence.SourceOfAssetChange.StartsWith("Collide"))
-            {
-                DebugLogger.Instance.Log("Collide event found");
-                RectTransform collisionTimelinePanelTransform = collisionTimelinePanel.GetComponent<RectTransform>();
-                //Delete all children of collisionTimelinePanelTransform except the first one
-                for (int i = 1; i < collisionTimelinePanelTransform.childCount; i++)
-                {
-                    Destroy(collisionTimelinePanelTransform.GetChild(i).gameObject);
-                }
-                GameObject timelineElement = Instantiate(assetTimelineElementPrefab, collisionTimelinePanelTransform);
-                timelineElement.SetActive(true);
-                timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
-                timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
-                timelineElement.GetComponent<TimelineUIElement>().SetEvent(sequence.SourceOfAssetChange);
-            }
-            else if(sequence.SourceOfAssetChange.StartsWith("Hide"))
+
+            if(sequence.Action.StartsWith("Hide"))
             {
                 GameObject hideElement = Instantiate(hideTimelinePanelPrefab, timelinePanel);
                 hideElement.SetActive(true);
@@ -431,7 +419,7 @@ public class Recorder : MonoBehaviour
                 //hideElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
                 //hideElement.GetComponent<TimelineUIElement>().SetEvent(sequence.SourceOfAssetChange);
             }
-            else if(sequence.SourceOfAssetChange.StartsWith("Show"))
+            else if(sequence.Action.StartsWith("Show"))
             {
                 GameObject showElement = Instantiate(showTimelinePanelPrefab, timelinePanel);
                 showElement.SetActive(true);
@@ -445,10 +433,36 @@ public class Recorder : MonoBehaviour
                 timelineElement.SetActive(true);
                 timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
                 timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
-                timelineElement.GetComponent<TimelineUIElement>().SetEvent(sequence.SourceOfAssetChange);
+                timelineElement.GetComponent<TimelineUIElement>().SetEvent(sequence.Action);
             }
         }
     }
+
+    public void GenerateAssetSourceOfActionSequences(RectTransform collisionTimelinePanelTransform, Recordable recordable) //Strong assumption that all sources of action come from collision
+    {        
+        try
+        {                
+            //RectTransform collisionTimelinePanelTransform = collisionTimelinePanel.GetComponent<RectTransform>();
+
+            List<string> sourcesOfChanges = recordable.recordedData.Select(x => x.SourceOfAction).ToList();
+            List<AssetSequence> sequences = GetContinuousChangeSequences(sourcesOfChanges);
+            foreach (AssetSequence sequence in sequences)
+            {
+                DebugLogger.Instance.Log("Collission sequence name: " + sequence.Action + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
+                DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex + sequence.Length));
+                GameObject timelineElement = Instantiate(collisionTimelineElementPrefab, collisionTimelinePanelTransform);
+                timelineElement.SetActive(true);
+                timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
+                timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
+                timelineElement.GetComponent<TimelineUIElement>().SetEvent(sequence.Action);
+            }
+        }
+        catch (System.Exception e)
+        {
+            DebugLogger.Instance.LogException(e);
+        }
+    }
+
 
     //List of asset timelines
     List<GameObject> assetTimelines = new List<GameObject>();
@@ -460,6 +474,14 @@ public class Recorder : MonoBehaviour
         {
             Destroy(timeline);
         }
+
+        //Delete all existing collision timeline elements
+        for (int i = 2; i < collisionTimelinePanel.GetComponent<RectTransform>().childCount; i++)
+        {
+            Destroy(collisionTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
+        }
+
+
         //GenerateGestureSequences(timelinePanel, recordable);
         int recordableCounter = 0;
         foreach (var recordable in AssetPoseRecorder.Instance.recordableAssets)
@@ -473,7 +495,8 @@ public class Recorder : MonoBehaviour
 
             if (recordable.recordedData.Count > 0)
             {
-                GenerateAssetChangeSequences(timelinePanel.GetComponent<RectTransform>(), recordable);
+                GenerateAssetActionSequences(timelinePanel.GetComponent<RectTransform>(), recordable);
+                GenerateAssetSourceOfActionSequences(collisionTimelinePanel.GetComponent<RectTransform>(), recordable);
             }   
         }
     }

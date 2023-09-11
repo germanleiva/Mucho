@@ -54,6 +54,12 @@ public class Manager : MonoBehaviour
 
     public string CleanString(string str)
     {        
+        //If the string ends with the substring "Anchor", remove it
+        if (str.EndsWith("Anchor"))
+        {
+            str = str.Substring(0, str.Length - 6);
+            return str;
+        }
         if (str.IndexOf('-') == -1)
         {
             return str;
