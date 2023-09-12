@@ -120,8 +120,8 @@ public class Recorder : MonoBehaviour
         AssetPoseRecorder.Instance.EnableGrabForAllAssets();
         AssetPoseRecorder.Instance.InitializeRecordFramesForAssets();
 
-        GenerateGestureSequences(leftHandTimelinePanel, objectsToRecord[1]);
-        GenerateGestureSequences(rightHandTimelinePanel, objectsToRecord[2]);
+        LeftHandGestureSequences = GenerateGestureSequences(leftHandTimelinePanel, objectsToRecord[1]);
+        RightHandGestureSequences = GenerateGestureSequences(rightHandTimelinePanel, objectsToRecord[2]);
 
         //VisualizePath();
         PreparePlayback();
@@ -182,6 +182,57 @@ public class Recorder : MonoBehaviour
         {
             DebugLogger.Instance.LogException(e);
         }
+    }
+
+    public void AlignPlaybackSlider()
+    {
+        //Iterate through the GestureSequences list and set playback slider to the nearest start index within 10 frames
+        int currentFrameNum = (int)playbackSlider.value;
+        //DebugLogger.Instance.Log("Initial playback slider value: " + currentFrameNum);
+        int nearestLeftHandGestureSequenceStartIndex = 0;
+        int nearestRightHandGestureSequenceStartIndex = 0;
+        DebugLogger.Instance.Log("recordedFramesTotal: " + (int)recordedFramesTotal/50);
+        int threshHold = (int)recordedFramesTotal/50;
+        foreach (var sequence in RightHandGestureSequences)
+        {
+            //DebugLogger.Instance.Log("Right hand gesture: " + GestureManager.Instance.GestureToString(sequence.GestureType) + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
+            if(Mathf.Abs(currentFrameNum - sequence.StartIndex) < threshHold)
+            {
+                //DebugLogger.Instance.Log("Found nearest right hand gesture sequence at " + sequence.StartIndex);  
+                nearestRightHandGestureSequenceStartIndex = sequence.StartIndex;
+                break;
+            }
+        }
+        foreach (var sequence in LeftHandGestureSequences)
+        {
+            //DebugLogger.Instance.Log("Left hand gesture: " + GestureManager.Instance.GestureToString(sequence.GestureType) + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
+            if(Mathf.Abs(currentFrameNum - sequence.StartIndex) < threshHold)
+            {
+                //DebugLogger.Instance.Log("Found nearest left hand gesture sequence at " + sequence.StartIndex);
+                nearestLeftHandGestureSequenceStartIndex = sequence.StartIndex;
+                break;
+            }
+        }
+
+        //Check which of the two is closer to the currentFrameNum
+
+        int nearestStartIndex = 0;
+        if(Mathf.Abs(currentFrameNum - nearestRightHandGestureSequenceStartIndex) < Mathf.Abs(currentFrameNum - nearestLeftHandGestureSequenceStartIndex))
+        {
+            nearestStartIndex = nearestRightHandGestureSequenceStartIndex;
+        }
+        else
+        {
+            nearestStartIndex = nearestLeftHandGestureSequenceStartIndex;
+        }
+
+        if(nearestStartIndex == 0)
+        {
+            nearestStartIndex = currentFrameNum;
+        }
+
+        playbackSlider.value = nearestStartIndex;
+        DebugLogger.Instance.Log("Aligning playback slider to nearest start index: " + nearestStartIndex);
     }
 
     private void CalculateHandGuideTimePoints()
@@ -327,11 +378,14 @@ public class Recorder : MonoBehaviour
         return sequences;
     }
 
-    public void GenerateGestureSequences(RectTransform timelinePanel, Recordable recordable)
+    List<GestureSequence> LeftHandGestureSequences = new List<GestureSequence>();
+    List<GestureSequence> RightHandGestureSequences = new List<GestureSequence>();
+
+    public List<GestureSequence> GenerateGestureSequences(RectTransform timelinePanel, Recordable recordable)
     {
         List<GestureManager.Gesture> gestures = recordable.recordedData.Select(x => x.gesture).ToList();
-        List<GestureSequence> sequences = GetContinuousGestureSequences(gestures);
-        foreach (GestureSequence sequence in sequences)
+        List<GestureSequence> GestureSequences = GetContinuousGestureSequences(gestures);
+        foreach (GestureSequence sequence in GestureSequences)
         {
             DebugLogger.Instance.Log("Sequence name: " + GestureManager.Instance.GestureToString(sequence.GestureType) + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
             DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
@@ -341,6 +395,7 @@ public class Recorder : MonoBehaviour
             timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
             timelineElement.GetComponent<TimelineUIElement>().SetEvent(GestureManager.Instance.GestureToString(sequence.GestureType));
         }
+        return GestureSequences;
     }    
 
     public List<AssetSequence> GetContinuousChangeSequences(List<string> actions)
@@ -416,16 +471,12 @@ public class Recorder : MonoBehaviour
                 GameObject hideElement = Instantiate(hideTimelinePanelPrefab, timelinePanel);
                 hideElement.SetActive(true);
                 hideElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), hideElement.GetComponent<RectTransform>().anchoredPosition.y);
-                //hideElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
-                //hideElement.GetComponent<TimelineUIElement>().SetEvent(sequence.SourceOfAssetChange);
             }
             else if(sequence.Action.StartsWith("Show"))
             {
                 GameObject showElement = Instantiate(showTimelinePanelPrefab, timelinePanel);
                 showElement.SetActive(true);
                 showElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), showElement.GetComponent<RectTransform>().anchoredPosition.y);
-                //showElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
-                //showElement.GetComponent<TimelineUIElement>().SetEvent(sequence.SourceOfAssetChange);
             }
             else //Other types of events - physics, attach etc
             {
@@ -442,8 +493,6 @@ public class Recorder : MonoBehaviour
     {        
         try
         {                
-            //RectTransform collisionTimelinePanelTransform = collisionTimelinePanel.GetComponent<RectTransform>();
-
             List<string> sourcesOfChanges = recordable.recordedData.Select(x => x.SourceOfAction).ToList();
             List<AssetSequence> sequences = GetContinuousChangeSequences(sourcesOfChanges);
             foreach (AssetSequence sequence in sequences)

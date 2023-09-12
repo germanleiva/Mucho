@@ -330,12 +330,7 @@ public class Recordable : MonoBehaviour
         if(recordingMode == RecordingMode.Physics)
         {
             DebugLogger.Instance.Log("Collision detected between " + gameObject.name + " and " + collision.collider.name);
-            //isAssetRecordingOn = false;
-            //isSimulationOn = false;
-            //InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, "Collide(" + Manager.Instance.CleanString(collision.collider.name) + ")", false);
-            InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "None", sourceOfAction: "Collide(" + Manager.Instance.CleanString(collision.collider.name) + ")", propagateValueToSubsequentFrames: false);
-            //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, action: "ApplyForce()", sourceOfAction: "None", propagateValueToSubsequentFrames: true);
-            
+            InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "None", sourceOfAction: "Collide(" + Manager.Instance.CleanString(gameObject.name) + "," + Manager.Instance.CleanString(collision.collider.name) + ")", propagateValueToSubsequentFrames: false);
             PropagateAssetNoneStatus((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value);
             ResetPhysicsProperties();             
             recordingMode = Recordable.RecordingMode.None;
@@ -398,7 +393,7 @@ public class RecordFrameData
 {
     public Vector3 rootPosition;
     public Quaternion rootRotation;
-    //public float timestamp;
+
     public int frameNumber;
 
     public FingerJoint indexJoint1, indexJoint2, indexJoint3;
