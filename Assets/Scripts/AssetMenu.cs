@@ -32,10 +32,6 @@ public class AssetMenu : MonoBehaviour
     public void MenuGrabbed(bool _isGrabbed)
     {   
         isGrabbed = _isGrabbed;
-        if (isGrabbed)
-        {
-
-        }
     }
 
     public void toggleAssetMenu()

@@ -14,7 +14,7 @@ public class TextAsset : MonoBehaviour
     
     void Awake()
     {
-        AssetMenu.SetActive(false);
+        
     }
 
     void Start()
@@ -28,8 +28,5 @@ public class TextAsset : MonoBehaviour
         text.text = inputField.text;
     }
 
-    public void ToggleAssetMenu()
-    {
-        AssetMenu.SetActive(!AssetMenu.activeSelf);
-    }
+
 }
