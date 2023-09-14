@@ -123,6 +123,8 @@ public class Recorder : MonoBehaviour
         LeftHandGestureSequences = GenerateGestureSequences(leftHandTimelinePanel, objectsToRecord[1]);
         RightHandGestureSequences = GenerateGestureSequences(rightHandTimelinePanel, objectsToRecord[2]);
 
+        gestureSequences = LeftHandGestureSequences.Concat(RightHandGestureSequences).ToList();
+
         //VisualizePath();
         PreparePlayback();
     }
@@ -309,7 +311,7 @@ public class Recorder : MonoBehaviour
         // For each recordable object, expand the recordedData list to the given size by copying the last element
         foreach (var recordable in objectsToRecord)
         {
-            RecordFrameData lastElement = recordable.recordedData[recordable.recordedData.Count - 1];
+            RecordableFrame lastElement = recordable.recordedData[recordable.recordedData.Count - 1];
             for (int i = 0; i < size - recordable.recordedData.Count; i++)
             {
                 recordable.recordedData.Add(lastElement);
@@ -505,8 +507,8 @@ public class Recorder : MonoBehaviour
                 timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
                 timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
                 timelineElement.GetComponent<TimelineUIElement>().SetEvent(sequence.Action);
-                return sequences;
             }
+            return sequences;
         }
         catch (System.Exception e)
         {
@@ -557,6 +559,12 @@ public class Recorder : MonoBehaviour
     public List<(GestureSequence Gesture, List<string> Actions)> GetActionsForGestures(List<GestureSequence> gestureSequences, List<List<AssetSequence>> assetSequencesLists)
     {
         var result = new List<(GestureSequence Gesture, List<string> Actions)>();
+        DebugLogger.Instance.Log("Size of gestureSequences: " + gestureSequences.Count);
+        DebugLogger.Instance.Log("Size of assetSequencesLists: " + assetSequencesLists.Count);
+        foreach(var assetSequences in assetSequencesLists)
+        {
+            DebugLogger.Instance.Log("Size of assetSequences: " + assetSequences.Count);
+        }
 
         foreach (var gesture in gestureSequences)
         {
@@ -569,6 +577,7 @@ public class Recorder : MonoBehaviour
                     if (asset.StartIndex >= gesture.StartIndex && asset.StartIndex + asset.Length <= gesture.StartIndex + gesture.Length)
                     {
                         actions.Add(asset.Action);
+                        DebugLogger.Instance.Log("Found action " + asset.Action + " for gesture " + GestureManager.Instance.GestureToString(gesture.GestureType));
                     }
                 }
             }
@@ -585,7 +594,7 @@ public class Recorder : MonoBehaviour
     public void GenerateTestStates()
     {
         var result = GetActionsForGestures(gestureSequences, assetSequencesLists);
-
+        DebugLogger.Instance.Log("Generating states, Size of result: " + result.Count);
         // Print the results
         foreach (var item in result)
         {

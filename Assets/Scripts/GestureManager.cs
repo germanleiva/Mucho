@@ -86,6 +86,10 @@ public class GestureManager : MonoBehaviour
         rightHandRecordable.currentGesture = (Gesture)System.Enum.Parse(typeof(Gesture), gestureStr);;
         //SelectTaskForGesture(currentRightHandGesture);
         rightHandGestureText.text = GestureToString(rightHandRecordable.currentGesture);
+
+        //if we are LIVE
+        //getTheStateMachine, an make the StateMachine process the current gesture
+        //How do we get the collision events?
     }
 
     public string GestureToString(Gesture gesture)

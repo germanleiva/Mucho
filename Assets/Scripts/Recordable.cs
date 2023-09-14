@@ -8,7 +8,7 @@ public class Recordable : MonoBehaviour
 {
     public GameObject playbackObject, playbackObject2, playbackObject3, playbackObject4, playbackObject5;
     public SkinnedMeshRenderer playbackObject2Renderer, playbackObject3Renderer, playbackObject4Renderer, playbackObject5Renderer;
-    public List<RecordFrameData> recordedData = new();
+    public List<RecordableFrame> recordedData = new();
     public Collider grabCollider;
     public GameObject assetMenu;
 
@@ -146,7 +146,7 @@ public class Recordable : MonoBehaviour
 
     public void InsertAssetRecordFrame(int _frameNumber, string action = "None", string sourceOfAction = "None",  bool propagateValueToSubsequentFrames = false)
     {
-        RecordFrameData item = new(transform.position, transform.rotation, showStatus, action, sourceOfAction, _frameNumber);
+        RecordableFrame item = new(transform.position, transform.rotation, showStatus, action, sourceOfAction, _frameNumber);
         DebugLogger.Instance.Log("Inserting asset record frame at a specific frame number " + _frameNumber);
         recordedData[_frameNumber] = item;
 
@@ -161,6 +161,12 @@ public class Recordable : MonoBehaviour
                     DebugLogger.Instance.Log("InsertAssetRecordFrame() - Encountered ApplyForce() at frame number " + i + ". Breaking out of the loop.");
                     break;
                 }
+                if (recordedData[i].SourceOfAction.StartsWith("Collide("))
+                {
+                    DebugLogger.Instance.Log("InsertAssetRecordFrame() - Encountered Collide() at frame number " + i + ". Breaking out of the loop.");
+                    break;
+                }
+
                 recordedData[i].rootPosition = item.rootPosition;
                 recordedData[i].rootRotation = item.rootRotation;
             }
@@ -300,11 +306,11 @@ public class Recordable : MonoBehaviour
         bool isNullOrEmpty = childObjectsToRecord?.Any() != true;
         if(isNullOrEmpty == true)//Head or Assets
         { 
-            recordedData.Add(new RecordFrameData(transform.position, transform.rotation, focusSquare.transform.position, focusSquare.transform.rotation, frameNum));       
+            recordedData.Add(new RecordableFrame(transform.position, transform.rotation, focusSquare.transform.position, focusSquare.transform.rotation, frameNum));       
         }
         else//Hands
         {   
-            recordedData.Add(new RecordFrameData(transform.localPosition, transform.localRotation, 
+            recordedData.Add(new RecordableFrame(transform.localPosition, transform.localRotation, 
                 indexJoint1, indexJoint2, indexJoint3, 
                 middleJoint1, middleJoint2, middleJoint3, 
                 ringJoint1, ringJoint2, ringJoint3, 
@@ -329,11 +335,12 @@ public class Recordable : MonoBehaviour
     {
         if(recordingMode == RecordingMode.Physics)
         {
+            recordingMode = Recordable.RecordingMode.None;
             DebugLogger.Instance.Log("Collision detected between " + gameObject.name + " and " + collision.collider.name);
             InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "None", sourceOfAction: "Collide(" + Manager.Instance.CleanString(gameObject.name) + "," + Manager.Instance.CleanString(collision.collider.name) + ")", propagateValueToSubsequentFrames: false);
+            //DebugLogger.Instance.Log("Collide(" + Manager.Instance.CleanString(gameObject.name) + "," + Manager.Instance.CleanString(collision.collider.name) + ")");
             PropagateAssetNoneStatus((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value);
-            ResetPhysicsProperties();             
-            recordingMode = Recordable.RecordingMode.None;
+            ResetPhysicsProperties();          
             Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         }
     }
@@ -389,7 +396,7 @@ public class FingerJoint
 }
 
 //[System.Serializable]
-public class RecordFrameData
+public class RecordableFrame
 {
     public Vector3 rootPosition;
     public Quaternion rootRotation;
@@ -415,7 +422,7 @@ public class RecordFrameData
     //public Vector3 force;
 
     //Assets 
-    public RecordFrameData(Vector3 _position, Quaternion _rotation, bool _showStatus, string _action, string _sourceOfAction, int _frameNumber)
+    public RecordableFrame(Vector3 _position, Quaternion _rotation, bool _showStatus, string _action, string _sourceOfAction, int _frameNumber)
     {
         rootPosition = _position;
         rootRotation = _rotation;
@@ -426,7 +433,7 @@ public class RecordFrameData
     }
 
     //Head
-    public RecordFrameData(Vector3 _position, Quaternion _rotation, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, int _frameNumber)
+    public RecordableFrame(Vector3 _position, Quaternion _rotation, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, int _frameNumber)
     {
         rootPosition = _position;
         rootRotation = _rotation;
@@ -437,7 +444,7 @@ public class RecordFrameData
     }
 
     //Hands
-    public RecordFrameData(Vector3 _position, Quaternion _rotation, GameObject _indexJoint0, GameObject _indexJoint1, GameObject _indexJoint2, GameObject _middleJoint0, GameObject _middleJoint1, GameObject _middleJoint2, GameObject _ringJoint0, GameObject _ringJoint1, GameObject _ringJoint2, GameObject _pinkyJoint0, GameObject _pinkyJoint1, GameObject _pinkyJoint2, GameObject _pinkyJoint3, GameObject _thumbJoint0, GameObject _thumbJoint1, GameObject _thumbJoint2, GameObject _thumbJoint3, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, GestureManager.Gesture  _gesture, int _frameNumber)
+    public RecordableFrame(Vector3 _position, Quaternion _rotation, GameObject _indexJoint0, GameObject _indexJoint1, GameObject _indexJoint2, GameObject _middleJoint0, GameObject _middleJoint1, GameObject _middleJoint2, GameObject _ringJoint0, GameObject _ringJoint1, GameObject _ringJoint2, GameObject _pinkyJoint0, GameObject _pinkyJoint1, GameObject _pinkyJoint2, GameObject _pinkyJoint3, GameObject _thumbJoint0, GameObject _thumbJoint1, GameObject _thumbJoint2, GameObject _thumbJoint3, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, GestureManager.Gesture  _gesture, int _frameNumber)
     {
         rootPosition = _position;
         rootRotation = _rotation;

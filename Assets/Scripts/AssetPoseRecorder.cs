@@ -169,7 +169,7 @@ public class AssetPoseRecorder : MonoBehaviour
             foreach(var data in mainRecorder.objectsToRecord[0].recordedData)
             {
                 //recordable.recordedData.Add(new RecordFrameData(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", data.frameNumber));
-                recordable.recordedData.Add(new RecordFrameData(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", "None", data.frameNumber));
+                recordable.recordedData.Add(new RecordableFrame(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", "None", data.frameNumber));
             }
         }
     }
@@ -448,7 +448,7 @@ public class AssetPoseRecorder : MonoBehaviour
 
 public class AssetSequence
 {
-    public string Action { get; set; } //None, Physics, Follow
+    public string Action { get; set; } //None, Physics, Follow, Show, Hide
     public int StartIndex { get; set; }
     public int Length { get; set; }
     //public GestureManager.Gesture GestureType { get; set; }
