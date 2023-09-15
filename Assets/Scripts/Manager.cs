@@ -10,7 +10,7 @@ public class Manager : MonoBehaviour
 
     public enum AppState
     {
-        NONE,
+        INIT,
         RECORDING,
         PLAYBACK,
         ASSETRECORDING,
@@ -38,7 +38,7 @@ public class Manager : MonoBehaviour
     public TMPro.TMP_Text VRDebugText;
     void Start()
     {
-        currAppState = Manager.AppState.NONE;
+        currAppState = Manager.AppState.INIT;
     }
 
     public void ClearDebugText()

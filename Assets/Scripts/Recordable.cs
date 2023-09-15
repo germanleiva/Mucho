@@ -73,7 +73,9 @@ public class Recordable : MonoBehaviour
     public Vector3 appliedForce;
     public ForceArrow forceArrow;
     public TMPro.TMP_Text playbackGestureText;
-    public GestureManager.Gesture currentGesture;
+    public InputManager.Gesture currentGesture;
+
+    public TMPro.TMP_Text gestureText;
     
 
     //public GestureManager.Gesture currentRightHandGesture = GestureManager.Gesture.RIGHTHANDNONE;
@@ -375,6 +377,19 @@ public class Recordable : MonoBehaviour
         GetComponent<Rigidbody>().useGravity = false;
         Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
     }
+
+    public void SetGesture(string gestureStr)
+    {
+        DebugLogger.Instance.LogInVR("Gesture: " + gestureStr);
+        currentGesture = (InputManager.Gesture)System.Enum.Parse(typeof(InputManager.Gesture), gestureStr);
+        gestureText.text = gestureStr;
+    }
+
+    public void SetGestureText(string gestureStr)
+    {
+        gestureText.text = gestureStr;
+    }
+
 }
 
 public class FingerJoint
@@ -414,7 +429,7 @@ public class RecordableFrame
     public Quaternion focusSquareRotation;
 
     public bool showStatusForThisFrame = true;
-    public GestureManager.Gesture gesture;
+    public InputManager.Gesture gesture;
 
     public string Action = "None";
     public string SourceOfAction = "None";
@@ -444,7 +459,7 @@ public class RecordableFrame
     }
 
     //Hands
-    public RecordableFrame(Vector3 _position, Quaternion _rotation, GameObject _indexJoint0, GameObject _indexJoint1, GameObject _indexJoint2, GameObject _middleJoint0, GameObject _middleJoint1, GameObject _middleJoint2, GameObject _ringJoint0, GameObject _ringJoint1, GameObject _ringJoint2, GameObject _pinkyJoint0, GameObject _pinkyJoint1, GameObject _pinkyJoint2, GameObject _pinkyJoint3, GameObject _thumbJoint0, GameObject _thumbJoint1, GameObject _thumbJoint2, GameObject _thumbJoint3, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, GestureManager.Gesture  _gesture, int _frameNumber)
+    public RecordableFrame(Vector3 _position, Quaternion _rotation, GameObject _indexJoint0, GameObject _indexJoint1, GameObject _indexJoint2, GameObject _middleJoint0, GameObject _middleJoint1, GameObject _middleJoint2, GameObject _ringJoint0, GameObject _ringJoint1, GameObject _ringJoint2, GameObject _pinkyJoint0, GameObject _pinkyJoint1, GameObject _pinkyJoint2, GameObject _pinkyJoint3, GameObject _thumbJoint0, GameObject _thumbJoint1, GameObject _thumbJoint2, GameObject _thumbJoint3, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, InputManager.Gesture  _gesture, int _frameNumber)
     {
         rootPosition = _position;
         rootRotation = _rotation;

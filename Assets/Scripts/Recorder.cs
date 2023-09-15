@@ -321,16 +321,16 @@ public class Recorder : MonoBehaviour
         AssetPoseRecorder.Instance.DoRecordSizesMatch();
     }
 
-    public List<GestureSequence> GetContinuousGestureSequences(List<GestureManager.Gesture> gestures)
+    public List<GestureSequence> GetContinuousGestureSequences(List<InputManager.Gesture> gestures)
     {
         List<GestureSequence> sequences = new List<GestureSequence>();
 
         int startIndex = -1;
-        GestureManager.Gesture? currentGesture = null;
+        InputManager.Gesture? currentGesture = null;
 
         for (int i = 0; i < gestures.Count; i++)
         {
-            if (gestures[i] != GestureManager.Gesture.LEFTHANDNONE && gestures[i] != GestureManager.Gesture.RIGHTHANDNONE)
+            if (gestures[i] != InputManager.Gesture.LEFTHANDNONE && gestures[i] != InputManager.Gesture.RIGHTHANDNONE)
             {
                 if (currentGesture == null || currentGesture == gestures[i])
                 {
@@ -385,7 +385,7 @@ public class Recorder : MonoBehaviour
 
     public List<GestureSequence> GenerateGestureSequences(RectTransform timelinePanel, Recordable recordable)
     {
-        List<GestureManager.Gesture> gestures = recordable.recordedData.Select(x => x.gesture).ToList();
+        List<InputManager.Gesture> gestures = recordable.recordedData.Select(x => x.gesture).ToList();
         List<GestureSequence> GestureSequences = GetContinuousGestureSequences(gestures);
         foreach (GestureSequence sequence in GestureSequences)
         {

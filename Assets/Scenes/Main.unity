@@ -9200,6 +9200,7 @@ MonoBehaviour:
   forceArrow: {fileID: 0}
   playbackGestureText: {fileID: 0}
   currentGesture: 0
+  gestureText: {fileID: 0}
 --- !u!135 &211348521
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -23839,6 +23840,7 @@ MonoBehaviour:
   forceArrow: {fileID: 0}
   playbackGestureText: {fileID: 0}
   currentGesture: 0
+  gestureText: {fileID: 0}
 --- !u!1 &560436879
 GameObject:
   m_ObjectHideFlags: 0
@@ -28864,6 +28866,7 @@ MonoBehaviour:
   forceArrow: {fileID: 0}
   playbackGestureText: {fileID: 776480706}
   currentGesture: 5
+  gestureText: {fileID: 0}
 --- !u!1 &699485939
 GameObject:
   m_ObjectHideFlags: 0
@@ -29667,8 +29670,8 @@ MonoBehaviour:
   _whenSelected:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638713}
-        m_TargetAssemblyTypeName: GestureManager, Assembly-CSharp
+      - m_Target: {fileID: 916638715}
+        m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
         m_MethodName: SetRightHandGesture
         m_Mode: 5
         m_Arguments:
@@ -29682,8 +29685,8 @@ MonoBehaviour:
   _whenUnselected:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638713}
-        m_TargetAssemblyTypeName: GestureManager, Assembly-CSharp
+      - m_Target: {fileID: 916638715}
+        m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
         m_MethodName: SetRightHandGesture
         m_Mode: 5
         m_Arguments:
@@ -36392,6 +36395,7 @@ MonoBehaviour:
   forceArrow: {fileID: 0}
   playbackGestureText: {fileID: 0}
   currentGesture: 0
+  gestureText: {fileID: 0}
 --- !u!114 &839385084
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -40207,6 +40211,7 @@ GameObject:
   - component: {fileID: 916638709}
   - component: {fileID: 916638711}
   - component: {fileID: 916638713}
+  - component: {fileID: 916638715}
   m_Layer: 0
   m_Name: Manager
   m_TagString: Untagged
@@ -40334,6 +40339,20 @@ MonoBehaviour:
   translucentMaterial: {fileID: 2100000, guid: c7d04e9743e47b044815091153bfac87, type: 2}
   movementRecordThreshold: 0.0001
   playbackSpeed: 0.15
+--- !u!114 &916638715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 916638708}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca66f73ed13e9334aa1726ecac82a0f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  leftHand: {fileID: 1809399751}
+  rightHand: {fileID: 699462304}
 --- !u!1 &917177709
 GameObject:
   m_ObjectHideFlags: 0
@@ -42838,6 +42857,7 @@ MonoBehaviour:
   forceArrow: {fileID: 0}
   playbackGestureText: {fileID: 0}
   currentGesture: 0
+  gestureText: {fileID: 0}
 --- !u!114 &954484060
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -47241,6 +47261,7 @@ MonoBehaviour:
   forceArrow: {fileID: 0}
   playbackGestureText: {fileID: 0}
   currentGesture: 0
+  gestureText: {fileID: 0}
 --- !u!135 &1034777292
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -59139,8 +59160,8 @@ MonoBehaviour:
   _whenSelected:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638713}
-        m_TargetAssemblyTypeName: GestureManager, Assembly-CSharp
+      - m_Target: {fileID: 916638715}
+        m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
         m_MethodName: SetLeftHandGesture
         m_Mode: 5
         m_Arguments:
@@ -59154,8 +59175,8 @@ MonoBehaviour:
   _whenUnselected:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638713}
-        m_TargetAssemblyTypeName: GestureManager, Assembly-CSharp
+      - m_Target: {fileID: 916638715}
+        m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
         m_MethodName: SetLeftHandGesture
         m_Mode: 5
         m_Arguments:
@@ -74145,8 +74166,8 @@ MonoBehaviour:
           m_StringArgument: RIGHTHANDGRAB
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 916638713}
-        m_TargetAssemblyTypeName: GestureManager, Assembly-CSharp
+      - m_Target: {fileID: 916638715}
+        m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
         m_MethodName: SetRightHandGesture
         m_Mode: 5
         m_Arguments:
@@ -74172,8 +74193,8 @@ MonoBehaviour:
           m_StringArgument: RIGHTHANDNONE
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 916638713}
-        m_TargetAssemblyTypeName: GestureManager, Assembly-CSharp
+      - m_Target: {fileID: 916638715}
+        m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
         m_MethodName: SetRightHandGesture
         m_Mode: 5
         m_Arguments:
@@ -77657,8 +77678,8 @@ MonoBehaviour:
   _whenSelected:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638713}
-        m_TargetAssemblyTypeName: GestureManager, Assembly-CSharp
+      - m_Target: {fileID: 916638715}
+        m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
         m_MethodName: SetLeftHandGesture
         m_Mode: 5
         m_Arguments:
@@ -77672,8 +77693,8 @@ MonoBehaviour:
   _whenUnselected:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638713}
-        m_TargetAssemblyTypeName: GestureManager, Assembly-CSharp
+      - m_Target: {fileID: 916638715}
+        m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
         m_MethodName: SetLeftHandGesture
         m_Mode: 5
         m_Arguments:
@@ -83843,6 +83864,7 @@ MonoBehaviour:
   forceArrow: {fileID: 0}
   playbackGestureText: {fileID: 0}
   currentGesture: 0
+  gestureText: {fileID: 0}
 --- !u!114 &1806977781
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -84089,6 +84111,7 @@ MonoBehaviour:
   forceArrow: {fileID: 0}
   playbackGestureText: {fileID: 622474069}
   currentGesture: 0
+  gestureText: {fileID: 0}
 --- !u!120 &1809399753
 LineRenderer:
   m_ObjectHideFlags: 0

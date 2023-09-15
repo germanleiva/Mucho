@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class GestureManager : MonoBehaviour
 {
-    public enum Gesture { LEFTHANDNONE, LEFTHANDMENUOPEN, LEFTHANDGRAB, LEFTHANDPINCH, LEFTHANDTHROW, RIGHTHANDNONE, RIGHTHANDGRAB, RIGHTHANDTHROW, RIGHTHANDPINCH};
+    //public enum Gesture { LEFTHANDNONE, LEFTHANDMENUOPEN, LEFTHANDGRAB, LEFTHANDPINCH, LEFTHANDTHROW, RIGHTHANDNONE, RIGHTHANDGRAB, RIGHTHANDTHROW, RIGHTHANDPINCH};
     //public Gesture currentLeftHandGesture = Gesture.LEFTHANDNONE;
     //public Gesture currentRightHandGesture = Gesture.RIGHTHANDNONE;
     public Recordable leftHandRecordable, rightHandRecordable;
@@ -24,7 +24,6 @@ public class GestureManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            //DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -34,7 +33,7 @@ public class GestureManager : MonoBehaviour
 
     private void Update() 
     {
-        if((rightHand.GetFingerIsPinching(OVRHand.HandFinger.Index)))
+        if(rightHand.GetFingerIsPinching(OVRHand.HandFinger.Index))
         {
             //DebugLogger.Instance.LogInVR("Pinch detected on right hand with pinch strength: " + rightHand.GetFingerPinchStrength(OVRHand.HandFinger.Index));
             SetRightHandGesture("RIGHTHANDPINCH");
@@ -52,7 +51,7 @@ public class GestureManager : MonoBehaviour
             }
         }
 
-        if((leftHand.GetFingerIsPinching(OVRHand.HandFinger.Index)))
+        if(leftHand.GetFingerIsPinching(OVRHand.HandFinger.Index))
         {
             //DebugLogger.Instance.LogInVR("Pinch detected on left hand with pinch strength: " + rightHand.GetFingerPinchStrength(OVRHand.HandFinger.Index));
             SetLeftHandGesture("LEFTHANDPINCH");
@@ -75,7 +74,7 @@ public class GestureManager : MonoBehaviour
     public void SetLeftHandGesture(string gestureStr)
     {
         DebugLogger.Instance.LogInVR("Gesture: " + gestureStr);
-        leftHandRecordable.currentGesture = (Gesture)System.Enum.Parse(typeof(Gesture), gestureStr);;
+        leftHandRecordable.currentGesture = (InputManager.Gesture)System.Enum.Parse(typeof(InputManager.Gesture), gestureStr);
         //SelectTaskForGesture(currentLeftHandGesture);
         leftHandGestureText.text = GestureToString(leftHandRecordable.currentGesture );
     }
@@ -83,7 +82,7 @@ public class GestureManager : MonoBehaviour
     public void SetRightHandGesture(string gestureStr)
     {
         DebugLogger.Instance.LogInVR("Gesture: " + gestureStr);
-        rightHandRecordable.currentGesture = (Gesture)System.Enum.Parse(typeof(Gesture), gestureStr);;
+        rightHandRecordable.currentGesture = (InputManager.Gesture)System.Enum.Parse(typeof(InputManager.Gesture), gestureStr);;
         //SelectTaskForGesture(currentRightHandGesture);
         rightHandGestureText.text = GestureToString(rightHandRecordable.currentGesture);
 
@@ -92,19 +91,21 @@ public class GestureManager : MonoBehaviour
         //How do we get the collision events?
     }
 
-    public string GestureToString(Gesture gesture)
+
+
+    public string GestureToString(InputManager.Gesture gesture)
     {
         return gesture switch
         {
-            Gesture.LEFTHANDNONE => ("None"),
-            Gesture.LEFTHANDMENUOPEN => ("Menu Open"),
-            Gesture.LEFTHANDGRAB => ("Closed"),
-            Gesture.LEFTHANDPINCH => ("Pinch"),
-            Gesture.LEFTHANDTHROW => ("Open"),
-            Gesture.RIGHTHANDGRAB => ("Closed"),
-            Gesture.RIGHTHANDNONE => ("None"),
-            Gesture.RIGHTHANDTHROW => ("Open"),
-            Gesture.RIGHTHANDPINCH => ("Pinch"),
+            InputManager.Gesture.LEFTHANDNONE => ("None"),
+            InputManager.Gesture.LEFTHANDMENUOPEN => ("Menu Open"),
+            InputManager.Gesture.LEFTHANDGRAB => ("Closed"),
+            InputManager.Gesture.LEFTHANDPINCH => ("Pinch"),
+            InputManager.Gesture.LEFTHANDTHROW => ("Open"),
+            InputManager.Gesture.RIGHTHANDGRAB => ("Closed"),
+            InputManager.Gesture.RIGHTHANDNONE => ("None"),
+            InputManager.Gesture.RIGHTHANDTHROW => ("Open"),
+            InputManager.Gesture.RIGHTHANDPINCH => ("Pinch"),
             _ => ("ERROR"),
         };
     }
@@ -115,5 +116,5 @@ public class GestureSequence
 {
     public int StartIndex { get; set; }
     public int Length { get; set; }
-    public GestureManager.Gesture GestureType { get; set; }
+    public InputManager.Gesture GestureType { get; set; }
 }
