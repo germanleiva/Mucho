@@ -87,7 +87,7 @@ public class AssetPoseRecorder : MonoBehaviour
             foreach(var data in mainRecorder.objectsToRecord[0].recordedData)
             {
                 //recordable.recordedData.Add(new RecordFrameData(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", data.frameNumber));
-                recordable.recordedData.Add(new RecordableFrame(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", "None", data.frameNumber));
+                recordable.recordedData.Add(new RecordableFrame(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", "None", null, data.frameNumber));
             }
         }
     }
@@ -224,7 +224,7 @@ public class AssetPoseRecorder : MonoBehaviour
             }
             else if(recordable.recordingMode == Recordable.RecordingMode.Follow)
             {
-                //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, true);
+                //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, action: "Follow()", sourceOfAction: "None", propagateValueToSubsequentFrames: true);
                 //Increment the slider value by frame duration
                 //mainRecorder.playbackSlider.value += 1;//Time.deltaTime;
             }
@@ -241,8 +241,9 @@ public class AssetPoseRecorder : MonoBehaviour
             {
                 if (recordable.playbackObject != null && recordable.recordedData.Count > 0)
                 {
+                    recordable.recordedData[currentFrameNum].ActionDelegate?.Invoke();
                     //DebugLogger.Instance.Log("Playing back " + recordable.playbackObject.name + " at " + currentFrameNum);
-                    recordable.playbackObject.transform.position = recordable.recordedData[currentFrameNum].rootPosition;
+                    /*recordable.playbackObject.transform.position = recordable.recordedData[currentFrameNum].rootPosition;
                     recordable.playbackObject.transform.rotation = recordable.recordedData[currentFrameNum].rootRotation * Quaternion.Euler(recordable.rotationCorrection);
 
                     if (recordable.recordedData[currentFrameNum].showStatusForThisFrame)
@@ -257,7 +258,7 @@ public class AssetPoseRecorder : MonoBehaviour
                             recordable.playbackObject.GetComponent<MeshRenderer>().material = transparentMaterial;
                         else 
                             recordable.playbackObject.GetComponent<MeshRenderer>().material = translucentMaterial;
-                    }
+                    }*/
                 }
             }
         }

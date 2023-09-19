@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -143,13 +144,14 @@ public class Recordable : MonoBehaviour
         }
     }
 
-    public void InsertAssetRecordFrame(int _frameNumber, string action = "None", string sourceOfAction = "None",  bool propagateValueToSubsequentFrames = false)
+    public void InsertAssetRecordFrame(int _frameNumber, string action = "None", string sourceOfAction = "None", Action actionDelegate = null, bool propagateValueToSubsequentFrames = false)
     {
-        RecordableFrame item = new(transform.position, transform.rotation, showStatus, action, sourceOfAction, _frameNumber);
+        RecordableFrame item = new(transform.position, transform.rotation, showStatus, action, sourceOfAction, actionDelegate, _frameNumber);
         DebugLogger.Instance.Log("Inserting asset record frame at a specific frame number " + _frameNumber);
         recordedData[_frameNumber] = item;
+        actionDelegate?.Invoke();
 
-        if (propagateValueToSubsequentFrames) // Propagate the value to subsequent frames
+        /*if (propagateValueToSubsequentFrames) // Propagate the value to subsequent frames
         {
             DebugLogger.Instance.Log("InsertAssetRecordFrame() - Propagating value to subsequent frames, starting from index " + _frameNumber + " to " + recordedData.Count);
             for (int i = _frameNumber + 1; i < recordedData.Count; i++)
@@ -169,7 +171,7 @@ public class Recordable : MonoBehaviour
                 recordedData[i].rootPosition = item.rootPosition;
                 recordedData[i].rootRotation = item.rootRotation;
             }
-        }
+        }*/
     }
 
     public void Hide()
@@ -181,12 +183,11 @@ public class Recordable : MonoBehaviour
         if(Recorder.Instance.GetSizeOfMainRecordedData() > 0)
         {
             DebugLogger.Instance.Log("Recorded hide for  " + playbackObject.name + " at " + Recorder.Instance.playbackSlider.value);
-            RecordAndPropagateAssetShowStatus((int)Recorder.Instance.playbackSlider.value);
+            //RecordAndPropagateAssetShowStatus((int)Recorder.Instance.playbackSlider.value);
         }
-        if(Manager.Instance.currAppState == Manager.AppState.RECORDING)
-        {
-            Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
-        }
+
+        Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
+
         
     }
 
@@ -198,20 +199,23 @@ public class Recordable : MonoBehaviour
         if(Recorder.Instance.GetSizeOfMainRecordedData() > 0)
         {
             DebugLogger.Instance.Log("Recorded show for " + playbackObject.name + " at " + Recorder.Instance.playbackSlider.value);
-            RecordAndPropagateAssetShowStatus((int)Recorder.Instance.playbackSlider.value);
+            //RecordAndPropagateAssetShowStatus((int)Recorder.Instance.playbackSlider.value);
         }
-        if(Manager.Instance.currAppState == Manager.AppState.RECORDING)
-        {
-            Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
-        }
+
+        Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
+
     }
 
     public void AttachToLeftHand()
     {
         DebugLogger.Instance.Log("Attach called for " + playbackObject.name);
         recordingMode = Recordable.RecordingMode.Follow;
-        CopyPoseFromRecordable(Recorder.Instance.objectsToRecord[1], (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
+        //CopyPoseFromRecordable(Recorder.Instance.objectsToRecord[1], (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
+        Follow(Recorder.Instance.objectsToRecord[1].transform);
+        //InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, actionDelegate: () => { Follow(Recorder.Instance.objectsToRecord[1].transform); });
+        InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, actionDelegate: () => { Follow(Recorder.Instance.objectsToRecord[1].playbackObject.transform); });
         Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
+   
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[1].playbackObject.transform);
     }
 
@@ -219,7 +223,9 @@ public class Recordable : MonoBehaviour
     {
         DebugLogger.Instance.Log("Attach called for " + playbackObject.name);
         recordingMode = Recordable.RecordingMode.Follow;
-        CopyPoseFromRecordable(Recorder.Instance.objectsToRecord[2], (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
+        //CopyPoseFromRecordable(Recorder.Instance.objectsToRecord[2], (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
+        Follow(Recorder.Instance.objectsToRecord[2].transform);        
+        InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, actionDelegate: () => { Follow(Recorder.Instance.objectsToRecord[2].playbackObject.transform); });
         Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[2].playbackObject.transform);
     }
@@ -255,7 +261,9 @@ public class Recordable : MonoBehaviour
     {
         DebugLogger.Instance.Log("Detach called for " + playbackObject.name);
         recordingMode = Recordable.RecordingMode.None;
-        CopyPoseFromRecordable(this, (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:true, copyRotation:false);
+        Unfollow();
+        InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, actionDelegate: () => { Unfollow(); });
+        //CopyPoseFromRecordable(this, (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:true, copyRotation:false);
         Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
         //recordable.playbackObject.transform.SetParent(null);
     }
@@ -564,12 +572,14 @@ public class RecordableFrame
     public InputManager.Gesture gesture;
 
     public string Action = "None";
+
+    public Action ActionDelegate;
     public string SourceOfAction = "None";
 
     //public Vector3 force;
 
     //Assets 
-    public RecordableFrame(Vector3 _position, Quaternion _rotation, bool _showStatus, string _action, string _sourceOfAction, int _frameNumber)
+    public RecordableFrame(Vector3 _position, Quaternion _rotation, bool _showStatus, string _action, string _sourceOfAction, Action _actionDelegate, int _frameNumber)
     {
         rootPosition = _position;
         rootRotation = _rotation;
@@ -577,6 +587,7 @@ public class RecordableFrame
         frameNumber = _frameNumber;
         Action = _action;
         SourceOfAction = _sourceOfAction;
+        ActionDelegate = _actionDelegate;
     }
 
     //Head

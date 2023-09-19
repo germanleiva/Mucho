@@ -523,36 +523,39 @@ public class Recorder : MonoBehaviour
 
     public void RefreshAssetsTimeline(GameObject timelinePanelPrefab)
     {
-        //Delete all existing asset timelines
-        foreach (var timeline in assetTimelines)
+        //if(Manager.Instance.currAppState == Manager.AppState.RECORDING || Manager.Instance.currAppState == Manager.AppState.PLAYBACK)
         {
-            Destroy(timeline);
-        }
-
-        //Delete all existing collision timeline elements
-        for (int i = 2; i < collisionTimelinePanel.GetComponent<RectTransform>().childCount; i++)
-        {
-            Destroy(collisionTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
-        }
-
-
-        //GenerateGestureSequences(timelinePanel, recordable);
-        int recordableCounter = 0;
-        assetSequencesLists.Clear();
-        foreach (var recordable in AssetPoseRecorder.Instance.recordableAssets)
-        {
-            ++recordableCounter;
-            GameObject timelinePanel = Instantiate(timelinePanelPrefab, playbackPanelTransform);
-            assetTimelines.Add(timelinePanel);
-            timelinePanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(timelinePanel.GetComponent<RectTransform>().anchoredPosition.x, timelinePanel.GetComponent<RectTransform>().anchoredPosition.y - recordableCounter * 100);
-            timelinePanel.SetActive(true);
-            timelinePanel.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text = Manager.Instance.CleanString(recordable.name);
-
-            if (recordable.recordedData.Count > 0)
+            //Delete all existing asset timelines
+            foreach (var timeline in assetTimelines)
             {
-                assetSequencesLists.Add(GenerateAssetActionSequences(timelinePanel.GetComponent<RectTransform>(), recordable));
-                assetSequencesLists.Add(GenerateAssetSourceOfActionSequences(collisionTimelinePanel.GetComponent<RectTransform>(), recordable));
-            }   
+                Destroy(timeline);
+            }
+
+            //Delete all existing collision timeline elements
+            for (int i = 2; i < collisionTimelinePanel.GetComponent<RectTransform>().childCount; i++)
+            {
+                Destroy(collisionTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
+            }
+
+
+            //GenerateGestureSequences(timelinePanel, recordable);
+            int recordableCounter = 0;
+            assetSequencesLists.Clear();
+            foreach (var recordable in AssetPoseRecorder.Instance.recordableAssets)
+            {
+                ++recordableCounter;
+                GameObject timelinePanel = Instantiate(timelinePanelPrefab, playbackPanelTransform);
+                assetTimelines.Add(timelinePanel);
+                timelinePanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(timelinePanel.GetComponent<RectTransform>().anchoredPosition.x, timelinePanel.GetComponent<RectTransform>().anchoredPosition.y - recordableCounter * 100);
+                timelinePanel.SetActive(true);
+                timelinePanel.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text = Manager.Instance.CleanString(recordable.name);
+
+                if (recordable.recordedData.Count > 0)
+                {
+                    assetSequencesLists.Add(GenerateAssetActionSequences(timelinePanel.GetComponent<RectTransform>(), recordable));
+                    assetSequencesLists.Add(GenerateAssetSourceOfActionSequences(collisionTimelinePanel.GetComponent<RectTransform>(), recordable));
+                }   
+            }
         }
     }
 
