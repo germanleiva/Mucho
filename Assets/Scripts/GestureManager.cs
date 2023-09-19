@@ -73,7 +73,7 @@ public class GestureManager : MonoBehaviour
 
     public void SetLeftHandGesture(string gestureStr)
     {
-        DebugLogger.Instance.LogInVR("Gesture: " + gestureStr);
+        DebugLogger.Instance.Log("Gesture: " + gestureStr);
         leftHandRecordable.currentGesture = (InputManager.Gesture)System.Enum.Parse(typeof(InputManager.Gesture), gestureStr);
         //SelectTaskForGesture(currentLeftHandGesture);
         leftHandGestureText.text = GestureToString(leftHandRecordable.currentGesture );
@@ -81,7 +81,7 @@ public class GestureManager : MonoBehaviour
 
     public void SetRightHandGesture(string gestureStr)
     {
-        DebugLogger.Instance.LogInVR("Gesture: " + gestureStr);
+        DebugLogger.Instance.Log("Gesture: " + gestureStr);
         rightHandRecordable.currentGesture = (InputManager.Gesture)System.Enum.Parse(typeof(InputManager.Gesture), gestureStr);;
         //SelectTaskForGesture(currentRightHandGesture);
         rightHandGestureText.text = GestureToString(rightHandRecordable.currentGesture);

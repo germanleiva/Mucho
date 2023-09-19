@@ -13,7 +13,6 @@ public class Manager : MonoBehaviour
         INIT,
         RECORDING,
         PLAYBACK,
-        ASSETRECORDING,
         TEST,
         LIVE
     }
@@ -50,6 +49,26 @@ public class Manager : MonoBehaviour
     void Update()
     {
         
+    }
+
+    public void ChangeToLiveMode()
+    {
+        currAppState = Manager.AppState.LIVE;
+    }
+
+    public void ChangeToTestMode()
+    {
+        currAppState = Manager.AppState.TEST;
+    }
+
+    public void ChangeToAssetRecordingMode()
+    {
+        currAppState = Manager.AppState.RECORDING;
+    }
+
+    public void ChangeToPlaybackMode()
+    {
+        currAppState = Manager.AppState.PLAYBACK;
     }
 
     public string CleanString(string str)

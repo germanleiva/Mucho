@@ -70,8 +70,8 @@ public class Recordable : MonoBehaviour
 
     [Header("Misc Properties")]
     public bool showStatus = true;
-    public Vector3 appliedForce;
-    public ForceArrow forceArrow;
+    //public Vector3 appliedForce;
+    //public ForceArrow forceArrow;
     public TMPro.TMP_Text playbackGestureText;
     public InputManager.Gesture currentGesture;
 
@@ -345,8 +345,45 @@ public class Recordable : MonoBehaviour
             ResetPhysicsProperties();          
             Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         }
+
+        if(Manager.Instance.currAppState != Manager.AppState.RECORDING)
+        {
+            //DebugLogger.Instance.Log("Collision detected between " + gameObject.name + " and " + collision.collider.name);
+        }
     }
 
+
+    void OnCollisionStay(Collision collision)
+    {
+        if(Manager.Instance.currAppState != Manager.AppState.RECORDING)
+        {
+            //DebugLogger.Instance.Log("Collision detected between " + gameObject.name + " and " + collision.collider.name);
+            if(collision.collider.name == "LeftHandCollider")
+            {
+                InputManager.Instance.SetAssetInContactWithLeftHand(this, true);
+            }
+            else if(collision.collider.name == "RightHandCollider")
+            {
+                InputManager.Instance.SetAssetInContactWithRightHand(this, true);
+            }            
+        }
+    }
+
+    void OnCollisionExit(Collision collision)
+    {
+        if(Manager.Instance.currAppState != Manager.AppState.RECORDING)
+        {
+            DebugLogger.Instance.Log("Collision ended between " + gameObject.name + " and " + collision.collider.name);
+            if(collision.collider.name == "LeftHandCollider")
+            {
+                InputManager.Instance.SetAssetInContactWithLeftHand(this, false);
+            }
+            else if(collision.collider.name == "RightHandCollider")
+            {
+                InputManager.Instance.SetAssetInContactWithRightHand(this, false);
+            }            
+        }
+    }
 
 
     public void ApplyForce(Vector3 initialVelocity)
@@ -356,7 +393,7 @@ public class Recordable : MonoBehaviour
         //isAssetRecordingOn = true;
         initPosBeforePhysicsSimulation = transform.position;
         initRotBeforePhysicsSimulation = transform.rotation;
-        Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
+        //Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
         //isSimulationOn = true;
         GetComponent<Rigidbody>().mass = 0f;
         GetComponent<Collider>().isTrigger = false;
@@ -380,7 +417,7 @@ public class Recordable : MonoBehaviour
 
     public void SetGesture(string gestureStr)
     {
-        DebugLogger.Instance.LogInVR("Gesture: " + gestureStr);
+        DebugLogger.Instance.Log("Gesture: " + gestureStr);
         currentGesture = (InputManager.Gesture)System.Enum.Parse(typeof(InputManager.Gesture), gestureStr);
         gestureText.text = gestureStr;
     }

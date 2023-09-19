@@ -131,7 +131,7 @@ public class AssetPoseRecorder : MonoBehaviour
 
     public void StartRecording(Recordable recordable)
     {
-        Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
+        //Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
 
         DebugLogger.Instance.Log("StartRecording in " + recordable.playbackObject.name);
         firstFrameOfManualRecording = (int)mainRecorder.playbackSlider.value;
@@ -373,7 +373,7 @@ public class AssetPoseRecorder : MonoBehaviour
 
     public void SpawnSphere(Transform target)
     {
-        DebugLogger.Instance.LogInVR("Spawned Sphere");
+        DebugLogger.Instance.Log("Spawned Sphere");
         GameObject obj = Instantiate(spherePrefab, target.position, Quaternion.identity);
         obj.SetActive(true);
         recordableAssets.Add(obj.GetComponentInChildren<Recordable>());
@@ -383,7 +383,7 @@ public class AssetPoseRecorder : MonoBehaviour
 
     public void SpawnCube(Transform target)
     {
-        DebugLogger.Instance.LogInVR("Spawned Cube");
+        DebugLogger.Instance.Log("Spawned Cube");
         GameObject obj = Instantiate(cubePrefab, target.position, Quaternion.identity);
         obj.SetActive(true);
         recordableAssets.Add(obj.GetComponentInChildren<Recordable>());
@@ -392,7 +392,7 @@ public class AssetPoseRecorder : MonoBehaviour
 
     public void SpawnText(Transform target)
     {
-        DebugLogger.Instance.LogInVR("Spawned Text");
+        DebugLogger.Instance.Log("Spawned Text");
         GameObject obj = Instantiate(textAsset, target.position, Quaternion.identity);
         obj.SetActive(true);
         recordableAssets.Add(obj.GetComponentInChildren<Recordable>());
@@ -401,7 +401,7 @@ public class AssetPoseRecorder : MonoBehaviour
 
     public void DeleteAsset(GameObject obj)
     {
-        DebugLogger.Instance.LogInVR("Deleted " + obj.name);        
+        DebugLogger.Instance.Log("Deleted " + obj.name);        
         recordableAssets.Remove(obj.GetComponentInChildren<Recordable>());
         Destroy(obj);
     }
