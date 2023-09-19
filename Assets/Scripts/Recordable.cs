@@ -32,9 +32,6 @@ public class Recordable : MonoBehaviour
 
     public bool isSimulationOn = false;
 
-    //public bool isAssetRecordingOn = false;
-    //public bool isAssetPlaybackOn = false;
-
     public List<GameObject> childObjectsToRecord;
 
     [Header("Recordable Index Finger Joints")]
@@ -173,6 +170,94 @@ public class Recordable : MonoBehaviour
                 recordedData[i].rootRotation = item.rootRotation;
             }
         }
+    }
+
+    public void Hide()
+    {
+        //Turn the material in recordable.playbackObject to 0.5 alpha
+        playbackObject.GetComponent<MeshRenderer>().material = AssetPoseRecorder.Instance.translucentMaterial;
+        showStatus = false;
+        //if(recordable.isAssetRecordingOn)
+        if(Recorder.Instance.GetSizeOfMainRecordedData() > 0)
+        {
+            DebugLogger.Instance.Log("Recorded hide for  " + playbackObject.name + " at " + Recorder.Instance.playbackSlider.value);
+            RecordAndPropagateAssetShowStatus((int)Recorder.Instance.playbackSlider.value);
+        }
+        if(Manager.Instance.currAppState == Manager.AppState.RECORDING)
+        {
+            Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
+        }
+        
+    }
+
+    public void Show()
+    {
+        //Turn the material in recordable.playbackObject to 1 alpha
+        playbackObject.GetComponent<MeshRenderer>().material = AssetPoseRecorder.Instance.defaultMaterial;
+        showStatus = true;
+        if(Recorder.Instance.GetSizeOfMainRecordedData() > 0)
+        {
+            DebugLogger.Instance.Log("Recorded show for " + playbackObject.name + " at " + Recorder.Instance.playbackSlider.value);
+            RecordAndPropagateAssetShowStatus((int)Recorder.Instance.playbackSlider.value);
+        }
+        if(Manager.Instance.currAppState == Manager.AppState.RECORDING)
+        {
+            Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
+        }
+    }
+
+    public void AttachToLeftHand()
+    {
+        DebugLogger.Instance.Log("Attach called for " + playbackObject.name);
+        recordingMode = Recordable.RecordingMode.Follow;
+        CopyPoseFromRecordable(Recorder.Instance.objectsToRecord[1], (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
+        Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
+        //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[1].playbackObject.transform);
+    }
+
+    public void AttachToRightHand()
+    {
+        DebugLogger.Instance.Log("Attach called for " + playbackObject.name);
+        recordingMode = Recordable.RecordingMode.Follow;
+        CopyPoseFromRecordable(Recorder.Instance.objectsToRecord[2], (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
+        Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
+        //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[2].playbackObject.transform);
+    }
+
+    public void AttachToLeftHandFocusSquare()
+    {
+        DebugLogger.Instance.Log("Attach called for " + playbackObject.name);
+        recordingMode = Recordable.RecordingMode.Follow;
+        CopyPoseFromFocusSquare(Recorder.Instance.objectsToRecord[1], (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
+        Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
+        //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[1].playbackObject.transform);
+    }
+
+    public void AttachToRightHandFocusSquare()
+    {
+        DebugLogger.Instance.Log("Attach called for " + playbackObject.name);
+        recordingMode = Recordable.RecordingMode.Follow;
+        CopyPoseFromFocusSquare(Recorder.Instance.objectsToRecord[2], (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
+        Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
+        //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[2].playbackObject.transform);
+    }
+
+    public void AttachToHeadFocusSquare()
+    {
+        DebugLogger.Instance.Log("Attach called for " + playbackObject.name);
+        recordingMode = Recordable.RecordingMode.Follow;
+        CopyPoseFromFocusSquare(Recorder.Instance.objectsToRecord[0], (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
+        Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
+        //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[0].playbackObject.transform);
+    }
+
+    public void Detach()
+    {
+        DebugLogger.Instance.Log("Detach called for " + playbackObject.name);
+        recordingMode = Recordable.RecordingMode.None;
+        CopyPoseFromRecordable(this, (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:true, copyRotation:false);
+        Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
+        //recordable.playbackObject.transform.SetParent(null);
     }
 
     public void RecordAndPropagateAssetShowStatus(int _frameNumber)

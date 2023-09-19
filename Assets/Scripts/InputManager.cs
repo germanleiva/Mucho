@@ -137,12 +137,18 @@ public class InputManager : MonoBehaviour
 
     public void SetAssetInContactWithLeftHand(Recordable asset)
     {
-        assetInContactWithLeftHand = asset;
+        if (assetInContactWithLeftHand != asset) //assign only if it is a different asset
+        {
+            assetInContactWithLeftHand = asset;
+        }
     }
 
     public void SetAssetInContactWithRightHand(Recordable asset)
     {
-        assetInContactWithRightHand = asset;
+        if (assetInContactWithRightHand != asset) //assign only if it is a different asset
+        {
+            assetInContactWithRightHand = asset;
+        }
     }
 
 
