@@ -12,6 +12,7 @@ public class Manager : MonoBehaviour
     {
         INIT,
         RECORDING,
+        ASSETRECORDING,
         PLAYBACK,
         TEST,
         LIVE

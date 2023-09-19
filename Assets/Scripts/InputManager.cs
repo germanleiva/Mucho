@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,6 +9,8 @@ public class InputManager : MonoBehaviour
     public enum Gesture { LEFTHANDNONE, LEFTHANDMENUOPEN, LEFTHANDGRAB, LEFTHANDPINCH, LEFTHANDTHROW, RIGHTHANDNONE, RIGHTHANDGRAB, RIGHTHANDTHROW, RIGHTHANDPINCH};
 
     public Recordable leftHand, rightHand;
+
+    //public 
 
     public Recordable assetInContactWithLeftHand, assetInContactWithRightHand;
 
@@ -61,7 +64,7 @@ public class InputManager : MonoBehaviour
     {
        if (Manager.Instance.currAppState == Manager.AppState.LIVE)
        {
-            DebugLogger.Instance.Log("Processing gestures");
+            /*DebugLogger.Instance.Log("Processing gestures in live mode");
             DebugLogger.Instance.Log("Left Hand: " + leftHand.currentGesture.ToString() + " Right Hand: " + rightHand.currentGesture.ToString());
 
             DebugLogger.Instance.Log("Processing collisions between hands and assets");
@@ -76,40 +79,70 @@ public class InputManager : MonoBehaviour
                 //assetInContactWithRightHand.ProcessCollision(rightHand);
             }
 
-            DebugLogger.Instance.Log("Processing collisions between assets");
+            DebugLogger.Instance.Log("Processing collisions between assets");*/
 
 
        }
-       else if (Manager.Instance.currAppState == Manager.AppState.RECORDING)
-       {} 
+       else if (Manager.Instance.currAppState == Manager.AppState.INIT || Manager.Instance.currAppState == Manager.AppState.PLAYBACK || Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
+       {
+            DebugLogger.Instance.Log("Processing gestures in live mode");
+            DebugLogger.Instance.Log("Left Hand: " + leftHand.currentGesture.ToString() + " Right Hand: " + rightHand.currentGesture.ToString());
+
+            DebugLogger.Instance.Log("Processing collisions between hands and assets");
+
+            if (assetInContactWithLeftHand != null)
+            {
+                DebugLogger.Instance.Log("Left Hand in contact with " + assetInContactWithLeftHand.name);
+                if (leftHand.currentGesture == Gesture.LEFTHANDPINCH)
+                {
+                    DebugLogger.Instance.Log("Left Hand is pinching " + assetInContactWithLeftHand.name);
+                    //AttachAssetToHand(assetInContactWithLeftHand, leftHand);
+                    assetInContactWithLeftHand.Follow(leftHand.transform);
+                }
+                else if (leftHand.currentGesture == Gesture.LEFTHANDNONE)
+                {
+                    DebugLogger.Instance.Log("Left Hand is no longer pinching " + assetInContactWithLeftHand.name);
+                    assetInContactWithLeftHand.Unfollow();
+                }               
+            }
+            else
+            {
+                //assetInContactWithLeftHand.Unfollow();
+            }
+
+
+            if (assetInContactWithRightHand != null)
+            {
+                DebugLogger.Instance.Log("Right Hand in contact with " + assetInContactWithRightHand.name);
+                if (rightHand.currentGesture == Gesture.RIGHTHANDPINCH)
+                {
+                    DebugLogger.Instance.Log("Right Hand is pinching " + assetInContactWithRightHand.name);
+                    assetInContactWithRightHand.Follow(rightHand.transform);
+                }    
+                else if (rightHand.currentGesture == Gesture.RIGHTHANDNONE)
+                {
+                    DebugLogger.Instance.Log("Right Hand is no longer pinching " + assetInContactWithRightHand.name);
+                    assetInContactWithRightHand.Unfollow();
+                }
+            }
+            else
+            {
+                //assetInContactWithRightHand.Unfollow();
+            }
+
+            //DebugLogger.Instance.Log("Processing collisions between assets");
+
+       } 
     }
 
-    public void SetAssetInContactWithLeftHand(Recordable assetName, bool isContact)
+    public void SetAssetInContactWithLeftHand(Recordable asset)
     {
-        if (isContact)
-        {
-            //DebugLogger.Instance.Log("Left Hand in contact with " + assetName.name);
-            assetInContactWithLeftHand = assetName;
-        }
-        else
-        {
-            //DebugLogger.Instance.Log("Left Hand no longer in contact with " + assetName.name);
-            assetInContactWithLeftHand = null;
-        }
+        assetInContactWithLeftHand = asset;
     }
 
-    public void SetAssetInContactWithRightHand(Recordable assetName, bool isContact)
+    public void SetAssetInContactWithRightHand(Recordable asset)
     {
-        if (isContact)
-        {
-            //DebugLogger.Instance.Log("Right Hand in contact with " + assetName.name);
-            assetInContactWithRightHand = assetName;
-        }
-        else
-        {
-            //DebugLogger.Instance.Log("Right Hand no longer in contact with " + assetName.name);
-            assetInContactWithRightHand = null;
-        }
+        assetInContactWithRightHand = asset;
     }
 
 
@@ -131,4 +164,11 @@ public class InputManager : MonoBehaviour
         };
     }
 
+}
+
+public class GestureSequence
+{
+    public int StartIndex { get; set; }
+    public int Length { get; set; }
+    public InputManager.Gesture GestureType { get; set; }
 }

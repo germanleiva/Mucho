@@ -358,13 +358,13 @@ public class Recordable : MonoBehaviour
         if(Manager.Instance.currAppState != Manager.AppState.RECORDING)
         {
             //DebugLogger.Instance.Log("Collision detected between " + gameObject.name + " and " + collision.collider.name);
-            if(collision.collider.name == "LeftHandCollider")
+            if(collision.collider.name == "LeftHandPinchContactSphere")
             {
-                InputManager.Instance.SetAssetInContactWithLeftHand(this, true);
+                InputManager.Instance.SetAssetInContactWithLeftHand(this);
             }
-            else if(collision.collider.name == "RightHandCollider")
+            else if(collision.collider.name == "RightHandPinchContactSphere")
             {
-                InputManager.Instance.SetAssetInContactWithRightHand(this, true);
+                InputManager.Instance.SetAssetInContactWithRightHand(this);
             }            
         }
     }
@@ -373,16 +373,26 @@ public class Recordable : MonoBehaviour
     {
         if(Manager.Instance.currAppState != Manager.AppState.RECORDING)
         {
-            DebugLogger.Instance.Log("Collision ended between " + gameObject.name + " and " + collision.collider.name);
-            if(collision.collider.name == "LeftHandCollider")
+            //DebugLogger.Instance.Log("Collision ended between " + gameObject.name + " and " + collision.collider.name);
+            if(collision.collider.name == "LeftHandPinchContactSphere")
             {
-                InputManager.Instance.SetAssetInContactWithLeftHand(this, false);
+                InputManager.Instance.SetAssetInContactWithLeftHand(null);
             }
-            else if(collision.collider.name == "RightHandCollider")
+            else if(collision.collider.name == "RightHandPinchContactSphere")
             {
-                InputManager.Instance.SetAssetInContactWithRightHand(this, false);
+                InputManager.Instance.SetAssetInContactWithRightHand(null);
             }            
         }
+    }
+
+    public void Follow(Transform other)
+    {
+        transform.SetParent(other);
+    }
+
+    public void Unfollow()
+    {
+        transform.SetParent(null);
     }
 
 

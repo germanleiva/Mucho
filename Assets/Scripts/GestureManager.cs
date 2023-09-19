@@ -33,6 +33,7 @@ public class GestureManager : MonoBehaviour
 
     private void Update() 
     {
+        /*
         if(rightHand.GetFingerIsPinching(OVRHand.HandFinger.Index))
         {
             //DebugLogger.Instance.LogInVR("Pinch detected on right hand with pinch strength: " + rightHand.GetFingerPinchStrength(OVRHand.HandFinger.Index));
@@ -68,10 +69,11 @@ public class GestureManager : MonoBehaviour
                 setLeftHandNone = false;
             }
         }
+        */
         
     }
 
-    public void SetLeftHandGesture(string gestureStr)
+    /*public void SetLeftHandGesture(string gestureStr)
     {
         DebugLogger.Instance.Log("Gesture: " + gestureStr);
         leftHandRecordable.currentGesture = (InputManager.Gesture)System.Enum.Parse(typeof(InputManager.Gesture), gestureStr);
@@ -90,7 +92,7 @@ public class GestureManager : MonoBehaviour
         //getTheStateMachine, an make the StateMachine process the current gesture
         //How do we get the collision events?
     }
-
+    */
 
 
     public string GestureToString(InputManager.Gesture gesture)
@@ -112,9 +114,5 @@ public class GestureManager : MonoBehaviour
 
 }
 
-public class GestureSequence
-{
-    public int StartIndex { get; set; }
-    public int Length { get; set; }
-    public InputManager.Gesture GestureType { get; set; }
-}
+/**/
+

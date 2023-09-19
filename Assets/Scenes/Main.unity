@@ -22085,7 +22085,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &515536005
 Transform:
   m_ObjectHideFlags: 0
@@ -29760,7 +29760,7 @@ GameObject:
   - component: {fileID: 704971277}
   - component: {fileID: 704971276}
   m_Layer: 0
-  m_Name: RightThrowGesture
+  m_Name: RightThrowGestureDetector
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -46937,7 +46937,7 @@ GameObject:
   - component: {fileID: 1024345641}
   - component: {fileID: 1024345642}
   m_Layer: 0
-  m_Name: LeftHandMenuOpenGesture
+  m_Name: LeftHandMenuOpenGestureDetector
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -59349,7 +59349,7 @@ GameObject:
   - component: {fileID: 1291824188}
   - component: {fileID: 1291824187}
   m_Layer: 0
-  m_Name: LeftGrabGesture
+  m_Name: LeftGrabGestureDetector
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -59482,6 +59482,52 @@ MonoBehaviour:
   _shapes:
   - {fileID: 11400000, guid: 3c87ada45140632468cc371ffdada246, type: 2}
   - {fileID: 11400000, guid: f4bd1264636288c4c8322cdb04ae93b2, type: 2}
+--- !u!1 &1294992551
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1294992552}
+  - component: {fileID: 1294992553}
+  m_Layer: 0
+  m_Name: PinchGestureDetector
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1294992552
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1294992551}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1561943866}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1294992553
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1294992551}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d05bbd23771b044db8c8a28f07956dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  leftHand: {fileID: 114428879319433826}
+  rightHand: {fileID: 114428879723832214}
 --- !u!1 &1297907094
 GameObject:
   m_ObjectHideFlags: 0
@@ -71888,7 +71934,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1561943866}
   m_Layer: 0
-  m_Name: Poses
+  m_Name: GestureDetectors
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -71911,6 +71957,7 @@ Transform:
   - {fileID: 1611295346}
   - {fileID: 1673506875}
   - {fileID: 1291824186}
+  - {fileID: 1294992552}
   m_Father: {fileID: 1970992213}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -74343,7 +74390,7 @@ GameObject:
   - component: {fileID: 1611295348}
   - component: {fileID: 1611295347}
   m_Layer: 0
-  m_Name: RightGrabGesture
+  m_Name: RightGrabGestureDetector
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -77978,7 +78025,7 @@ GameObject:
   - component: {fileID: 1673506877}
   - component: {fileID: 1673506876}
   m_Layer: 0
-  m_Name: LeftThrowGesture
+  m_Name: LeftThrowGestureDetector
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

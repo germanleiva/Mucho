@@ -389,13 +389,13 @@ public class Recorder : MonoBehaviour
         List<GestureSequence> GestureSequences = GetContinuousGestureSequences(gestures);
         foreach (GestureSequence sequence in GestureSequences)
         {
-            DebugLogger.Instance.Log("Sequence name: " + GestureManager.Instance.GestureToString(sequence.GestureType) + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
+            DebugLogger.Instance.Log("Sequence name: " + InputManager.Instance.GestureToString(sequence.GestureType) + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
             DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
             GameObject timelineElement = Instantiate(handTimelineElementPrefab, timelinePanel);
             timelineElement.SetActive(true);
             timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
             timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
-            timelineElement.GetComponent<TimelineUIElement>().SetEvent(GestureManager.Instance.GestureToString(sequence.GestureType));
+            timelineElement.GetComponent<TimelineUIElement>().SetEvent(InputManager.Instance.GestureToString(sequence.GestureType));
         }
         return GestureSequences;
     }    
@@ -577,7 +577,7 @@ public class Recorder : MonoBehaviour
                     if (asset.StartIndex >= gesture.StartIndex && asset.StartIndex + asset.Length <= gesture.StartIndex + gesture.Length)
                     {
                         actions.Add(asset.Action);
-                        DebugLogger.Instance.Log("Found action " + asset.Action + " for gesture " + GestureManager.Instance.GestureToString(gesture.GestureType));
+                        DebugLogger.Instance.Log("Found action " + asset.Action + " for gesture " + InputManager.Instance.GestureToString(gesture.GestureType));
                     }
                 }
             }
@@ -598,7 +598,7 @@ public class Recorder : MonoBehaviour
         // Print the results
         foreach (var item in result)
         {
-            DebugLogger.Instance.Log($"GestureType: {GestureManager.Instance.GestureToString(item.Gesture.GestureType)}, Actions: {string.Join(", ", item.Actions)}");
+            DebugLogger.Instance.Log($"GestureType: {InputManager.Instance.GestureToString(item.Gesture.GestureType)}, Actions: {string.Join(", ", item.Actions)}");
         }
     }
 
@@ -659,7 +659,7 @@ public class Recorder : MonoBehaviour
                     if (recordable.playbackObject.GetComponent<HandPlaybackObjectScript>() != null)
                     {    
                         recordable.playbackObject.GetComponent<HandPlaybackObjectScript>().SetPoseForAllFingerJoints(recordable.recordedData[currentFrameNum]);
-                        recordable.playbackGestureText.text = GestureManager.Instance.GestureToString(recordable.recordedData[currentFrameNum].gesture);  
+                        recordable.playbackGestureText.text = InputManager.Instance.GestureToString(recordable.recordedData[currentFrameNum].gesture);  
                     }
                     //Focus Square
                     recordable.playbackFocusSquare.transform.position = recordable.recordedData[currentFrameNum].focusSquarePosition;
@@ -671,6 +671,7 @@ public class Recorder : MonoBehaviour
 
     }
 }
+
 
 
 
