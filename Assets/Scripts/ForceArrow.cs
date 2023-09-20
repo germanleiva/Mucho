@@ -144,8 +144,9 @@ public class ForceArrow : MonoBehaviour
 
     public void ThrowAsset()
     {
+        Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
         GameObject throwableAsset = asset.gameObject;
-        throwableAsset.GetComponent<Recordable>().ApplyForce(initialVelocity);
+        throwableAsset.GetComponent<Recordable>().PrepareForceSimulation(initialVelocity);
     }
 
 }

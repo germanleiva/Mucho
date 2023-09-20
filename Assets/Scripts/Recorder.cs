@@ -323,7 +323,7 @@ public class Recorder : MonoBehaviour
 
     public List<GestureSequence> GetContinuousGestureSequences(List<InputManager.Gesture> gestures)
     {
-        List<GestureSequence> sequences = new List<GestureSequence>();
+        List<GestureSequence> sequences = new();
 
         int startIndex = -1;
         InputManager.Gesture? currentGesture = null;
@@ -492,11 +492,11 @@ public class Recorder : MonoBehaviour
         return sequences;
     }
 
-    public List<AssetSequence> GenerateAssetSourceOfActionSequences(RectTransform collisionTimelinePanelTransform, Recordable recordable) //Strong assumption that all sources of action come from collision
+    public List<AssetSequence> GenerateCollisionSequences(RectTransform collisionTimelinePanelTransform, Recordable recordable) //Strong assumption that all sources of action come from collision
     {        
         try
         {                
-            List<string> sourcesOfChanges = recordable.recordedData.Select(x => x.SourceOfAction).ToList();
+            List<string> sourcesOfChanges = recordable.recordedData.Select(x => x.Collision).ToList();
             List<AssetSequence> sequences = GetContinuousChangeSequences(sourcesOfChanges);
             foreach (AssetSequence sequence in sequences)
             {
@@ -553,7 +553,7 @@ public class Recorder : MonoBehaviour
                 if (recordable.recordedData.Count > 0)
                 {
                     assetSequencesLists.Add(GenerateAssetActionSequences(timelinePanel.GetComponent<RectTransform>(), recordable));
-                    assetSequencesLists.Add(GenerateAssetSourceOfActionSequences(collisionTimelinePanel.GetComponent<RectTransform>(), recordable));
+                    assetSequencesLists.Add(GenerateCollisionSequences(collisionTimelinePanel.GetComponent<RectTransform>(), recordable));
                 }   
             }
         }

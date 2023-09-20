@@ -10,6 +10,8 @@ public class InputManager : MonoBehaviour
 
     public Recordable leftHand, rightHand;
 
+    public GameObject collidingObject1, collidingObject2;
+
     //public 
 
     public Recordable assetInContactWithLeftHand, assetInContactWithRightHand;
@@ -85,23 +87,23 @@ public class InputManager : MonoBehaviour
        }
        else if (Manager.Instance.currAppState == Manager.AppState.INIT || Manager.Instance.currAppState == Manager.AppState.PLAYBACK || Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
        {
-            DebugLogger.Instance.Log("Processing gestures in live mode");
-            DebugLogger.Instance.Log("Left Hand: " + leftHand.currentGesture.ToString() + " Right Hand: " + rightHand.currentGesture.ToString());
+            //DebugLogger.Instance.Log("Processing gestures in init/playback mode");
+            //DebugLogger.Instance.Log("Left Hand: " + leftHand.currentGesture.ToString() + " Right Hand: " + rightHand.currentGesture.ToString());
 
-            DebugLogger.Instance.Log("Processing collisions between hands and assets");
+            //DebugLogger.Instance.Log("Processing collisions between hands and assets");
 
             if (assetInContactWithLeftHand != null)
             {
-                DebugLogger.Instance.Log("Left Hand in contact with " + assetInContactWithLeftHand.name);
+                //DebugLogger.Instance.Log("Left Hand in contact with " + assetInContactWithLeftHand.name);
                 if (leftHand.currentGesture == Gesture.LEFTHANDPINCH)
                 {
-                    DebugLogger.Instance.Log("Left Hand is pinching " + assetInContactWithLeftHand.name);
+                    //DebugLogger.Instance.Log("Left Hand is pinching " + assetInContactWithLeftHand.name);
                     //AttachAssetToHand(assetInContactWithLeftHand, leftHand);
                     assetInContactWithLeftHand.Follow(leftHand.transform);
                 }
                 else if (leftHand.currentGesture == Gesture.LEFTHANDNONE)
                 {
-                    DebugLogger.Instance.Log("Left Hand is no longer pinching " + assetInContactWithLeftHand.name);
+                    //DebugLogger.Instance.Log("Left Hand is no longer pinching " + assetInContactWithLeftHand.name);
                     assetInContactWithLeftHand.Unfollow();
                 }               
             }
@@ -113,15 +115,15 @@ public class InputManager : MonoBehaviour
 
             if (assetInContactWithRightHand != null)
             {
-                DebugLogger.Instance.Log("Right Hand in contact with " + assetInContactWithRightHand.name);
+                //DebugLogger.Instance.Log("Right Hand in contact with " + assetInContactWithRightHand.name);
                 if (rightHand.currentGesture == Gesture.RIGHTHANDPINCH)
                 {
-                    DebugLogger.Instance.Log("Right Hand is pinching " + assetInContactWithRightHand.name);
+                    //DebugLogger.Instance.Log("Right Hand is pinching " + assetInContactWithRightHand.name);
                     assetInContactWithRightHand.Follow(rightHand.transform);
                 }    
                 else if (rightHand.currentGesture == Gesture.RIGHTHANDNONE)
                 {
-                    DebugLogger.Instance.Log("Right Hand is no longer pinching " + assetInContactWithRightHand.name);
+                    //DebugLogger.Instance.Log("Right Hand is no longer pinching " + assetInContactWithRightHand.name);
                     assetInContactWithRightHand.Unfollow();
                 }
             }
@@ -131,6 +133,12 @@ public class InputManager : MonoBehaviour
             }
 
             //DebugLogger.Instance.Log("Processing collisions between assets");
+            if (collidingObject1 != null && collidingObject2 != null)
+            {
+                //DebugLogger.Instance.Log("Collision between " + collidingObject1.name + " and " + collidingObject2.name);
+                //collidingObject1.GetComponent<Recordable>().ProcessCollision(collidingObject2.GetComponent<Recordable>());
+                //collidingObject2.GetComponent<Recordable>().ProcessCollision(collidingObject1.GetComponent<Recordable>());
+            }
 
        } 
     }
@@ -151,6 +159,12 @@ public class InputManager : MonoBehaviour
         }
     }
 
+    public void NotifyCollision(GameObject object1, GameObject object2)
+    {
+        //DebugLogger.Instance.Log("Collision between " + object1.name + " and " + object2.name);
+        collidingObject1 = object1;
+        collidingObject2 = object2;
+    }
 
 
     public string GestureToString(Gesture gesture)

@@ -9290,7 +9290,7 @@ MonoBehaviour:
   playbackObject5Renderer: {fileID: 0}
   grabCollider: {fileID: 211348521}
   assetMenu: {fileID: 482487817}
-  recordingMode: 0
+  currentRecordingMode: 0
   rotationCorrection: {x: 0, y: 0, z: 0}
   positionCorrection: {x: 0, y: 0, z: 0}
   initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
@@ -23927,7 +23927,7 @@ MonoBehaviour:
   playbackObject5Renderer: {fileID: 0}
   grabCollider: {fileID: 4135284671933341618}
   assetMenu: {fileID: 2086229082}
-  recordingMode: 0
+  currentRecordingMode: 0
   rotationCorrection: {x: 0, y: 0, z: 0}
   positionCorrection: {x: 0, y: 0, z: 0}
   initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
@@ -28946,7 +28946,7 @@ MonoBehaviour:
   playbackObject5Renderer: {fileID: 712689097}
   grabCollider: {fileID: 0}
   assetMenu: {fileID: 0}
-  recordingMode: 0
+  currentRecordingMode: 0
   rotationCorrection: {x: 0, y: 180, z: 0}
   positionCorrection: {x: 0, y: 0, z: 0}
   initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
@@ -36478,7 +36478,7 @@ MonoBehaviour:
   playbackObject5Renderer: {fileID: 0}
   grabCollider: {fileID: 839385077}
   assetMenu: {fileID: 1620536448}
-  recordingMode: 0
+  currentRecordingMode: 0
   rotationCorrection: {x: 0, y: 0, z: 0}
   positionCorrection: {x: 0, y: 0, z: 0}
   initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
@@ -40466,6 +40466,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   leftHand: {fileID: 1809399751}
   rightHand: {fileID: 699462304}
+  collidingObject1: {fileID: 0}
+  collidingObject2: {fileID: 0}
   assetInContactWithLeftHand: {fileID: 0}
   assetInContactWithRightHand: {fileID: 0}
 --- !u!1 &917177709
@@ -42940,7 +42942,7 @@ MonoBehaviour:
   playbackObject5Renderer: {fileID: 0}
   grabCollider: {fileID: 0}
   assetMenu: {fileID: 1264368403}
-  recordingMode: 0
+  currentRecordingMode: 0
   rotationCorrection: {x: 0, y: 0, z: 0}
   positionCorrection: {x: 0, y: 0, z: 0}
   initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
@@ -47306,7 +47308,7 @@ MonoBehaviour:
   playbackObject5Renderer: {fileID: 0}
   grabCollider: {fileID: 1034777292}
   assetMenu: {fileID: 88786515}
-  recordingMode: 0
+  currentRecordingMode: 0
   rotationCorrection: {x: 0, y: 0, z: 0}
   positionCorrection: {x: 0, y: 0, z: 0}
   initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
@@ -49614,7 +49616,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 558477666}
         m_TargetAssemblyTypeName: Recordable, Assembly-CSharp
-        m_MethodName: Unfollow
+        m_MethodName: Detach
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -84319,7 +84321,7 @@ MonoBehaviour:
   playbackObject5Renderer: {fileID: 0}
   grabCollider: {fileID: 0}
   assetMenu: {fileID: 0}
-  recordingMode: 0
+  currentRecordingMode: 0
   rotationCorrection: {x: 0, y: 0, z: 0}
   positionCorrection: {x: 0, y: 0, z: 0}
   initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
@@ -84559,7 +84561,7 @@ MonoBehaviour:
   playbackObject5Renderer: {fileID: 1341239742}
   grabCollider: {fileID: 0}
   assetMenu: {fileID: 0}
-  recordingMode: 0
+  currentRecordingMode: 0
   rotationCorrection: {x: 0, y: 180, z: 0}
   positionCorrection: {x: 0, y: 0, z: 0}
   initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}

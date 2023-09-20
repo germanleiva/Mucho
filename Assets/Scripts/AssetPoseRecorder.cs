@@ -54,7 +54,7 @@ public class AssetPoseRecorder : MonoBehaviour
         DebugLogger.Instance.Log("StartRecording in " + recordable.playbackObject.name);
         firstFrameOfManualRecording = (int)mainRecorder.playbackSlider.value;
         //currentActiveRecordable = recordable;
-        recordable.recordingMode = Recordable.RecordingMode.ManualAnimation;
+        recordable.currentRecordingMode = Recordable.RecordingType.ManualAnimation;
     }
 
     public bool DoRecordSizesMatch()
@@ -87,20 +87,21 @@ public class AssetPoseRecorder : MonoBehaviour
             foreach(var data in mainRecorder.objectsToRecord[0].recordedData)
             {
                 //recordable.recordedData.Add(new RecordFrameData(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", data.frameNumber));
-                recordable.recordedData.Add(new RecordableFrame(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", "None", null, data.frameNumber));
+                recordable.recordedData.Add(new RecordableFrame(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", "None", Recordable.RecordingType.None, null, data.frameNumber));
             }
+            recordable.InsertAssetRecordFrame(0, action: "None", collision: "None", Recordable.RecordingType.ManualAnimation);
         }
     }
 
     public void StopRecording(Recordable recordable)
     {
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
+        recordable.currentRecordingMode = Recordable.RecordingType.None;
         DebugLogger.Instance.Log("StopRecording in " + recordable.playbackObject.name);
         lastFrameOfManualRecording = (int)mainRecorder.playbackSlider.value;
         DebugLogger.Instance.Log("First frame: " + firstFrameOfManualRecording + " Last frame: " + lastFrameOfManualRecording);
-        CheckIfAssetIsFollowingAnything(recordable);
+        //CheckIfAssetIsFollowingAnything(recordable);
         mainRecorder.RefreshAssetsTimeline(mainRecorder.assetTimelinePanelPrefab);
-        recordable.recordingMode = Recordable.RecordingMode.None;
     }
 
     public void CheckIfAssetIsFollowingAnything(Recordable recordable)
@@ -180,7 +181,7 @@ public class AssetPoseRecorder : MonoBehaviour
     public void ResetRecording(Recordable recordable)
     {
         DebugLogger.Instance.Log("ResetRecording in " + recordable.playbackObject.name);
-        recordable.recordingMode = Recordable.RecordingMode.None;
+        recordable.currentRecordingMode = Recordable.RecordingType.None;
         recordable.ResetData();
     }
    
@@ -201,28 +202,28 @@ public class AssetPoseRecorder : MonoBehaviour
     {
         foreach(Recordable recordable in recordableAssets)
         {
-            if(recordable.recordingMode == Recordable.RecordingMode.ManualAnimation)
+            if(recordable.currentRecordingMode == Recordable.RecordingType.ManualAnimation)
             {
                 if (Vector3.Distance(recordable.playbackObject.transform.position, lastAssetPosition) > movementRecordThreshold)
                 {
                     DebugLogger.Instance.Log("Added new frame data for " + recordable.playbackObject.name + " at " + mainRecorder.playbackSlider.value);
 
                     //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "Collide(" + Manager.Instance.CleanString(recordable.gameObject.name) + ", hand)", true);
-                    recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, action: "None", sourceOfAction: "None", propagateValueToSubsequentFrames: true);
+                    recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, action: "None", collision: "None", Recordable.RecordingType.ManualAnimation, propagateValueToSubsequentFrames: true);
                     //Increment the slider value by a small value proportional to the total recording time
                     mainRecorder.playbackSlider.value += playbackSpeed;
                 }
                 lastAssetPosition = recordable.playbackObject.transform.position;
                 
             }
-            else if(recordable.recordingMode == Recordable.RecordingMode.Physics)
+            else if(recordable.currentRecordingMode == Recordable.RecordingType.Physics)
             {
                 //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "ApplyForce()", true);
-                recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, action: "ApplyForce()", sourceOfAction: "None", propagateValueToSubsequentFrames: true);
+                //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, action: "ApplyForce()", sourceOfAction: "None", Recordable.RecordingType.Physics, propagateValueToSubsequentFrames: true);
                 //Increment the slider value by frame duration
                 mainRecorder.playbackSlider.value += 1;//Time.deltaTime;
             }
-            else if(recordable.recordingMode == Recordable.RecordingMode.Follow)
+            else if(recordable.currentRecordingMode == Recordable.RecordingType.Follow)
             {
                 //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, action: "Follow()", sourceOfAction: "None", propagateValueToSubsequentFrames: true);
                 //Increment the slider value by frame duration
@@ -242,6 +243,17 @@ public class AssetPoseRecorder : MonoBehaviour
                 if (recordable.playbackObject != null && recordable.recordedData.Count > 0)
                 {
                     recordable.recordedData[currentFrameNum].ActionDelegate?.Invoke();
+                    if(recordable.recordedData[currentFrameNum].recordingMode == Recordable.RecordingType.Physics || recordable.recordedData[currentFrameNum].recordingMode == Recordable.RecordingType.Follow || recordable.recordedData[currentFrameNum].recordingMode == Recordable.RecordingType.Visibility)
+                    {
+                        recordable.recordedData[currentFrameNum].ActionDelegate?.Invoke();
+                    }
+                    else if(recordable.recordedData[currentFrameNum].recordingMode == Recordable.RecordingType.ManualAnimation)
+                    {
+                        recordable.playbackObject.transform.position = recordable.recordedData[currentFrameNum].rootPosition;
+                        recordable.playbackObject.transform.rotation = recordable.recordedData[currentFrameNum].rootRotation * Quaternion.Euler(recordable.rotationCorrection);
+
+                    }
+
                     //DebugLogger.Instance.Log("Playing back " + recordable.playbackObject.name + " at " + currentFrameNum);
                     /*recordable.playbackObject.transform.position = recordable.recordedData[currentFrameNum].rootPosition;
                     recordable.playbackObject.transform.rotation = recordable.recordedData[currentFrameNum].rootRotation * Quaternion.Euler(recordable.rotationCorrection);

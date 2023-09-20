@@ -13,15 +13,16 @@ public class Recordable : MonoBehaviour
     public Collider grabCollider;
     public GameObject assetMenu;
 
-    public enum RecordingMode
+    public enum RecordingType
     {
         None,
         ManualAnimation,
         Physics,
-        Follow
+        Follow,
+        Visibility
     }
 
-    public RecordingMode recordingMode = RecordingMode.None;
+    public RecordingType currentRecordingMode = RecordingType.None;
 
     public Vector3 rotationCorrection; 
     public Vector3 positionCorrection;
@@ -144,9 +145,10 @@ public class Recordable : MonoBehaviour
         }
     }
 
-    public void InsertAssetRecordFrame(int _frameNumber, string action = "None", string sourceOfAction = "None", Action actionDelegate = null, bool propagateValueToSubsequentFrames = false)
+    public void InsertAssetRecordFrame(int _frameNumber, string action = "None", string collision = "None", Recordable.RecordingType recordingMode = RecordingType.None, Action actionDelegate = null, bool propagateValueToSubsequentFrames = false)
     {
-        RecordableFrame item = new(transform.position, transform.rotation, showStatus, action, sourceOfAction, actionDelegate, _frameNumber);
+        
+        RecordableFrame item = new(transform.position, transform.rotation, showStatus, action, collision, recordingMode, actionDelegate, _frameNumber);
         DebugLogger.Instance.Log("Inserting asset record frame at a specific frame number " + _frameNumber);
         recordedData[_frameNumber] = item;
         actionDelegate?.Invoke();
@@ -183,6 +185,7 @@ public class Recordable : MonoBehaviour
         if(Recorder.Instance.GetSizeOfMainRecordedData() > 0)
         {
             DebugLogger.Instance.Log("Recorded hide for  " + playbackObject.name + " at " + Recorder.Instance.playbackSlider.value);
+            InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "Hide()",recordingMode: Recordable.RecordingType.Visibility, actionDelegate: () => { Hide(); });
             //RecordAndPropagateAssetShowStatus((int)Recorder.Instance.playbackSlider.value);
         }
 
@@ -199,6 +202,7 @@ public class Recordable : MonoBehaviour
         if(Recorder.Instance.GetSizeOfMainRecordedData() > 0)
         {
             DebugLogger.Instance.Log("Recorded show for " + playbackObject.name + " at " + Recorder.Instance.playbackSlider.value);
+            InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "Show()", recordingMode: Recordable.RecordingType.Visibility, actionDelegate: () => { Show(); });
             //RecordAndPropagateAssetShowStatus((int)Recorder.Instance.playbackSlider.value);
         }
 
@@ -209,11 +213,11 @@ public class Recordable : MonoBehaviour
     public void AttachToLeftHand()
     {
         DebugLogger.Instance.Log("Attach called for " + playbackObject.name);
-        recordingMode = Recordable.RecordingMode.Follow;
+        currentRecordingMode = Recordable.RecordingType.Follow;
         //CopyPoseFromRecordable(Recorder.Instance.objectsToRecord[1], (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
-        Follow(Recorder.Instance.objectsToRecord[1].transform);
+        //Follow(Recorder.Instance.objectsToRecord[1].transform);
         //InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, actionDelegate: () => { Follow(Recorder.Instance.objectsToRecord[1].transform); });
-        InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, actionDelegate: () => { Follow(Recorder.Instance.objectsToRecord[1].playbackObject.transform); });
+        InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "Follow(Left hand)", recordingMode: Recordable.RecordingType.Follow, actionDelegate: () => { Follow(Recorder.Instance.objectsToRecord[1].playbackObject.transform); });
         Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
    
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[1].playbackObject.transform);
@@ -222,10 +226,10 @@ public class Recordable : MonoBehaviour
     public void AttachToRightHand()
     {
         DebugLogger.Instance.Log("Attach called for " + playbackObject.name);
-        recordingMode = Recordable.RecordingMode.Follow;
+        currentRecordingMode = Recordable.RecordingType.Follow;
         //CopyPoseFromRecordable(Recorder.Instance.objectsToRecord[2], (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
-        Follow(Recorder.Instance.objectsToRecord[2].transform);        
-        InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, actionDelegate: () => { Follow(Recorder.Instance.objectsToRecord[2].playbackObject.transform); });
+        //Follow(Recorder.Instance.objectsToRecord[2].transform);        
+        InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "Follow(Right hand)", recordingMode: Recordable.RecordingType.Follow, actionDelegate: () => { Follow(Recorder.Instance.objectsToRecord[2].playbackObject.transform); });
         Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[2].playbackObject.transform);
     }
@@ -233,7 +237,7 @@ public class Recordable : MonoBehaviour
     public void AttachToLeftHandFocusSquare()
     {
         DebugLogger.Instance.Log("Attach called for " + playbackObject.name);
-        recordingMode = Recordable.RecordingMode.Follow;
+        currentRecordingMode = Recordable.RecordingType.Follow;
         CopyPoseFromFocusSquare(Recorder.Instance.objectsToRecord[1], (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
         Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[1].playbackObject.transform);
@@ -242,7 +246,7 @@ public class Recordable : MonoBehaviour
     public void AttachToRightHandFocusSquare()
     {
         DebugLogger.Instance.Log("Attach called for " + playbackObject.name);
-        recordingMode = Recordable.RecordingMode.Follow;
+        currentRecordingMode = Recordable.RecordingType.Follow;
         CopyPoseFromFocusSquare(Recorder.Instance.objectsToRecord[2], (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
         Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[2].playbackObject.transform);
@@ -251,7 +255,7 @@ public class Recordable : MonoBehaviour
     public void AttachToHeadFocusSquare()
     {
         DebugLogger.Instance.Log("Attach called for " + playbackObject.name);
-        recordingMode = Recordable.RecordingMode.Follow;
+        currentRecordingMode = Recordable.RecordingType.Follow;
         CopyPoseFromFocusSquare(Recorder.Instance.objectsToRecord[0], (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
         Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[0].playbackObject.transform);
@@ -260,9 +264,9 @@ public class Recordable : MonoBehaviour
     public void Detach()
     {
         DebugLogger.Instance.Log("Detach called for " + playbackObject.name);
-        recordingMode = Recordable.RecordingMode.None;
-        Unfollow();
-        InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, actionDelegate: () => { Unfollow(); });
+        currentRecordingMode = Recordable.RecordingType.None;
+        //Unfollow();
+        InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "Unfollow()", recordingMode: Recordable.RecordingType.Follow, actionDelegate: () => { Unfollow(); });
         //CopyPoseFromRecordable(this, (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:true, copyRotation:false);
         Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
         //recordable.playbackObject.transform.SetParent(null);
@@ -323,7 +327,7 @@ public class Recordable : MonoBehaviour
                 }
                 recordedData[i].rootPosition = other.recordedData[_frameStart].rootPosition;
                 recordedData[i].Action = "None";
-                recordedData[i].SourceOfAction = "None";
+                recordedData[i].Collision = "None";
                 //recordedData[i].SourceOfAssetChange = "Unfollow(" + other.gameObject.name + ")";
                 if(copyRotation) recordedData[i].rootRotation = other.recordedData[_frameStart].rootRotation;
             }
@@ -345,7 +349,7 @@ public class Recordable : MonoBehaviour
                 }
                 recordedData[i].rootPosition = other.recordedData[i].rootPosition + offset;
                 recordedData[i].Action = "Follow(" + Manager.Instance.CleanString(other.gameObject.name) + ")"; 
-                recordedData[i].SourceOfAction = "Collide(" + Manager.Instance.CleanString(gameObject.name) + ", " + Manager.Instance.CleanString(other.gameObject.name) + ")";                         
+                recordedData[i].Collision = "Collide(" + Manager.Instance.CleanString(gameObject.name) + ", " + Manager.Instance.CleanString(other.gameObject.name) + ")";                         
                 if(copyRotation) recordedData[i].rootRotation = other.recordedData[i].rootRotation;
             }
         }
@@ -425,24 +429,72 @@ public class Recordable : MonoBehaviour
         }*/
     }
 
+    public void PrepareForceSimulation(Vector3 initialVelocity)
+    {
+        //oldMainPlaybackSliderValue = AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value; //This is so awkward, but it works
+        if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
+        {
+            currentRecordingMode = Recordable.RecordingType.Physics;
+            InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "ApplyForce()", recordingMode: Recordable.RecordingType.Physics, actionDelegate: () => { ApplyForce(initialVelocity); });
+        }
+        else if(Manager.Instance.currAppState == Manager.AppState.PLAYBACK)
+        {
+            //ApplyForce(initialVelocity);
+        }
+
+        //isAssetRecordingOn = true;
+        initPosBeforePhysicsSimulation = transform.position;
+        initRotBeforePhysicsSimulation = transform.rotation;
+        //Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
+        //isSimulationOn = true;
+
+    }
+
+    public void ApplyForce(Vector3 initialVelocity)
+    {
+        //Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
+        //InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "ApplyForce()", recordingMode: Recordable.RecordingType.Physics, actionDelegate: () => { ApplyForce(initialVelocity); });
+        GetComponent<Rigidbody>().mass = 0f;
+        GetComponent<Collider>().isTrigger = false;
+        GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        GetComponent<Rigidbody>().useGravity = true;
+        GetComponent<Rigidbody>().AddForce(initialVelocity, ForceMode.VelocityChange);
+    }
+
     //OnCollisionEnter
     void OnCollisionEnter(Collision collision)
     {
-        if(recordingMode == RecordingMode.Physics)
+        if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
         {
-            recordingMode = Recordable.RecordingMode.None;
+            currentRecordingMode = Recordable.RecordingType.None;
             DebugLogger.Instance.Log("Collision detected between " + gameObject.name + " and " + collision.collider.name);
-            InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "None", sourceOfAction: "Collide(" + Manager.Instance.CleanString(gameObject.name) + "," + Manager.Instance.CleanString(collision.collider.name) + ")", propagateValueToSubsequentFrames: false);
+            //InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "None", sourceOfAction: "Collide(" + Manager.Instance.CleanString(gameObject.name) + "," + Manager.Instance.CleanString(collision.collider.name) + ")", propagateValueToSubsequentFrames: false);
+            InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "None", collision: "Collide(" + Manager.Instance.CleanString(gameObject.name) + "," + Manager.Instance.CleanString(collision.collider.name) + ")", recordingMode: Recordable.RecordingType.Physics, actionDelegate: () => { ResetPhysicsProperties(); });
             //DebugLogger.Instance.Log("Collide(" + Manager.Instance.CleanString(gameObject.name) + "," + Manager.Instance.CleanString(collision.collider.name) + ")");
-            PropagateAssetNoneStatus((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value);
-            ResetPhysicsProperties();          
-            Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
+            //PropagateAssetNoneStatus((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value);
+            //ResetPhysicsProperties();          
+            
         }
 
-        if(Manager.Instance.currAppState != Manager.AppState.RECORDING)
+        if(Manager.Instance.currAppState == Manager.AppState.PLAYBACK)
         {
+            ResetPhysicsProperties();
             //DebugLogger.Instance.Log("Collision detected between " + gameObject.name + " and " + collision.collider.name);
         }
+    }
+
+    public void ResetPhysicsProperties()
+    {
+        Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
+        DebugLogger.Instance.Log("Resetting physics properties");        
+        //AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value = oldMainPlaybackSliderValue;
+        //transform.position = initPosBeforePhysicsSimulation;
+        //transform.rotation = initRotBeforePhysicsSimulation;
+        GetComponent<Rigidbody>().mass = 1f;
+        GetComponent<Collider>().isTrigger = true;
+        GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
+        GetComponent<Rigidbody>().useGravity = false;
+        Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
     }
 
 
@@ -489,34 +541,9 @@ public class Recordable : MonoBehaviour
     }
 
 
-    public void ApplyForce(Vector3 initialVelocity)
-    {
-        oldMainPlaybackSliderValue = AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value; //This is so awkward, but it works
-        recordingMode = Recordable.RecordingMode.Physics;
-        //isAssetRecordingOn = true;
-        initPosBeforePhysicsSimulation = transform.position;
-        initRotBeforePhysicsSimulation = transform.rotation;
-        //Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
-        //isSimulationOn = true;
-        GetComponent<Rigidbody>().mass = 0f;
-        GetComponent<Collider>().isTrigger = false;
-        GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
-        GetComponent<Rigidbody>().useGravity = true;
-        GetComponent<Rigidbody>().AddForce(initialVelocity, ForceMode.VelocityChange);
-    }
 
-    public void ResetPhysicsProperties()
-    {
-        DebugLogger.Instance.Log("Resetting physics properties");        
-        AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value = oldMainPlaybackSliderValue;
-        transform.position = initPosBeforePhysicsSimulation;
-        transform.rotation = initRotBeforePhysicsSimulation;
-        GetComponent<Rigidbody>().mass = 1f;
-        GetComponent<Collider>().isTrigger = true;
-        GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
-        GetComponent<Rigidbody>().useGravity = false;
-        Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
-    }
+
+
 
     public void SetGesture(string gestureStr)
     {
@@ -573,21 +600,24 @@ public class RecordableFrame
 
     public string Action = "None";
 
+    public Recordable.RecordingType recordingMode;
+
     public Action ActionDelegate;
-    public string SourceOfAction = "None";
+    public string Collision = "None";
 
     //public Vector3 force;
 
     //Assets 
-    public RecordableFrame(Vector3 _position, Quaternion _rotation, bool _showStatus, string _action, string _sourceOfAction, Action _actionDelegate, int _frameNumber)
+    public RecordableFrame(Vector3 _position, Quaternion _rotation, bool _showStatus, string _action, string _collision, Recordable.RecordingType _recordingMode, Action _actionDelegate, int _frameNumber)
     {
         rootPosition = _position;
         rootRotation = _rotation;
         showStatusForThisFrame = _showStatus;
         frameNumber = _frameNumber;
         Action = _action;
-        SourceOfAction = _sourceOfAction;
+        Collision = _collision;
         ActionDelegate = _actionDelegate;
+        recordingMode = _recordingMode;
     }
 
     //Head
