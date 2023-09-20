@@ -192,3 +192,39 @@ public class GestureSequence
     public int Length { get; set; }
     public InputManager.Gesture GestureType { get; set; }
 }
+
+public class State
+{
+    public Action OnEnterActions { get; set; }
+    public Action OnUpdateActions { get; set; }
+    public Action OnExitActions { get; set; }
+    public Func<State> Transition { get; set; }
+
+    public void OnEnter()
+    {
+        if (OnEnterActions != null)
+            OnEnterActions.Invoke();
+    }
+
+    public void OnUpdate()
+    {
+        if (OnUpdateActions != null)
+            OnUpdateActions.Invoke();
+
+        State nextState = null;
+        if(Transition != null)
+            nextState = Transition.Invoke();
+        if (nextState != null)
+        {
+            StateMachine.Instance.TransitionToState(nextState);
+        }
+    }
+
+    public void OnExit()
+    {
+        if (OnExitActions != null)
+            OnExitActions.Invoke();
+    }
+}
+
+
