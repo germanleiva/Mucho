@@ -282,7 +282,7 @@ public class AssetPoseRecorder : MonoBehaviour
         foreach (var recordable in recordableAssets)
         {
             DebugLogger.Instance.Log("Enabling grab for " + recordable.playbackObject.name);
-            recordable.grabCollider.enabled = true;
+            //recordable.grabCollider.enabled = true;
         }
     }
 
@@ -292,7 +292,7 @@ public class AssetPoseRecorder : MonoBehaviour
         foreach (var recordable in recordableAssets)
         {
             DebugLogger.Instance.Log("Disabling grab for " + recordable.playbackObject.name);
-            recordable.grabCollider.enabled = false;
+            //recordable.grabCollider.enabled = false;
         }
     }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditorInternal;
 using UnityEngine;
 
 public class InputManager : MonoBehaviour
@@ -10,7 +11,11 @@ public class InputManager : MonoBehaviour
 
     public Recordable leftHand, rightHand;
 
+    public GameObject testBall, testTarget, floor, testHitMessage, testMissMessage;
+
     public GameObject collidingObject1, collidingObject2;
+
+    public GameObject leftHandPinchObj, rightHandPinchObj;
 
     //public 
 
@@ -31,7 +36,7 @@ public class InputManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        CreateTestStates();
     }
 
     // Update is called once per frame
@@ -40,53 +45,91 @@ public class InputManager : MonoBehaviour
         ProcessEvents();        
     }
 
+    void CreateTestStates()
+    {
+        CustomStateMachine sm = CustomStateMachine.Instance;
+
+        State idleState = new State();
+        idleState.OnEnterActions = () => { DebugLogger.Instance.Log("Idle OnEnter"); };
+        //state1.OnEnterActions += () => { Debug.Log("State 1 OnEnter 2"); };
+        idleState.OnUpdateActions = () => { DebugLogger.Instance.Log("Idle OnUpdate"); };
+        idleState.OnExitActions = () => { DebugLogger.Instance.Log("Idle OnExit"); };
+        
+        State grabState = new State();
+        grabState.OnEnterActions = () => { DebugLogger.Instance.Log("Grab OnEnter"); testBall.GetComponent<Recordable>().Follow(rightHand.transform); };
+        grabState.OnUpdateActions = () => { DebugLogger.Instance.Log("Grab OnUpdate"); };
+        grabState.OnExitActions = () => { DebugLogger.Instance.Log("State 2 OnExit");  testBall.GetComponent<Recordable>().Unfollow(); };
+
+        State throwState = new State();
+        throwState.OnEnterActions = () => { DebugLogger.Instance.Log("Throw OnEnter"); testBall.GetComponent<Recordable>().ApplyForce(rightHand.transform.forward * 1); };
+        throwState.OnUpdateActions = () => { DebugLogger.Instance.Log("Throw OnUpdate"); };
+        throwState.OnExitActions = () => { DebugLogger.Instance.Log("Throw OnExit"); };
+
+        State missState = new State();
+        missState.OnEnterActions = () => { DebugLogger.Instance.Log("Miss OnEnter"); testHitMessage.SetActive(false); testMissMessage.SetActive(true); };
+        missState.OnUpdateActions = () => { DebugLogger.Instance.Log("Miss OnUpdate"); };
+        missState.OnExitActions = () => { DebugLogger.Instance.Log("Miss OnExit"); };
+
+
+        State hitState = new State();
+        hitState.OnEnterActions = () => { DebugLogger.Instance.Log("Hit OnEnter"); testHitMessage.SetActive(true); testMissMessage.SetActive(false); };
+        hitState.OnUpdateActions = () => { DebugLogger.Instance.Log("Hit OnUpdate"); };
+        hitState.OnExitActions = () => { DebugLogger.Instance.Log("Hit OnExit"); };
+
+        idleState.AddTransitionTo(grabState, (frame) => { return frame.rightHandGesture == Gesture.RIGHTHANDPINCH && frame.isColliding(testBall, rightHandPinchObj); });
+        grabState.AddTransitionTo(throwState, (frame) => { return frame.rightHandGesture == Gesture.RIGHTHANDTHROW; });
+        throwState.AddTransitionTo(hitState, (frame) => { return frame.isColliding(testBall, testTarget); } );
+        throwState.AddTransitionTo(missState, (frame) => { return frame.isColliding(testBall, floor); });
+
+        sm.AddState("Idle", idleState);
+        sm.AddState("Grab", grabState);
+        sm.AddState("Throw", throwState);
+        sm.AddState("Hit", hitState);
+        sm.AddState("Miss", missState);
+        sm.SetInitialState("Idle");
+    }
+
     public void SetLeftHandGesture(string gestureStr)
     {
-        //DebugLogger.Instance.Log("Gesture: " + gestureStr);
         leftHand.currentGesture = (Gesture)System.Enum.Parse(typeof(Gesture), gestureStr);
         leftHand.SetGestureText(GestureToString(leftHand.currentGesture));
-        //SelectTaskForGesture(currentLeftHandGesture);
-        //leftHandGestureText.text = GestureToString(leftHand.currentGesture );
     }
 
     public void SetRightHandGesture(string gestureStr)
     {
-        //DebugLogger.Instance.Log("Gesture: " + gestureStr);
         rightHand.currentGesture = (Gesture)System.Enum.Parse(typeof(Gesture), gestureStr);
         rightHand.SetGestureText(GestureToString(rightHand.currentGesture));
-        //SelectTaskForGesture(currentRightHandGesture);
-        
+    }
 
-        //if we are LIVE
-        //getTheStateMachine, an make the StateMachine process the current gesture
-        //How do we get the collision events?
+    public void NotifyCollision(GameObject object1, GameObject object2)
+    {
+        DebugLogger.Instance.Log("Collision between " + object1.name + " and " + object2.name);
+        collidingObject1 = object1;
+        collidingObject2 = object2;
     }
 
     void ProcessEvents()
     {
-       if (Manager.Instance.currAppState == Manager.AppState.LIVE)
-       {
-            /*DebugLogger.Instance.Log("Processing gestures in live mode");
-            DebugLogger.Instance.Log("Left Hand: " + leftHand.currentGesture.ToString() + " Right Hand: " + rightHand.currentGesture.ToString());
+        CustomStateMachine sm = CustomStateMachine.Instance;
 
-            DebugLogger.Instance.Log("Processing collisions between hands and assets");
-            if (assetInContactWithLeftHand != null)
-            {
-                DebugLogger.Instance.Log("Left Hand in contact with " + assetInContactWithLeftHand.name);
-                //assetInContactWithLeftHand.ProcessCollision(leftHand);
-            }
-            if (assetInContactWithRightHand != null)
-            {
-                DebugLogger.Instance.Log("Right Hand in contact with " + assetInContactWithRightHand.name);
-                //assetInContactWithRightHand.ProcessCollision(rightHand);
-            }
+        Frame frame = new Frame
+        {
+            leftHandGesture = leftHand.currentGesture,
+            rightHandGesture = rightHand.currentGesture,
+            collidingObject1 = collidingObject1,
+            collidingObject2 = collidingObject2
+        };
+        
 
-            DebugLogger.Instance.Log("Processing collisions between assets");*/
-
-
-       }
-       else if (Manager.Instance.currAppState == Manager.AppState.INIT || Manager.Instance.currAppState == Manager.AppState.PLAYBACK || Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
-       {
+        if (Manager.Instance.currAppState == Manager.AppState.LIVE)
+        {
+            //DebugLogger.Instance.Log("Passing events to state machine");
+            sm.ProcessFrame(frame);
+            collidingObject1 = null;
+            collidingObject2 = null;
+        }
+        else if (Manager.Instance.currAppState == Manager.AppState.INIT || Manager.Instance.currAppState == Manager.AppState.PLAYBACK || Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
+        {
             //DebugLogger.Instance.Log("Processing gestures in init/playback mode");
             //DebugLogger.Instance.Log("Left Hand: " + leftHand.currentGesture.ToString() + " Right Hand: " + rightHand.currentGesture.ToString());
 
@@ -140,7 +183,7 @@ public class InputManager : MonoBehaviour
                 //collidingObject2.GetComponent<Recordable>().ProcessCollision(collidingObject1.GetComponent<Recordable>());
             }
 
-       } 
+        } 
     }
 
     public void SetAssetInContactWithLeftHand(Recordable asset)
@@ -158,14 +201,6 @@ public class InputManager : MonoBehaviour
             assetInContactWithRightHand = asset;
         }
     }
-
-    public void NotifyCollision(GameObject object1, GameObject object2)
-    {
-        //DebugLogger.Instance.Log("Collision between " + object1.name + " and " + object2.name);
-        collidingObject1 = object1;
-        collidingObject2 = object2;
-    }
-
 
     public string GestureToString(Gesture gesture)
     {
@@ -191,40 +226,6 @@ public class GestureSequence
     public int StartIndex { get; set; }
     public int Length { get; set; }
     public InputManager.Gesture GestureType { get; set; }
-}
-
-public class State
-{
-    public Action OnEnterActions { get; set; }
-    public Action OnUpdateActions { get; set; }
-    public Action OnExitActions { get; set; }
-    public Func<State> Transition { get; set; }
-
-    public void OnEnter()
-    {
-        if (OnEnterActions != null)
-            OnEnterActions.Invoke();
-    }
-
-    public void OnUpdate()
-    {
-        if (OnUpdateActions != null)
-            OnUpdateActions.Invoke();
-
-        State nextState = null;
-        if(Transition != null)
-            nextState = Transition.Invoke();
-        if (nextState != null)
-        {
-            StateMachine.Instance.TransitionToState(nextState);
-        }
-    }
-
-    public void OnExit()
-    {
-        if (OnExitActions != null)
-            OnExitActions.Invoke();
-    }
 }
 
 

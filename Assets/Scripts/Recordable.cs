@@ -464,6 +464,9 @@ public class Recordable : MonoBehaviour
     //OnCollisionEnter
     void OnCollisionEnter(Collision collision)
     {
+        
+        InputManager.Instance.NotifyCollision(gameObject, collision.collider.gameObject);
+
         if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
         {
             currentRecordingMode = Recordable.RecordingType.None;
@@ -506,10 +509,12 @@ public class Recordable : MonoBehaviour
             if(collision.collider.name == "LeftHandPinchContactSphere")
             {
                 InputManager.Instance.SetAssetInContactWithLeftHand(this);
+                InputManager.Instance.NotifyCollision(gameObject, collision.collider.gameObject);
             }
             else if(collision.collider.name == "RightHandPinchContactSphere")
             {
                 InputManager.Instance.SetAssetInContactWithRightHand(this);
+                InputManager.Instance.NotifyCollision(gameObject, collision.collider.gameObject);
             }            
         }
     }
@@ -522,10 +527,12 @@ public class Recordable : MonoBehaviour
             if(collision.collider.name == "LeftHandPinchContactSphere")
             {
                 InputManager.Instance.SetAssetInContactWithLeftHand(null);
+                InputManager.Instance.NotifyCollision(null,null);
             }
             else if(collision.collider.name == "RightHandPinchContactSphere")
             {
                 InputManager.Instance.SetAssetInContactWithRightHand(null);
+                InputManager.Instance.NotifyCollision(null,null);
             }            
         }
     }
