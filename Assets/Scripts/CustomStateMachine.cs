@@ -89,19 +89,16 @@ public class State
 
     public void OnEnter()
     {
-        if (OnEnterActions != null)
-            OnEnterActions.Invoke();
+        OnEnterActions?.Invoke();
     }
     public void OnUpdate()
     {
-        if (OnUpdateActions != null)
-            OnUpdateActions.Invoke();
+        OnUpdateActions?.Invoke();
     }
 
     public void OnExit()
     {
-        if (OnExitActions != null)
-            OnExitActions.Invoke();
+        OnExitActions?.Invoke();
     }
 
     override public string ToString()

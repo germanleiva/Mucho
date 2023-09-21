@@ -7,7 +7,7 @@ using UnityEngine;
 public class InputManager : MonoBehaviour
 {
     public static InputManager Instance { get; private set; }
-    public enum Gesture { LEFTHANDNONE, LEFTHANDMENUOPEN, LEFTHANDGRAB, LEFTHANDPINCH, LEFTHANDTHROW, RIGHTHANDNONE, RIGHTHANDGRAB, RIGHTHANDTHROW, RIGHTHANDPINCH};
+    public enum Gesture { LEFTHANDNONE, LEFTHANDMENUOPEN, LEFTHANDGRAB, LEFTHANDPINCH, LEFTHANDOPEN, RIGHTHANDNONE, RIGHTHANDGRAB, RIGHTHANDOPEN, RIGHTHANDPINCH};
 
     public Recordable leftHand, rightHand;
 
@@ -16,6 +16,8 @@ public class InputManager : MonoBehaviour
     public GameObject collidingObject1, collidingObject2;
 
     public GameObject leftHandPinchObj, rightHandPinchObj;
+
+    public GameObject leftHandGrabObj, rightHandGrabObj;
 
     //public 
 
@@ -54,30 +56,38 @@ public class InputManager : MonoBehaviour
         //state1.OnEnterActions += () => { Debug.Log("State 1 OnEnter 2"); };
         idleState.OnUpdateActions = () => { DebugLogger.Instance.Log("Idle OnUpdate"); };
         idleState.OnExitActions = () => { DebugLogger.Instance.Log("Idle OnExit"); };
-        
-        State grabState = new State();
-        grabState.OnEnterActions = () => { DebugLogger.Instance.Log("Grab OnEnter"); testBall.GetComponent<Recordable>().Follow(rightHand.transform); };
-        grabState.OnUpdateActions = () => { DebugLogger.Instance.Log("Grab OnUpdate"); };
-        grabState.OnExitActions = () => { DebugLogger.Instance.Log("State 2 OnExit");  testBall.GetComponent<Recordable>().Unfollow(); };
 
-        State throwState = new State();
-        throwState.OnEnterActions = () => { DebugLogger.Instance.Log("Throw OnEnter"); testBall.GetComponent<Recordable>().ApplyForce(rightHand.transform.forward * 1); };
-        throwState.OnUpdateActions = () => { DebugLogger.Instance.Log("Throw OnUpdate"); };
-        throwState.OnExitActions = () => { DebugLogger.Instance.Log("Throw OnExit"); };
+        State grabState = new()
+        {
+            OnEnterActions = () => { DebugLogger.Instance.Log("Grab OnEnter"); testBall.GetComponent<Recordable>().Follow(rightHand.transform); },
+            OnUpdateActions = () => { DebugLogger.Instance.Log("Grab OnUpdate"); },
+            OnExitActions = () => { DebugLogger.Instance.Log("State 2 OnExit"); testBall.GetComponent<Recordable>().Unfollow(); }
+        };
 
-        State missState = new State();
-        missState.OnEnterActions = () => { DebugLogger.Instance.Log("Miss OnEnter"); testHitMessage.SetActive(false); testMissMessage.SetActive(true); };
-        missState.OnUpdateActions = () => { DebugLogger.Instance.Log("Miss OnUpdate"); };
-        missState.OnExitActions = () => { DebugLogger.Instance.Log("Miss OnExit"); };
+        State throwState = new State
+        {
+            OnEnterActions = () => { DebugLogger.Instance.Log("Throw OnEnter"); testBall.GetComponent<Recordable>().ApplyForce(rightHand.transform.forward * 1); },
+            OnUpdateActions = () => { DebugLogger.Instance.Log("Throw OnUpdate"); },
+            OnExitActions = () => { DebugLogger.Instance.Log("Throw OnExit"); }
+        };
+
+        State missState = new()
+        {
+            OnEnterActions = () => { DebugLogger.Instance.Log("Miss OnEnter"); testHitMessage.SetActive(false); testMissMessage.SetActive(true); },
+            OnUpdateActions = () => { DebugLogger.Instance.Log("Miss OnUpdate"); },
+            OnExitActions = () => { DebugLogger.Instance.Log("Miss OnExit"); }
+        };
 
 
-        State hitState = new State();
-        hitState.OnEnterActions = () => { DebugLogger.Instance.Log("Hit OnEnter"); testHitMessage.SetActive(true); testMissMessage.SetActive(false); };
-        hitState.OnUpdateActions = () => { DebugLogger.Instance.Log("Hit OnUpdate"); };
-        hitState.OnExitActions = () => { DebugLogger.Instance.Log("Hit OnExit"); };
+        State hitState = new()
+        {
+            OnEnterActions = () => { DebugLogger.Instance.Log("Hit OnEnter"); testHitMessage.SetActive(true); testMissMessage.SetActive(false); },
+            OnUpdateActions = () => { DebugLogger.Instance.Log("Hit OnUpdate"); },
+            OnExitActions = () => { DebugLogger.Instance.Log("Hit OnExit"); }
+        };
 
         idleState.AddTransitionTo(grabState, (frame) => { return frame.rightHandGesture == Gesture.RIGHTHANDPINCH && frame.isColliding(testBall, rightHandPinchObj); });
-        grabState.AddTransitionTo(throwState, (frame) => { return frame.rightHandGesture == Gesture.RIGHTHANDTHROW; });
+        grabState.AddTransitionTo(throwState, (frame) => { return frame.rightHandGesture == Gesture.RIGHTHANDOPEN; });
         throwState.AddTransitionTo(hitState, (frame) => { return frame.isColliding(testBall, testTarget); } );
         throwState.AddTransitionTo(missState, (frame) => { return frame.isColliding(testBall, floor); });
 
@@ -86,6 +96,7 @@ public class InputManager : MonoBehaviour
         sm.AddState("Throw", throwState);
         sm.AddState("Hit", hitState);
         sm.AddState("Miss", missState);
+
         sm.SetInitialState("Idle");
     }
 
@@ -103,7 +114,12 @@ public class InputManager : MonoBehaviour
 
     public void NotifyCollision(GameObject object1, GameObject object2)
     {
-        DebugLogger.Instance.Log("Collision between " + object1.name + " and " + object2.name);
+        if (object1 != null && object2 != null)
+        {
+            DebugLogger.Instance.Log("Collision between " + object1.name + " and " + object2.name);
+
+        }
+
         collidingObject1 = object1;
         collidingObject2 = object2;
     }
@@ -111,6 +127,9 @@ public class InputManager : MonoBehaviour
     void ProcessEvents()
     {
         CustomStateMachine sm = CustomStateMachine.Instance;
+
+
+        //TODO : Processframe only if a change in gesture or collision has occured
 
         Frame frame = new Frame
         {
@@ -210,10 +229,10 @@ public class InputManager : MonoBehaviour
             Gesture.LEFTHANDMENUOPEN => ("Menu Open"),
             Gesture.LEFTHANDGRAB => ("Closed"),
             Gesture.LEFTHANDPINCH => ("Pinch"),
-            Gesture.LEFTHANDTHROW => ("Open"),
+            Gesture.LEFTHANDOPEN => ("Open"),
             Gesture.RIGHTHANDGRAB => ("Closed"),
             Gesture.RIGHTHANDNONE => ("None"),
-            Gesture.RIGHTHANDTHROW => ("Open"),
+            Gesture.RIGHTHANDOPEN => ("Open"),
             Gesture.RIGHTHANDPINCH => ("Pinch"),
             _ => ("ERROR"),
         };

@@ -3053,7 +3053,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &52393362
 Transform:
   m_ObjectHideFlags: 0
@@ -39531,7 +39531,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: RIGHTHANDTHROW
+          m_StringArgument: RIGHTHANDOPEN
           m_BoolArgument: 0
         m_CallState: 2
   _whenUnselected:
@@ -54267,6 +54267,8 @@ MonoBehaviour:
   collidingObject2: {fileID: 0}
   leftHandPinchObj: {fileID: 1075266756}
   rightHandPinchObj: {fileID: 1786442927}
+  leftHandGrabObj: {fileID: 0}
+  rightHandGrabObj: {fileID: 0}
   assetInContactWithLeftHand: {fileID: 0}
   assetInContactWithRightHand: {fileID: 0}
 --- !u!114 &916638716
@@ -106611,7 +106613,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: LEFTHANDTHROW
+          m_StringArgument: LEFTHANDOPEN
           m_BoolArgument: 0
         m_CallState: 2
   _whenUnselected:
@@ -119618,7 +119620,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1870073732
 Transform:
   m_ObjectHideFlags: 0
