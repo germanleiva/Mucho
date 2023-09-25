@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Oculus.Interaction.HandGrab;
@@ -242,7 +243,7 @@ public class AssetPoseRecorder : MonoBehaviour
             {
                 if (recordable.playbackObject != null && recordable.recordedData.Count > 0)
                 {
-                    recordable.recordedData[currentFrameNum].ActionDelegate?.Invoke();
+                    //recordable.recordedData[currentFrameNum].ActionDelegate?.Invoke();
                     if(recordable.recordedData[currentFrameNum].recordingMode == Recordable.RecordingType.Physics || recordable.recordedData[currentFrameNum].recordingMode == Recordable.RecordingType.Follow || recordable.recordedData[currentFrameNum].recordingMode == Recordable.RecordingType.Visibility)
                     {
                         recordable.recordedData[currentFrameNum].ActionDelegate?.Invoke();
@@ -380,6 +381,9 @@ public class AssetPoseRecorder : MonoBehaviour
 public class AssetSequence
 {
     public string Action { get; set; } //None, Physics, Follow, Show, Hide
+
+    public Action ActionDelegate { get; set; }
+
     public int StartIndex { get; set; }
     public int Length { get; set; }
     //public GestureManager.Gesture GestureType { get; set; }

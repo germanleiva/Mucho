@@ -559,7 +559,7 @@ public class Recorder : MonoBehaviour
         }
     }
 
-    public List<(GestureSequence Gesture, List<string> Actions)> GetActionsForGestures(List<GestureSequence> gestureSequences, List<List<AssetSequence>> assetSequencesLists)
+    /*public List<(GestureSequence Gesture, List<string> Actions)> GetActionsForGestures(List<GestureSequence> gestureSequences, List<List<AssetSequence>> assetSequencesLists)
     {
         var result = new List<(GestureSequence Gesture, List<string> Actions)>();
         DebugLogger.Instance.Log("Size of gestureSequences: " + gestureSequences.Count);
@@ -589,20 +589,20 @@ public class Recorder : MonoBehaviour
         }
 
         return result;
-    }
+    }*/
 
     public List<GestureSequence> gestureSequences = new List<GestureSequence>();
     public List<List<AssetSequence>> assetSequencesLists = new List<List<AssetSequence>>();
 
     public void GenerateTestStates()
     {
-        var result = GetActionsForGestures(gestureSequences, assetSequencesLists);
+        /*var result = GetActionsForGestures(gestureSequences, assetSequencesLists);
         DebugLogger.Instance.Log("Generating states, Size of result: " + result.Count);
         // Print the results
         foreach (var item in result)
         {
             DebugLogger.Instance.Log($"GestureType: {InputManager.Instance.GestureToString(item.Gesture.GestureType)}, Actions: {string.Join(", ", item.Actions)}");
-        }
+        }*/
     }
 
     public float MapIndexToTimelinePosition(RectTransform _rectTransform, int index)
