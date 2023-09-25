@@ -145,10 +145,10 @@ public class Recordable : MonoBehaviour
         }
     }
 
-    public void InsertAssetRecordFrame(int _frameNumber, string action = "None", string collision = "None", Recordable.RecordingType recordingMode = RecordingType.None, Action actionDelegate = null, bool propagateValueToSubsequentFrames = false)
+    public void InsertAssetRecordFrame(int _frameNumber, string action = "None", string collision = "None", Recordable.RecordingType recordingMode = RecordingType.None, Action actionDelegate = null, Action<Frame> collisionDelegate = null, bool propagateValueToSubsequentFrames = false)
     {
         
-        RecordableFrame item = new(transform.position, transform.rotation, showStatus, action, collision, recordingMode, actionDelegate, _frameNumber);
+        RecordableFrame item = new(transform.position, transform.rotation, showStatus, action, collision, recordingMode, actionDelegate, collisionDelegate, _frameNumber);
         DebugLogger.Instance.Log("Inserting asset record frame at a specific frame number " + _frameNumber);
         recordedData[_frameNumber] = item;
         actionDelegate?.Invoke();
@@ -185,7 +185,7 @@ public class Recordable : MonoBehaviour
         if(Recorder.Instance.GetSizeOfMainRecordedData() > 0)
         {
             DebugLogger.Instance.Log("Recorded hide for  " + playbackObject.name + " at " + Recorder.Instance.playbackSlider.value);
-            InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "Hide()",recordingMode: Recordable.RecordingType.Visibility, actionDelegate: () => { Hide(); });
+            InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "Hide()",recordingMode: Recordable.RecordingType.Visibility, actionDelegate: () => { SetVisibility(false); });
             //RecordAndPropagateAssetShowStatus((int)Recorder.Instance.playbackSlider.value);
         }
 
@@ -202,12 +202,41 @@ public class Recordable : MonoBehaviour
         if(Recorder.Instance.GetSizeOfMainRecordedData() > 0)
         {
             DebugLogger.Instance.Log("Recorded show for " + playbackObject.name + " at " + Recorder.Instance.playbackSlider.value);
-            InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "Show()", recordingMode: Recordable.RecordingType.Visibility, actionDelegate: () => { Show(); });
+            InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "Show()", recordingMode: Recordable.RecordingType.Visibility, actionDelegate: () => { SetVisibility(true); });
             //RecordAndPropagateAssetShowStatus((int)Recorder.Instance.playbackSlider.value);
         }
 
         Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
 
+    }
+
+    public void SetVisibility(bool _showStatus)
+    {
+        if(_showStatus)
+        {
+            if(Manager.Instance.currAppState == Manager.AppState.LIVE)
+            {
+                //Set mesh renderer for playbackObject 
+                playbackObject.GetComponent<MeshRenderer>().enabled = true;
+            }
+            else
+            {
+                playbackObject.GetComponent<MeshRenderer>().material = AssetPoseRecorder.Instance.defaultMaterial;
+            }
+        }
+        else
+        {
+            if(Manager.Instance.currAppState == Manager.AppState.LIVE)
+            {
+                //Set mesh renderer for playbackObject 
+                playbackObject.GetComponent<MeshRenderer>().enabled = false;
+            }
+            else
+            {
+                playbackObject.GetComponent<MeshRenderer>().material = AssetPoseRecorder.Instance.translucentMaterial;
+            }
+            
+        }
     }
 
     public void AttachToLeftHand()
@@ -217,7 +246,7 @@ public class Recordable : MonoBehaviour
         //CopyPoseFromRecordable(Recorder.Instance.objectsToRecord[1], (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
         //Follow(Recorder.Instance.objectsToRecord[1].transform);
         //InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, actionDelegate: () => { Follow(Recorder.Instance.objectsToRecord[1].transform); });
-        InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "Follow(Left hand)", recordingMode: Recordable.RecordingType.Follow, actionDelegate: () => { Follow(Recorder.Instance.objectsToRecord[1].playbackObject.transform); });
+        InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "Follow(Left hand)", recordingMode: Recordable.RecordingType.Follow, actionDelegate: () => { Follow(Recorder.Instance.objectsToRecord[1].playbackObject.transform); }, collisionDelegate: (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.leftHandPinchObj); });
         Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
    
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[1].playbackObject.transform);
@@ -229,7 +258,7 @@ public class Recordable : MonoBehaviour
         currentRecordingMode = Recordable.RecordingType.Follow;
         //CopyPoseFromRecordable(Recorder.Instance.objectsToRecord[2], (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
         //Follow(Recorder.Instance.objectsToRecord[2].transform);        
-        InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "Follow(Right hand)", recordingMode: Recordable.RecordingType.Follow, actionDelegate: () => { Follow(Recorder.Instance.objectsToRecord[2].playbackObject.transform); });
+        InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "Follow(Right hand)", recordingMode: Recordable.RecordingType.Follow, actionDelegate: () => { Follow(Recorder.Instance.objectsToRecord[2].playbackObject.transform); }, collisionDelegate: (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.rightHandPinchObj); });
         Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[2].playbackObject.transform);
     }
@@ -272,7 +301,7 @@ public class Recordable : MonoBehaviour
         //recordable.playbackObject.transform.SetParent(null);
     }
 
-    public void RecordAndPropagateAssetShowStatus(int _frameNumber)
+    /*public void RecordAndPropagateAssetShowStatus(int _frameNumber)
     {
         DebugLogger.Instance.Log("Changing asset show status at a specific frame number " + _frameNumber);
         for (int i = _frameNumber + 1; i < recordedData.Count; i++)
@@ -294,7 +323,7 @@ public class Recordable : MonoBehaviour
                     recordedData[i].Action = "Hide()";
                 }
         }
-    }
+    }*/
 
     public void PropagateAssetNoneStatus(int _frameNumber)
     {
@@ -508,12 +537,12 @@ public class Recordable : MonoBehaviour
             //DebugLogger.Instance.Log("Collision detected between " + gameObject.name + " and " + collision.collider.name);
             if(collision.collider.name == "LeftHandPinchContactSphere")
             {
-                InputManager.Instance.SetAssetInContactWithLeftHand(this);
+                //InputManager.Instance.SetAssetInContactWithLeftHand(this);
                 InputManager.Instance.NotifyCollision(gameObject, collision.collider.gameObject);
             }
             else if(collision.collider.name == "RightHandPinchContactSphere")
             {
-                InputManager.Instance.SetAssetInContactWithRightHand(this);
+                //InputManager.Instance.SetAssetInContactWithRightHand(this);
                 InputManager.Instance.NotifyCollision(gameObject, collision.collider.gameObject);
             }            
         }
@@ -526,12 +555,12 @@ public class Recordable : MonoBehaviour
             //DebugLogger.Instance.Log("Collision ended between " + gameObject.name + " and " + collision.collider.name);
             if(collision.collider.name == "LeftHandPinchContactSphere")
             {
-                InputManager.Instance.SetAssetInContactWithLeftHand(null);
+                //InputManager.Instance.SetAssetInContactWithLeftHand(null);
                 InputManager.Instance.NotifyCollision(null,null);
             }
             else if(collision.collider.name == "RightHandPinchContactSphere")
             {
-                InputManager.Instance.SetAssetInContactWithRightHand(null);
+                //InputManager.Instance.SetAssetInContactWithRightHand(null);
                 InputManager.Instance.NotifyCollision(null,null);
             }            
         }
@@ -610,12 +639,14 @@ public class RecordableFrame
     public Recordable.RecordingType recordingMode;
 
     public Action ActionDelegate;
+
+    public Action<Frame> CollisionDelegate;
     public string Collision = "None";
 
     //public Vector3 force;
 
     //Assets 
-    public RecordableFrame(Vector3 _position, Quaternion _rotation, bool _showStatus, string _action, string _collision, Recordable.RecordingType _recordingMode, Action _actionDelegate, int _frameNumber)
+    public RecordableFrame(Vector3 _position, Quaternion _rotation, bool _showStatus, string _action, string _collision, Recordable.RecordingType _recordingMode, Action _actionDelegate, Action<Frame> _collisionDelegate, int _frameNumber)
     {
         rootPosition = _position;
         rootRotation = _rotation;
@@ -624,6 +655,7 @@ public class RecordableFrame
         Action = _action;
         Collision = _collision;
         ActionDelegate = _actionDelegate;
+        CollisionDelegate = _collisionDelegate;
         recordingMode = _recordingMode;
     }
 

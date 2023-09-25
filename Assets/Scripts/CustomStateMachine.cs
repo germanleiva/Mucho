@@ -11,19 +11,6 @@ public class CustomStateMachine : MonoBehaviour
     private State currentState;
     private Dictionary<string, State> states = new Dictionary<string, State>();
 
-    private List<Transition> allTransitions
-    {
-        get
-        {
-            var transitions = new List<Transition>();
-            foreach (var state in states.Values)
-            {
-                transitions.AddRange(state.transitions);
-            }
-            return transitions;
-        }
-    }
-
     void Awake()
     {
         if (Instance == null)
@@ -75,6 +62,7 @@ public class CustomStateMachine : MonoBehaviour
         this.currentState.OnExit();
         this.currentState = transition.to;
         this.currentState.OnEnter();
+        //onupdate()?? 
     }
 
 }
@@ -85,7 +73,7 @@ public class State
     public Action OnEnterActions { get; set; }
     public Action OnUpdateActions { get; set; }
     public Action OnExitActions { get; set; }
-    public List<Transition> transitions = new List<Transition>();
+    public List<Transition> transitions = new();
 
     public void OnEnter()
     {
@@ -121,17 +109,12 @@ public class Transition
 {
     public State from;
     public State to;
-    //public Func<GameObject, GameObject, bool> collisionCondition;
+
     public Func<Frame, bool> condition;
 
     public bool ShouldApply(Frame frame)
     {
         return condition.Invoke(frame);
-        /*if(frame.isColliding(frame.collidingObject1, frame.collidingObject2))
-        {
-            return true;
-        }
-        return false;*/
     }
 }
 
@@ -142,10 +125,9 @@ public class Frame
 
     public GameObject collidingObject1, collidingObject2;
 
-    public bool isColliding(GameObject object1, GameObject object2)
+    public bool IsColliding(GameObject object1, GameObject object2)
     {
         return (object1 == collidingObject1 && object2 == collidingObject2) || (object1 == collidingObject2 && object2 == collidingObject1);
-        //return object1 != null && object2 != null;
     }
 
 

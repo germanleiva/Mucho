@@ -50,11 +50,12 @@ public class InputManager : MonoBehaviour
     {
         CustomStateMachine sm = CustomStateMachine.Instance;
 
-        State idleState = new State();
-        idleState.OnEnterActions = () => { DebugLogger.Instance.Log("Idle OnEnter"); };
-        //state1.OnEnterActions += () => { Debug.Log("State 1 OnEnter 2"); };
-        idleState.OnUpdateActions = () => { DebugLogger.Instance.Log("Idle OnUpdate"); };
-        idleState.OnExitActions = () => { DebugLogger.Instance.Log("Idle OnExit"); };
+        State idleState = new()
+        {
+            OnEnterActions = () => { DebugLogger.Instance.Log("Idle OnEnter"); },
+            OnUpdateActions = () => { DebugLogger.Instance.Log("Idle OnUpdate"); },
+            OnExitActions = () => { DebugLogger.Instance.Log("Idle OnExit"); }
+        };
 
         State grabState = new()
         {
@@ -85,10 +86,10 @@ public class InputManager : MonoBehaviour
             OnExitActions = () => { DebugLogger.Instance.Log("Hit OnExit"); }
         };
 
-        idleState.AddTransitionTo(grabState, (frame) => { return frame.rightHandGesture == Gesture.RIGHTHANDPINCH && frame.isColliding(testBall, rightHandPinchObj); });
+        idleState.AddTransitionTo(grabState, (frame) => { return frame.rightHandGesture == Gesture.RIGHTHANDPINCH && frame.IsColliding(testBall, rightHandPinchObj); });
         grabState.AddTransitionTo(throwState, (frame) => { return frame.rightHandGesture == Gesture.RIGHTHANDOPEN; });
-        throwState.AddTransitionTo(hitState, (frame) => { return frame.isColliding(testBall, testTarget); } );
-        throwState.AddTransitionTo(missState, (frame) => { return frame.isColliding(testBall, floor); });
+        throwState.AddTransitionTo(hitState, (frame) => { return frame.IsColliding(testBall, testTarget); } );
+        throwState.AddTransitionTo(missState, (frame) => { return frame.IsColliding(testBall, floor); });
 
         sm.AddState("Idle", idleState);
         sm.AddState("Grab", grabState);
@@ -130,7 +131,7 @@ public class InputManager : MonoBehaviour
 
         //TODO : Processframe only if a change in gesture or collision has occured
 
-        Frame frame = new Frame
+        Frame frame = new()
         {
             leftHandGesture = leftHand.currentGesture,
             rightHandGesture = rightHand.currentGesture,
@@ -148,12 +149,47 @@ public class InputManager : MonoBehaviour
         }
         else if (Manager.Instance.currAppState == Manager.AppState.INIT || Manager.Instance.currAppState == Manager.AppState.PLAYBACK || Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
         {
+            if(frame.collidingObject1 != null && frame.collidingObject2 != null)
+            {
+                if (collidingObject2.name == "LeftHandPinchContactSphere")    
+                {
+                    assetInContactWithLeftHand = collidingObject1.GetComponent<Recordable>();
+                    if(leftHand.currentGesture == Gesture.LEFTHANDPINCH)
+                    {
+                        assetInContactWithLeftHand.Follow(leftHand.transform);
+                    }
+                    else if (leftHand.currentGesture == Gesture.LEFTHANDNONE)
+                    {
+                        assetInContactWithLeftHand.Unfollow();
+                    }
+
+                }
+
+                if (collidingObject2.name == "RightHandPinchContactSphere")
+                {
+                    assetInContactWithRightHand = collidingObject1.GetComponent<Recordable>();
+                    if (rightHand.currentGesture == Gesture.RIGHTHANDPINCH)
+                    {
+                        assetInContactWithRightHand.Follow(rightHand.transform);
+                    }
+                    else if (rightHand.currentGesture == Gesture.RIGHTHANDNONE)
+                    {
+                        assetInContactWithRightHand.Unfollow();
+                    }
+                }
+            }
+                    
+                    
+
+            
+
+
             //DebugLogger.Instance.Log("Processing gestures in init/playback mode");
             //DebugLogger.Instance.Log("Left Hand: " + leftHand.currentGesture.ToString() + " Right Hand: " + rightHand.currentGesture.ToString());
 
             //DebugLogger.Instance.Log("Processing collisions between hands and assets");
 
-            if (assetInContactWithLeftHand != null)
+            /*if (assetInContactWithLeftHand != null)
             {
                 //DebugLogger.Instance.Log("Left Hand in contact with " + assetInContactWithLeftHand.name);
                 if (leftHand.currentGesture == Gesture.LEFTHANDPINCH)
@@ -174,6 +210,8 @@ public class InputManager : MonoBehaviour
             }
 
 
+
+
             if (assetInContactWithRightHand != null)
             {
                 //DebugLogger.Instance.Log("Right Hand in contact with " + assetInContactWithRightHand.name);
@@ -191,7 +229,7 @@ public class InputManager : MonoBehaviour
             else
             {
                 //assetInContactWithRightHand.Unfollow();
-            }
+            }*/
 
             //DebugLogger.Instance.Log("Processing collisions between assets");
             if (collidingObject1 != null && collidingObject2 != null)

@@ -55,7 +55,7 @@ public class AssetPoseRecorder : MonoBehaviour
         DebugLogger.Instance.Log("StartRecording in " + recordable.playbackObject.name);
         firstFrameOfManualRecording = (int)mainRecorder.playbackSlider.value;
         //currentActiveRecordable = recordable;
-        recordable.currentRecordingMode = Recordable.RecordingType.ManualAnimation;
+        //recordable.currentRecordingMode = Recordable.RecordingType.ManualAnimation;
     }
 
     public bool DoRecordSizesMatch()
@@ -90,7 +90,7 @@ public class AssetPoseRecorder : MonoBehaviour
                 //recordable.recordedData.Add(new RecordFrameData(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", data.frameNumber));
                 recordable.recordedData.Add(new RecordableFrame(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", "None", Recordable.RecordingType.None, null, data.frameNumber));
             }
-            recordable.InsertAssetRecordFrame(0, action: "None", collision: "None", Recordable.RecordingType.ManualAnimation);
+            recordable.InsertAssetRecordFrame(0,  collision: "None", recordingMode: Recordable.RecordingType.ManualAnimation, action: "Show()", actionDelegate: () => { recordable.SetVisibility(true); });
         }
     }
 
