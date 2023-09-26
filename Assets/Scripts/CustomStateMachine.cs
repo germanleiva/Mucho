@@ -36,11 +36,19 @@ public class CustomStateMachine : MonoBehaviour
         // currentState.OnEnter();
     }
 
+    public int GetSize()
+    {
+        return states.Count;
+    }
+
+    public void DeleteState(string name)
+    {
+        states.Remove(name);
+    }
+
 
     public void ProcessFrame(Frame lastFrameObject)
     {
-
-
         foreach (var transition in currentState.transitions)
         {
             if (transition.ShouldApply(lastFrameObject))
@@ -123,11 +131,11 @@ public class Frame
     public InputManager.Gesture leftHandGesture;
     public InputManager.Gesture rightHandGesture;
 
-    public GameObject collidingObject1, collidingObject2;
+    public GameObject collidingObjectThisFrame_1, collidingObjectThisFrame_2;
 
     public bool IsColliding(GameObject object1, GameObject object2)
     {
-        return (object1 == collidingObject1 && object2 == collidingObject2) || (object1 == collidingObject2 && object2 == collidingObject1);
+        return (object1 == collidingObjectThisFrame_1 && object2 == collidingObjectThisFrame_2) || (object1 == collidingObjectThisFrame_2 && object2 == collidingObjectThisFrame_1);
     }
 
 

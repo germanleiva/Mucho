@@ -12,7 +12,7 @@ public class InputManager : MonoBehaviour
 
     public GameObject testBall, testTarget, floor, testHitMessage, testMissMessage;
 
-    public GameObject collidingObject1, collidingObject2;
+    public GameObject collidingObjectNotified_1, collidingObjectNotified_2;
 
     public GameObject leftHandPinchObj, rightHandPinchObj;
 
@@ -37,7 +37,7 @@ public class InputManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        CreateTestStates();
+        //CreateTestStates();
     }
 
     // Update is called once per frame
@@ -120,8 +120,8 @@ public class InputManager : MonoBehaviour
 
         }
 
-        collidingObject1 = object1;
-        collidingObject2 = object2;
+        collidingObjectNotified_1 = object1;
+        collidingObjectNotified_2 = object2;
     }
 
     void ProcessEvents()
@@ -135,8 +135,8 @@ public class InputManager : MonoBehaviour
         {
             leftHandGesture = leftHand.currentGesture,
             rightHandGesture = rightHand.currentGesture,
-            collidingObject1 = collidingObject1,
-            collidingObject2 = collidingObject2
+            collidingObjectThisFrame_1 = collidingObjectNotified_1,
+            collidingObjectThisFrame_2 = collidingObjectNotified_2
         };
         
 
@@ -144,16 +144,14 @@ public class InputManager : MonoBehaviour
         {
             //DebugLogger.Instance.Log("Passing events to state machine");
             sm.ProcessFrame(frame);
-            collidingObject1 = null;
-            collidingObject2 = null;
         }
         else if (Manager.Instance.currAppState == Manager.AppState.INIT || Manager.Instance.currAppState == Manager.AppState.PLAYBACK || Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
         {
-            if(frame.collidingObject1 != null && frame.collidingObject2 != null)
+            if(frame.collidingObjectThisFrame_1 != null && frame.collidingObjectThisFrame_2 != null)
             {
-                if (collidingObject2.name == "LeftHandPinchContactSphere")    
+                if (collidingObjectNotified_2.name == "LeftHandPinchContactSphere")    
                 {
-                    assetInContactWithLeftHand = collidingObject1.GetComponent<Recordable>();
+                    assetInContactWithLeftHand = collidingObjectNotified_1.GetComponent<Recordable>();
                     if(leftHand.currentGesture == Gesture.LEFTHANDPINCH)
                     {
                         assetInContactWithLeftHand.Follow(leftHand.transform);
@@ -165,9 +163,9 @@ public class InputManager : MonoBehaviour
 
                 }
 
-                if (collidingObject2.name == "RightHandPinchContactSphere")
+                if (collidingObjectNotified_2.name == "RightHandPinchContactSphere")
                 {
-                    assetInContactWithRightHand = collidingObject1.GetComponent<Recordable>();
+                    assetInContactWithRightHand = collidingObjectNotified_1.GetComponent<Recordable>();
                     if (rightHand.currentGesture == Gesture.RIGHTHANDPINCH)
                     {
                         assetInContactWithRightHand.Follow(rightHand.transform);
@@ -180,65 +178,9 @@ public class InputManager : MonoBehaviour
             }
                     
                     
-
+            collidingObjectNotified_1 = null;
+            collidingObjectNotified_2 = null;
             
-
-
-            //DebugLogger.Instance.Log("Processing gestures in init/playback mode");
-            //DebugLogger.Instance.Log("Left Hand: " + leftHand.currentGesture.ToString() + " Right Hand: " + rightHand.currentGesture.ToString());
-
-            //DebugLogger.Instance.Log("Processing collisions between hands and assets");
-
-            /*if (assetInContactWithLeftHand != null)
-            {
-                //DebugLogger.Instance.Log("Left Hand in contact with " + assetInContactWithLeftHand.name);
-                if (leftHand.currentGesture == Gesture.LEFTHANDPINCH)
-                {
-                    //DebugLogger.Instance.Log("Left Hand is pinching " + assetInContactWithLeftHand.name);
-                    //AttachAssetToHand(assetInContactWithLeftHand, leftHand);
-                    assetInContactWithLeftHand.Follow(leftHand.transform);
-                }
-                else if (leftHand.currentGesture == Gesture.LEFTHANDNONE)
-                {
-                    //DebugLogger.Instance.Log("Left Hand is no longer pinching " + assetInContactWithLeftHand.name);
-                    assetInContactWithLeftHand.Unfollow();
-                }               
-            }
-            else
-            {
-                //assetInContactWithLeftHand.Unfollow();
-            }
-
-
-
-
-            if (assetInContactWithRightHand != null)
-            {
-                //DebugLogger.Instance.Log("Right Hand in contact with " + assetInContactWithRightHand.name);
-                if (rightHand.currentGesture == Gesture.RIGHTHANDPINCH)
-                {
-                    //DebugLogger.Instance.Log("Right Hand is pinching " + assetInContactWithRightHand.name);
-                    assetInContactWithRightHand.Follow(rightHand.transform);
-                }    
-                else if (rightHand.currentGesture == Gesture.RIGHTHANDNONE)
-                {
-                    //DebugLogger.Instance.Log("Right Hand is no longer pinching " + assetInContactWithRightHand.name);
-                    assetInContactWithRightHand.Unfollow();
-                }
-            }
-            else
-            {
-                //assetInContactWithRightHand.Unfollow();
-            }*/
-
-            //DebugLogger.Instance.Log("Processing collisions between assets");
-            if (collidingObject1 != null && collidingObject2 != null)
-            {
-                //DebugLogger.Instance.Log("Collision between " + collidingObject1.name + " and " + collidingObject2.name);
-                //collidingObject1.GetComponent<Recordable>().ProcessCollision(collidingObject2.GetComponent<Recordable>());
-                //collidingObject2.GetComponent<Recordable>().ProcessCollision(collidingObject1.GetComponent<Recordable>());
-            }
-
         } 
     }
 
@@ -282,6 +224,7 @@ public class GestureSequence
     public int StartIndex { get; set; }
     public int Length { get; set; }
     public InputManager.Gesture GestureType { get; set; }
+    public Action GestureDelegate { get; set; }
 }
 
 public class GestureDelegateSequence

@@ -74,9 +74,9 @@ public class ForceArrow : MonoBehaviour
         lineRenderer.enabled = true;
         
         Vector3 position1 = asset.position;
-        DebugLogger.Instance.Log("Arrow end position: " + position1);
+        //DebugLogger.Instance.Log("Arrow end position: " + position1);
         Vector3 position2 = arrowHead.position;
-        DebugLogger.Instance.Log("Arrow head position: " + position2);
+        //DebugLogger.Instance.Log("Arrow head position: " + position2);
         Vector3 direction = (position2 - position1);
 
         // Initial velocity is just the direction
@@ -100,7 +100,7 @@ public class ForceArrow : MonoBehaviour
 
             if (Physics.Raycast(previousPointPosition, raycastDirection, raycastDistance, layerMask))
             {
-                DebugLogger.Instance.Log("Hit surface, stopping trajectory generation");
+                //DebugLogger.Instance.Log("Hit surface, stopping trajectory generation");
                 // If there is a hit, set the number of points to i + 1 (since i starts from 0)
                 lineRenderer.positionCount = i + 1;
 
@@ -110,7 +110,7 @@ public class ForceArrow : MonoBehaviour
             }
             else
             {
-                DebugLogger.Instance.Log("No hit, continuing trajectory generation");
+                //DebugLogger.Instance.Log("No hit, continuing trajectory generation");
                 // If there is no hit, set the current point in the LineRenderer
                 lineRenderer.SetPosition(i, pointPosition);
 

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,9 +28,13 @@ public class Recorder : MonoBehaviour
     readonly List<float> handGuideTimePoints = new();
     [Header("Timeline UI")]
     [SerializeField]
+    RectTransform stateTimelinePanel;
+    [SerializeField]
     RectTransform rightHandTimelinePanel;
     [SerializeField]
     RectTransform leftHandTimelinePanel;
+    [SerializeField]
+    GameObject stateTimelineElementPrefab;
     [SerializeField]
     GameObject handTimelineElementPrefab;
     [SerializeField]
@@ -379,6 +384,8 @@ public class Recorder : MonoBehaviour
             });
         }
 
+        //Iterate through gestures and assign the lambda 
+
         return sequences;
     }
 
@@ -387,12 +394,13 @@ public class Recorder : MonoBehaviour
 
     public List<GestureSequence> GenerateGestureSequences(RectTransform timelinePanel, Recordable recordable)
     {
+        DebugLogger.Instance.Log("Generating gesture sequences for " + recordable.name);
         List<InputManager.Gesture> gestures = recordable.recordedData.Select(x => x.gesture).ToList();
         List<GestureSequence> GestureSequences = GetContinuousGestureSequences(gestures);
         foreach (GestureSequence sequence in GestureSequences)
         {
-            DebugLogger.Instance.Log("Sequence name: " + InputManager.Instance.GestureToString(sequence.GestureType) + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
-            DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
+            //DebugLogger.Instance.Log("Sequence name: " + InputManager.Instance.GestureToString(sequence.GestureType) + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
+            //DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
             GameObject timelineElement = Instantiate(handTimelineElementPrefab, timelinePanel);
             timelineElement.SetActive(true);
             timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
@@ -464,19 +472,17 @@ public class Recorder : MonoBehaviour
     public List<AssetSequence> GenerateAssetActionSequences(RectTransform timelinePanel, Recordable recordable)
     {
         DebugLogger.Instance.Log("Generating asset action sequences for " + recordable.name);
-        List<Action> actionDelegates = recordable.recordedData.Select(x => x.ActionDelegate).ToList();
-        //Print the list of action delegates with parameters in a clean format
-        foreach (var actionDelegate in actionDelegates)
-        {
-            DebugLogger.Instance.Log("Action delegate: " + actionDelegate.Method.Name + ", Parameters: " + string.Join(", ", actionDelegate.Method.GetParameters().Select(x => x.Name)));
-        }
     
         List<string> changes = recordable.recordedData.Select(x => x.Action).ToList();
         List<AssetSequence> sequences = GetContinuousChangeSequences(changes);
         foreach (AssetSequence sequence in sequences)
         {
-            DebugLogger.Instance.Log("Sequence name: " + sequence.Action + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
-            DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
+            //DebugLogger.Instance.Log("Sequence name: " + sequence.Action + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
+            //DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
+            if(recordable.recordedData[sequence.StartIndex].ActionDelegate != null)
+            {
+                //DebugLogger.Instance.Log("Action delegate: " + recordable.recordedData[sequence.StartIndex].ActionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordable.recordedData[sequence.StartIndex].ActionDelegate.Method.GetParameters().Select(x => x.Name)));
+            }
 
             if(sequence.Action.StartsWith("Hide"))
             {
@@ -504,14 +510,24 @@ public class Recorder : MonoBehaviour
 
     public List<AssetSequence> GenerateCollisionSequences(RectTransform collisionTimelinePanelTransform, Recordable recordable) //Strong assumption that all sources of action come from collision
     {        
+        DebugLogger.Instance.Log("Generating collision sequences for " + recordable.name);
         try
         {                
             List<string> sourcesOfChanges = recordable.recordedData.Select(x => x.Collision).ToList();
             List<AssetSequence> sequences = GetContinuousChangeSequences(sourcesOfChanges);
             foreach (AssetSequence sequence in sequences)
             {
-                DebugLogger.Instance.Log("Collision sequence name: " + sequence.Action + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
-                DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex + sequence.Length));
+                //DebugLogger.Instance.Log("Collision sequence name: " + sequence.Action + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
+                //DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex + sequence.Length));
+                
+                if(recordable.recordedData[sequence.StartIndex].CollisionDelegate != null)
+                    DebugLogger.Instance.Log("Collision delegate: " + recordable.recordedData[sequence.StartIndex].CollisionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordable.recordedData[sequence.StartIndex].CollisionDelegate.Method.GetParameters().Select(x => x.Name)));
+                if(recordable.recordedData[sequence.StartIndex].CollidedObject != null)
+                {
+                    DebugLogger.Instance.Log("Collided object: " + recordable.recordedData[sequence.StartIndex].CollidedObject.name);
+                    sequence.CollidingObject1 = recordable.gameObject;
+                    sequence.CollidingObject2 = recordable.recordedData[sequence.StartIndex].CollidedObject;
+                }
                 GameObject timelineElement = Instantiate(collisionTimelineElementPrefab, collisionTimelinePanelTransform);
                 timelineElement.SetActive(true);
                 timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
@@ -551,6 +567,7 @@ public class Recorder : MonoBehaviour
             //GenerateGestureSequences(timelinePanel, recordable);
             int recordableCounter = 0;
             assetSequencesLists.Clear();
+            collisionSequencesLists.Clear();
             foreach (var recordable in AssetPoseRecorder.Instance.recordableAssets)
             {
                 ++recordableCounter;
@@ -563,71 +580,129 @@ public class Recorder : MonoBehaviour
                 if (recordable.recordedData.Count > 0)
                 {
                     assetSequencesLists.Add(GenerateAssetActionSequences(timelinePanel.GetComponent<RectTransform>(), recordable));
-                    assetSequencesLists.Add(GenerateCollisionSequences(collisionTimelinePanel.GetComponent<RectTransform>(), recordable));
+                    collisionSequencesLists.Add(GenerateCollisionSequences(collisionTimelinePanel.GetComponent<RectTransform>(), recordable));
                 }   
             }
         }
     }
 
-    /*public List<(GestureSequence Gesture, List<string> Actions)> GetActionsForGestures(List<GestureSequence> gestureSequences, List<List<AssetSequence>> assetSequencesLists)
-    {
-        var result = new List<(GestureSequence Gesture, List<string> Actions)>();
-        DebugLogger.Instance.Log("Size of gestureSequences: " + gestureSequences.Count);
-        DebugLogger.Instance.Log("Size of assetSequencesLists: " + assetSequencesLists.Count);
-        foreach(var assetSequences in assetSequencesLists)
-        {
-            DebugLogger.Instance.Log("Size of assetSequences: " + assetSequences.Count);
-        }
-
-        foreach (var gesture in gestureSequences)
-        {
-            var actions = new List<string>();
-
-            foreach (var assetSequences in assetSequencesLists)
-            {
-                foreach (var asset in assetSequences)
-                {
-                    if (asset.StartIndex >= gesture.StartIndex && asset.StartIndex + asset.Length <= gesture.StartIndex + gesture.Length)
-                    {
-                        actions.Add(asset.Action);
-                        DebugLogger.Instance.Log("Found action " + asset.Action + " for gesture " + InputManager.Instance.GestureToString(gesture.GestureType));
-                    }
-                }
-            }
-
-            result.Add((gesture, actions));
-        }
-
-        return result;
-    }*/
 
     public List<GestureSequence> gestureSequences = new List<GestureSequence>();
     public List<List<AssetSequence>> assetSequencesLists = new List<List<AssetSequence>>();
+    public List<List<AssetSequence>> collisionSequencesLists = new List<List<AssetSequence>>();
 
-    public void GenerateTestStates()
-    {
-        /*var result = GetActionsForGestures(gestureSequences, assetSequencesLists);
-        DebugLogger.Instance.Log("Generating states, Size of result: " + result.Count);
-        // Print the results
-        foreach (var item in result)
-        {
-            DebugLogger.Instance.Log($"GestureType: {InputManager.Instance.GestureToString(item.Gesture.GestureType)}, Actions: {string.Join(", ", item.Actions)}");
-        }*/
-    }
 
     public void CreateStateMachine()
     {
-        /*
-        * Create a state machine
-        * 
-        * Create an idle state state0
-        * Start with the first gesture sequence start index
-        * Create the first state state1
-        * Check all asset sequences to see if there are any actions or collisions within the gesture start and end indices. If not, stop creating the state and return.
-        * Add the 
-        * Find actions in asset sequences that are within the first few frames following the gesture sequence start index and add them to the OnEnterActions of state0
-        * Find actions in asset sequences that are withing the last few frames before the gesture sequence end index and add them to the OnExit function of state0
-        */
+        DebugLogger.Instance.Log("Creating state machine");
+
+        //Create a state machine
+        var stateMachine = CustomStateMachine.Instance;
+        //Create an idle state state0
+        var idleState = new State();
+        idleState.id = "Idle";
+        stateMachine.AddState(idleState.id, idleState);
+        stateMachine.SetInitialState(idleState.id);
+        State prevProcessedState = idleState;
+        InputManager.Gesture prevProcessedGesture = InputManager.Gesture.LEFTHANDNONE;
+
+        //Iterate through all gesture sequences
+        foreach (var gesture in gestureSequences)
+        {
+            DebugLogger.Instance.Log("Processing gesture " + InputManager.Instance.GestureToString(gesture.GestureType) + ", StartIndex : " + gesture.StartIndex + ", Length:" + gesture.Length);
+            //Create the first state state1
+            var state = new State();
+            //state.id = InputManager.Instance.GestureToString(gesture.GestureType);
+            state.id = "State" + stateMachine.GetSize();
+            stateMachine.AddState(state.id, state);
+            //Check collision sequence to see if there are any collision with a startindex within the first 10 frames of the startindex of the gesture. If not, stop creating the state and return.
+            bool doesGestureHaveCollision = false;
+            bool noChangeBetweenOpenAndClose = false;
+            foreach (var collisionSequence in collisionSequencesLists)
+            {
+                foreach (var collision in collisionSequence)
+                {
+                    if (collision.StartIndex >= gesture.StartIndex && collision.StartIndex <= gesture.StartIndex + 10)
+                    {
+                        prevProcessedGesture = gesture.GestureType;
+                        doesGestureHaveCollision = true;
+
+                        if(gesture.GestureType == InputManager.Gesture.RIGHTHANDPINCH)
+                        {
+                            DebugLogger.Instance.Log("Adding transition from " + prevProcessedState.id + " to " + state.id + " for gesture " + InputManager.Instance.GestureToString(gesture.GestureType) + " and collision " + collision.Action);
+                            prevProcessedState.AddTransitionTo(state, (frame) => { return (frame.rightHandGesture == InputManager.Gesture.RIGHTHANDPINCH) && frame.IsColliding(collision.CollidingObject1, collision.CollidingObject2); });
+                        }
+                        else if(gesture.GestureType == InputManager.Gesture.LEFTHANDPINCH)
+                        { 
+                            DebugLogger.Instance.Log("Adding transition from " + prevProcessedState.id + " to " + state.id + " for gesture " + InputManager.Instance.GestureToString(gesture.GestureType) + " and collision " + collision.Action);
+                            prevProcessedState.AddTransitionTo(state, (frame) => { return (frame.leftHandGesture == InputManager.Gesture.LEFTHANDPINCH) && frame.IsColliding(collision.CollidingObject1, collision.CollidingObject2); });
+                        }             
+                    }
+                }
+            }
+            if(doesGestureHaveCollision == false)
+            {
+                DebugLogger.Instance.Log("Gesture " + InputManager.Instance.GestureToString(gesture.GestureType) + " does not have any collision (only change in gesture)");
+                DebugLogger.Instance.Log("Adding transition from " + prevProcessedState.id + " to " + state.id + " for gesture " + InputManager.Instance.GestureToString(gesture.GestureType));
+                //Check if there was a change from open to close or from close to open
+                if(prevProcessedGesture == InputManager.Gesture.LEFTHANDPINCH && gesture.GestureType == InputManager.Gesture.LEFTHANDOPEN)                                  
+                    prevProcessedState.AddTransitionTo(state, (frame) => { return frame.leftHandGesture == InputManager.Gesture.LEFTHANDOPEN; });                      
+                else if (prevProcessedGesture == InputManager.Gesture.RIGHTHANDPINCH && gesture.GestureType == InputManager.Gesture.RIGHTHANDOPEN)
+                    prevProcessedState.AddTransitionTo(state, (frame) => { return frame.leftHandGesture == InputManager.Gesture.RIGHTHANDOPEN; }); 
+                else if (prevProcessedGesture == InputManager.Gesture.LEFTHANDOPEN && gesture.GestureType == InputManager.Gesture.LEFTHANDPINCH)
+                    prevProcessedState.AddTransitionTo(state, (frame) => { return frame.leftHandGesture == InputManager.Gesture.LEFTHANDPINCH; }); 
+                else if (prevProcessedGesture == InputManager.Gesture.RIGHTHANDOPEN && gesture.GestureType == InputManager.Gesture.RIGHTHANDPINCH)
+                    prevProcessedState.AddTransitionTo(state, (frame) => { return frame.leftHandGesture == InputManager.Gesture.RIGHTHANDPINCH; }); 
+                else
+                    noChangeBetweenOpenAndClose = true;    
+            }
+
+            if(doesGestureHaveCollision == false && noChangeBetweenOpenAndClose == true)
+            {                
+                stateMachine.DeleteState(state.id);
+                DebugLogger.Instance.Log("Gesture " + InputManager.Instance.GestureToString(gesture.GestureType) + " does not have any collision or change between open and close, so deleting state " + state.id);
+            }
+            else
+            {
+                //Find actions in asset sequences that are within the first few frames following the gesture sequence start index and add them to the OnEnterActions of state0
+                foreach (var assetSequences in assetSequencesLists)
+                {
+                    foreach (var assetSequence in assetSequences)
+                    {
+                        if (assetSequence.StartIndex >= gesture.StartIndex && assetSequence.StartIndex <= gesture.StartIndex + 10)
+                        {
+                            //Add the action to the OnEnterActions of state0
+                            state.OnEnterActions += () => assetSequence.ActionDelegate();
+                            DebugLogger.Instance.Log("Added action " + assetSequence.Action + " for state " + state.id + " and gesture " + InputManager.Instance.GestureToString(gesture.GestureType) + " OnEnterActions");
+                        }
+                    }
+                }
+                //Find actions in asset sequences that are withing the last few frames before the gesture sequence end index and add them to the OnExit function of state0
+                foreach (var assetSequences in assetSequencesLists)
+                {
+                    foreach (var assetSequence in assetSequences)
+                    {
+                        if (assetSequence.StartIndex >= gesture.StartIndex + gesture.Length - 10 && assetSequence.StartIndex <= gesture.StartIndex + gesture.Length)
+                        {
+                            //Add the action to the OnExitActions of state0
+                            state.OnExitActions += () => assetSequence.ActionDelegate();
+                            DebugLogger.Instance.Log("Added action " + assetSequence.Action + " for state " + state.id + " and gesture " + InputManager.Instance.GestureToString(gesture.GestureType) + " OnExitActions");
+                        }
+                    }
+                }
+
+                //Creating sate machine timeline elements
+                GameObject timelineElement = Instantiate(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>());
+                timelineElement.SetActive(true);
+                timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(stateTimelinePanel.GetComponent<RectTransform>(), gesture.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
+                timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(stateTimelinePanel.GetComponent<RectTransform>(), gesture.StartIndex + gesture.Length) - MapIndexToTimelinePosition(stateTimelinePanel.GetComponent<RectTransform>(), gesture.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
+                timelineElement.GetComponent<TimelineUIElement>().SetEvent(state.id);
+                
+                prevProcessedState = state;
+            }
+
+
+        }
     }
         
 
