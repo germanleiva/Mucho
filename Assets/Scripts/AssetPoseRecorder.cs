@@ -88,7 +88,7 @@ public class AssetPoseRecorder : MonoBehaviour
             foreach(var data in mainRecorder.objectsToRecord[0].recordedData)
             {
                 //recordable.recordedData.Add(new RecordFrameData(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", data.frameNumber));
-                recordable.recordedData.Add(new RecordableFrame(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", "None", Recordable.RecordingType.None, null, data.frameNumber));
+                recordable.recordedData.Add(new RecordableFrame(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", "None", Recordable.RecordingType.None, null, null, data.frameNumber));
             }
             recordable.InsertAssetRecordFrame(0,  collision: "None", recordingMode: Recordable.RecordingType.ManualAnimation, action: "Show()", actionDelegate: () => { recordable.SetVisibility(true); });
         }

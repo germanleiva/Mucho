@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -461,6 +463,14 @@ public class Recorder : MonoBehaviour
 
     public List<AssetSequence> GenerateAssetActionSequences(RectTransform timelinePanel, Recordable recordable)
     {
+        DebugLogger.Instance.Log("Generating asset action sequences for " + recordable.name);
+        List<Action> actionDelegates = recordable.recordedData.Select(x => x.ActionDelegate).ToList();
+        //Print the list of action delegates with parameters in a clean format
+        foreach (var actionDelegate in actionDelegates)
+        {
+            DebugLogger.Instance.Log("Action delegate: " + actionDelegate.Method.Name + ", Parameters: " + string.Join(", ", actionDelegate.Method.GetParameters().Select(x => x.Name)));
+        }
+    
         List<string> changes = recordable.recordedData.Select(x => x.Action).ToList();
         List<AssetSequence> sequences = GetContinuousChangeSequences(changes);
         foreach (AssetSequence sequence in sequences)
@@ -548,7 +558,7 @@ public class Recorder : MonoBehaviour
                 assetTimelines.Add(timelinePanel);
                 timelinePanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(timelinePanel.GetComponent<RectTransform>().anchoredPosition.x, timelinePanel.GetComponent<RectTransform>().anchoredPosition.y - recordableCounter * 100);
                 timelinePanel.SetActive(true);
-                timelinePanel.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text = Manager.Instance.CleanString(recordable.name);
+                timelinePanel.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text = Manager.Instance.CleanString(recordable.name); //Assign asset name
 
                 if (recordable.recordedData.Count > 0)
                 {
@@ -605,6 +615,22 @@ public class Recorder : MonoBehaviour
         }*/
     }
 
+    public void CreateStateMachine()
+    {
+        /*
+        * Create a state machine
+        * 
+        * Create an idle state state0
+        * Start with the first gesture sequence start index
+        * Create the first state state1
+        * Check all asset sequences to see if there are any actions or collisions within the gesture start and end indices. If not, stop creating the state and return.
+        * Add the 
+        * Find actions in asset sequences that are within the first few frames following the gesture sequence start index and add them to the OnEnterActions of state0
+        * Find actions in asset sequences that are withing the last few frames before the gesture sequence end index and add them to the OnExit function of state0
+        */
+    }
+        
+
     public float MapIndexToTimelinePosition(RectTransform _rectTransform, int index)
     {
         float rectStartX = 0;
@@ -616,7 +642,7 @@ public class Recorder : MonoBehaviour
         return mappedValue;
     }
 
-    public float Map(float x, float in_min, float in_max, float out_min, float out_max) //From https://forum.unity.com/threads/mapping-or-scaling-values-to-a-new-range.180090/#post-2241099
+    public float Map(float x, float in_min, float in_max, float out_min, float out_max) 
     {
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }

@@ -284,4 +284,10 @@ public class GestureSequence
     public InputManager.Gesture GestureType { get; set; }
 }
 
+public class GestureDelegateSequence
+{
+    public int StartIndex { get; set; }
+    public int Length { get; set; }
+    public Action GestureDelegate { get; set; }
+}
 
