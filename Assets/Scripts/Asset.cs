@@ -4,15 +4,7 @@ using UnityEngine;
 
 public class Asset : MonoBehaviour
 {
-    public GameObject AssetMenu;
-    
     // Start is called before the first frame update
-
-    void Awake()
-    {
-        //AssetMenu.SetActive(false);
-    }
-
     void Start()
     {
         
@@ -23,10 +15,4 @@ public class Asset : MonoBehaviour
     {
         
     }
-
-    public void toggleAssetMenu()
-    {
-        AssetMenu.SetActive(!AssetMenu.activeSelf);
-    }
-
 }

@@ -401,11 +401,12 @@ public class Recorder : MonoBehaviour
         {
             //DebugLogger.Instance.Log("Sequence name: " + InputManager.Instance.GestureToString(sequence.GestureType) + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
             //DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
-            GameObject timelineElement = Instantiate(handTimelineElementPrefab, timelinePanel);
+            /*GameObject timelineElement = Instantiate(handTimelineElementPrefab, timelinePanel);
             timelineElement.SetActive(true);
             timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
             timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
-            timelineElement.GetComponent<TimelineUIElement>().SetEvent(InputManager.Instance.GestureToString(sequence.GestureType));
+            timelineElement.GetComponent<TimelineUIElement>().SetEvent(InputManager.Instance.GestureToString(sequence.GestureType));*/
+            CreateTimelineElement(handTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, InputManager.Instance.GestureToString(sequence.GestureType));
         }
         return GestureSequences;
     }    
@@ -498,11 +499,13 @@ public class Recorder : MonoBehaviour
             }
             else //Other types of events - physics, attach etc
             {
-                GameObject timelineElement = Instantiate(assetTimelineElementPrefab, timelinePanel);
+                /*GameObject timelineElement = Instantiate(assetTimelineElementPrefab, timelinePanel);
                 timelineElement.SetActive(true);
                 timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
                 timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
-                timelineElement.GetComponent<TimelineUIElement>().SetEvent(sequence.Action);
+                timelineElement.GetComponent<TimelineUIElement>().SetEvent(sequence.Action);*/
+
+                CreateTimelineElement(assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, sequence.Action);
             }
         }
         return sequences;
@@ -528,11 +531,13 @@ public class Recorder : MonoBehaviour
                     sequence.CollidingObject1 = recordable.gameObject;
                     sequence.CollidingObject2 = recordable.recordedData[sequence.StartIndex].CollidedObject;
                 }
-                GameObject timelineElement = Instantiate(collisionTimelineElementPrefab, collisionTimelinePanelTransform);
+                /*GameObject timelineElement = Instantiate(collisionTimelineElementPrefab, collisionTimelinePanelTransform);
                 timelineElement.SetActive(true);
                 timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
                 timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
-                timelineElement.GetComponent<TimelineUIElement>().SetEvent(sequence.Action);
+                timelineElement.GetComponent<TimelineUIElement>().SetEvent(sequence.Action);*/
+
+                CreateTimelineElement(collisionTimelineElementPrefab, collisionTimelinePanelTransform, sequence.StartIndex, sequence.Length, sequence.Action);
             }
             return sequences;
         }
@@ -692,11 +697,13 @@ public class Recorder : MonoBehaviour
                 }
 
                 //Creating sate machine timeline elements
-                GameObject timelineElement = Instantiate(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>());
+                /*GameObject timelineElement = Instantiate(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>());
                 timelineElement.SetActive(true);
                 timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(stateTimelinePanel.GetComponent<RectTransform>(), gesture.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
                 timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(stateTimelinePanel.GetComponent<RectTransform>(), gesture.StartIndex + gesture.Length) - MapIndexToTimelinePosition(stateTimelinePanel.GetComponent<RectTransform>(), gesture.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
-                timelineElement.GetComponent<TimelineUIElement>().SetEvent(state.id);
+                timelineElement.GetComponent<TimelineUIElement>().SetEvent(state.id);*/
+
+                CreateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(), gesture.StartIndex, gesture.Length, state.id);
                 
                 prevProcessedState = state;
             }
@@ -704,6 +711,24 @@ public class Recorder : MonoBehaviour
 
         }
     }
+
+    GameObject CreateTimelineElement(GameObject prefab, RectTransform parentTransform, int startIndex, int length, string id)
+    {
+        GameObject timelineElement = Instantiate(prefab, parentTransform);
+        timelineElement.SetActive(true);
+        
+        float positionX = MapIndexToTimelinePosition(parentTransform, startIndex);
+        float sizeDeltaX = MapIndexToTimelinePosition(parentTransform, startIndex + length) - positionX;
+
+        RectTransform elementRect = timelineElement.GetComponent<RectTransform>();
+        elementRect.anchoredPosition = new Vector2(positionX, elementRect.anchoredPosition.y);
+        elementRect.sizeDelta = new Vector2(sizeDeltaX, elementRect.sizeDelta.y);
+        
+        timelineElement.GetComponent<TimelineUIElement>().SetEvent(id);
+        
+        return timelineElement;
+    }
+
         
 
     public float MapIndexToTimelinePosition(RectTransform _rectTransform, int index)

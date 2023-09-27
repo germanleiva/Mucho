@@ -86,7 +86,7 @@ public class Recordable : MonoBehaviour
         //lineRenderer = lineObject.GetComponent<LineRenderer>();
         //lineRendererSmoother = lineObject.GetComponent<LineRendererSmoother>();
         //check if playbackObject2, playbackObject3 are null and SetOpacity to 0.5 and 0.25 respectively
-        if(playbackObject2Renderer != null && playbackObject3Renderer != null)
+        if(playbackObject2Renderer != null && playbackObject3Renderer != null) //For hands
         {
             SetOpacity(playbackObject2Renderer, 0.25f);
             SetOpacity(playbackObject3Renderer, 0.15f);
@@ -95,7 +95,7 @@ public class Recordable : MonoBehaviour
         }
     }
 
-    public void SetOpacity(SkinnedMeshRenderer renderer, float opacity)
+    public void SetOpacity(SkinnedMeshRenderer renderer, float opacity) //For hands
     {
         //SkinnedMeshRenderer renderer = obj.GetComponent<SkinnedMeshRenderer>();
         if (renderer != null)
@@ -111,6 +111,7 @@ public class Recordable : MonoBehaviour
 
     private void Update()
     {
+        //For hands as focus squares are parts of hands
         if(focusSquare != null)
         {
             if(Manager.Instance.currAppState != Manager.AppState.PLAYBACK)
@@ -146,6 +147,7 @@ public class Recordable : MonoBehaviour
         }
     }
 
+    //For assets
     public void InsertAssetRecordFrame(int _frameNumber, string action = "None", string collision = "None", Recordable.RecordingType recordingMode = RecordingType.None, Action actionDelegate = null, Action<Frame> collisionDelegate = null, GameObject collidedObject = null, bool propagateValueToSubsequentFrames = false)
     {
         RecordableFrame item = new(transform.position, transform.rotation, showStatus, action, collision, recordingMode, actionDelegate, collisionDelegate, collidedObject, _frameNumber);
@@ -182,6 +184,7 @@ public class Recordable : MonoBehaviour
         }*/
     }
 
+    //For assets
     public void Hide()
     {
         //Turn the material in recordable.playbackObject to 0.5 alpha
@@ -200,6 +203,7 @@ public class Recordable : MonoBehaviour
         
     }
 
+    //For assets
     public void Show()
     {
         //Turn the material in recordable.playbackObject to 1 alpha
@@ -215,7 +219,8 @@ public class Recordable : MonoBehaviour
         Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
 
     }
-
+    
+    //For assets
     public void SetVisibility(bool _showStatus)
     {
         if(_showStatus)
@@ -245,6 +250,7 @@ public class Recordable : MonoBehaviour
         }
     }
 
+    //For assets
     public void AttachToLeftHand()
     {
         DebugLogger.Instance.Log("Attach called for " + playbackObject.name);
@@ -258,6 +264,7 @@ public class Recordable : MonoBehaviour
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[1].playbackObject.transform);
     }
 
+    //For assets
     public void AttachToRightHand()
     {
         DebugLogger.Instance.Log("Attach called for " + playbackObject.name);
@@ -269,6 +276,7 @@ public class Recordable : MonoBehaviour
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[2].playbackObject.transform);
     }
 
+    //For assets
     public void AttachToLeftHandFocusSquare()
     {
         DebugLogger.Instance.Log("Attach called for " + playbackObject.name);
@@ -278,6 +286,7 @@ public class Recordable : MonoBehaviour
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[1].playbackObject.transform);
     }
 
+    //For assets
     public void AttachToRightHandFocusSquare()
     {
         DebugLogger.Instance.Log("Attach called for " + playbackObject.name);
@@ -287,6 +296,7 @@ public class Recordable : MonoBehaviour
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[2].playbackObject.transform);
     }
 
+    //For assets
     public void AttachToHeadFocusSquare()
     {
         DebugLogger.Instance.Log("Attach called for " + playbackObject.name);
@@ -295,7 +305,8 @@ public class Recordable : MonoBehaviour
         Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[0].playbackObject.transform);
     }
-
+    
+    //For assets
     public void Detach()
     {
         DebugLogger.Instance.Log("Detach called for " + playbackObject.name);
@@ -331,6 +342,7 @@ public class Recordable : MonoBehaviour
         }
     }*/
 
+    //For assets
     public void PropagateAssetNoneStatus(int _frameNumber)
     {
         //DebugLogger.Instance.Log("Changing asset show status at a specific frame number " + _frameNumber);
@@ -346,6 +358,7 @@ public class Recordable : MonoBehaviour
         }
     }
 
+    //For assets
     public void CopyPoseFromRecordable(Recordable other, int _frameStart, int _frameEnd = 0, bool copyFirstRecord = false, bool copyRotation = false)
     {
         if (copyFirstRecord) //Copy the pose from "other" recordable (hands) at index _frameStart, to this asset and propagate the value to subsequent frames
@@ -390,7 +403,7 @@ public class Recordable : MonoBehaviour
         }
     }
 
-
+    //For assets
     public void CopyPoseFromFocusSquare(Recordable other, int _frameStart, int _frameEnd = 0, bool copyFirstRecord = false, bool copyRotation = false)
     {
         if (copyFirstRecord)
@@ -464,6 +477,7 @@ public class Recordable : MonoBehaviour
         }*/
     }
 
+    //For assets
     public void PrepareForceSimulation(Vector3 initialVelocity)
     {
         //oldMainPlaybackSliderValue = AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value; //This is so awkward, but it works
@@ -485,6 +499,7 @@ public class Recordable : MonoBehaviour
 
     }
 
+    //For assets
     public void ApplyForce(Vector3 initialVelocity)
     {
         //Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
@@ -496,7 +511,7 @@ public class Recordable : MonoBehaviour
         GetComponent<Rigidbody>().AddForce(initialVelocity, ForceMode.VelocityChange);
     }
 
-    //OnCollisionEnter
+    //For assets
     void OnCollisionEnter(Collision collision)
     {
         
@@ -523,6 +538,7 @@ public class Recordable : MonoBehaviour
         }
     }
 
+    //For assets
     public void ResetPhysicsProperties()
     {
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
@@ -537,7 +553,7 @@ public class Recordable : MonoBehaviour
         Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
     }
 
-
+    //For assets
     void OnCollisionStay(Collision collision)
     {
         if(Manager.Instance.currAppState != Manager.AppState.RECORDING)
@@ -556,6 +572,7 @@ public class Recordable : MonoBehaviour
         }
     }
 
+    //For assets
     void OnCollisionExit(Collision collision)
     {
         if(Manager.Instance.currAppState != Manager.AppState.RECORDING)
@@ -574,21 +591,19 @@ public class Recordable : MonoBehaviour
         }
     }
 
+    //For assets
     public void Follow(Transform other)
     {
         transform.SetParent(other);
     }
 
+    //For assets
     public void Unfollow()
     {
         transform.SetParent(null);
     }
 
-
-
-
-
-
+    //For hands
     public void SetGesture(string gestureStr)
     {
         DebugLogger.Instance.Log("Gesture: " + gestureStr);
@@ -596,6 +611,7 @@ public class Recordable : MonoBehaviour
         gestureText.text = gestureStr;
     }
 
+    //For hands
     public void SetGestureText(string gestureStr)
     {
         gestureText.text = gestureStr;
