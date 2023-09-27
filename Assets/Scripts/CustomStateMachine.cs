@@ -83,9 +83,19 @@ public class State
     public Action OnExitActions { get; set; }
     public List<Transition> transitions = new();
 
+    public GameObject timelineElement;
+
+    Color originalColor;
+
     public void OnEnter()
     {
         OnEnterActions?.Invoke();
+        //Change the timeline element's image component color to green
+        if(timelineElement != null)
+        {            
+            originalColor = timelineElement.GetComponent<UnityEngine.UI.Image>().color;
+            timelineElement.GetComponent<UnityEngine.UI.Image>().color = Color.green;
+        }
     }
     public void OnUpdate()
     {
@@ -95,6 +105,11 @@ public class State
     public void OnExit()
     {
         OnExitActions?.Invoke();
+        //Change the timeline element's image component color back to the original color
+        if(timelineElement != null)
+        {   
+            timelineElement.GetComponent<UnityEngine.UI.Image>().color = originalColor;
+        }
     }
 
     override public string ToString()

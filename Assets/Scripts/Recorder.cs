@@ -401,11 +401,6 @@ public class Recorder : MonoBehaviour
         {
             //DebugLogger.Instance.Log("Sequence name: " + InputManager.Instance.GestureToString(sequence.GestureType) + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
             //DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
-            /*GameObject timelineElement = Instantiate(handTimelineElementPrefab, timelinePanel);
-            timelineElement.SetActive(true);
-            timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
-            timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
-            timelineElement.GetComponent<TimelineUIElement>().SetEvent(InputManager.Instance.GestureToString(sequence.GestureType));*/
             CreateTimelineElement(handTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, InputManager.Instance.GestureToString(sequence.GestureType));
         }
         return GestureSequences;
@@ -499,12 +494,6 @@ public class Recorder : MonoBehaviour
             }
             else //Other types of events - physics, attach etc
             {
-                /*GameObject timelineElement = Instantiate(assetTimelineElementPrefab, timelinePanel);
-                timelineElement.SetActive(true);
-                timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
-                timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
-                timelineElement.GetComponent<TimelineUIElement>().SetEvent(sequence.Action);*/
-
                 CreateTimelineElement(assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, sequence.Action);
             }
         }
@@ -531,11 +520,6 @@ public class Recorder : MonoBehaviour
                     sequence.CollidingObject1 = recordable.gameObject;
                     sequence.CollidingObject2 = recordable.recordedData[sequence.StartIndex].CollidedObject;
                 }
-                /*GameObject timelineElement = Instantiate(collisionTimelineElementPrefab, collisionTimelinePanelTransform);
-                timelineElement.SetActive(true);
-                timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
-                timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex + sequence.Length) - MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
-                timelineElement.GetComponent<TimelineUIElement>().SetEvent(sequence.Action);*/
 
                 CreateTimelineElement(collisionTimelineElementPrefab, collisionTimelinePanelTransform, sequence.StartIndex, sequence.Length, sequence.Action);
             }
@@ -623,6 +607,7 @@ public class Recorder : MonoBehaviour
             //Check collision sequence to see if there are any collision with a startindex within the first 10 frames of the startindex of the gesture. If not, stop creating the state and return.
             bool doesGestureHaveCollision = false;
             bool noChangeBetweenOpenAndClose = false;
+            bool doesStateHaveAnyActions = false;
             foreach (var collisionSequence in collisionSequencesLists)
             {
                 foreach (var collision in collisionSequence)
@@ -645,6 +630,7 @@ public class Recorder : MonoBehaviour
                     }
                 }
             }
+
             if(doesGestureHaveCollision == false)
             {
                 DebugLogger.Instance.Log("Gesture " + InputManager.Instance.GestureToString(gesture.GestureType) + " does not have any collision (only change in gesture)");
@@ -676,6 +662,7 @@ public class Recorder : MonoBehaviour
                     {
                         if (assetSequence.StartIndex >= gesture.StartIndex && assetSequence.StartIndex <= gesture.StartIndex + 10)
                         {
+                            doesStateHaveAnyActions = true;
                             //Add the action to the OnEnterActions of state0
                             state.OnEnterActions += () => assetSequence.ActionDelegate();
                             DebugLogger.Instance.Log("Added action " + assetSequence.Action + " for state " + state.id + " and gesture " + InputManager.Instance.GestureToString(gesture.GestureType) + " OnEnterActions");
@@ -689,6 +676,7 @@ public class Recorder : MonoBehaviour
                     {
                         if (assetSequence.StartIndex >= gesture.StartIndex + gesture.Length - 10 && assetSequence.StartIndex <= gesture.StartIndex + gesture.Length)
                         {
+                            doesStateHaveAnyActions = true;
                             //Add the action to the OnExitActions of state0
                             state.OnExitActions += () => assetSequence.ActionDelegate();
                             DebugLogger.Instance.Log("Added action " + assetSequence.Action + " for state " + state.id + " and gesture " + InputManager.Instance.GestureToString(gesture.GestureType) + " OnExitActions");
@@ -696,15 +684,18 @@ public class Recorder : MonoBehaviour
                     }
                 }
 
-                //Creating sate machine timeline elements
-                /*GameObject timelineElement = Instantiate(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>());
-                timelineElement.SetActive(true);
-                timelineElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(stateTimelinePanel.GetComponent<RectTransform>(), gesture.StartIndex), timelineElement.GetComponent<RectTransform>().anchoredPosition.y);
-                timelineElement.GetComponent<RectTransform>().sizeDelta = new Vector2(MapIndexToTimelinePosition(stateTimelinePanel.GetComponent<RectTransform>(), gesture.StartIndex + gesture.Length) - MapIndexToTimelinePosition(stateTimelinePanel.GetComponent<RectTransform>(), gesture.StartIndex), timelineElement.GetComponent<RectTransform>().sizeDelta.y);
-                timelineElement.GetComponent<TimelineUIElement>().SetEvent(state.id);*/
-
-                CreateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(), gesture.StartIndex, gesture.Length, state.id);
-                
+                //If there are no actions in the asset sequences, then delete the state
+                if(doesStateHaveAnyActions == false)
+                {
+                    stateMachine.DeleteState(state.id);
+                    DebugLogger.Instance.Log("Gesture " + InputManager.Instance.GestureToString(gesture.GestureType) + " does not have any actions, so deleting state " + state.id);
+                }
+                else
+                {   
+                    //Create timeline element for the state             
+                    var stateTimelineElement = CreateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(), gesture.StartIndex, gesture.Length, state.id);
+                    state.timelineElement = stateTimelineElement;
+                }
                 prevProcessedState = state;
             }
 
