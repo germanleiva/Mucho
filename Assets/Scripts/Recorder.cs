@@ -245,20 +245,7 @@ public class Recorder : MonoBehaviour
         DebugLogger.Instance.Log("Aligning playback slider to nearest start index: " + nearestStartIndex);
     }
 
-    private void CalculateHandGuideTimePoints()
-    {
-        //Find 20 time points equally spaced out from 0 to recordingDuration
-        float timeInterval = recordedFramesTotal / 100;
-        float currentTime = 0f;
-        
-        while (currentTime < recordedFramesTotal)
-        {
-            handGuideTimePoints.Add(currentTime);
-            currentTime += timeInterval;
-        }  
-        DebugLogger.Instance.Log("Size of handGuideTimePoints: " + handGuideTimePoints.Count);
-    }    
-
+  
     // Stop playback.
     public void StopPlayback()
     {
@@ -746,27 +733,77 @@ public class Recorder : MonoBehaviour
 
     }
 
+    State CreateState(int startIndex, int length)
+    {
+        var StateMachine = CustomStateMachine.Instance;
+        var state = new State
+        {
+            id = "State" + StateMachine.GetSize()
+        };
+        StateMachine.AddState(state.id, state);
+        state.timelineElement = CreateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(), 
+                                                        startIndex, length, state.id);
+
+        return state;
+    }
+
     public void CreateStateMachine()
     {
         var StateMachine = CustomStateMachine.Instance;
 
-        PopulateInputSequence();    
-
-        //First state should start from 0th frame to the start of the first gesture
-        var state0 = new State();
-        state0.id = "State0";
-        StateMachine.AddState(state0.id, state0);   
-        StateMachine.SetInitialState(state0.id);
-        State prevProcessedState = state0;
-        InputManager.Gesture prevProcessedGesture = InputManager.Gesture.LEFTHANDNONE;
+        PopulateInputSequence();
 
         if(inputSequences.Count > 0)
         {
             //Create state machine timeline element and set the start index to 0 and length to the start index of the first input sequence (most probably gesture)
-            state0.timelineElement = CreateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(), 0, inputSequences[0].Length, state0.id);
+            if (inputSequences[0].StartIndex != 0)
+                CreateState(0, inputSequences[0].StartIndex);
         }
 
         //Iterate through all input sequences and create states for each of them
+        foreach (var input in inputSequences)
+        {
+            //Check if there is a gap between the current input sequence and the previous input sequence
+            if(input != inputSequences[0])
+            {
+                int gap = input.StartIndex - (inputSequences[inputSequences.IndexOf(input) - 1].StartIndex + inputSequences[inputSequences.IndexOf(input) - 1].Length);
+                if(gap > 0)
+                {
+                    //Create a state for the gap
+                    CreateState(inputSequences[inputSequences.IndexOf(input) - 1].StartIndex + inputSequences[inputSequences.IndexOf(input) - 1].Length, gap);
+                }
+            }
+            //Create a state for the input sequence if the length does not exceed the start index of the next input sequence or the end index of the previous input sequence
+            if(inputSequences.IndexOf(input) < inputSequences.Count - 1 && inputSequences.IndexOf(input) > 0)
+            {
+                if(input.StartIndex + input.Length > inputSequences[inputSequences.IndexOf(input) + 1].StartIndex)
+                {
+                    CreateState(input.StartIndex, inputSequences[inputSequences.IndexOf(input) + 1].StartIndex - input.StartIndex);                    
+                }
+                else if (input.Length > 1)
+                {
+                    CreateState(input.StartIndex, input.Length);
+                }
+
+                if(input.StartIndex + input.Length < inputSequences[inputSequences.IndexOf(input) - 1].StartIndex + inputSequences[inputSequences.IndexOf(input) - 1].Length)
+                {
+                    CreateState(input.StartIndex, inputSequences[inputSequences.IndexOf(input) - 1].StartIndex + inputSequences[inputSequences.IndexOf(input) - 1].Length - input.StartIndex);
+                }
+            }
+            else
+            {
+                if (input.Length > 1)
+                    CreateState(input.StartIndex, input.Length);
+            }
+            //CreateState(input.StartIndex, input.Length);
+        }
+
+        //Create a state machine timeline element and set the start index to the start index of the last input sequence and length to the end of the recording
+        if(inputSequences.Count > 0)
+        {
+            if (inputSequences[inputSequences.Count - 1].StartIndex + inputSequences[inputSequences.Count - 1].Length != recordedFramesTotal)
+                CreateState(inputSequences[inputSequences.Count - 1].StartIndex + inputSequences[inputSequences.Count - 1].Length, recordedFramesTotal - (inputSequences[inputSequences.Count - 1].StartIndex + inputSequences[inputSequences.Count - 1].Length));
+        }
         
     }
 
