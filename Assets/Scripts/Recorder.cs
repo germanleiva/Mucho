@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -580,8 +581,10 @@ public class Recorder : MonoBehaviour
     public List<List<AssetSequence>> assetSequencesLists = new List<List<AssetSequence>>();
     public List<List<AssetSequence>> collisionSequencesLists = new List<List<AssetSequence>>();
 
+    public List<InputTimelineSequence> inputSequences = new List<InputTimelineSequence>();
 
-    public void CreateStateMachine()
+
+    public void CreateStateMachine1()
     {
         DebugLogger.Instance.Log("Creating state machine");
 
@@ -703,6 +706,70 @@ public class Recorder : MonoBehaviour
         }
     }
 
+    public void PopulateInputSequence()
+    {
+        //Create the input sequence by extracting the StartIndex and Length from both the gesture sequence list and the collision sequence list 
+        foreach (var gesture in gestureSequences)
+        {
+            InputTimelineSequence inputSequence = new()
+            {
+                StartIndex = gesture.StartIndex,
+                Length = gesture.Length,
+                LinkToGestureSequence = gesture
+            };
+            inputSequences.Add(inputSequence);
+        }
+
+        foreach (var collisionSequence in collisionSequencesLists)
+        {
+            foreach (var collision in collisionSequence)
+            {
+                InputTimelineSequence inputSequence = new()
+                {
+                    StartIndex = collision.StartIndex,
+                    Length = collision.Length,
+                    LinkToCollisionSequence = collision
+                };
+                inputSequences.Add(inputSequence);
+            }
+        }
+
+        //Sort the input sequence by StartIndex
+        inputSequences.Sort((x, y) => x.StartIndex.CompareTo(y.StartIndex));
+
+        //Print the input sequence
+        foreach (var inputSequence in inputSequences)
+        {
+            DebugLogger.Instance.Log("Input sequence: StartIndex: " + inputSequence.StartIndex + ", Length: " + inputSequence.Length);
+        }
+        
+
+    }
+
+    public void CreateStateMachine()
+    {
+        var StateMachine = CustomStateMachine.Instance;
+
+        PopulateInputSequence();    
+
+        //First state should start from 0th frame to the start of the first gesture
+        var state0 = new State();
+        state0.id = "State0";
+        StateMachine.AddState(state0.id, state0);   
+        StateMachine.SetInitialState(state0.id);
+        State prevProcessedState = state0;
+        InputManager.Gesture prevProcessedGesture = InputManager.Gesture.LEFTHANDNONE;
+
+        if(inputSequences.Count > 0)
+        {
+            //Create state machine timeline element and set the start index to 0 and length to the start index of the first input sequence (most probably gesture)
+            state0.timelineElement = CreateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(), 0, inputSequences[0].Length, state0.id);
+        }
+
+        //Iterate through all input sequences and create states for each of them
+        
+    }
+
     GameObject CreateTimelineElement(GameObject prefab, RectTransform parentTransform, int startIndex, int length, string id)
     {
         GameObject timelineElement = Instantiate(prefab, parentTransform);
@@ -716,6 +783,8 @@ public class Recorder : MonoBehaviour
         elementRect.sizeDelta = new Vector2(sizeDeltaX, elementRect.sizeDelta.y);
         
         timelineElement.GetComponent<TimelineUIElement>().SetEvent(id);
+
+        timelineElement.GetComponent<TimelineUIElement>().SetStartAndLength(startIndex, length);
         
         return timelineElement;
     }

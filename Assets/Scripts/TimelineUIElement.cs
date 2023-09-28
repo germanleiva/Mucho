@@ -16,12 +16,22 @@ public class TimelineUIElement : MonoBehaviour
     [SerializeField]
     TMPro.TMP_Text eventText;
 
+    //Store startindex and length
+    int startIndex;
+    int length;
+
     public void Start()
     {
         rectTransform = GetComponent<RectTransform>();
         defaultY = rectTransform.anchoredPosition.y;
     }
     
+    public void SetStartAndLength(int _startIndex, int _length)
+    {
+        startIndex = _startIndex;
+        length = _length;
+    }
+
     public void DragElement(BaseEventData data)
     {
         DebugLogger.Instance.Log("Panel is being dragged");

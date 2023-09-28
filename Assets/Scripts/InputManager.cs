@@ -227,6 +227,16 @@ public class GestureSequence
     public Action GestureDelegate { get; set; }
 }
 
+public class InputTimelineSequence
+{
+    public int StartIndex { get; set; }
+    public int Length { get; set; }
+
+    public GestureSequence LinkToGestureSequence { get; set; }
+    public AssetSequence LinkToCollisionSequence { get; set; }
+    //public Action InputDelegate { get; set; }
+}
+
 public class GestureDelegateSequence
 {
     public int StartIndex { get; set; }
