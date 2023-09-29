@@ -389,7 +389,7 @@ public class Recorder : MonoBehaviour
         {
             //DebugLogger.Instance.Log("Sequence name: " + InputManager.Instance.GestureToString(sequence.GestureType) + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
             //DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
-            CreateTimelineElement(handTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, InputManager.Instance.GestureToString(sequence.GestureType));
+            TimelineUIElement.CreateTimelineElement(handTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(0), InputManager.Instance.GestureToString(sequence.GestureType));
         }
         return GestureSequences;
     }    
@@ -455,7 +455,7 @@ public class Recorder : MonoBehaviour
 
     public List<AssetSequence> GenerateAssetActionSequences(RectTransform timelinePanel, Recordable recordable)
     {
-        DebugLogger.Instance.Log("Generating asset action sequences for " + recordable.name);
+        //DebugLogger.Instance.Log("Generating asset action sequences for " + recordable.name);
     
         List<string> changes = recordable.recordedData.Select(x => x.Action).ToList();
         List<AssetSequence> sequences = GetContinuousChangeSequences(changes);
@@ -472,17 +472,17 @@ public class Recorder : MonoBehaviour
             {
                 GameObject hideElement = Instantiate(hideTimelinePanelPrefab, timelinePanel);
                 hideElement.SetActive(true);
-                hideElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), hideElement.GetComponent<RectTransform>().anchoredPosition.y);
+                hideElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(TimelineUIElement.MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex, GetSizeOfMainRecordedData(0)), hideElement.GetComponent<RectTransform>().anchoredPosition.y);
             }
             else if(sequence.Action.StartsWith("Show"))
             {
                 GameObject showElement = Instantiate(showTimelinePanelPrefab, timelinePanel);
                 showElement.SetActive(true);
-                showElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex), showElement.GetComponent<RectTransform>().anchoredPosition.y);
+                showElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(TimelineUIElement.MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex, GetSizeOfMainRecordedData(0)), showElement.GetComponent<RectTransform>().anchoredPosition.y);
             }
             else //Other types of events - physics, attach etc
             {
-                CreateTimelineElement(assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, sequence.Action);
+                TimelineUIElement.CreateTimelineElement(assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(0), sequence.Action);
             }
         }
         return sequences;
@@ -509,7 +509,7 @@ public class Recorder : MonoBehaviour
                     sequence.CollidingObject2 = recordable.recordedData[sequence.StartIndex].CollidedObject;
                 }
 
-                CreateTimelineElement(collisionTimelineElementPrefab, collisionTimelinePanelTransform, sequence.StartIndex, sequence.Length, sequence.Action);
+                TimelineUIElement.CreateTimelineElement(collisionTimelineElementPrefab, collisionTimelinePanelTransform, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(0), sequence.Action);
             }
             return sequences;
         }
@@ -683,7 +683,7 @@ public class Recorder : MonoBehaviour
                 else
                 {   
                     //Create timeline element for the state             
-                    var stateTimelineElement = CreateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(), gesture.StartIndex, gesture.Length, state.id);
+                    var stateTimelineElement = TimelineUIElement.CreateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(), gesture.StartIndex, gesture.Length, GetSizeOfMainRecordedData(0), state.id);
                     state.timelineElement = stateTimelineElement;
                 }
                 prevProcessedState = state;
@@ -741,18 +741,117 @@ public class Recorder : MonoBehaviour
             id = "State" + StateMachine.GetSize()
         };
         StateMachine.AddState(state.id, state);
-        state.timelineElement = CreateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(), 
-                                                        startIndex, length, state.id);
+        state.timelineElement = TimelineUIElement.CreateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(), 
+                                                        startIndex, length, GetSizeOfMainRecordedData(0), state.id);
 
         return state;
     }
+    
+
+    public List<State> CreateStateMachine(List<GestureSequence> gestures, List<AssetSequence> assets, int recordedFramesTotal)
+    {
+        // Create a list of events (start or end of a sequence)
+        var events = new List<(int Index, string Type, GestureSequence? Gesture, AssetSequence? Asset)>();
+
+        foreach (var gesture in gestures)
+        {
+            events.Add((gesture.StartIndex, "start", gesture, null));
+            events.Add((gesture.StartIndex + gesture.Length, "end", gesture, null));
+        }
+
+        foreach (var asset in assets)
+        {
+            events.Add((asset.StartIndex, "start", null, asset));
+            if (asset.Length > 1)
+            {
+                events.Add((asset.StartIndex + asset.Length, "end", null, asset));
+            }
+            else
+            {
+                // For AssetSequence with a length of 1, treat the StartIndex as the end index as well
+                events.Add((asset.StartIndex, "end", null, asset));
+            }
+        }
+
+        // Sort the events by their index
+        events = events.OrderBy(e => e.Index).ToList();
+
+        var states = new List<State>();
+        int lastIndex = 0;
+
+        // Iterate over events to create states
+        for (int i = 0; i < events.Count; i++)
+        {
+            var currentEvent = events[i];
+
+            if (lastIndex != currentEvent.Index)
+            {
+                var state = CreateState(lastIndex, currentEvent.Index - lastIndex);
+                /*   var state = new State
+                    {
+                        StartIndex = lastIndex,
+                        Length = currentEvent.Index - lastIndex
+                    };*/
+
+                if (i > 0)
+                {
+                    var prevEvent = events[i - 1];
+                    state.Gesture = prevEvent.Gesture;
+                    state.Asset = prevEvent.Asset;
+                }
+
+                //states.Add(state);
+            }
+
+            lastIndex = currentEvent.Index;
+        }
+
+        // Handle the last state if needed
+        if (lastIndex < recordedFramesTotal)
+        {
+            var state = CreateState(lastIndex, recordedFramesTotal - lastIndex);
+            /*var state = new State
+            {
+                StartIndex = lastIndex,
+                Length = recordedFramesTotal - lastIndex
+            };*/
+
+            if (events.Count > 0)
+            {
+                var lastEvent = events.Last();
+                state.Gesture = lastEvent.Gesture;
+                state.Asset = lastEvent.Asset;
+            }
+
+            //states.Add(state);
+        }
+
+        return states;
+    }
+
 
     public void CreateStateMachine()
     {
+        CreateStateMachine(gestureSequences, assetSequencesLists.SelectMany(x => x).ToList(), recordedFramesTotal);
+        /*
         var StateMachine = CustomStateMachine.Instance;
 
         PopulateInputSequence();
 
+        //Iterate from 0 to recordedFramesTotal
+        int currentIndex = 0;
+        while(currentIndex < recordedFramesTotal)
+        {
+            //Check if there is a gesture sequence or collision sequence starting at currentIndex
+            InputTimelineSequence inputSequence = inputSequences.Find(x => x.StartIndex == currentIndex);
+            if(inputSequence != null)
+            {
+               //Find any other input sequence that starts between currentIndex and currentIndex + inputSequence.Length or ends between currentIndex and currentIndex + inputSequence.Length
+               List<InputTimelineSequence> inputSequencesWithinCurrentInputSequence = inputSequences.FindAll(x => x.StartIndex >= currentIndex && x.StartIndex <= currentIndex + inputSequence.Length || x.StartIndex + x.Length >= currentIndex && x.StartIndex + x.Length <= currentIndex + inputSequence.Length);
+            }
+        }
+
+        /*
         if(inputSequences.Count > 0)
         {
             //Create state machine timeline element and set the start index to 0 and length to the start index of the first input sequence (most probably gesture)
@@ -803,46 +902,10 @@ public class Recorder : MonoBehaviour
         {
             if (inputSequences[inputSequences.Count - 1].StartIndex + inputSequences[inputSequences.Count - 1].Length != recordedFramesTotal)
                 CreateState(inputSequences[inputSequences.Count - 1].StartIndex + inputSequences[inputSequences.Count - 1].Length, recordedFramesTotal - (inputSequences[inputSequences.Count - 1].StartIndex + inputSequences[inputSequences.Count - 1].Length));
-        }
+        }*/
         
     }
 
-    GameObject CreateTimelineElement(GameObject prefab, RectTransform parentTransform, int startIndex, int length, string id)
-    {
-        GameObject timelineElement = Instantiate(prefab, parentTransform);
-        timelineElement.SetActive(true);
-        
-        float positionX = MapIndexToTimelinePosition(parentTransform, startIndex);
-        float sizeDeltaX = MapIndexToTimelinePosition(parentTransform, startIndex + length) - positionX;
-
-        RectTransform elementRect = timelineElement.GetComponent<RectTransform>();
-        elementRect.anchoredPosition = new Vector2(positionX, elementRect.anchoredPosition.y);
-        elementRect.sizeDelta = new Vector2(sizeDeltaX, elementRect.sizeDelta.y);
-        
-        timelineElement.GetComponent<TimelineUIElement>().SetEvent(id);
-
-        timelineElement.GetComponent<TimelineUIElement>().SetStartAndLength(startIndex, length);
-        
-        return timelineElement;
-    }
-
-        
-
-    public float MapIndexToTimelinePosition(RectTransform _rectTransform, int index)
-    {
-        float rectStartX = 0;
-        float rectEndX =  _rectTransform.GetComponent<RectTransform>().rect.width;
-        int indexStart = 0;
-        int indexEnd = GetSizeOfMainRecordedData(0);
-        //Map index to value scaled between rectStartX and rectEndX
-        float mappedValue = Map(index, indexStart, indexEnd, rectStartX, rectEndX);
-        return mappedValue;
-    }
-
-    public float Map(float x, float in_min, float in_max, float out_min, float out_max) 
-    {
-        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-    }
  
     int frameCount = 0;
 

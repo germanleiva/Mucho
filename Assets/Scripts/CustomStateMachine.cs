@@ -86,6 +86,11 @@ public class State
     public GameObject timelineElement;
 
     Color originalColor;
+    private int StartIndex;
+    private int Length;
+
+    public GestureSequence? Gesture { get; set; }
+    public AssetSequence? Asset { get; set; }
 
     public void OnEnter()
     {
@@ -126,6 +131,26 @@ public class State
             condition = condition
         });
     }
+
+    public void RefreshStateStartAndLength(int _StartIndex, int _Length)
+    {
+        StartIndex = _StartIndex;
+        Length = _Length;
+        timelineElement.GetComponent<TimelineUIElement>().SetStartX(StartIndex);
+        timelineElement.GetComponent<TimelineUIElement>().SetWidth(Length);
+    }
+
+    public int GetStartIndex()
+    {
+        return StartIndex;
+    }
+
+    public int GetCurrentLength()
+    {
+        return Length;
+    }
+
+    
 }
 
 public class Transition

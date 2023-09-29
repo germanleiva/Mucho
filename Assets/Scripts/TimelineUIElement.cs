@@ -17,8 +17,8 @@ public class TimelineUIElement : MonoBehaviour
     TMPro.TMP_Text eventText;
 
     //Store startindex and length
-    int startIndex;
-    int length;
+    //public int StartIndex;
+    //public int Length;
 
     public void Start()
     {
@@ -26,11 +26,11 @@ public class TimelineUIElement : MonoBehaviour
         defaultY = rectTransform.anchoredPosition.y;
     }
     
-    public void SetStartAndLength(int _startIndex, int _length)
+    /*public void SetStartAndLength(int _startIndex, int _length)
     {
-        startIndex = _startIndex;
-        length = _length;
-    }
+        StartIndex = _startIndex;
+        Length = _length;
+    }*/
 
     public void DragElement(BaseEventData data)
     {
@@ -80,6 +80,40 @@ public class TimelineUIElement : MonoBehaviour
     {
                     
 
+    }
+
+    public static float MapIndexToTimelinePosition(RectTransform _rectTransform, int index, int recordingLength)
+    {
+        float rectStartX = 0;
+        float rectEndX =  _rectTransform.GetComponent<RectTransform>().rect.width;
+        int indexStart = 0;
+        int indexEnd = recordingLength;
+        //Map index to value scaled between rectStartX and rectEndX
+        float mappedValue = Map(index, indexStart, indexEnd, rectStartX, rectEndX);
+        return mappedValue;
+    }
+    public static float Map(float x, float in_min, float in_max, float out_min, float out_max) 
+    {
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    }
+
+    public static GameObject CreateTimelineElement(GameObject prefab, RectTransform parentTransform, int startIndex, int length, int recordingLength, string id)
+    {
+        GameObject timelineElement = Instantiate(prefab, parentTransform);
+        timelineElement.SetActive(true);
+        
+        float positionX = MapIndexToTimelinePosition(parentTransform, startIndex, recordingLength);
+        float sizeDeltaX = MapIndexToTimelinePosition(parentTransform, startIndex + length, recordingLength) - positionX;
+
+        RectTransform elementRect = timelineElement.GetComponent<RectTransform>();
+        elementRect.anchoredPosition = new Vector2(positionX, elementRect.anchoredPosition.y);
+        elementRect.sizeDelta = new Vector2(sizeDeltaX, elementRect.sizeDelta.y);
+        
+        timelineElement.GetComponent<TimelineUIElement>().SetEvent(id);
+
+        //timelineElement.GetComponent<TimelineUIElement>().SetStartAndLength(startIndex, length);
+        
+        return timelineElement;
     }
 
     public void SetEvent(string text)
