@@ -222,7 +222,7 @@ public class AssetPoseRecorder : MonoBehaviour
                 //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "ApplyForce()", true);
                 //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, action: "ApplyForce()", sourceOfAction: "None", Recordable.RecordingType.Physics, propagateValueToSubsequentFrames: true);
                 //Increment the slider value by frame duration
-                mainRecorder.playbackSlider.value += 1;//Time.deltaTime;
+                mainRecorder.playbackSlider.value += 1;
             }
             else if(recordable.currentRecordingMode == Recordable.RecordingType.Follow)
             {

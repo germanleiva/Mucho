@@ -53127,6 +53127,8 @@ MonoBehaviour:
   rootCanvas: {fileID: 4653662571171309703}
   rootRectTransform: {fileID: 21332226}
   eventText: {fileID: 50439955}
+  StartIndex: 0
+  Length: 0
 --- !u!114 &893771103
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -61031,13 +61033,13 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
-        m_Mode: 1
+      - m_Target: {fileID: 916638712}
+        m_TargetAssemblyTypeName: Recorder, Assembly-CSharp
+        m_MethodName: MergeToLeftState
+        m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgument: {fileID: 1374975456}
+          m_ObjectArgumentAssemblyTypeName: StateTimelineUIElement, Assembly-CSharp
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -74666,6 +74668,8 @@ MonoBehaviour:
   rootCanvas: {fileID: 4653662571171309703}
   rootRectTransform: {fileID: 739790129}
   eventText: {fileID: 184923726}
+  StartIndex: 0
+  Length: 0
 --- !u!114 &1186146833
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -85623,7 +85627,7 @@ GameObject:
   - component: {fileID: 1374975451}
   - component: {fileID: 1374975455}
   - component: {fileID: 1374975454}
-  - component: {fileID: 1374975453}
+  - component: {fileID: 1374975456}
   - component: {fileID: 1374975452}
   m_Layer: 8
   m_Name: Event
@@ -85631,7 +85635,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1374975451
 RectTransform:
   m_ObjectHideFlags: 0
@@ -85671,7 +85675,7 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 1374975453}
+        - m_Target: {fileID: 0}
           m_TargetAssemblyTypeName: TimelineUIElement, Assembly-CSharp
           m_MethodName: DragElement
           m_Mode: 0
@@ -85687,7 +85691,7 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 1374975453}
+        - m_Target: {fileID: 0}
           m_TargetAssemblyTypeName: TimelineUIElement, Assembly-CSharp
           m_MethodName: OnDragEnd
           m_Mode: 0
@@ -85703,33 +85707,26 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 1374975453}
-          m_TargetAssemblyTypeName: TimelineUIElement, Assembly-CSharp
-          m_MethodName: OnClick
-          m_Mode: 0
+        - m_Target: {fileID: 1766475105}
+          m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_MethodName: SetActive
+          m_Mode: 6
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
             m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
             m_IntArgument: 0
             m_FloatArgument: 0
             m_StringArgument: 
-            m_BoolArgument: 0
+            m_BoolArgument: 1
           m_CallState: 2
---- !u!114 &1374975453
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1374975450}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9bb5241961fe349b295500240cf6d456, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rootCanvas: {fileID: 4653662571171309703}
-  rootRectTransform: {fileID: 1957605153}
-  eventText: {fileID: 222792312}
+  - eventID: 3
+    callback:
+      m_PersistentCalls:
+        m_Calls: []
+  - eventID: 9
+    callback:
+      m_PersistentCalls:
+        m_Calls: []
 --- !u!114 &1374975454
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -85768,6 +85765,33 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1374975450}
   m_CullTransparentMesh: 1
+--- !u!114 &1374975456
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1374975450}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98ca62faf499647bc86cdba2c6dee7b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rootCanvas: {fileID: 4653662571171309703}
+  rootRectTransform: {fileID: 1957605153}
+  eventText: {fileID: 222792312}
+  StartIndex: 0
+  Length: 0
+  state:
+    id: 
+    timelineElement: {fileID: 0}
+  stateIndexOnTimeline: 0
+  previousState:
+    id: 
+    timelineElement: {fileID: 0}
+  nextState:
+    id: 
+    timelineElement: {fileID: 0}
 --- !u!1 &1376681992
 GameObject:
   m_ObjectHideFlags: 0
@@ -99283,7 +99307,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1556350464}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 916638712}
+        m_TargetAssemblyTypeName: Recorder, Assembly-CSharp
+        m_MethodName: MergeToRightState
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 1374975456}
+          m_ObjectArgumentAssemblyTypeName: StateTimelineUIElement, Assembly-CSharp
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1556350464
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -101717,6 +101753,8 @@ MonoBehaviour:
   rootCanvas: {fileID: 4653662571171309703}
   rootRectTransform: {fileID: 21332226}
   eventText: {fileID: 2076505760}
+  StartIndex: 0
+  Length: 0
 --- !u!114 &1597076315
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -113120,7 +113158,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1766475106
 RectTransform:
   m_ObjectHideFlags: 0
@@ -113138,10 +113176,10 @@ RectTransform:
   m_Father: {fileID: 1374975451}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 7, y: -158.00012}
-  m_SizeDelta: {x: 274.42017, y: 129.23004}
+  m_SizeDelta: {x: 393.62018, y: 164.23004}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1766475107
 MonoBehaviour:

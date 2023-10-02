@@ -79,7 +79,8 @@ public class CustomStateMachine : MonoBehaviour
     }
 
 }
-/*
+
+[System.Serializable]
 public class State
 {
     public string id;
@@ -145,7 +146,7 @@ public class State
         timelineElement.GetComponent<TimelineUIElement>().SetWidth(Length);
     }
 
-    public int GetStartIndex()
+    /*public int GetStartIndex()
     {
         return StartIndex;
     }
@@ -153,11 +154,10 @@ public class State
     public int GetCurrentLength()
     {
         return Length;
-    }
-
+    }*/
     
 }
-*/
+
 public class Transition
 {
     public State from;

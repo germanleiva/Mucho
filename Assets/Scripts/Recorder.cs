@@ -199,54 +199,62 @@ public class Recorder : MonoBehaviour
 
     public void AlignPlaybackSlider()
     {
-        //Iterate through the GestureSequences list and set playback slider to the nearest start index within 10 frames
         int currentFrameNum = (int)playbackSlider.value;
-        //DebugLogger.Instance.Log("Initial playback slider value: " + currentFrameNum);
-        int nearestLeftHandGestureSequenceStartIndex = 0;
-        int nearestRightHandGestureSequenceStartIndex = 0;
-        DebugLogger.Instance.Log("recordedFramesTotal: " + (int)recordedFramesTotal/50);
-        int threshHold = (int)recordedFramesTotal/50;
+        int threshHold = (int)recordedFramesTotal / 50;
+
+        int nearestRightHandGestureSequenceStartIndex = int.MaxValue;
+        int nearestRightHandGestureSequenceEndIndex = int.MaxValue;
+        
         foreach (var sequence in RightHandGestureSequences)
         {
-            //DebugLogger.Instance.Log("Right hand gesture: " + GestureManager.Instance.GestureToString(sequence.GestureType) + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
             if(Mathf.Abs(currentFrameNum - sequence.StartIndex) < threshHold)
             {
-                //DebugLogger.Instance.Log("Found nearest right hand gesture sequence at " + sequence.StartIndex);  
                 nearestRightHandGestureSequenceStartIndex = sequence.StartIndex;
-                break;
+            }
+            if(Mathf.Abs(currentFrameNum - (sequence.StartIndex + sequence.Length)) < threshHold)
+            {
+                nearestRightHandGestureSequenceEndIndex = sequence.StartIndex + sequence.Length;
             }
         }
+
+        int nearestLeftHandGestureSequenceStartIndex = int.MaxValue;
+        int nearestLeftHandGestureSequenceEndIndex = int.MaxValue;
+        
         foreach (var sequence in LeftHandGestureSequences)
         {
-            //DebugLogger.Instance.Log("Left hand gesture: " + GestureManager.Instance.GestureToString(sequence.GestureType) + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
             if(Mathf.Abs(currentFrameNum - sequence.StartIndex) < threshHold)
             {
-                //DebugLogger.Instance.Log("Found nearest left hand gesture sequence at " + sequence.StartIndex);
                 nearestLeftHandGestureSequenceStartIndex = sequence.StartIndex;
-                break;
+            }
+            if(Mathf.Abs(currentFrameNum - (sequence.StartIndex + sequence.Length)) < threshHold)
+            {
+                nearestLeftHandGestureSequenceEndIndex = sequence.StartIndex + sequence.Length;
             }
         }
 
-        //Check which of the two is closer to the currentFrameNum
+        // Determine the closest start and end indices among right and left hand sequences
+        int nearestStartIndex = Mathf.Abs(currentFrameNum - nearestRightHandGestureSequenceStartIndex) < Mathf.Abs(currentFrameNum - nearestLeftHandGestureSequenceStartIndex) 
+                                ? nearestRightHandGestureSequenceStartIndex 
+                                : nearestLeftHandGestureSequenceStartIndex;
+                                
+        int nearestEndIndex = Mathf.Abs(currentFrameNum - nearestRightHandGestureSequenceEndIndex) < Mathf.Abs(currentFrameNum - nearestLeftHandGestureSequenceEndIndex) 
+                            ? nearestRightHandGestureSequenceEndIndex 
+                            : nearestLeftHandGestureSequenceEndIndex;
 
-        int nearestStartIndex = 0;
-        if(Mathf.Abs(currentFrameNum - nearestRightHandGestureSequenceStartIndex) < Mathf.Abs(currentFrameNum - nearestLeftHandGestureSequenceStartIndex))
+        // Determine if the start or end index is closer to the current frame number
+        int nearestIndex = Mathf.Abs(currentFrameNum - nearestStartIndex) < Mathf.Abs(currentFrameNum - nearestEndIndex) 
+                        ? nearestStartIndex 
+                        : nearestEndIndex;
+
+        if(nearestIndex == int.MaxValue)
         {
-            nearestStartIndex = nearestRightHandGestureSequenceStartIndex;
-        }
-        else
-        {
-            nearestStartIndex = nearestLeftHandGestureSequenceStartIndex;
+            nearestIndex = currentFrameNum;
         }
 
-        if(nearestStartIndex == 0)
-        {
-            nearestStartIndex = currentFrameNum;
-        }
-
-        playbackSlider.value = nearestStartIndex;
-        DebugLogger.Instance.Log("Aligning playback slider to nearest start index: " + nearestStartIndex);
+        playbackSlider.value = nearestIndex;
+        DebugLogger.Instance.Log("Aligning playback slider to nearest index: " + nearestIndex);
     }
+
 
   
     // Stop playback.
@@ -573,7 +581,7 @@ public class Recorder : MonoBehaviour
 
     public List<InputTimelineSequence> inputSequences = new List<InputTimelineSequence>();
 
-    List<State> StatesInTimeline = new ();
+    Dictionary<State,StateTimelineUIElement> StatesInTimeline = new Dictionary<State, StateTimelineUIElement>();
     public void CreateStateMachine1()
     {
         DebugLogger.Instance.Log("Creating state machine");
@@ -696,45 +704,6 @@ public class Recorder : MonoBehaviour
         }
     }
 
-    /*public void PopulateInputSequence()
-    {
-        //Create the input sequence by extracting the StartIndex and Length from both the gesture sequence list and the collision sequence list 
-        foreach (var gesture in gestureSequences)
-        {
-            InputTimelineSequence inputSequence = new()
-            {
-                StartIndex = gesture.StartIndex,
-                Length = gesture.Length,
-                LinkToGestureSequence = gesture
-            };
-            inputSequences.Add(inputSequence);
-        }
-
-        foreach (var collisionSequence in collisionSequencesLists)
-        {
-            foreach (var collision in collisionSequence)
-            {
-                InputTimelineSequence inputSequence = new()
-                {
-                    StartIndex = collision.StartIndex,
-                    Length = collision.Length,
-                    LinkToCollisionSequence = collision
-                };
-                inputSequences.Add(inputSequence);
-            }
-        }
-
-        //Sort the input sequence by StartIndex
-        inputSequences.Sort((x, y) => x.StartIndex.CompareTo(y.StartIndex));
-
-        //Print the input sequence
-        foreach (var inputSequence in inputSequences)
-        {
-            DebugLogger.Instance.Log("Input sequence: StartIndex: " + inputSequence.StartIndex + ", Length: " + inputSequence.Length);
-        }
-        
-
-    }*/
 
     State CreateState(int startIndex, int length)
     {
@@ -744,12 +713,87 @@ public class Recorder : MonoBehaviour
             id = "State" + StateMachine.GetSize()
         };
         StateMachine.AddState(state.id, state);
-        StatesInTimeline.Add(state);
-        State.CreateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(), 
-                                                        startIndex, length, GetSizeOfMainRecordedData(0), state.id);
+        //var previousState = StatesInTimeline.LastOrDefault().Key;
+        
+
+        var stateUI = StateTimelineUIElement.CreateStateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(), 
+                                                        startIndex, length, GetSizeOfMainRecordedData(0), state);
+
+        StatesInTimeline.Add(state, stateUI.GetComponent<StateTimelineUIElement>());                                                        
 
         return state;
     }
+
+    State MergeStates(State state1, State state2)
+    {
+        var state1UIElement = StatesInTimeline[state1];
+        var state2UIElement = StatesInTimeline[state2];
+
+
+        var StateMachine = CustomStateMachine.Instance;
+        var state = new State
+        {
+            id = "tempState" + StateMachine.GetSize()
+        };
+        
+        //Assign state.id as "State" plus the digits present in state1.id and state2.id
+        string state1ID = state1.id;
+        string state2ID = state2.id;
+        string stateID = "State";
+        foreach (char c in state1ID)
+        {
+            if (char.IsDigit(c))
+            {
+                stateID += c;
+            }
+        }
+        foreach (char c in state2ID)
+        {
+            if (char.IsDigit(c))
+            {
+                stateID += c;
+            }
+        }
+        state.id = stateID;
+
+        var stateUI = StateTimelineUIElement.CreateStateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(), 
+                                                        state1UIElement.StartIndex, state1UIElement.Length + state2UIElement.Length, GetSizeOfMainRecordedData(0), state);
+        
+        state1UIElement = stateUI.GetComponent<StateTimelineUIElement>();
+
+        DebugLogger.Instance.Log("Merging states " + state1.id + " and " + state2.id + " to create state " + state.id);
+        DebugLogger.Instance.Log("Size of new state: " + state1UIElement.Length);
+
+        //Remove state1 and state2 from the state machine
+        StateMachine.DeleteState(state1.id);
+        StateMachine.DeleteState(state2.id);
+        //Remove state1 and state2 from the state timeline
+        Destroy(StatesInTimeline[state1].gameObject);
+        Destroy(StatesInTimeline[state2].gameObject);
+        StatesInTimeline.Remove(state1);
+        StatesInTimeline.Remove(state2);
+
+        //Insert the new state into the location of state1
+        
+        //StatesInTimeline.Add(state, stateUI.GetComponent<StateTimelineUIElement>());
+
+        //Iterate through the StatesInTimeline dictionary keys and change the key to be "State" + index of the key
+        /*Dictionary<State, StateTimelineUIElement> newStatesInTimeline = new Dictionary<State, StateTimelineUIElement>();
+        foreach (var stateInTimeline in StatesInTimeline)
+        {
+            State newState = new State();
+            newState.id = "State" + newStatesInTimeline.Count;
+            newStatesInTimeline.Add(newState, stateInTimeline.Value);
+        }
+        StatesInTimeline = newStatesInTimeline;*/
+
+        //state.id = "State" + StatesInTimeline.Count;
+        StatesInTimeline.Add(state, stateUI.GetComponent<StateTimelineUIElement>());
+        StateMachine.AddState(state.id, state);
+
+        return state;    
+    }
+
     
     public void ResetStateMachine()
     {
@@ -765,7 +809,7 @@ public class Recorder : MonoBehaviour
         }
     }
 
-    public List<State> CreateStateMachine(List<GestureSequence> gestures, List<AssetSequence> assets, int recordedFramesTotal)
+    public Dictionary<State,StateTimelineUIElement> CreateStateMachine(List<GestureSequence> gestures, List<AssetSequence> assets, int recordedFramesTotal)
     {
         ResetStateMachine();
 
@@ -851,7 +895,7 @@ public class Recorder : MonoBehaviour
 
     public void CreateStateMachine()
     {
-        CreateStateMachine(gestureSequences, assetSequencesLists.SelectMany(x => x).ToList(), recordedFramesTotal);
+        CreateStateMachine(gestureSequences, collisionSequencesLists.SelectMany(x => x).ToList(), recordedFramesTotal);
         /*
         var StateMachine = CustomStateMachine.Instance;
 
@@ -925,20 +969,41 @@ public class Recorder : MonoBehaviour
         
     }
 
-    public void MergeToLeftState(State selectedState)
+    public void MergeToLeftState(StateTimelineUIElement selectedStateUIElement)
     {
+        var selectedState = StatesInTimeline.FirstOrDefault(x => x.Value == selectedStateUIElement).Key;
         //Find the state to the left of the selected state
-        int index = StatesInTimeline.IndexOf(selectedState);
-        if(index > 0)
+        if (StatesInTimeline.Keys.ToList().IndexOf(selectedState) > 0)
         {
-            State leftState = StatesInTimeline[index - 1];
-            //Merge the selected state with the left state
-            leftState.Length += selectedState.Length;
-            /*leftState.Gesture = selectedState.Gesture;
-            leftState.Asset = selectedState.Asset;*/
-            //Delete the selected state
-            StatesInTimeline.Remove(selectedState);
-            CustomStateMachine.Instance.DeleteState(selectedState.id);
+            var precedingState = StatesInTimeline.ElementAt(StatesInTimeline.Keys.ToList().IndexOf(selectedState) - 1).Key;
+            var precedingStateUIElement = StatesInTimeline.ElementAt(StatesInTimeline.Keys.ToList().IndexOf(selectedState) - 1).Value;
+            DebugLogger.Instance.Log("Merging state " + selectedState.id + " with state " + precedingState.id);
+            MergeStates(precedingState, selectedState);
+            //precedingStateUIElement.MergeWithStateUIElement(selectedStateUIElement);
+        }
+        else
+        {
+            DebugLogger.Instance.Log("Cannot merge state " + selectedState.id + " with state to the left because it is the first state");
+        }   
+
+        //var precedingKey = StatesInTimeline.ElementAt(StatesInTimeline.Keys.ToList().IndexOf(selectedState) - 1);
+    }
+
+    public void MergeToRightState(StateTimelineUIElement selectedStateUIElement)
+    {
+        var selectedState = StatesInTimeline.FirstOrDefault(x => x.Value == selectedStateUIElement).Key;
+        //Find the state to the right of the selected state
+        if (StatesInTimeline.Keys.ToList().IndexOf(selectedState) < StatesInTimeline.Count - 1)
+        {
+            var succeedingState = StatesInTimeline.ElementAt(StatesInTimeline.Keys.ToList().IndexOf(selectedState) + 1).Key;
+            var succeedingStateUIElement = StatesInTimeline.ElementAt(StatesInTimeline.Keys.ToList().IndexOf(selectedState) + 1).Value;
+            DebugLogger.Instance.Log("Merging state " + selectedState.id + " with state " + succeedingState.id);
+            MergeStates(selectedState, succeedingState);
+            //selectedStateUIElement.MergeWithStateUIElement(succeedingStateUIElement);
+        }
+        else
+        {
+            DebugLogger.Instance.Log("Cannot merge state " + selectedState.id + " with state to the right because it is the last state");
         }
     }
  

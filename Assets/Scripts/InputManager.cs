@@ -64,7 +64,7 @@ public class InputManager : MonoBehaviour
             OnExitActions = () => { DebugLogger.Instance.Log("State 2 OnExit"); testBall.GetComponent<Recordable>().Unfollow(); }
         };
 
-        State throwState = new State
+        State throwState = new()
         {
             OnEnterActions = () => { DebugLogger.Instance.Log("Throw OnEnter"); testBall.GetComponent<Recordable>().ApplyForce(rightHand.transform.forward * 1); },
             OnUpdateActions = () => { DebugLogger.Instance.Log("Throw OnUpdate"); },
