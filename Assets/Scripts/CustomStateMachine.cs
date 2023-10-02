@@ -46,6 +46,11 @@ public class CustomStateMachine : MonoBehaviour
         states.Remove(name);
     }
 
+    public void DeleteAllStates()
+    {
+        states.Clear();
+    }
+
 
     public void ProcessFrame(Frame lastFrameObject)
     {
@@ -74,7 +79,7 @@ public class CustomStateMachine : MonoBehaviour
     }
 
 }
-
+/*
 public class State
 {
     public string id;
@@ -152,7 +157,7 @@ public class State
 
     
 }
-
+*/
 public class Transition
 {
     public State from;

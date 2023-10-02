@@ -50,8 +50,11 @@ public class Recorder : MonoBehaviour
     GameObject showTimelinePanelPrefab;
      public GameObject assetTimelinePanelPrefab;
      public GameObject collisionTimelinePanel;
-    
 
+     public GameObject statesTimelinePanel;
+
+     public GameObject mergesStatePanel;
+    
     void Awake()
     {
         if (Instance == null)
@@ -570,7 +573,7 @@ public class Recorder : MonoBehaviour
 
     public List<InputTimelineSequence> inputSequences = new List<InputTimelineSequence>();
 
-
+    List<State> StatesInTimeline = new ();
     public void CreateStateMachine1()
     {
         DebugLogger.Instance.Log("Creating state machine");
@@ -684,7 +687,7 @@ public class Recorder : MonoBehaviour
                 {   
                     //Create timeline element for the state             
                     var stateTimelineElement = TimelineUIElement.CreateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(), gesture.StartIndex, gesture.Length, GetSizeOfMainRecordedData(0), state.id);
-                    state.timelineElement = stateTimelineElement;
+                    //stateTimelineElement;
                 }
                 prevProcessedState = state;
             }
@@ -693,7 +696,7 @@ public class Recorder : MonoBehaviour
         }
     }
 
-    public void PopulateInputSequence()
+    /*public void PopulateInputSequence()
     {
         //Create the input sequence by extracting the StartIndex and Length from both the gesture sequence list and the collision sequence list 
         foreach (var gesture in gestureSequences)
@@ -731,7 +734,7 @@ public class Recorder : MonoBehaviour
         }
         
 
-    }
+    }*/
 
     State CreateState(int startIndex, int length)
     {
@@ -741,15 +744,31 @@ public class Recorder : MonoBehaviour
             id = "State" + StateMachine.GetSize()
         };
         StateMachine.AddState(state.id, state);
-        state.timelineElement = TimelineUIElement.CreateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(), 
+        StatesInTimeline.Add(state);
+        State.CreateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(), 
                                                         startIndex, length, GetSizeOfMainRecordedData(0), state.id);
 
         return state;
     }
     
+    public void ResetStateMachine()
+    {
+        StatesInTimeline.Clear();
+
+        //Delete all existing states
+        CustomStateMachine.Instance.DeleteAllStates();
+
+        //Delete all existing state timeline UI elements
+        for (int i = 2; i < stateTimelinePanel.GetComponent<RectTransform>().childCount; i++)
+        {
+            Destroy(stateTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
+        }
+    }
 
     public List<State> CreateStateMachine(List<GestureSequence> gestures, List<AssetSequence> assets, int recordedFramesTotal)
     {
+        ResetStateMachine();
+
         // Create a list of events (start or end of a sequence)
         var events = new List<(int Index, string Type, GestureSequence? Gesture, AssetSequence? Asset)>();
 
@@ -776,7 +795,7 @@ public class Recorder : MonoBehaviour
         // Sort the events by their index
         events = events.OrderBy(e => e.Index).ToList();
 
-        var states = new List<State>();
+        
         int lastIndex = 0;
 
         // Iterate over events to create states
@@ -826,7 +845,7 @@ public class Recorder : MonoBehaviour
             //states.Add(state);
         }
 
-        return states;
+        return StatesInTimeline;
     }
 
 
@@ -906,6 +925,22 @@ public class Recorder : MonoBehaviour
         
     }
 
+    public void MergeToLeftState(State selectedState)
+    {
+        //Find the state to the left of the selected state
+        int index = StatesInTimeline.IndexOf(selectedState);
+        if(index > 0)
+        {
+            State leftState = StatesInTimeline[index - 1];
+            //Merge the selected state with the left state
+            leftState.Length += selectedState.Length;
+            /*leftState.Gesture = selectedState.Gesture;
+            leftState.Asset = selectedState.Asset;*/
+            //Delete the selected state
+            StatesInTimeline.Remove(selectedState);
+            CustomStateMachine.Instance.DeleteState(selectedState.id);
+        }
+    }
  
     int frameCount = 0;
 
