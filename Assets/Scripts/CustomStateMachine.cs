@@ -96,7 +96,7 @@ public class State
     private int Length;
 
     public GestureSequence? Gesture { get; set; }
-    public AssetSequence? Asset { get; set; }
+    public AssetSequence? Collision { get; set; }
 
     public void OnEnter()
     {
@@ -155,6 +155,52 @@ public class State
     {
         return Length;
     }*/
+
+    public void PrintDetailsOfState()
+    {
+        DebugLogger.Instance.Log("State: " + id);
+        //Iterate and print OnEnter actions
+        if(OnEnterActions != null)
+        {
+            foreach (var action in OnEnterActions.GetInvocationList())
+            {
+                DebugLogger.Instance.Log("OnEnter: " + action.Method.Name);
+            }
+        } 
+        else
+        {
+            DebugLogger.Instance.Log("OnEnter: null");
+        }
+        //Iterate and print OnExit actions    
+        if(OnExitActions != null)
+        {
+            foreach (var action in OnExitActions.GetInvocationList())
+            {
+                DebugLogger.Instance.Log("OnExit: " + action.Method.Name);
+            }
+        } 
+        else
+        {
+            DebugLogger.Instance.Log("OnExit: null");
+        }
+
+        foreach (var transition in transitions)
+        {
+            DebugLogger.Instance.Log("Transition: " + transition.from + " " + transition.to);
+            //Iterate and print transition conditions
+            if(transition.condition != null)
+            {
+                foreach (var action in transition.condition.GetInvocationList())
+                {
+                    DebugLogger.Instance.Log("Condition: " + action.Method.Name);
+                }
+            } 
+            else
+            {
+                DebugLogger.Instance.Log("Condition: null");
+            }
+        }
+    }
     
 }
 
