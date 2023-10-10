@@ -575,136 +575,13 @@ public class Recorder : MonoBehaviour
     }
 
 
-    public List<GestureSequence> gestureSequences = new List<GestureSequence>();
-    public List<List<AssetSequence>> assetSequencesLists = new List<List<AssetSequence>>();
-    public List<List<AssetSequence>> collisionSequencesLists = new List<List<AssetSequence>>();
+    public List<GestureSequence> gestureSequences = new();
+    public List<List<AssetSequence>> assetSequencesLists = new();
+    public List<List<AssetSequence>> collisionSequencesLists = new();
 
-    public List<InputTimelineSequence> inputSequences = new List<InputTimelineSequence>();
+    public List<InputTimelineSequence> inputSequences = new();
 
-    Dictionary<State,StateTimelineUIElement> StatesInTimeline = new Dictionary<State, StateTimelineUIElement>();
-    public void CreateStateMachine1()
-    {
-        DebugLogger.Instance.Log("Creating state machine");
-
-        //Create a state machine
-        var stateMachine = CustomStateMachine.Instance;
-        //Create an idle state state0
-        var idleState = new State();
-        idleState.id = "Idle";
-        stateMachine.AddState(idleState.id, idleState);
-        stateMachine.SetInitialState(idleState.id);
-        State prevProcessedState = idleState;
-        InputManager.Gesture prevProcessedGesture = InputManager.Gesture.LEFTHANDNONE;
-
-        //Iterate through all gesture sequences
-        foreach (var gesture in gestureSequences)
-        {
-            DebugLogger.Instance.Log("Processing gesture " + InputManager.Instance.GestureToString(gesture.GestureType) + ", StartIndex : " + gesture.StartIndex + ", Length:" + gesture.Length);
-            //Create the first state state1
-            var state = new State();
-            //state.id = InputManager.Instance.GestureToString(gesture.GestureType);
-            state.id = "State" + stateMachine.GetSize();
-            stateMachine.AddState(state.id, state);
-            //Check collision sequence to see if there are any collision with a startindex within the first 10 frames of the startindex of the gesture. If not, stop creating the state and return.
-            bool doesGestureHaveCollision = false;
-            bool noChangeBetweenOpenAndClose = false;
-            bool doesStateHaveAnyActions = false;
-            foreach (var collisionSequence in collisionSequencesLists)
-            {
-                foreach (var collision in collisionSequence)
-                {
-                    if (collision.StartIndex >= gesture.StartIndex && collision.StartIndex <= gesture.StartIndex + 10)
-                    {
-                        prevProcessedGesture = gesture.GestureType;
-                        doesGestureHaveCollision = true;
-
-                        if(gesture.GestureType == InputManager.Gesture.RIGHTHANDPINCH)
-                        {
-                            DebugLogger.Instance.Log("Adding transition from " + prevProcessedState.id + " to " + state.id + " for gesture " + InputManager.Instance.GestureToString(gesture.GestureType) + " and collision " + collision.Action);
-                            prevProcessedState.AddTransitionTo(state, (frame) => { return (frame.rightHandGesture == InputManager.Gesture.RIGHTHANDPINCH) && frame.IsColliding(collision.CollidingObject1, collision.CollidingObject2); });
-                        }
-                        else if(gesture.GestureType == InputManager.Gesture.LEFTHANDPINCH)
-                        { 
-                            DebugLogger.Instance.Log("Adding transition from " + prevProcessedState.id + " to " + state.id + " for gesture " + InputManager.Instance.GestureToString(gesture.GestureType) + " and collision " + collision.Action);
-                            prevProcessedState.AddTransitionTo(state, (frame) => { return (frame.leftHandGesture == InputManager.Gesture.LEFTHANDPINCH) && frame.IsColliding(collision.CollidingObject1, collision.CollidingObject2); });
-                        }             
-                    }
-                }
-            }
-
-            if(doesGestureHaveCollision == false)
-            {
-                DebugLogger.Instance.Log("Gesture " + InputManager.Instance.GestureToString(gesture.GestureType) + " does not have any collision (only change in gesture)");
-                DebugLogger.Instance.Log("Adding transition from " + prevProcessedState.id + " to " + state.id + " for gesture " + InputManager.Instance.GestureToString(gesture.GestureType));
-                //Check if there was a change from open to close or from close to open
-                if(prevProcessedGesture == InputManager.Gesture.LEFTHANDPINCH && gesture.GestureType == InputManager.Gesture.LEFTHANDOPEN)                                  
-                    prevProcessedState.AddTransitionTo(state, (frame) => { return frame.leftHandGesture == InputManager.Gesture.LEFTHANDOPEN; });                      
-                else if (prevProcessedGesture == InputManager.Gesture.RIGHTHANDPINCH && gesture.GestureType == InputManager.Gesture.RIGHTHANDOPEN)
-                    prevProcessedState.AddTransitionTo(state, (frame) => { return frame.leftHandGesture == InputManager.Gesture.RIGHTHANDOPEN; }); 
-                else if (prevProcessedGesture == InputManager.Gesture.LEFTHANDOPEN && gesture.GestureType == InputManager.Gesture.LEFTHANDPINCH)
-                    prevProcessedState.AddTransitionTo(state, (frame) => { return frame.leftHandGesture == InputManager.Gesture.LEFTHANDPINCH; }); 
-                else if (prevProcessedGesture == InputManager.Gesture.RIGHTHANDOPEN && gesture.GestureType == InputManager.Gesture.RIGHTHANDPINCH)
-                    prevProcessedState.AddTransitionTo(state, (frame) => { return frame.leftHandGesture == InputManager.Gesture.RIGHTHANDPINCH; }); 
-                else
-                    noChangeBetweenOpenAndClose = true;    
-            }
-
-            if(doesGestureHaveCollision == false && noChangeBetweenOpenAndClose == true)
-            {                
-                stateMachine.DeleteState(state.id);
-                DebugLogger.Instance.Log("Gesture " + InputManager.Instance.GestureToString(gesture.GestureType) + " does not have any collision or change between open and close, so deleting state " + state.id);
-            }
-            else
-            {
-                //Find actions in asset sequences that are within the first few frames following the gesture sequence start index and add them to the OnEnterActions of state0
-                foreach (var assetSequences in assetSequencesLists)
-                {
-                    foreach (var assetSequence in assetSequences)
-                    {
-                        if (assetSequence.StartIndex >= gesture.StartIndex && assetSequence.StartIndex <= gesture.StartIndex + 10)
-                        {
-                            doesStateHaveAnyActions = true;
-                            //Add the action to the OnEnterActions of state0
-                            state.OnEnterActions += () => assetSequence.ActionDelegate();
-                            DebugLogger.Instance.Log("Added action " + assetSequence.Action + " for state " + state.id + " and gesture " + InputManager.Instance.GestureToString(gesture.GestureType) + " OnEnterActions");
-                        }
-                    }
-                }
-                //Find actions in asset sequences that are withing the last few frames before the gesture sequence end index and add them to the OnExit function of state0
-                foreach (var assetSequences in assetSequencesLists)
-                {
-                    foreach (var assetSequence in assetSequences)
-                    {
-                        if (assetSequence.StartIndex >= gesture.StartIndex + gesture.Length - 10 && assetSequence.StartIndex <= gesture.StartIndex + gesture.Length)
-                        {
-                            doesStateHaveAnyActions = true;
-                            //Add the action to the OnExitActions of state0
-                            state.OnExitActions += () => assetSequence.ActionDelegate();
-                            DebugLogger.Instance.Log("Added action " + assetSequence.Action + " for state " + state.id + " and gesture " + InputManager.Instance.GestureToString(gesture.GestureType) + " OnExitActions");
-                        }
-                    }
-                }
-
-                //If there are no actions in the asset sequences, then delete the state
-                if(doesStateHaveAnyActions == false)
-                {
-                    stateMachine.DeleteState(state.id);
-                    DebugLogger.Instance.Log("Gesture " + InputManager.Instance.GestureToString(gesture.GestureType) + " does not have any actions, so deleting state " + state.id);
-                }
-                else
-                {   
-                    //Create timeline element for the state             
-                    var stateTimelineElement = TimelineUIElement.CreateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(), gesture.StartIndex, gesture.Length, GetSizeOfMainRecordedData(0), state.id);
-                    //stateTimelineElement;
-                }
-                prevProcessedState = state;
-            }
-
-            
-        }
-    }
-
-
+    Dictionary<State,StateTimelineUIElement> StatesInTimeline = new();
     State CreateState(int startIndex, int length)
     {
         var StateMachine = CustomStateMachine.Instance;
@@ -731,10 +608,34 @@ public class Recorder : MonoBehaviour
 
 
         var StateMachine = CustomStateMachine.Instance;
-        var state = new State
+        var newState = new State
         {
             id = "tempState" + StateMachine.GetSize()
         };
+
+        //Get the index of state1 in the StatesInTimeline dictionary
+        int state1Index = StatesInTimeline.Keys.ToList().IndexOf(state1);
+        //Find the state before state1 in the StatesInTimeline dictionary if the index of state1 is not 0
+        State previousState = null;
+        if(state1Index != 0)
+        {
+            previousState = StatesInTimeline.Keys.ToList()[state1Index - 1];
+        }
+        
+
+        //previousState.transitions.Clear();
+        //Add a transition from the previous state to the new state
+        previousState.ModifyTransitionTo(newState);   
+
+        //Copy the OnEnterActions of state1 to the OnEnterActions of the new state
+        newState.OnEnterActions += state1.OnEnterActions;
+        //Copy the OnEnterActions of state2 to the OnExitActions of the new state
+        //newState.OnExitActions += state2.OnEnterActions;
+        //Copy the OnExitActions of state1 to the OnExitActions of the new state
+        newState.OnExitActions += state1.OnExitActions;
+        //Copy the OnExitActions of state2 to the OnExitActions of the new state
+        newState.OnExitActions += state2.OnExitActions;
+        newState.CopyTransitionFromState(state2);
         
         //Assign state.id as "State" plus the digits present in state1.id and state2.id
         string state1ID = state1.id;
@@ -754,14 +655,14 @@ public class Recorder : MonoBehaviour
                 stateID += c;
             }
         }
-        state.id = stateID;
+        newState.id = stateID;
 
         var stateUI = StateTimelineUIElement.CreateStateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(), 
-                                                        state1UIElement.StartIndex, state1UIElement.Length + state2UIElement.Length, GetSizeOfMainRecordedData(0), state);
+                                                        state1UIElement.StartIndex, state1UIElement.Length + state2UIElement.Length, GetSizeOfMainRecordedData(0), newState);
         
         state1UIElement = stateUI.GetComponent<StateTimelineUIElement>();
 
-        DebugLogger.Instance.Log("Merging states " + state1.id + " and " + state2.id + " to create state " + state.id);
+        DebugLogger.Instance.Log("Merging states " + state1.id + " and " + state2.id + " to create state " + newState.id);
         DebugLogger.Instance.Log("Size of new state: " + state1UIElement.Length);
 
         //Remove state1 and state2 from the state machine
@@ -788,10 +689,12 @@ public class Recorder : MonoBehaviour
         StatesInTimeline = newStatesInTimeline;*/
 
         //state.id = "State" + StatesInTimeline.Count;
-        StatesInTimeline.Add(state, stateUI.GetComponent<StateTimelineUIElement>());
-        StateMachine.AddState(state.id, state);
+        StatesInTimeline.Add(newState, stateUI.GetComponent<StateTimelineUIElement>());
+        StateMachine.AddState(newState.id, newState);
 
-        return state;    
+        StateMachine.SetInitialState(StatesInTimeline.First().Key.id);
+
+        return newState;    
     }
 
     
@@ -950,23 +853,23 @@ public class Recorder : MonoBehaviour
             {
                 DebugLogger.Instance.Log("State " + state.id + " has gesture " + InputManager.Instance.GestureToString(state.Gesture.GestureType));
                 if(state.Gesture.GestureType == InputManager.Gesture.RIGHTHANDPINCH || state.Gesture.GestureType == InputManager.Gesture.RIGHTHANDOPEN)
-                    prevState.AddTransitionTo(state, (frame) => { return frame.rightHandGesture == state.Gesture.GestureType; });
+                    prevState.AddTransitionTo(state, (frame) => { DebugLogger.Instance.Log("Transition condition from " + prevState.id + " to " + state.id + " with condition: return frame.rightHandGesture == state.Gesture.GestureType; "); return frame.rightHandGesture == state.Gesture.GestureType; });
                 else if(state.Gesture.GestureType == InputManager.Gesture.LEFTHANDPINCH || state.Gesture.GestureType == InputManager.Gesture.LEFTHANDOPEN)
-                    prevState.AddTransitionTo(state, (frame) => { return frame.leftHandGesture == state.Gesture.GestureType; });
+                    prevState.AddTransitionTo(state, (frame) => { DebugLogger.Instance.Log("Transition condition from " + prevState.id + " to " + state.id + " with condition: return frame.lefthandgesture == state.Gesture.GestureType; ");return frame.leftHandGesture == state.Gesture.GestureType; });
 
             }
             else if (state.Gesture == null && state.Collision != null)
             {
                 DebugLogger.Instance.Log("State " + state.id + " has collision " + state.Collision.Action);
-                prevState.AddTransitionTo(state, (frame) => { return frame.IsColliding(state.Collision.CollidingObject1, state.Collision.CollidingObject2); });
+                prevState.AddTransitionTo(state, (frame) => { DebugLogger.Instance.Log("Transition condition from " + prevState.id + " to " + state.id + " with condition: frame.IsColliding(state.Collision.CollidingObject1, state.Collision.CollidingObject2); "); return frame.IsColliding(state.Collision.CollidingObject1, state.Collision.CollidingObject2); });
             }
             else
             {
                 DebugLogger.Instance.Log("State " + state.id + " has gesture " + InputManager.Instance.GestureToString(state.Gesture.GestureType) + " and collision " + state.Collision.Action);
                 if(state.Gesture.GestureType == InputManager.Gesture.RIGHTHANDPINCH || state.Gesture.GestureType == InputManager.Gesture.RIGHTHANDOPEN)
-                    prevState.AddTransitionTo(state, (frame) => { return frame.rightHandGesture == state.Gesture.GestureType && frame.IsColliding(state.Collision.CollidingObject1, state.Collision.CollidingObject2); });
+                    prevState.AddTransitionTo(state, (frame) => { DebugLogger.Instance.Log("Transition condition from " + prevState.id + " to " + state.id + " with condition: frame.rightHandGesture == state.Gesture.GestureType && frame.IsColliding(state.Collision.CollidingObject1, state.Collision.CollidingObject2); "); return frame.rightHandGesture == state.Gesture.GestureType && frame.IsColliding(state.Collision.CollidingObject1, state.Collision.CollidingObject2); });
                 else if(state.Gesture.GestureType == InputManager.Gesture.LEFTHANDPINCH || state.Gesture.GestureType == InputManager.Gesture.LEFTHANDOPEN)
-                    prevState.AddTransitionTo(state, (frame) => { return frame.leftHandGesture == state.Gesture.GestureType && frame.IsColliding(state.Collision.CollidingObject1, state.Collision.CollidingObject2); });
+                    prevState.AddTransitionTo(state, (frame) => {DebugLogger.Instance.Log("Transition condition from " + prevState.id + " to " + state.id + " with condition: frame.leftHandGesture == state.Gesture.GestureType && frame.IsColliding(state.Collision.CollidingObject1, state.Collision.CollidingObject2); "); return frame.leftHandGesture == state.Gesture.GestureType && frame.IsColliding(state.Collision.CollidingObject1, state.Collision.CollidingObject2); });
             }
 
             //Add OnEnterActions to state
@@ -999,16 +902,23 @@ public class Recorder : MonoBehaviour
             prevState = state;
         }
 
-        //Iterate through states and printdetailsofstate
-        DebugLogger.Instance.Log("Printing details of state machine");
-        foreach (var state in StatesInTimeline.Keys)
-        {
-            state.PrintDetailsOfState();
-        }
+
+
+        CustomStateMachine.Instance.SetInitialState(StatesInTimeline.First().Key.id);
 
         //Iterate through the StateTimelineUIElements in the StatesInTimeline, then add a transition from the previous state to the current state by checking if there are gesture and collision sequences starting within the first 5 frames of the current state
         //foreach(st)
 
+    }
+
+    public void PrintDetailsOfStateMachine()
+    {
+        DebugLogger.Instance.ClearVRDebugText();
+        DebugLogger.Instance.Log("Printing details of state machine");
+        foreach (var state in StatesInTimeline.Keys)
+        {
+            state.PrintDetailsOfState(VRConsoleEnabled : true);
+        }
     }
 
     public void MergeToLeftState(StateTimelineUIElement selectedStateUIElement)

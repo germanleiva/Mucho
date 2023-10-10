@@ -58,12 +58,12 @@ public class CustomStateMachine : MonoBehaviour
         {
             if (transition.ShouldApply(lastFrameObject))
             {
-                DebugLogger.Instance.Log("Transition applied " + transition.from + " " + transition.to);
+                DebugLogger.Instance.Log("Transition applied from" + transition.from + " to " + transition.to);
                 ApplyTransition(transition);
             }
             else
             {
-                //DebugLogger.Instance.Log("Transition NOT applied " + transition.from + " " + transition.to);
+                //DebugLogger.Instance.Log("Transition NOT applied from " + transition.from + " to " + transition.to);
             }
         }
 
@@ -72,6 +72,7 @@ public class CustomStateMachine : MonoBehaviour
 
     private void ApplyTransition(Transition transition)
     {
+        DebugLogger.Instance.Log("Transitioning from " + transition.from + " to " + transition.to);
         this.currentState.OnExit();
         this.currentState = transition.to;
         this.currentState.OnEnter();
@@ -100,6 +101,8 @@ public class State
 
     public void OnEnter()
     {
+        DebugLogger.Instance.Log("OnEnter: " + id);
+        DebugLogger.Instance.Log("OnEnter: " + OnEnterActions);
         OnEnterActions?.Invoke();
         //Change the timeline element's image component color to green
         if(timelineElement != null)
@@ -115,6 +118,8 @@ public class State
 
     public void OnExit()
     {
+        DebugLogger.Instance.Log("OnExit: " + id);
+        DebugLogger.Instance.Log("OnExit: " + OnExitActions);
         OnExitActions?.Invoke();
         //Change the timeline element's image component color back to the original color
         if(timelineElement != null)
@@ -138,6 +143,27 @@ public class State
         });
     }
 
+    public void CopyTransitionFromState(State sourceState)
+    {
+        foreach (var transition in sourceState.transitions)
+        {
+            transitions.Add(new Transition
+            {
+                from = this,
+                to = transition.to,
+                condition = transition.condition
+            });
+        }
+    }
+
+    public void ModifyTransitionTo(State newState)
+    {
+        foreach (var transition in transitions)
+        {
+            transition.to = newState;
+        }
+    }
+
     public void RefreshStateStartAndLength(int _StartIndex, int _Length)
     {
         StartIndex = _StartIndex;
@@ -156,48 +182,48 @@ public class State
         return Length;
     }*/
 
-    public void PrintDetailsOfState()
+    public void PrintDetailsOfState(bool VRConsoleEnabled = false)
     {
-        DebugLogger.Instance.Log("State: " + id);
+        DebugLogger.Instance.Log("State: " + id, VRConsoleEnabled);
         //Iterate and print OnEnter actions
         if(OnEnterActions != null)
         {
             foreach (var action in OnEnterActions.GetInvocationList())
             {
-                DebugLogger.Instance.Log("OnEnter: " + action.Method.Name);
+                DebugLogger.Instance.Log("OnEnter: " + action.Method.Name, VRConsoleEnabled);
             }
         } 
         else
         {
-            DebugLogger.Instance.Log("OnEnter: null");
+            DebugLogger.Instance.Log("OnEnter: null", VRConsoleEnabled);
         }
         //Iterate and print OnExit actions    
         if(OnExitActions != null)
         {
             foreach (var action in OnExitActions.GetInvocationList())
             {
-                DebugLogger.Instance.Log("OnExit: " + action.Method.Name);
+                DebugLogger.Instance.Log("OnExit: " + action.Method.Name, VRConsoleEnabled);
             }
         } 
         else
         {
-            DebugLogger.Instance.Log("OnExit: null");
+            DebugLogger.Instance.Log("OnExit: null", VRConsoleEnabled);
         }
 
         foreach (var transition in transitions)
         {
-            DebugLogger.Instance.Log("Transition: " + transition.from + " " + transition.to);
+            DebugLogger.Instance.Log("Transition: " + transition.from + " " + transition.to, VRConsoleEnabled);
             //Iterate and print transition conditions
             if(transition.condition != null)
             {
                 foreach (var action in transition.condition.GetInvocationList())
                 {
-                    DebugLogger.Instance.Log("Condition: " + action.Method.Name);
+                    DebugLogger.Instance.Log("Condition: " + action.Method.Name, VRConsoleEnabled);
                 }
             } 
             else
             {
-                DebugLogger.Instance.Log("Condition: null");
+                DebugLogger.Instance.Log("Condition: null", VRConsoleEnabled);
             }
         }
     }
@@ -226,6 +252,7 @@ public class Frame
 
     public bool IsColliding(GameObject object1, GameObject object2)
     {
+        DebugLogger.Instance.Log("IsColliding: " + object1 + " " + object2);
         return (object1 == collidingObjectThisFrame_1 && object2 == collidingObjectThisFrame_2) || (object1 == collidingObjectThisFrame_2 && object2 == collidingObjectThisFrame_1);
     }
 

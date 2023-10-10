@@ -46,8 +46,9 @@ public class InputManager : MonoBehaviour
         ProcessEvents();        
     }
 
-    void CreateTestStates()
+    public void CreateTestStates()
     {
+        Manager.Instance.currAppState = Manager.AppState.LIVE;
         CustomStateMachine sm = CustomStateMachine.Instance;
 
         State idleState = new()
@@ -143,6 +144,9 @@ public class InputManager : MonoBehaviour
         if (Manager.Instance.currAppState == Manager.AppState.LIVE)
         {
             //DebugLogger.Instance.Log("Passing events to state machine");
+            //Print contents of frame
+            //DebugLogger.Instance.Log("Frame Contents:");
+            //DebugLogger.Instance.Log("Left Hand Gesture: " + frame.leftHandGesture + ", Right Hand Gesture: " + frame.rightHandGesture + ",Colliding Object 1: " + frame.collidingObjectThisFrame_1 + ", Colliding Object 2: " + frame.collidingObjectThisFrame_2);
             sm.ProcessFrame(frame);
         }
         else if (Manager.Instance.currAppState == Manager.AppState.INIT || Manager.Instance.currAppState == Manager.AppState.PLAYBACK || Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)

@@ -25,10 +25,19 @@ public class DebugLogger : MonoBehaviour
         debugText = GetComponent<Manager>().VRDebugText;   
     }
 
-    public void Log(string message)
+    public void Log(string message, bool VRConsoleEnabled = false)
     {
-        Debug.Log("ProtoXR_Test : " + message);
+        Debug.Log(message);
+        if (VRConsoleEnabled)
+        {
+            LogInVR(message);
+        }
     }
+
+    public void ClearVRDebugText()
+    {
+        debugText.text = "";
+    }   
 
     //Log in debug text
     public void LogInVR(string message)

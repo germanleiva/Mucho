@@ -145,32 +145,32 @@ public class AssetPoseRecorder : MonoBehaviour
         if (maxCount == leftHandCount)
         {
             DebugLogger.Instance.Log("Asset is following left hand");            
-            recordable.CopyPoseFromRecordable(mainRecorder.objectsToRecord[1], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
-            recordable.CopyPoseFromRecordable(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
+            //recordable.CopyPoseFromRecordable(mainRecorder.objectsToRecord[1], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
+            //recordable.CopyPoseFromRecordable(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
         }
         else if (maxCount == rightHandCount)
         {
             DebugLogger.Instance.Log("Asset is following right hand");
-            recordable.CopyPoseFromRecordable(mainRecorder.objectsToRecord[2], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
-            recordable.CopyPoseFromRecordable(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
+            //recordable.CopyPoseFromRecordable(mainRecorder.objectsToRecord[2], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
+            //recordable.CopyPoseFromRecordable(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
         }
         else if (maxCount == leftFocusSquareCount)
         {
             DebugLogger.Instance.Log("Asset is following left focus square");
-            recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[1], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
-            recordable.CopyPoseFromFocusSquare(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
+            //recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[1], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
+            //recordable.CopyPoseFromFocusSquare(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
         }
         else if (maxCount == rightFocusSquareCount)
         {
             DebugLogger.Instance.Log("Asset is following right focus square");
-            recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[2], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
-            recordable.CopyPoseFromFocusSquare(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
+            //recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[2], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
+            //recordable.CopyPoseFromFocusSquare(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
         }
         else
         {
             DebugLogger.Instance.Log("Asset is following head focus square");
-            recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[0], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
-            recordable.CopyPoseFromFocusSquare(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
+            //recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[0], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
+            //recordable.CopyPoseFromFocusSquare(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
         }
   
         //Finally, refresh the timeline
@@ -244,7 +244,7 @@ public class AssetPoseRecorder : MonoBehaviour
                 if (recordable.playbackObject != null && recordable.recordedData.Count > 0)
                 {
                     //recordable.recordedData[currentFrameNum].ActionDelegate?.Invoke();
-                    if(recordable.recordedData[currentFrameNum].recordingMode == Recordable.RecordingType.Physics || recordable.recordedData[currentFrameNum].recordingMode == Recordable.RecordingType.Follow || recordable.recordedData[currentFrameNum].recordingMode == Recordable.RecordingType.Visibility)
+                    /*if(recordable.recordedData[currentFrameNum].recordingMode == Recordable.RecordingType.Physics || recordable.recordedData[currentFrameNum].recordingMode == Recordable.RecordingType.Follow || recordable.recordedData[currentFrameNum].recordingMode == Recordable.RecordingType.Visibility)
                     {
                         recordable.recordedData[currentFrameNum].ActionDelegate?.Invoke();
                     }
@@ -253,10 +253,10 @@ public class AssetPoseRecorder : MonoBehaviour
                         recordable.playbackObject.transform.position = recordable.recordedData[currentFrameNum].rootPosition;
                         recordable.playbackObject.transform.rotation = recordable.recordedData[currentFrameNum].rootRotation * Quaternion.Euler(recordable.rotationCorrection);
 
-                    }
+                    }*/
 
                     //DebugLogger.Instance.Log("Playing back " + recordable.playbackObject.name + " at " + currentFrameNum);
-                    /*recordable.playbackObject.transform.position = recordable.recordedData[currentFrameNum].rootPosition;
+                    recordable.playbackObject.transform.position = recordable.recordedData[currentFrameNum].rootPosition;
                     recordable.playbackObject.transform.rotation = recordable.recordedData[currentFrameNum].rootRotation * Quaternion.Euler(recordable.rotationCorrection);
 
                     if (recordable.recordedData[currentFrameNum].showStatusForThisFrame)
@@ -271,7 +271,7 @@ public class AssetPoseRecorder : MonoBehaviour
                             recordable.playbackObject.GetComponent<MeshRenderer>().material = transparentMaterial;
                         else 
                             recordable.playbackObject.GetComponent<MeshRenderer>().material = translucentMaterial;
-                    }*/
+                    }
                 }
             }
         }
@@ -279,22 +279,22 @@ public class AssetPoseRecorder : MonoBehaviour
 
     public void EnableGrabForAllAssets()
     {
-        DebugLogger.Instance.Log("Enabling grab for all assets");
+        /*DebugLogger.Instance.Log("Enabling grab for all assets");
         foreach (var recordable in recordableAssets)
         {
             DebugLogger.Instance.Log("Enabling grab for " + recordable.playbackObject.name);
             //recordable.grabCollider.enabled = true;
-        }
+        }*/
     }
 
     public void DisableGrabForAllAssets()
     {
-        DebugLogger.Instance.Log("Disabling grab for all assets");
+        /*DebugLogger.Instance.Log("Disabling grab for all assets");
         foreach (var recordable in recordableAssets)
         {
             DebugLogger.Instance.Log("Disabling grab for " + recordable.playbackObject.name);
             //recordable.grabCollider.enabled = false;
-        }
+        }*/
     }
 
     public void PokeTest()
