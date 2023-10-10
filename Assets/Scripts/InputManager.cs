@@ -50,55 +50,66 @@ public class InputManager : MonoBehaviour
     {
         Manager.Instance.currAppState = Manager.AppState.LIVE;
         CustomStateMachine sm = CustomStateMachine.Instance;
+        sm.DeleteAllStates();
 
         State idleState = new()
         {
-            OnEnterActions = () => { DebugLogger.Instance.Log("Idle OnEnter"); },
-            OnUpdateActions = () => { DebugLogger.Instance.Log("Idle OnUpdate"); },
-            OnExitActions = () => { DebugLogger.Instance.Log("Idle OnExit"); }
+            //OnEnterActions = () => { DebugLogger.Instance.Log("Idle OnEnter"); },
+            //OnUpdateActions = () => { DebugLogger.Instance.Log("Idle OnUpdate"); },
+            //OnExitActions = () => { DebugLogger.Instance.Log("Idle OnExit"); }
         };
 
         State grabState = new()
         {
             OnEnterActions = () => { DebugLogger.Instance.Log("Grab OnEnter"); testBall.GetComponent<Recordable>().Follow(rightHand.transform); },
-            OnUpdateActions = () => { DebugLogger.Instance.Log("Grab OnUpdate"); },
+            //OnUpdateActions = () => { DebugLogger.Instance.Log("Grab OnUpdate"); },
             OnExitActions = () => { DebugLogger.Instance.Log("State 2 OnExit"); testBall.GetComponent<Recordable>().Unfollow(); }
         };
 
         State throwState = new()
         {
             OnEnterActions = () => { DebugLogger.Instance.Log("Throw OnEnter"); testBall.GetComponent<Recordable>().ApplyForce(rightHand.transform.forward * 1); },
-            OnUpdateActions = () => { DebugLogger.Instance.Log("Throw OnUpdate"); },
-            OnExitActions = () => { DebugLogger.Instance.Log("Throw OnExit"); }
+            //OnUpdateActions = () => { DebugLogger.Instance.Log("Throw OnUpdate"); },
+            //OnExitActions = () => { DebugLogger.Instance.Log("Throw OnExit"); }
         };
 
-        State missState = new()
+        /*State missState = new()
         {
             OnEnterActions = () => { DebugLogger.Instance.Log("Miss OnEnter"); testHitMessage.SetActive(false); testMissMessage.SetActive(true); },
-            OnUpdateActions = () => { DebugLogger.Instance.Log("Miss OnUpdate"); },
-            OnExitActions = () => { DebugLogger.Instance.Log("Miss OnExit"); }
+            //OnUpdateActions = () => { DebugLogger.Instance.Log("Miss OnUpdate"); },
+            //OnExitActions = () => { DebugLogger.Instance.Log("Miss OnExit"); }
         };
 
 
         State hitState = new()
         {
             OnEnterActions = () => { DebugLogger.Instance.Log("Hit OnEnter"); testHitMessage.SetActive(true); testMissMessage.SetActive(false); },
-            OnUpdateActions = () => { DebugLogger.Instance.Log("Hit OnUpdate"); },
-            OnExitActions = () => { DebugLogger.Instance.Log("Hit OnExit"); }
-        };
+            //OnUpdateActions = () => { DebugLogger.Instance.Log("Hit OnUpdate"); },
+            //OnExitActions = () => { DebugLogger.Instance.Log("Hit OnExit"); }
+        };*/
 
         idleState.AddTransitionTo(grabState, (frame) => { return frame.rightHandGesture == Gesture.RIGHTHANDPINCH && frame.IsColliding(testBall, rightHandPinchObj); });
         grabState.AddTransitionTo(throwState, (frame) => { return frame.rightHandGesture == Gesture.RIGHTHANDOPEN; });
-        throwState.AddTransitionTo(hitState, (frame) => { return frame.IsColliding(testBall, testTarget); } );
-        throwState.AddTransitionTo(missState, (frame) => { return frame.IsColliding(testBall, floor); });
+        //throwState.AddTransitionTo(hitState, (frame) => { return frame.IsColliding(testBall, testTarget); } );
+        //throwState.AddTransitionTo(missState, (frame) => { return frame.IsColliding(testBall, floor); });
 
         sm.AddState("Idle", idleState);
         sm.AddState("Grab", grabState);
         sm.AddState("Throw", throwState);
-        sm.AddState("Hit", hitState);
-        sm.AddState("Miss", missState);
+        //sm.AddState("Hit", hitState);
+        //sm.AddState("Miss", missState);
 
         sm.SetInitialState("Idle");
+
+        //Print contents of state machine
+        DebugLogger.Instance.Log("Test State Machine Contents:", true);
+        idleState.PrintDetailsOfState(true);
+        grabState.PrintDetailsOfState(true);
+        throwState.PrintDetailsOfState(true);
+        //hitState.PrintDetailsOfState(true);
+        //missState.PrintDetailsOfState(true);
+
+
     }
 
     public void SetLeftHandGesture(string gestureStr)
@@ -140,6 +151,9 @@ public class InputManager : MonoBehaviour
             collidingObjectThisFrame_2 = collidingObjectNotified_2
         };
         
+
+        DebugLogger.Instance.Log("Process Events in Mode: " + Manager.Instance.currAppState.ToString());
+        DebugLogger.Instance.Log("Left Hand Gesture: " + frame.leftHandGesture + ", Right Hand Gesture: " + frame.rightHandGesture + ",Colliding Object 1: " + frame.collidingObjectThisFrame_1 + ", Colliding Object 2: " + frame.collidingObjectThisFrame_2);
 
         if (Manager.Instance.currAppState == Manager.AppState.LIVE)
         {

@@ -32,6 +32,7 @@ public class CustomStateMachine : MonoBehaviour
 
     public void SetInitialState(string name)
     {
+        DebugLogger.Instance.Log("Setting initial state to " + name,true);
         currentState = states[name];
         // currentState.OnEnter();
     }
@@ -53,7 +54,9 @@ public class CustomStateMachine : MonoBehaviour
 
 
     public void ProcessFrame(Frame lastFrameObject)
-    {
+    {                
+        DebugLogger.Instance.Log("ProcessFrame in the StateMachine");
+
         foreach (var transition in currentState.transitions)
         {
             if (transition.ShouldApply(lastFrameObject))
@@ -63,7 +66,7 @@ public class CustomStateMachine : MonoBehaviour
             }
             else
             {
-                //DebugLogger.Instance.Log("Transition NOT applied from " + transition.from + " to " + transition.to);
+                DebugLogger.Instance.Log("Transition NOT applied from " + transition.from + " to " + transition.to);
             }
         }
 
@@ -133,13 +136,14 @@ public class State
         return id;
     }
 
-    public void AddTransitionTo(State targetState, Func<Frame, bool> condition)
+    public void AddTransitionTo(State targetState, Func<Frame, bool> condition, string textDescription = "empty description")
     {
         transitions.Add(new Transition
         {
             from = this,
             to = targetState,
-            condition = condition
+            condition = condition,
+            textDescription = textDescription
         });
     }
 
@@ -186,7 +190,7 @@ public class State
     {
         DebugLogger.Instance.Log("State: " + id, VRConsoleEnabled);
         //Iterate and print OnEnter actions
-        if(OnEnterActions != null)
+        /*if(OnEnterActions != null)
         {
             foreach (var action in OnEnterActions.GetInvocationList())
             {
@@ -208,11 +212,12 @@ public class State
         else
         {
             DebugLogger.Instance.Log("OnExit: null", VRConsoleEnabled);
-        }
+        }*/
 
         foreach (var transition in transitions)
         {
             DebugLogger.Instance.Log("Transition: " + transition.from + " " + transition.to, VRConsoleEnabled);
+            DebugLogger.Instance.Log("Transition text description: " + transition.textDescription, VRConsoleEnabled);
             //Iterate and print transition conditions
             if(transition.condition != null)
             {
@@ -237,6 +242,8 @@ public class Transition
 
     public Func<Frame, bool> condition;
 
+    public string textDescription;
+
     public bool ShouldApply(Frame frame)
     {
         return condition.Invoke(frame);
@@ -252,7 +259,7 @@ public class Frame
 
     public bool IsColliding(GameObject object1, GameObject object2)
     {
-        DebugLogger.Instance.Log("IsColliding: " + object1 + " " + object2);
+        DebugLogger.Instance.Log("IsColliding?: " + object1 + " " + object2);
         return (object1 == collidingObjectThisFrame_1 && object2 == collidingObjectThisFrame_2) || (object1 == collidingObjectThisFrame_2 && object2 == collidingObjectThisFrame_1);
     }
 

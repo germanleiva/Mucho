@@ -14,7 +14,7 @@ public class AssetPoseRecorder : MonoBehaviour
     public Recorder mainRecorder;
 
     //List of all force arrow components
-    public List<ForceArrow> forceArrowsInScene = new();
+    
 
     Vector3 lastAssetPosition = Vector3.zero;
 
@@ -201,6 +201,8 @@ public class AssetPoseRecorder : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if(Manager.Instance.currAppState == Manager.AppState.LIVE) return;
+
         foreach(Recordable recordable in recordableAssets)
         {
             if(recordable.currentRecordingMode == Recordable.RecordingType.ManualAnimation)
@@ -220,7 +222,7 @@ public class AssetPoseRecorder : MonoBehaviour
             else if(recordable.currentRecordingMode == Recordable.RecordingType.Physics)
             {
                 //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "ApplyForce()", true);
-                //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, action: "ApplyForce()", sourceOfAction: "None", Recordable.RecordingType.Physics, propagateValueToSubsequentFrames: true);
+                recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, action: "ApplyForce()", collision: "None", Recordable.RecordingType.ManualAnimation, propagateValueToSubsequentFrames: true);
                 //Increment the slider value by frame duration
                 mainRecorder.playbackSlider.value += 1;
             }
@@ -256,8 +258,8 @@ public class AssetPoseRecorder : MonoBehaviour
                     }*/
 
                     //DebugLogger.Instance.Log("Playing back " + recordable.playbackObject.name + " at " + currentFrameNum);
-                    recordable.playbackObject.transform.position = recordable.recordedData[currentFrameNum].rootPosition;
-                    recordable.playbackObject.transform.rotation = recordable.recordedData[currentFrameNum].rootRotation * Quaternion.Euler(recordable.rotationCorrection);
+                    recordable.transform.position = recordable.recordedData[currentFrameNum].rootPosition;
+                    recordable.transform.rotation = recordable.recordedData[currentFrameNum].rootRotation * Quaternion.Euler(recordable.rotationCorrection);
 
                     if (recordable.recordedData[currentFrameNum].showStatusForThisFrame)
                     {
@@ -340,10 +342,6 @@ public class AssetPoseRecorder : MonoBehaviour
 
     public void HideMiscObjs()
     {
-        foreach (ForceArrow forceArrow in forceArrowsInScene)
-        {
-            forceArrow.HideTrajectoryAndArrow();
-        }
         foreach (Recordable recordable in recordableAssets)
         {
             recordable.assetMenu.SetActive(false);
@@ -352,10 +350,6 @@ public class AssetPoseRecorder : MonoBehaviour
 
     public void ShowMiscObjs()
     {
-        foreach (ForceArrow forceArrow in forceArrowsInScene)
-        {
-            forceArrow.ShowTrajectoryAndArrow();
-        }
         foreach (Recordable recordable in recordableAssets)
         {
             recordable.assetMenu.SetActive(true);
@@ -368,7 +362,7 @@ public class AssetPoseRecorder : MonoBehaviour
         GameObject forceArrow = Instantiate(forceArrowPrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);   
         forceArrow.SetActive(true);     
         ForceArrow forceArrowScript = forceArrow.GetComponent<ForceArrow>();
-        forceArrowsInScene.Add(forceArrowScript);
+        recordable.forceArrows.Add(forceArrow);
         forceArrowScript.asset = recordable.playbackObject.transform;
         //forceArrowScript.arrowHead should be positioned 1 unit above the arrowEnd in the y axis
         forceArrowScript.arrowHead.position = recordable.playbackObject.transform.position + new Vector3(0.2f,0.2f,0);

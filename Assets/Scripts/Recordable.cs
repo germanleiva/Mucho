@@ -14,6 +14,10 @@ public class Recordable : MonoBehaviour
     public Collider grabCollider;
     public GameObject assetMenu;
 
+    public List<GameObject> forceArrows = new();
+
+    public GameObject pinchObj;
+
     public enum RecordingType
     {
         None,
@@ -263,7 +267,7 @@ public class Recordable : MonoBehaviour
         int _frameStart = (int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value;
         for (int i = _frameStart + 1; i < recordedData.Count; i++)
         {
-            recordedData[i].rootPosition = Recorder.Instance.objectsToRecord[1].recordedData[i].rootPosition; //Copy the position of the left hand at frame _frameStart
+            recordedData[i].rootPosition = Recorder.Instance.objectsToRecord[1].recordedData[i].pinchPosition; //Copy the position of the left hand at frame _frameStart
             recordedData[i].Action = "Follow(Left hand)";
             recordedData[i].Collision = "Collide(" + Manager.Instance.CleanString(gameObject.name) + ", Left hand)";
         }
@@ -284,7 +288,7 @@ public class Recordable : MonoBehaviour
         int _frameStart = (int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value;
         for (int i = _frameStart + 1; i < recordedData.Count; i++)
         {
-            recordedData[i].rootPosition = transform.TransformPoint(Recorder.Instance.objectsToRecord[2].recordedData[i].indexJoint1.position); //Copy the position of the right hand at frame _frameStart
+            recordedData[i].rootPosition = Recorder.Instance.objectsToRecord[2].recordedData[i].pinchPosition; //Copy the position of the right hand at frame _frameStart
             recordedData[i].Action = "Follow(Right hand)";
             recordedData[i].Collision = "Collide(" + Manager.Instance.CleanString(gameObject.name) + ", Right hand)";
         }
@@ -487,7 +491,7 @@ public class Recordable : MonoBehaviour
                 ringJoint1, ringJoint2, ringJoint3, 
                 pinkyJoint0, pinkyJoint1, pinkyJoint2, pinkyJoint3, 
                 thumbJoint0, thumbJoint1, thumbJoint2, thumbJoint3, 
-                focusSquare.transform.position, focusSquare.transform.rotation, currentGesture, frameNum));
+                focusSquare.transform.position, focusSquare.transform.rotation, currentGesture, pinchObj.transform.position, frameNum));
         }
     }
 
@@ -504,11 +508,12 @@ public class Recordable : MonoBehaviour
     //For assets
     public void PrepareForceSimulation(Vector3 initialVelocity)
     {
-        //oldMainPlaybackSliderValue = AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value; //This is so awkward, but it works
+        oldMainPlaybackSliderValue = AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value; //This is so awkward, but it works
         if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
         {
             currentRecordingMode = Recordable.RecordingType.Physics;
             InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "ApplyForce()", recordingMode: Recordable.RecordingType.Physics, actionDelegate: () => { ApplyForce(initialVelocity); });
+            ApplyForce(initialVelocity);
         }
         else if(Manager.Instance.currAppState == Manager.AppState.PLAYBACK)
         {
@@ -518,7 +523,7 @@ public class Recordable : MonoBehaviour
         //isAssetRecordingOn = true;
         initPosBeforePhysicsSimulation = transform.position;
         initRotBeforePhysicsSimulation = transform.rotation;
-        //Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
+        Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
         //isSimulationOn = true;
 
     }
@@ -526,7 +531,7 @@ public class Recordable : MonoBehaviour
     //For assets
     public void ApplyForce(Vector3 initialVelocity)
     {
-        //Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
+        
         //InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "ApplyForce()", recordingMode: Recordable.RecordingType.Physics, actionDelegate: () => { ApplyForce(initialVelocity); });
         GetComponent<Rigidbody>().mass = 0f;
         GetComponent<Collider>().isTrigger = false;
@@ -541,17 +546,29 @@ public class Recordable : MonoBehaviour
         DebugLogger.Instance.Log("Collision detected between " + gameObject.name + " and " + collision.collider.name);
         InputManager.Instance.NotifyCollision(gameObject, collision.collider.gameObject);
 
+        //Return if object is colliding with inputmanager's left or right pinch objects
+        if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere")
+        {
+            //return;
+        }
+
         if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
         {
+            //Delete all force arrows
+            foreach (GameObject obj in forceArrows)
+            {
+                Destroy(obj);
+            } 
+
             currentRecordingMode = Recordable.RecordingType.None;
             //TODO: Check if object is colliding with hands
             DebugLogger.Instance.Log("Collision detected between " + gameObject.name + " and " + collision.collider.name);
             //InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "None", sourceOfAction: "Collide(" + Manager.Instance.CleanString(gameObject.name) + "," + Manager.Instance.CleanString(collision.collider.name) + ")", propagateValueToSubsequentFrames: false);
             //Expression<Func<object>> lambdaExpr = () => { ResetPhysicsProperties(); };  
-            //InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "None", collision: "Collide(" + Manager.Instance.CleanString(gameObject.name) + "," + Manager.Instance.CleanString(collision.collider.name) + ")", recordingMode: Recordable.RecordingType.Physics, actionDelegate: () => { ResetPhysicsProperties(); }, collidedObject: collision.collider.gameObject);
+            InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "None", collision: "Collide(" + Manager.Instance.CleanString(gameObject.name) + "," + Manager.Instance.CleanString(collision.collider.name) + ")", recordingMode: Recordable.RecordingType.Physics, actionDelegate: () => { ResetPhysicsProperties(); }, collidedObject: collision.collider.gameObject);
             //DebugLogger.Instance.Log("Collide(" + Manager.Instance.CleanString(gameObject.name) + "," + Manager.Instance.CleanString(collision.collider.name) + ")");
             //PropagateAssetNoneStatus((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value);
-            //ResetPhysicsProperties();          
+            ResetPhysicsProperties();          
             
         }
 
@@ -566,11 +583,11 @@ public class Recordable : MonoBehaviour
     //For assets
     public void ResetPhysicsProperties()
     {
-        Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
+        //Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         DebugLogger.Instance.Log("Resetting physics properties");        
-        //AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value = oldMainPlaybackSliderValue;
-        //transform.position = initPosBeforePhysicsSimulation;
-        //transform.rotation = initRotBeforePhysicsSimulation;
+        AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value = oldMainPlaybackSliderValue;
+        transform.position = initPosBeforePhysicsSimulation;
+        transform.rotation = initRotBeforePhysicsSimulation;
         GetComponent<Rigidbody>().mass = 1f;
         GetComponent<Collider>().isTrigger = true;
         GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
@@ -583,7 +600,7 @@ public class Recordable : MonoBehaviour
     {
         if(Manager.Instance.currAppState != Manager.AppState.RECORDING)
         {
-            //DebugLogger.Instance.Log("Collision detected between " + gameObject.name + " and " + collision.collider.name);
+            DebugLogger.Instance.Log("Collision detected between " + gameObject.name + " and " + collision.collider.name);
             if(collision.collider.name == "LeftHandPinchContactSphere")
             {
                 //InputManager.Instance.SetAssetInContactWithLeftHand(this);
@@ -676,6 +693,8 @@ public class RecordableFrame
     public FingerJoint pinkyJoint0, pinkyJoint1, pinkyJoint2, pinkyJoint3;
     public FingerJoint thumbJoint0, thumbJoint1, thumbJoint2, thumbJoint3;
 
+    public Vector3 pinchPosition;
+
     //Focus square position and rotation
     public Vector3 focusSquarePosition;
     public Quaternion focusSquareRotation;
@@ -723,7 +742,7 @@ public class RecordableFrame
     }
 
     //Hands
-    public RecordableFrame(Vector3 _position, Quaternion _rotation, GameObject _indexJoint0, GameObject _indexJoint1, GameObject _indexJoint2, GameObject _middleJoint0, GameObject _middleJoint1, GameObject _middleJoint2, GameObject _ringJoint0, GameObject _ringJoint1, GameObject _ringJoint2, GameObject _pinkyJoint0, GameObject _pinkyJoint1, GameObject _pinkyJoint2, GameObject _pinkyJoint3, GameObject _thumbJoint0, GameObject _thumbJoint1, GameObject _thumbJoint2, GameObject _thumbJoint3, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, InputManager.Gesture  _gesture, int _frameNumber)
+    public RecordableFrame(Vector3 _position, Quaternion _rotation, GameObject _indexJoint0, GameObject _indexJoint1, GameObject _indexJoint2, GameObject _middleJoint0, GameObject _middleJoint1, GameObject _middleJoint2, GameObject _ringJoint0, GameObject _ringJoint1, GameObject _ringJoint2, GameObject _pinkyJoint0, GameObject _pinkyJoint1, GameObject _pinkyJoint2, GameObject _pinkyJoint3, GameObject _thumbJoint0, GameObject _thumbJoint1, GameObject _thumbJoint2, GameObject _thumbJoint3, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, InputManager.Gesture  _gesture, Vector3 _pinchPosition, int _frameNumber)
     {
         rootPosition = _position;
         rootRotation = _rotation;
@@ -754,6 +773,8 @@ public class RecordableFrame
         focusSquareRotation = _focusSquareRotation;
 
         gesture = _gesture;
+
+        pinchPosition = _pinchPosition;
 
         frameNumber = _frameNumber;
 
