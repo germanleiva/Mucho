@@ -466,7 +466,7 @@ public class Recorder : MonoBehaviour
 
     public List<AssetSequence> GenerateAssetActionSequences(RectTransform timelinePanel, Recordable recordable)
     {
-        //DebugLogger.Instance.Log("Generating asset action sequences for " + recordable.name);
+        DebugLogger.Instance.Log("Generating asset action sequences for " + recordable.name);
 
         List<string> changes = recordable.recordedData.Select(x => x.Action).ToList();
         List<AssetSequence> sequences = GetContinuousChangeSequences(changes);
@@ -477,7 +477,7 @@ public class Recorder : MonoBehaviour
             if (recordable.recordedData[sequence.StartIndex].ActionDelegate != null)
             {
                 sequence.ActionDelegate = recordable.recordedData[sequence.StartIndex].ActionDelegate;
-                //DebugLogger.Instance.Log("Action delegate: " + recordable.recordedData[sequence.StartIndex].ActionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordable.recordedData[sequence.StartIndex].ActionDelegate.Method.GetParameters().Select(x => x.Name)));
+                DebugLogger.Instance.Log("Action delegate found: " + recordable.recordedData[sequence.StartIndex].ActionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordable.recordedData[sequence.StartIndex].ActionDelegate.Method.GetParameters().Select(x => x.Name)));
             }
 
             if (sequence.Action.StartsWith("Hide"))
@@ -494,7 +494,8 @@ public class Recorder : MonoBehaviour
             }
             else //Other types of events - physics, attach etc
             {
-                TimelineUIElement.CreateTimelineElement(assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(0), sequence.Action);
+                //if(recordable.recordedData[sequence.StartIndex].Action != "Unfollow()")
+                    TimelineUIElement.CreateTimelineElement(assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(0), sequence.Action);
             }
         }
         return sequences;
@@ -513,7 +514,7 @@ public class Recorder : MonoBehaviour
                 //DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex + sequence.Length));
 
                 if (recordable.recordedData[sequence.StartIndex].CollisionDelegate != null)
-                    DebugLogger.Instance.Log("Collision delegate: " + recordable.recordedData[sequence.StartIndex].CollisionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordable.recordedData[sequence.StartIndex].CollisionDelegate.Method.GetParameters().Select(x => x.Name)));
+                    DebugLogger.Instance.Log("Collision delegate found: " + recordable.recordedData[sequence.StartIndex].CollisionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordable.recordedData[sequence.StartIndex].CollisionDelegate.Method.GetParameters().Select(x => x.Name)));
                 if (recordable.recordedData[sequence.StartIndex].CollidedObject != null)
                 {
                     DebugLogger.Instance.Log("Collided object: " + recordable.recordedData[sequence.StartIndex].CollidedObject.name);
@@ -596,6 +597,8 @@ public class Recorder : MonoBehaviour
 
         var stateUI = StateTimelineUIElement.CreateStateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(),
                                                         startIndex, length, GetSizeOfMainRecordedData(0), state);
+        
+        state.timelineElement = stateUI;
 
         StatesInTimeline.Add(state, stateUI.GetComponent<StateTimelineUIElement>());
 
@@ -893,7 +896,29 @@ public class Recorder : MonoBehaviour
                 }
             }
 
+            foreach (var assetSequences in assetSequencesLists)
+            {
+                foreach (var assetSequence in assetSequences)
+                {
+                    int distanceToStateStart = assetSequence.StartIndex - StatesInTimeline[stateInTimeline].StartIndex;
+                    int distanceToStateEnd = StatesInTimeline[stateInTimeline].StartIndex + StatesInTimeline[stateInTimeline].Length - assetSequence.StartIndex;
+                    if (distanceToStateStart >= 0 && distanceToStateEnd >= 0)
+                    {
+                        if(distanceToStateStart < distanceToStateEnd)
+                        {
+                            DebugLogger.Instance.Log("Adding action " + assetSequence.Action + " for state " + stateInTimeline.id + " in OnEnterActions");
+                            stateInTimeline.OnEnterActions += () => assetSequence.ActionDelegate();
+                        }
+                        else
+                        {
+                            DebugLogger.Instance.Log("Adding action " + assetSequence.Action + " for state " + stateInTimeline.id + " in OnExitActions");
+                            stateInTimeline.OnExitActions += () => assetSequence.ActionDelegate();
+                        }
+                    }
 
+                }
+            }
+        /*
         //Add OnEnterActions to state
         foreach (var assetSequences in assetSequencesLists)
         {
@@ -919,7 +944,7 @@ public class Recorder : MonoBehaviour
                     DebugLogger.Instance.Log("Added action " + assetSequence.Action + " for state " + stateInTimeline.id + " in OnExitActions");
                 }
             }
-        }
+        }*/
 
 
     }

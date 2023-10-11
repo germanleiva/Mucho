@@ -333,7 +333,7 @@ public class Recordable : MonoBehaviour
         DebugLogger.Instance.Log("Detach called for " + playbackObject.name);
         currentRecordingMode = Recordable.RecordingType.None;
         //Unfollow();
-        InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "None", recordingMode: Recordable.RecordingType.Follow, actionDelegate: () => { Unfollow(); });
+        InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "Unfollow()", recordingMode: Recordable.RecordingType.Follow, actionDelegate: () => { GetComponent<Recordable>().Unfollow(); });
         int _frameStart = (int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value;
         for (int i = _frameStart + 1; i < recordedData.Count; i++)
         {
@@ -345,30 +345,6 @@ public class Recordable : MonoBehaviour
         Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
         //recordable.playbackObject.transform.SetParent(null);
     }
-
-    /*public void RecordAndPropagateAssetShowStatus(int _frameNumber)
-    {
-        DebugLogger.Instance.Log("Changing asset show status at a specific frame number " + _frameNumber);
-        for (int i = _frameNumber + 1; i < recordedData.Count; i++)
-        {
-                if (recordedData[i].Action == "ApplyForce()")
-                {
-                    DebugLogger.Instance.Log("RecordAndPropagateAssetShowStatus() - Encountered ApplyForce() at frame number " + i + ". Breaking out of the loop.");
-                    break;
-                }
-                recordedData[i].showStatusForThisFrame = showStatus;
-
-                //Assign Hide or Show to recordedData[i].SourceOfAssetChange depending on the value of showStatus
-                if(showStatus)
-                {
-                    recordedData[i].Action = "Show()";
-                }
-                else
-                {
-                    recordedData[i].Action = "Hide()";
-                }
-        }
-    }*/
 
     //For assets
     public void PropagateAssetNoneStatus(int _frameNumber)
@@ -386,94 +362,7 @@ public class Recordable : MonoBehaviour
         }
     }
 
-    //For assets
-    /*public void CopyPoseFromRecordable(Recordable other, int _frameStart, int _frameEnd = 0, bool copyFirstRecord = false, bool copyRotation = false)
-    {
-        if (copyFirstRecord) //Copy the pose from "other" recordable (hands) at index _frameStart, to this asset and propagate the value to subsequent frames
-        {
-            DebugLogger.Instance.Log("Copying first pose from " + other.gameObject.name + " to " + gameObject.name + " from frame number " + _frameStart + " to " + recordedData.Count);
-            //recordedData[_frameStart].SourceOfAssetChange = "Unfollow()";
-            recordedData[_frameStart].Action = "None";
-            for (int i = _frameStart + 1; i < recordedData.Count; i++)
-            {
-                if(recordedData[i].Action == "ApplyForce()")
-                {
-                    DebugLogger.Instance.Log("CopyPoseFromRecordable() - Encountered ApplyForce() at frame number " + i + ". Breaking out of the loop.");
-                    break;
-                }
-                recordedData[i].rootPosition = other.recordedData[_frameStart].rootPosition;
-                recordedData[i].Action = "None";
-                recordedData[i].Collision = "None";
-                //recordedData[i].SourceOfAssetChange = "Unfollow(" + other.gameObject.name + ")";
-                if(copyRotation) recordedData[i].rootRotation = other.recordedData[_frameStart].rootRotation;
-            }
-        }
-        else //Copy all the poses from "other" recordable (hands, head focus) to this asset and propagate the value to subsequent frames
-        {
-            Vector3 offset = recordedData[_frameStart].rootPosition - other.recordedData[_frameStart].rootPosition;
-            DebugLogger.Instance.Log("Copying all pose data from " + other.gameObject.name + " to " + gameObject.name + " from frame number " + _frameStart + " to " + recordedData.Count);
-            if(_frameEnd == 0)
-            {
-                _frameEnd = recordedData.Count;
-            }
-            for (int i = _frameStart + 1; i < _frameEnd; i++)
-            {
-                if(recordedData[i].Action == "ApplyForce()")
-                {
-                    DebugLogger.Instance.Log("CopyPoseFromRecordable() - Encountered ApplyForce() at frame number " + i + ". Breaking out of the loop.");
-                    break;
-                }
-                recordedData[i].rootPosition = other.recordedData[i].rootPosition + offset;
-                recordedData[i].Action = "Follow(" + Manager.Instance.CleanString(other.gameObject.name) + ")"; 
-                recordedData[i].Collision = "Collide(" + Manager.Instance.CleanString(gameObject.name) + ", " + Manager.Instance.CleanString(other.gameObject.name) + ")";                         
-                if(copyRotation) recordedData[i].rootRotation = other.recordedData[i].rootRotation;
-            }
-        }
-    }
-
-    //For assets
-    public void CopyPoseFromFocusSquare(Recordable other, int _frameStart, int _frameEnd = 0, bool copyFirstRecord = false, bool copyRotation = false)
-    {
-        if (copyFirstRecord)
-        {
-            DebugLogger.Instance.Log("Copying first pose from " + other.gameObject.name + " to " + gameObject.name + " from frame number " + _frameStart + " to " + recordedData.Count);
-            //recordedData[_frameStart].SourceOfAssetChange = "Unfollow()";
-            recordedData[_frameStart].Action = "None";
-            for (int i = _frameStart + 1; i < recordedData.Count; i++)
-            {
-                if(recordedData[i].Action == "ApplyForce()")
-                {
-                    DebugLogger.Instance.Log("CopyPoseFromFocusSquare() - Encountered ApplyForce() at frame number " + i + ". Breaking out of the loop.");
-                    break;
-                }
-                recordedData[i].rootPosition = other.recordedData[_frameStart].focusSquarePosition;
-                recordedData[i].Action = "None";
-                //recordedData[i].SourceOfAssetChange = "Unfollow(" + other.gameObject.name + ")";
-                if(copyRotation) recordedData[i].rootRotation = other.recordedData[_frameStart].focusSquareRotation;
-            }
-        }
-        else
-        {
-            Vector3 offset = recordedData[_frameStart].rootPosition - other.recordedData[_frameStart].focusSquarePosition;
-            DebugLogger.Instance.Log("Copying all pose data from " + other.gameObject.name + " to " + gameObject.name + " from frame number " + _frameStart + " to " + recordedData.Count);
-            if(_frameEnd == 0)
-            {
-                _frameEnd = recordedData.Count;
-            }
-            for (int i = _frameStart + 1; i < _frameEnd; i++)
-            {
-                if(recordedData[i].Action == "ApplyForce()")
-                {
-                    DebugLogger.Instance.Log("CopyPoseFromFocusSquare() - Encountered ApplyForce() at frame number " + i + ". Breaking out of the loop.");
-                    break;
-                }
-                recordedData[i].rootPosition = other.recordedData[i].focusSquarePosition + offset;
-                recordedData[i].Action = "Follow(" + Manager.Instance.CleanString(other.gameObject.name) + ", FocusSquare)"; //Remove the last five characters from the string other.gameObject.name  
-                         
-                if(copyRotation) recordedData[i].rootRotation = other.recordedData[i].focusSquareRotation;
-            }
-        }
-    }*/
+    
 
     public void Record(int frameNum)
     {
@@ -512,7 +401,7 @@ public class Recordable : MonoBehaviour
         if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
         {
             currentRecordingMode = Recordable.RecordingType.Physics;
-            InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "ApplyForce()", recordingMode: Recordable.RecordingType.Physics, actionDelegate: () => { ApplyForce(initialVelocity); });
+            InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "ApplyForce()", recordingMode: Recordable.RecordingType.Physics, actionDelegate: () => { GetComponent<Recordable>().ApplyForce(initialVelocity); });
             ApplyForce(initialVelocity);
         }
         else if(Manager.Instance.currAppState == Manager.AppState.PLAYBACK)
@@ -565,7 +454,7 @@ public class Recordable : MonoBehaviour
             DebugLogger.Instance.Log("Collision detected between " + gameObject.name + " and " + collision.collider.name);
             //InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "None", sourceOfAction: "Collide(" + Manager.Instance.CleanString(gameObject.name) + "," + Manager.Instance.CleanString(collision.collider.name) + ")", propagateValueToSubsequentFrames: false);
             //Expression<Func<object>> lambdaExpr = () => { ResetPhysicsProperties(); };  
-            InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "None", collision: "Collide(" + Manager.Instance.CleanString(gameObject.name) + "," + Manager.Instance.CleanString(collision.collider.name) + ")", recordingMode: Recordable.RecordingType.Physics, actionDelegate: () => { ResetPhysicsProperties(); }, collidedObject: collision.collider.gameObject);
+            InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "None", collision: "Collide(" + Manager.Instance.CleanString(gameObject.name) + "," + Manager.Instance.CleanString(collision.collider.name) + ")", recordingMode: Recordable.RecordingType.Physics, actionDelegate: () => { GetComponent<Recordable>().ResetPhysicsProperties(); }, collidedObject: collision.collider.gameObject);
             //DebugLogger.Instance.Log("Collide(" + Manager.Instance.CleanString(gameObject.name) + "," + Manager.Instance.CleanString(collision.collider.name) + ")");
             //PropagateAssetNoneStatus((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value);
             ResetPhysicsProperties();          

@@ -27,7 +27,7 @@ public class DebugLogger : MonoBehaviour
 
     public void Log(string message, bool VRConsoleEnabled = false)
     {
-        Debug.Log(message);
+        Debug.Log("ProtoXR: " + message);
         if (VRConsoleEnabled)
         {
             LogInVR(message);

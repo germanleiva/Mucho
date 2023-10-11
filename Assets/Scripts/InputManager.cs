@@ -152,8 +152,8 @@ public class InputManager : MonoBehaviour
         };
         
 
-        DebugLogger.Instance.Log("Process Events in Mode: " + Manager.Instance.currAppState.ToString());
-        DebugLogger.Instance.Log("Left Hand Gesture: " + frame.leftHandGesture + ", Right Hand Gesture: " + frame.rightHandGesture + ",Colliding Object 1: " + frame.collidingObjectThisFrame_1 + ", Colliding Object 2: " + frame.collidingObjectThisFrame_2);
+        //DebugLogger.Instance.Log("Process Events in Mode: " + Manager.Instance.currAppState.ToString());
+        //DebugLogger.Instance.Log("Left Hand Gesture: " + frame.leftHandGesture + ", Right Hand Gesture: " + frame.rightHandGesture + ",Colliding Object 1: " + frame.collidingObjectThisFrame_1 + ", Colliding Object 2: " + frame.collidingObjectThisFrame_2);
 
         if (Manager.Instance.currAppState == Manager.AppState.LIVE)
         {

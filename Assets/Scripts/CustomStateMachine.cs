@@ -168,29 +168,11 @@ public class State
         }
     }
 
-    public void RefreshStateStartAndLength(int _StartIndex, int _Length)
-    {
-        StartIndex = _StartIndex;
-        Length = _Length;
-        timelineElement.GetComponent<TimelineUIElement>().SetStartX(StartIndex);
-        timelineElement.GetComponent<TimelineUIElement>().SetWidth(Length);
-    }
-
-    /*public int GetStartIndex()
-    {
-        return StartIndex;
-    }
-
-    public int GetCurrentLength()
-    {
-        return Length;
-    }*/
-
     public void PrintDetailsOfState(bool VRConsoleEnabled = false)
     {
         DebugLogger.Instance.Log("State: " + id, VRConsoleEnabled);
         //Iterate and print OnEnter actions
-        /*if(OnEnterActions != null)
+        if(OnEnterActions != null)
         {
             foreach (var action in OnEnterActions.GetInvocationList())
             {
@@ -199,7 +181,7 @@ public class State
         } 
         else
         {
-            DebugLogger.Instance.Log("OnEnter: null", VRConsoleEnabled);
+            //DebugLogger.Instance.Log("OnEnter: null", VRConsoleEnabled);
         }
         //Iterate and print OnExit actions    
         if(OnExitActions != null)
@@ -211,12 +193,12 @@ public class State
         } 
         else
         {
-            DebugLogger.Instance.Log("OnExit: null", VRConsoleEnabled);
-        }*/
+            //DebugLogger.Instance.Log("OnExit: null", VRConsoleEnabled);
+        }
 
         foreach (var transition in transitions)
         {
-            DebugLogger.Instance.Log("Transition: " + transition.from + " " + transition.to, VRConsoleEnabled);
+            //DebugLogger.Instance.Log("Transition: " + transition.from + " " + transition.to, VRConsoleEnabled);
             DebugLogger.Instance.Log("Transition text description: " + transition.textDescription, VRConsoleEnabled);
             //Iterate and print transition conditions
             if(transition.condition != null)
