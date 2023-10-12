@@ -494,7 +494,7 @@ public class Recorder : MonoBehaviour
             }
             else //Other types of events - physics, attach etc
             {
-                //if(recordable.recordedData[sequence.StartIndex].Action != "Unfollow()")
+                if(recordable.recordedData[sequence.StartIndex].Action != "Unfollow()")
                     TimelineUIElement.CreateTimelineElement(assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(0), sequence.Action);
             }
         }
@@ -719,26 +719,16 @@ public class Recorder : MonoBehaviour
         ResetStateMachine();
 
         // Create a list of events (start or end of a sequence)
-        var events = new List<(int Index, string Type, GestureSequence? Gesture, AssetSequence? Asset)>();
+        var events = new List<(int Index, string Type, GestureSequence Gesture, AssetSequence Asset)>();
 
         foreach (var gesture in gestures)
         {
             events.Add((gesture.StartIndex, "start", gesture, null));
-            //events.Add((gesture.StartIndex + gesture.Length, "end", gesture, null));
         }
 
         foreach (var collision in collisions)
         {
             events.Add((collision.StartIndex, "start", null, collision));
-            if (collision.Length > 1)
-            {
-                //events.Add((collision.StartIndex + collision.Length, "end", null, collision));
-            }
-            else
-            {
-                // For AssetSequence with a length of 1, treat the StartIndex as the end index as well
-                //events.Add((collision.StartIndex, "end", null, collision));
-            }
         }
 
         // Sort the events by their index
@@ -753,12 +743,7 @@ public class Recorder : MonoBehaviour
 
             if (lastIndex != currentEvent.Index)
             {
-                var state = CreateState(lastIndex, currentEvent.Index - lastIndex);
-                /*   var state = new State
-                    {
-                        StartIndex = lastIndex,
-                        Length = currentEvent.Index - lastIndex
-                    };*/
+                var state = CreateState(lastIndex, currentEvent.Index - lastIndex - 1);
 
                 if (i > 0)
                 {
@@ -766,22 +751,15 @@ public class Recorder : MonoBehaviour
                     state.Gesture = prevEvent.Gesture;
                     state.Collision = prevEvent.Asset;
                 }
-
-                //states.Add(state);
             }
 
             lastIndex = currentEvent.Index;
         }
 
-        // Handle the last state if needed
+        // Last state
         if (lastIndex < recordedFramesTotal)
         {
             var state = CreateState(lastIndex, recordedFramesTotal - lastIndex);
-            /*var state = new State
-            {
-                StartIndex = lastIndex,
-                Length = recordedFramesTotal - lastIndex
-            };*/
 
             if (events.Count > 0)
             {
@@ -790,15 +768,16 @@ public class Recorder : MonoBehaviour
                 state.Collision = lastEvent.Asset;
             }
 
-            //states.Add(state);
+     
         }
 
-        //return StatesInTimeline;
+        
     }
 
 
     public void CreateStateMachine()
     {
+        RefreshAssetsTimeline(assetTimelinePanelPrefab); 
         CreateStates(gestureSequences, collisionSequencesLists.SelectMany(x => x).ToList(), recordedFramesTotal);
 
         //Print all states and the gesture and asset sequences they contain
@@ -918,35 +897,6 @@ public class Recorder : MonoBehaviour
 
                 }
             }
-        /*
-        //Add OnEnterActions to state
-        foreach (var assetSequences in assetSequencesLists)
-        {
-            foreach (var assetSequence in assetSequences)
-            {
-                if (assetSequence.StartIndex == StatesInTimeline[stateInTimeline].StartIndex)
-                {
-                    //Add the action to the OnEnterActions of state
-                    stateInTimeline.OnEnterActions += () => assetSequence.ActionDelegate();
-                    DebugLogger.Instance.Log("Added action " + assetSequence.Action + " for state " + stateInTimeline.id + " in OnEnterActions");
-                }
-            }
-        }
-        //Add OnExitActions to state
-        foreach (var assetSequences in assetSequencesLists)
-        {
-            foreach (var assetSequence in assetSequences)
-            {
-                if (assetSequence.StartIndex == StatesInTimeline[stateInTimeline].StartIndex + StatesInTimeline[stateInTimeline].Length - 1)
-                {
-                    //Add the action to the OnExitActions of state
-                    stateInTimeline.OnExitActions += () => assetSequence.ActionDelegate();
-                    DebugLogger.Instance.Log("Added action " + assetSequence.Action + " for state " + stateInTimeline.id + " in OnExitActions");
-                }
-            }
-        }*/
-
-
     }
 
 

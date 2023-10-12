@@ -221,10 +221,10 @@ public class AssetPoseRecorder : MonoBehaviour
             }
             else if(recordable.currentRecordingMode == Recordable.RecordingType.Physics)
             {
-                //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "ApplyForce()", true);
-                recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, action: "ApplyForce()", collision: "None", Recordable.RecordingType.ManualAnimation, propagateValueToSubsequentFrames: true);
+                //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "ApplyForce()", true);                
                 //Increment the slider value by frame duration
                 mainRecorder.playbackSlider.value += 1;
+                recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, action: "ApplyForce()", collision: "None", Recordable.RecordingType.ManualAnimation, propagateValueToSubsequentFrames: true);
             }
             else if(recordable.currentRecordingMode == Recordable.RecordingType.Follow)
             {
@@ -321,6 +321,7 @@ public class AssetPoseRecorder : MonoBehaviour
         GameObject obj = Instantiate(cubePrefab, target.position, Quaternion.identity);
         obj.SetActive(true);
         recordableAssets.Add(obj.GetComponentInChildren<Recordable>());
+        mainRecorder.RefreshAssetsTimeline(mainRecorder.assetTimelinePanelPrefab);
         //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
     }
 
@@ -330,6 +331,7 @@ public class AssetPoseRecorder : MonoBehaviour
         GameObject obj = Instantiate(textAsset, target.position, Quaternion.identity);
         obj.SetActive(true);
         recordableAssets.Add(obj.GetComponentInChildren<Recordable>());
+        mainRecorder.RefreshAssetsTimeline(mainRecorder.assetTimelinePanelPrefab);
         //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
     }
 

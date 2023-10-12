@@ -401,6 +401,8 @@ public class Recordable : MonoBehaviour
         if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
         {
             currentRecordingMode = Recordable.RecordingType.Physics;
+            initPosBeforePhysicsSimulation = transform.position;
+            initRotBeforePhysicsSimulation = transform.rotation;
             InsertAssetRecordFrame((int)AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value, action: "ApplyForce()", recordingMode: Recordable.RecordingType.Physics, actionDelegate: () => { GetComponent<Recordable>().ApplyForce(initialVelocity); });
             ApplyForce(initialVelocity);
         }
@@ -410,9 +412,8 @@ public class Recordable : MonoBehaviour
         }
 
         //isAssetRecordingOn = true;
-        initPosBeforePhysicsSimulation = transform.position;
-        initRotBeforePhysicsSimulation = transform.rotation;
-        Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
+
+        //Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
         //isSimulationOn = true;
 
     }
@@ -472,13 +473,14 @@ public class Recordable : MonoBehaviour
     //For assets
     public void ResetPhysicsProperties()
     {
-        //Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
+        Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
+        //Recorder.Instance.isMainPlaybackOn = false;
         DebugLogger.Instance.Log("Resetting physics properties");        
         AssetPoseRecorder.Instance.mainRecorder.playbackSlider.value = oldMainPlaybackSliderValue;
         transform.position = initPosBeforePhysicsSimulation;
         transform.rotation = initRotBeforePhysicsSimulation;
         GetComponent<Rigidbody>().mass = 1f;
-        GetComponent<Collider>().isTrigger = true;
+        GetComponent<Collider>().isTrigger = false;
         GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
         GetComponent<Rigidbody>().useGravity = false;
         Recorder.Instance.RefreshAssetsTimeline(Recorder.Instance.assetTimelinePanelPrefab);
