@@ -272,7 +272,7 @@ public class Recorder : MonoBehaviour
         //playbackUI.SetActive(false);
     }
 
-    public void DetachFromAllParents(Transform transform)
+    /*public void DetachFromAllParents(Transform transform)
     {
         transform.SetParent(null);
         DebugLogger.Instance.Log("Detached " + transform.name + " from all parents");
@@ -305,7 +305,7 @@ public class Recorder : MonoBehaviour
             AssetPoseRecorder.Instance.SpawnText(obj.transform);
         }
         Destroy(obj);
-    }
+    }*/
 
     public int GetSizeOfMainRecordedData(int index)
     {
@@ -743,7 +743,7 @@ public class Recorder : MonoBehaviour
 
             if (lastIndex != currentEvent.Index)
             {
-                var state = CreateState(lastIndex, currentEvent.Index - lastIndex - 1);
+                var state = CreateState(lastIndex, currentEvent.Index - lastIndex);
 
                 if (i > 0)
                 {
@@ -767,11 +767,7 @@ public class Recorder : MonoBehaviour
                 state.Gesture = lastEvent.Gesture;
                 state.Collision = lastEvent.Asset;
             }
-
-     
         }
-
-        
     }
 
 
@@ -880,7 +876,7 @@ public class Recorder : MonoBehaviour
                 foreach (var assetSequence in assetSequences)
                 {
                     int distanceToStateStart = assetSequence.StartIndex - StatesInTimeline[stateInTimeline].StartIndex;
-                    int distanceToStateEnd = StatesInTimeline[stateInTimeline].StartIndex + StatesInTimeline[stateInTimeline].Length - assetSequence.StartIndex;
+                    int distanceToStateEnd = StatesInTimeline[stateInTimeline].StartIndex + StatesInTimeline[stateInTimeline].Length - assetSequence.StartIndex - 1;
                     if (distanceToStateStart >= 0 && distanceToStateEnd >= 0)
                     {
                         if(distanceToStateStart < distanceToStateEnd)

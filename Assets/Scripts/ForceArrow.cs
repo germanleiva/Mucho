@@ -6,7 +6,6 @@ public class ForceArrow : MonoBehaviour
     public Transform arrowHead;
     public Transform arrowBody;
     public LineRenderer lineRenderer;
-    public float mass = 0.01f;
     public int numberOfPoints = 10;
     public float timeInterval = 0.5f;
     public bool isConnectedToAsset = false;

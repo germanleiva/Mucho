@@ -72,6 +72,41 @@ public class Manager : MonoBehaviour
         currAppState = Manager.AppState.PLAYBACK;
     }
 
+    public void CreateCopyOfObject(GameObject obj)
+    {
+        GameObject newObj = Instantiate(obj);
+        newObj.transform.SetParent(obj.transform.parent);
+        newObj.transform.localPosition = obj.transform.localPosition;
+        newObj.transform.localRotation = obj.transform.localRotation;
+        newObj.transform.localScale = obj.transform.localScale;
+        newObj.name = obj.name + "Copy";
+        DetachFromAllParents(obj.transform);
+    }
+
+    public void DetachFromAllParents(Transform transform)
+    {
+        transform.SetParent(null);
+        DebugLogger.Instance.Log("Detached " + transform.name + " from all parents");
+        //controlUI.transform.SetParent(null);
+    }
+
+    public void DestroyCopyAndSpawnAsset(GameObject obj)
+    {
+        if (obj.name.StartsWith("Sphere"))
+        {
+            AssetPoseRecorder.Instance.SpawnSphere(obj.transform);
+        }
+        else if (obj.name.StartsWith("Cube"))
+        {
+            AssetPoseRecorder.Instance.SpawnCube(obj.transform);
+        }
+        else if (obj.name.StartsWith("Text"))
+        {
+            AssetPoseRecorder.Instance.SpawnText(obj.transform);
+        }
+        Destroy(obj);
+    }
+
     public string CleanString(string str)
     {        
         //If the string ends with the substring "Anchor", remove it

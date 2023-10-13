@@ -136,6 +136,9 @@ public class InputManager : MonoBehaviour
         collidingObjectNotified_2 = object2;
     }
 
+    bool rightHandHoldingObject = false;
+    bool leftHandHoldingObject = false;
+
     void ProcessEvents()
     {
         CustomStateMachine sm = CustomStateMachine.Instance;
@@ -173,10 +176,13 @@ public class InputManager : MonoBehaviour
                     if(leftHand.currentGesture == Gesture.LEFTHANDPINCH)
                     {
                         assetInContactWithLeftHand.Follow(leftHand.transform);
+                        leftHandHoldingObject = true;
+
                     }
-                    else if (leftHand.currentGesture == Gesture.LEFTHANDNONE)
+                    else if (leftHand.currentGesture == Gesture.LEFTHANDNONE || leftHandHoldingObject)
                     {
                         assetInContactWithLeftHand.Unfollow();
+                        leftHandHoldingObject = false;
                     }
 
                 }
@@ -187,10 +193,12 @@ public class InputManager : MonoBehaviour
                     if (rightHand.currentGesture == Gesture.RIGHTHANDPINCH)
                     {
                         assetInContactWithRightHand.Follow(rightHand.transform);
+                        rightHandHoldingObject = true;
                     }
-                    else if (rightHand.currentGesture == Gesture.RIGHTHANDNONE)
+                    else if (rightHand.currentGesture == Gesture.RIGHTHANDNONE || rightHandHoldingObject)
                     {
                         assetInContactWithRightHand.Unfollow();
+                        rightHandHoldingObject = false;
                     }
                 }
             }
