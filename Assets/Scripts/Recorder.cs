@@ -89,7 +89,7 @@ public class Recorder : MonoBehaviour
         Manager.Instance.currAppState = Manager.AppState.RECORDING;
         rootPlaybackArea.SetActive(false);
         DebugLogger.Instance.Log("StartRecording");
-        AssetPoseRecorder.Instance.DisableGrabForAllAssets();
+        //AssetPoseRecorder.Instance.DisableGrabForAllAssets();
         foreach (var recordable in objectsToRecord)
         {
             recordable.ResetData();
@@ -128,7 +128,7 @@ public class Recorder : MonoBehaviour
 
         isMainRecordingOn = false;
 
-        AssetPoseRecorder.Instance.EnableGrabForAllAssets();
+        //AssetPoseRecorder.Instance.EnableGrabForAllAssets();
         AssetPoseRecorder.Instance.InitializeRecordFramesForAssets();
 
         LeftHandGestureSequences = GenerateGestureSequences(leftHandTimelinePanel, objectsToRecord[1]);

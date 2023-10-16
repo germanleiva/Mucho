@@ -90,7 +90,7 @@ public class AssetPoseRecorder : MonoBehaviour
                 //recordable.recordedData.Add(new RecordFrameData(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", data.frameNumber));
                 recordable.recordedData.Add(new RecordableFrame(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", "None", null, null, null, data.frameNumber));
             }
-            recordable.InsertAssetRecordFrame(0,  collision: "None", action: "Show()", actionDelegate: () => { recordable.SetVisibility(true); });
+            //recordable.InsertAssetRecordFrame(0,  collision: "None", action: "Show()", actionDelegate: () => { recordable.SetVisibility(true); });
         }
     }
 
@@ -226,12 +226,7 @@ public class AssetPoseRecorder : MonoBehaviour
                 mainRecorder.playbackSlider.value += 1;
                 recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, action: "ApplyForce()", collision: "None", propagateValueToSubsequentFrames: true);
             }
-            else if(recordable.currentRecordingMode == Recordable.RecordingType.Follow)
-            {
-                //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, action: "Follow()", sourceOfAction: "None", propagateValueToSubsequentFrames: true);
-                //Increment the slider value by frame duration
-                //mainRecorder.playbackSlider.value += 1;//Time.deltaTime;
-            }
+
             
         }
 
@@ -245,18 +240,6 @@ public class AssetPoseRecorder : MonoBehaviour
             {
                 if (recordable.playbackObject != null && recordable.recordedData.Count > 0)
                 {
-                    //recordable.recordedData[currentFrameNum].ActionDelegate?.Invoke();
-                    /*if(recordable.recordedData[currentFrameNum].recordingMode == Recordable.RecordingType.Physics || recordable.recordedData[currentFrameNum].recordingMode == Recordable.RecordingType.Follow || recordable.recordedData[currentFrameNum].recordingMode == Recordable.RecordingType.Visibility)
-                    {
-                        recordable.recordedData[currentFrameNum].ActionDelegate?.Invoke();
-                    }
-                    else if(recordable.recordedData[currentFrameNum].recordingMode == Recordable.RecordingType.ManualAnimation)
-                    {
-                        recordable.playbackObject.transform.position = recordable.recordedData[currentFrameNum].rootPosition;
-                        recordable.playbackObject.transform.rotation = recordable.recordedData[currentFrameNum].rootRotation * Quaternion.Euler(recordable.rotationCorrection);
-
-                    }*/
-
                     //DebugLogger.Instance.Log("Playing back " + recordable.playbackObject.name + " at " + currentFrameNum);
                     recordable.transform.position = recordable.recordedData[currentFrameNum].rootPosition;
                     recordable.transform.rotation = recordable.recordedData[currentFrameNum].rootRotation * Quaternion.Euler(recordable.rotationCorrection);
@@ -278,33 +261,6 @@ public class AssetPoseRecorder : MonoBehaviour
             }
         }
     }
-
-    public void EnableGrabForAllAssets()
-    {
-        /*DebugLogger.Instance.Log("Enabling grab for all assets");
-        foreach (var recordable in recordableAssets)
-        {
-            DebugLogger.Instance.Log("Enabling grab for " + recordable.playbackObject.name);
-            //recordable.grabCollider.enabled = true;
-        }*/
-    }
-
-    public void DisableGrabForAllAssets()
-    {
-        /*DebugLogger.Instance.Log("Disabling grab for all assets");
-        foreach (var recordable in recordableAssets)
-        {
-            DebugLogger.Instance.Log("Disabling grab for " + recordable.playbackObject.name);
-            //recordable.grabCollider.enabled = false;
-        }*/
-    }
-
-    public void PokeTest()
-    {
-        Debug.Log("Poke test called");
-    }
-
-
     public void SpawnSphere(Transform target)
     {
         DebugLogger.Instance.Log("Spawned Sphere");
