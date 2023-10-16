@@ -100,7 +100,7 @@ public class State
     private int Length;
 
     public GestureSequence? Gesture { get; set; }
-    public AssetSequence? Collision { get; set; }
+    public AssetAction? Collision { get; set; }
 
     public void OnEnter()
     {

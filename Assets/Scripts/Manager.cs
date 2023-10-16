@@ -107,7 +107,7 @@ public class Manager : MonoBehaviour
         Destroy(obj);
     }
 
-    public string CleanString(string str)
+    public string CleanAssetName(string str)
     {        
         //If the string ends with the substring "Anchor", remove it
         if (str.EndsWith("Anchor"))

@@ -8,7 +8,7 @@ public class InputManager : MonoBehaviour
     public static InputManager Instance { get; private set; }
     public enum Gesture { LEFTHANDNONE, LEFTHANDMENUOPEN, LEFTHANDGRAB, LEFTHANDPINCH, LEFTHANDOPEN, RIGHTHANDNONE, RIGHTHANDGRAB, RIGHTHANDOPEN, RIGHTHANDPINCH};
 
-    public Recordable leftHand, rightHand;
+    public Hand leftHand, rightHand;
 
     public GameObject testBall, testTarget, floor, testHitMessage, testMissMessage;
 
@@ -160,10 +160,6 @@ public class InputManager : MonoBehaviour
 
         if (Manager.Instance.currAppState == Manager.AppState.LIVE)
         {
-            //DebugLogger.Instance.Log("Passing events to state machine");
-            //Print contents of frame
-            //DebugLogger.Instance.Log("Frame Contents:");
-            //DebugLogger.Instance.Log("Left Hand Gesture: " + frame.leftHandGesture + ", Right Hand Gesture: " + frame.rightHandGesture + ",Colliding Object 1: " + frame.collidingObjectThisFrame_1 + ", Colliding Object 2: " + frame.collidingObjectThisFrame_2);
             sm.ProcessFrame(frame);
         }
         else if (Manager.Instance.currAppState == Manager.AppState.INIT || Manager.Instance.currAppState == Manager.AppState.PLAYBACK || Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
@@ -250,23 +246,9 @@ public class GestureSequence
     public int StartIndex { get; set; }
     public int Length { get; set; }
     public InputManager.Gesture GestureType { get; set; }
-    public Action GestureDelegate { get; set; }
+    //public Action GestureDelegate { get; set; }
 }
 
-public class InputTimelineSequence
-{
-    public int StartIndex { get; set; }
-    public int Length { get; set; }
 
-    public GestureSequence LinkToGestureSequence { get; set; }
-    public AssetSequence LinkToCollisionSequence { get; set; }
-    //public Action InputDelegate { get; set; }
-}
 
-public class GestureDelegateSequence
-{
-    public int StartIndex { get; set; }
-    public int Length { get; set; }
-    public Action GestureDelegate { get; set; }
-}
 

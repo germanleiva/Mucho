@@ -1,18 +1,12 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
 using UnityEngine;
 
-//[RequireComponent(typeof(LineRenderer))]
 public class Hand : MonoBehaviour
 {
-    public GameObject playbackObject, playbackObject2, playbackObject3, playbackObject4, playbackObject5;
-    public SkinnedMeshRenderer playbackObject2Renderer, playbackObject3Renderer, playbackObject4Renderer, playbackObject5Renderer;
+    public GameObject playbackObject;//, playbackObject2, playbackObject3, playbackObject4, playbackObject5;
+    //public SkinnedMeshRenderer playbackObject2Renderer, playbackObject3Renderer, playbackObject4Renderer, playbackObject5Renderer;
     public List<HandFrame> recordedData = new();
-    public Collider grabCollider;
-    public GameObject assetMenu;
 
     public Vector3 rotationCorrection; 
     public Vector3 positionCorrection;
@@ -20,11 +14,7 @@ public class Hand : MonoBehaviour
     public Vector3 initPosBeforePhysicsSimulation;
     public Quaternion initRotBeforePhysicsSimulation;
 
-    private float oldMainPlaybackSliderValue = 0;
-
-    public bool isSimulationOn = false;
-
-    public List<GameObject> childObjectsToRecord;
+    public GameObject pinchObj;
 
     [Header("Recordable Index Finger Joints")]
     public GameObject indexJoint1;
@@ -59,29 +49,23 @@ public class Hand : MonoBehaviour
 
     [Header("Misc Properties")]
     public bool showStatus = true;
-    //public Vector3 appliedForce;
-    //public ForceArrow forceArrow;
     public TMPro.TMP_Text playbackGestureText;
     public InputManager.Gesture currentGesture;
 
     public TMPro.TMP_Text gestureText;
-    
 
-    //public GestureManager.Gesture currentRightHandGesture = GestureManager.Gesture.RIGHTHANDNONE;
     
 
     private void Awake()
     {
-        //lineRenderer = lineObject.GetComponent<LineRenderer>();
-        //lineRendererSmoother = lineObject.GetComponent<LineRendererSmoother>();
         //check if playbackObject2, playbackObject3 are null and SetOpacity to 0.5 and 0.25 respectively
-        if(playbackObject2Renderer != null && playbackObject3Renderer != null) //For hands
+        /*if(playbackObject2Renderer != null && playbackObject3Renderer != null) //For hands
         {
             SetOpacity(playbackObject2Renderer, 0.25f);
             SetOpacity(playbackObject3Renderer, 0.15f);
             SetOpacity(playbackObject4Renderer, 0.1f);
             SetOpacity(playbackObject5Renderer, 0.05f);
-        }
+        }*/
     }
 
     public void SetOpacity(SkinnedMeshRenderer renderer, float opacity) //For hands
@@ -139,8 +123,8 @@ public class Hand : MonoBehaviour
     public void Record(int frameNum)
     {
         //If childObjectsToRecord is not empty, then record the position and rotation of each child object
-        bool isNullOrEmpty = childObjectsToRecord?.Any() != true;
-        if(!isNullOrEmpty)//Head or Assets
+        //bool isNullOrEmpty = childObjectsToRecord?.Any() != true;
+        //if(!isNullOrEmpty)//Head or Assets
         { 
             recordedData.Add(new HandFrame(transform.localPosition, transform.localRotation, 
                 indexJoint1, indexJoint2, indexJoint3, 
@@ -148,7 +132,7 @@ public class Hand : MonoBehaviour
                 ringJoint1, ringJoint2, ringJoint3, 
                 pinkyJoint0, pinkyJoint1, pinkyJoint2, pinkyJoint3, 
                 thumbJoint0, thumbJoint1, thumbJoint2, thumbJoint3, 
-                focusSquare.transform.position, focusSquare.transform.rotation, currentGesture, frameNum));
+                focusSquare.transform.position, focusSquare.transform.rotation, currentGesture, pinchObj.transform.position, frameNum));
         }
     }
 
@@ -194,6 +178,8 @@ public class HandFrame
     public FingerJoint pinkyJoint0, pinkyJoint1, pinkyJoint2, pinkyJoint3;
     public FingerJoint thumbJoint0, thumbJoint1, thumbJoint2, thumbJoint3;
 
+    public Vector3 pinchPosition;
+
     //Focus square position and rotation
     public Vector3 focusSquarePosition;
     public Quaternion focusSquareRotation;
@@ -203,7 +189,7 @@ public class HandFrame
 
     public string Action = "None";
 
-    public Recordable.RecordingType recordingMode;
+    //public Recordable.RecordingType recordingMode;
 
     public Action ActionDelegate;
 
@@ -214,7 +200,7 @@ public class HandFrame
 
 
     //Hands
-    public HandFrame(Vector3 _position, Quaternion _rotation, GameObject _indexJoint0, GameObject _indexJoint1, GameObject _indexJoint2, GameObject _middleJoint0, GameObject _middleJoint1, GameObject _middleJoint2, GameObject _ringJoint0, GameObject _ringJoint1, GameObject _ringJoint2, GameObject _pinkyJoint0, GameObject _pinkyJoint1, GameObject _pinkyJoint2, GameObject _pinkyJoint3, GameObject _thumbJoint0, GameObject _thumbJoint1, GameObject _thumbJoint2, GameObject _thumbJoint3, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, InputManager.Gesture  _gesture, int _frameNumber)
+    public HandFrame(Vector3 _position, Quaternion _rotation, GameObject _indexJoint0, GameObject _indexJoint1, GameObject _indexJoint2, GameObject _middleJoint0, GameObject _middleJoint1, GameObject _middleJoint2, GameObject _ringJoint0, GameObject _ringJoint1, GameObject _ringJoint2, GameObject _pinkyJoint0, GameObject _pinkyJoint1, GameObject _pinkyJoint2, GameObject _pinkyJoint3, GameObject _thumbJoint0, GameObject _thumbJoint1, GameObject _thumbJoint2, GameObject _thumbJoint3, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, InputManager.Gesture  _gesture, Vector3 _pinchPosition, int _frameNumber)
     {
         rootPosition = _position;
         rootRotation = _rotation;
@@ -245,6 +231,8 @@ public class HandFrame
         focusSquareRotation = _focusSquareRotation;
 
         gesture = _gesture;
+
+        pinchPosition = _pinchPosition;
 
         frameNumber = _frameNumber;
 
