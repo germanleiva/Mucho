@@ -98,7 +98,7 @@ public class Recorder : MonoBehaviour
         leftHand.ResetData();
         rightHand.ResetData();
         head.ResetData();
-        AssetPoseRecorder.Instance.ResetAssetRecordings();
+        AssetManager.Instance.ResetAssetRecordings();
         //RefreshAssetsTimeline(); 
 
         isMainRecordingOn = true;
@@ -122,7 +122,7 @@ public class Recorder : MonoBehaviour
         isMainRecordingOn = false;
 
         //AssetPoseRecorder.Instance.EnableGrabForAllAssets();
-        AssetPoseRecorder.Instance.InitializeRecordFramesForAssets();
+        AssetManager.Instance.InitializeRecordFramesForAssets();
         RefreshAssetsTimeline();   
 
         PreparePlayback();
@@ -513,7 +513,7 @@ public class Recorder : MonoBehaviour
         int recordableCounter = 0;
         assetSequencesLists.Clear();
         collisionSequencesLists.Clear();
-        foreach (var recordable in AssetPoseRecorder.Instance.recordableAssets)
+        foreach (var recordable in AssetManager.Instance.recordableAssets)
         {
             ++recordableCounter;
             GameObject timelinePanel = Instantiate(assetTimelinePanelPrefab, playbackPanelTransform);

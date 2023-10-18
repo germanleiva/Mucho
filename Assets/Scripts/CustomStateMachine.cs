@@ -66,7 +66,7 @@ public class CustomStateMachine : MonoBehaviour
             }
             else
             {
-                DebugLogger.Instance.Log("Transition NOT applied from " + transition.from + " to " + transition.to);
+                //DebugLogger.Instance.Log("Transition NOT applied from " + transition.from + " to " + transition.to);
             }
         }
 

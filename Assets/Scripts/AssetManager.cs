@@ -5,9 +5,9 @@ using Oculus.Interaction.HandGrab;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class AssetPoseRecorder : MonoBehaviour
+public class AssetManager : MonoBehaviour
 {   
-    public static AssetPoseRecorder Instance { get; private set; }
+    public static AssetManager Instance { get; private set; }
 
     public List <Recordable> recordableAssets = new();
 
@@ -335,3 +335,16 @@ public class AssetPoseRecorder : MonoBehaviour
    
 }
 
+public class AssetAction
+{
+    public string Action { get; set; } //None, Physics, Follow, Show, Hide
+
+    public Action ActionDelegate { get; set; }
+
+    public int StartIndex { get; set; }
+    public int Length { get; set; }
+    //public GestureManager.Gesture GestureType { get; set; }
+
+    public GameObject CollidingObject1 { get; set; }
+    public GameObject CollidingObject2 { get; set; }
+}

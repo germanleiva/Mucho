@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Manager : MonoBehaviour
 {
@@ -94,15 +95,15 @@ public class Manager : MonoBehaviour
     {
         if (obj.name.StartsWith("Sphere"))
         {
-            AssetPoseRecorder.Instance.SpawnSphere(obj.transform);
+            AssetManager.Instance.SpawnSphere(obj.transform);
         }
         else if (obj.name.StartsWith("Cube"))
         {
-            AssetPoseRecorder.Instance.SpawnCube(obj.transform);
+            AssetManager.Instance.SpawnCube(obj.transform);
         }
         else if (obj.name.StartsWith("Text"))
         {
-            AssetPoseRecorder.Instance.SpawnText(obj.transform);
+            AssetManager.Instance.SpawnText(obj.transform);
         }
         Destroy(obj);
     }
@@ -130,6 +131,39 @@ public class Manager : MonoBehaviour
     public void CloseLeftHandMenu()
     {
         leftHandMenu.SetActive(false);
+    }
+
+}
+
+public class Example
+{
+    public static int exampleCount = 0;
+    int exampleId;
+    List<HandFrame> leftHandFrames;
+    List<HandFrame> rightHandFrames;
+
+    List<HeadFrame> headFrames;
+    //Create a dictionary matching assets to the list of their recordable frames
+    Dictionary<Recordable, List<RecordableFrame>> assetDataDict;
+
+    Dictionary<State, StateTimelineUIElement> StatesDict = new();
+
+    public void CreateExample(Button exampleSelectionButton)
+    {
+        ++exampleCount;
+        exampleId = exampleCount;
+        exampleSelectionButton.GetComponentInChildren<TMPro.TMP_Text>().text = exampleId.ToString();
+        leftHandFrames = new List<HandFrame>();
+        rightHandFrames = new List<HandFrame>();
+        headFrames = new List<HeadFrame>();
+        //Add a new example to the list of examples
+        //Create a new example object
+        //Add the example object to the list of examples
+    }
+
+    public void DeleteExample()
+    {
+        //Delete the example from the list of examples
     }
 
 }
