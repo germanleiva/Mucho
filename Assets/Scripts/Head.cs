@@ -65,10 +65,10 @@ public class Head : MonoBehaviour
     }
 
     // Clear the recorded data.
-    public void ResetData()
+    /*public void ResetData()
     {
         recordedData.Clear();
-    }
+    }*/
 
 }
 

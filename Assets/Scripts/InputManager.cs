@@ -162,7 +162,7 @@ public class InputManager : MonoBehaviour
         {
             sm.ProcessFrame(frame);
         }
-        else if (Manager.Instance.currAppState == Manager.AppState.INIT || Manager.Instance.currAppState == Manager.AppState.PLAYBACK || Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
+        else if (Manager.Instance.currAppState == Manager.AppState.INIT || Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
         {
             if(frame.collidingObjectThisFrame_1 != null && frame.collidingObjectThisFrame_2 != null)
             {
@@ -191,7 +191,7 @@ public class InputManager : MonoBehaviour
                         assetInContactWithRightHand.Follow(rightHand.transform);
                         rightHandHoldingObject = true;
                     }
-                    else if (rightHand.currentGesture == Gesture.RIGHTHANDNONE || rightHandHoldingObject)
+                    else if (rightHand.currentGesture == Gesture.RIGHTHANDNONE || rightHand.currentGesture == Gesture.RIGHTHANDOPEN || rightHandHoldingObject)
                     {
                         assetInContactWithRightHand.Unfollow();
                         rightHandHoldingObject = false;

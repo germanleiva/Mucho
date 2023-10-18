@@ -276,9 +276,23 @@ public class Recordable : MonoBehaviour
             currentRecordingMode = Recordable.AssetRecordingType.Physics;
             initPosBeforePhysicsSimulation = transform.position;
             initRotBeforePhysicsSimulation = transform.rotation;
+
+            int _frameStart = (int)Recorder.Instance.playbackSlider.value;
+            for (int i = _frameStart; i < recordedData.Count; i++)
+            {
+                recordedData[i].rootPosition = recordedData[_frameStart].rootPosition;
+                recordedData[i].Action = "None";
+                recordedData[i].ActionDelegate = null;
+                recordedData[i].Collision = "None";
+                recordedData[i].CollisionDelegate = null;
+            }
+
             InsertAssetRecordFrame((int)Recorder.Instance.playbackSlider.value, 
                                     action: "ApplyForce()", 
                                     actionDelegate: () => { GetComponent<Recordable>().ApplyForce(initialVelocity); });
+
+
+
             ApplyForce(initialVelocity);
         }
     }

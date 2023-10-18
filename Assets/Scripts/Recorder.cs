@@ -14,8 +14,6 @@ public class Recorder : MonoBehaviour
 
     [Header("Record & Playback")]
     public GameObject rootPlaybackArea;
-    //public GameObject playbackUI;
-    public GameObject controlUI;
     public Slider playbackSlider;
     public GameObject playButton;
     public Head head;
@@ -63,6 +61,13 @@ public class Recorder : MonoBehaviour
     List<GestureSequence> LeftHandGestureSequences = new();
     List<GestureSequence> RightHandGestureSequences = new();
 
+    public Button firstExampleButton;
+    public Button addExampleButton;
+
+    public Example currentActiveExample;
+
+    public List<Example> examples = new();
+
     void Awake()
     {
         if (Instance == null)
@@ -78,14 +83,35 @@ public class Recorder : MonoBehaviour
 
     void Start()
     {
-        initialize();
+        SetPlaybackObjectsVisibility(false);
+        Example example = new(firstExampleButton);
+        firstExampleButton.onClick.AddListener(() => SelectExample(example));
+        examples.Add(example);
+        currentActiveExample = example;
     }
 
-
-
-    void initialize()
+    public void SelectExample(Example example)
     {
-        rootPlaybackArea.SetActive(false);
+        currentActiveExample = example;
+        foreach (var ex in examples)
+        {
+            ex.button.GetComponent<Image>().color = Color.white;
+        }
+        example.button.GetComponent<Image>().color = Color.green;
+        RefreshAssetsTimeline();
+    }
+
+    public void AddExample()
+    {
+        Example example = new(Instantiate(firstExampleButton, firstExampleButton.transform.parent));
+        example.button.GetComponentInChildren<TMPro.TMP_Text>().text = (examples.Count + 1).ToString();
+        //Place the button 20 units below the previous button
+        example.button.GetComponent<RectTransform>().anchoredPosition = new Vector2(example.button.GetComponent<RectTransform>().anchoredPosition.x, example.button.GetComponent<RectTransform>().anchoredPosition.y - examples.Count * 20);
+        addExampleButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(example.button.GetComponent<RectTransform>().anchoredPosition.x, example.button.GetComponent<RectTransform>().anchoredPosition.y - examples.Count * 20 - 20);
+        example.button.onClick.AddListener(() => SelectExample(example));
+        examples.Add(example);
+        currentActiveExample = example;
+        RefreshAssetsTimeline();
     }
 
     // Start recording.
@@ -95,10 +121,10 @@ public class Recorder : MonoBehaviour
         rootPlaybackArea.SetActive(false);
         DebugLogger.Instance.Log("StartRecording");
 
-        leftHand.ResetData();
-        rightHand.ResetData();
-        head.ResetData();
-        AssetManager.Instance.ResetAssetRecordings();
+        currentActiveExample.ResetData();
+        //rightHand.ResetData();
+        //head.ResetData();
+        //AssetManager.Instance.ResetAssetRecordings();
         //RefreshAssetsTimeline(); 
 
         isMainRecordingOn = true;
@@ -131,6 +157,7 @@ public class Recorder : MonoBehaviour
     public void SetAutomaticPlayMode(bool isAutomatic)
     {
         isAutomaticPlayback = isAutomatic;
+        AssetManager.Instance.HideMiscObjs();
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
     }
 
@@ -247,6 +274,11 @@ public class Recorder : MonoBehaviour
         Manager.Instance.currAppState = Manager.AppState.TEST;
         rootPlaybackArea.SetActive(false);
         //playbackUI.SetActive(false);
+    }
+
+    public void SetPlaybackObjectsVisibility(bool status)
+    {
+        rootPlaybackArea.SetActive(status);
     }
     
     public int GetSizeOfMainRecordedData()
@@ -513,7 +545,7 @@ public class Recorder : MonoBehaviour
         int recordableCounter = 0;
         assetSequencesLists.Clear();
         collisionSequencesLists.Clear();
-        foreach (var recordable in AssetManager.Instance.recordableAssets)
+        foreach (var recordable in currentActiveExample.assets)
         {
             ++recordableCounter;
             GameObject timelinePanel = Instantiate(assetTimelinePanelPrefab, playbackPanelTransform);
@@ -855,124 +887,125 @@ public class Recorder : MonoBehaviour
 
     }
 
-public void PrintDetailsOfStateMachine()
-{
-    DebugLogger.Instance.ClearVRDebugText();
-    DebugLogger.Instance.Log("Printing details of state machine");
-    foreach (var state in StatesDict.Keys)
+    public void PrintDetailsOfStateMachine()
     {
-        state.PrintDetailsOfState(VRConsoleEnabled: true);
-    }
-}
-
-public void MergeToLeftState(StateTimelineUIElement selectedStateUIElement)
-{
-    var selectedState = StatesDict.FirstOrDefault(x => x.Value == selectedStateUIElement).Key;
-    //Find the state to the left of the selected state
-    if (StatesDict.Keys.ToList().IndexOf(selectedState) > 0)
-    {
-        var precedingState = StatesDict.ElementAt(StatesDict.Keys.ToList().IndexOf(selectedState) - 1).Key;
-        var precedingStateUIElement = StatesDict.ElementAt(StatesDict.Keys.ToList().IndexOf(selectedState) - 1).Value;
-        DebugLogger.Instance.Log("Merging state " + selectedState.id + " with state " + precedingState.id);
-        MergeStates(precedingState, selectedState);
-        //precedingStateUIElement.MergeWithStateUIElement(selectedStateUIElement);
-    }
-    else
-    {
-        DebugLogger.Instance.Log("Cannot merge state " + selectedState.id + " with state to the left because it is the first state");
-    }
-
-    //var precedingKey = StatesInTimeline.ElementAt(StatesInTimeline.Keys.ToList().IndexOf(selectedState) - 1);
-}
-
-public void MergeToRightState(StateTimelineUIElement selectedStateUIElement)
-{
-    var selectedState = StatesDict.FirstOrDefault(x => x.Value == selectedStateUIElement).Key;
-    //Find the state to the right of the selected state
-    if (StatesDict.Keys.ToList().IndexOf(selectedState) < StatesDict.Count - 1)
-    {
-        var succeedingState = StatesDict.ElementAt(StatesDict.Keys.ToList().IndexOf(selectedState) + 1).Key;
-        var succeedingStateUIElement = StatesDict.ElementAt(StatesDict.Keys.ToList().IndexOf(selectedState) + 1).Value;
-        DebugLogger.Instance.Log("Merging state " + selectedState.id + " with state " + succeedingState.id);
-        MergeStates(selectedState, succeedingState);
-        //selectedStateUIElement.MergeWithStateUIElement(succeedingStateUIElement);
-    }
-    else
-    {
-        DebugLogger.Instance.Log("Cannot merge state " + selectedState.id + " with state to the right because it is the last state");
-    }
-}
-
-int frameCount = 0;
-
-private void FixedUpdate()
-{
-    if (isMainRecordingOn)
-    {
-        ++frameCount;
-
-        head.Record(frameCount);
-        leftHand.Record(frameCount);
-        rightHand.Record(frameCount);
-
-    }
-    else if (isMainPlaybackOn)
-    {
-
-        if (isAutomaticPlayback)
+        DebugLogger.Instance.ClearVRDebugText();
+        DebugLogger.Instance.Log("Printing details of state machine");
+        foreach (var state in StatesDict.Keys)
         {
-            playbackSlider.value += 1;//Time.deltaTime;
-            if (playbackSlider.value >= recordedFramesTotal)
-            {
-                playbackSlider.value = 0;
-            }
+            state.PrintDetailsOfState(VRConsoleEnabled: true);
+        }
+    }
+
+    public void MergeToLeftState(StateTimelineUIElement selectedStateUIElement)
+    {
+        var selectedState = StatesDict.FirstOrDefault(x => x.Value == selectedStateUIElement).Key;
+        //Find the state to the left of the selected state
+        if (StatesDict.Keys.ToList().IndexOf(selectedState) > 0)
+        {
+            var precedingState = StatesDict.ElementAt(StatesDict.Keys.ToList().IndexOf(selectedState) - 1).Key;
+            var precedingStateUIElement = StatesDict.ElementAt(StatesDict.Keys.ToList().IndexOf(selectedState) - 1).Value;
+            DebugLogger.Instance.Log("Merging state " + selectedState.id + " with state " + precedingState.id);
+            MergeStates(precedingState, selectedState);
+            //precedingStateUIElement.MergeWithStateUIElement(selectedStateUIElement);
+        }
+        else
+        {
+            DebugLogger.Instance.Log("Cannot merge state " + selectedState.id + " with state to the left because it is the first state");
         }
 
-        int currentFrameNum = (int)playbackSlider.value;
+        //var precedingKey = StatesInTimeline.ElementAt(StatesInTimeline.Keys.ToList().IndexOf(selectedState) - 1);
+    }
 
-
-        if (head.playbackObject != null)
+    public void MergeToRightState(StateTimelineUIElement selectedStateUIElement)
+    {
+        var selectedState = StatesDict.FirstOrDefault(x => x.Value == selectedStateUIElement).Key;
+        //Find the state to the right of the selected state
+        if (StatesDict.Keys.ToList().IndexOf(selectedState) < StatesDict.Count - 1)
         {
-            head.playbackObject.transform.localPosition = head.recordedData[currentFrameNum].rootPosition;
-            head.playbackObject.transform.localRotation = head.recordedData[currentFrameNum].rootRotation;
-
-            head.playbackFocusSquare.transform.position = head.recordedData[currentFrameNum].focusSquarePosition;
-            head.playbackFocusSquare.transform.rotation = head.recordedData[currentFrameNum].focusSquareRotation;
+            var succeedingState = StatesDict.ElementAt(StatesDict.Keys.ToList().IndexOf(selectedState) + 1).Key;
+            var succeedingStateUIElement = StatesDict.ElementAt(StatesDict.Keys.ToList().IndexOf(selectedState) + 1).Value;
+            DebugLogger.Instance.Log("Merging state " + selectedState.id + " with state " + succeedingState.id);
+            MergeStates(selectedState, succeedingState);
+            //selectedStateUIElement.MergeWithStateUIElement(succeedingStateUIElement);
         }
-
-        if (leftHand.playbackObject != null)
+        else
         {
-            leftHand.playbackObject.transform.localPosition = leftHand.recordedData[currentFrameNum].rootPosition;
-            leftHand.playbackObject.transform.localRotation = leftHand.recordedData[currentFrameNum].rootRotation * Quaternion.Euler(leftHand.rotationCorrection);//Modify the rotation in the recorded data to add 180 degrees to the  axis
+            DebugLogger.Instance.Log("Cannot merge state " + selectedState.id + " with state to the right because it is the last state");
+        }
+    }
 
-            if (leftHand.playbackObject.GetComponent<HandPlaybackObjectScript>() != null)
+
+    int frameCount = 0;
+
+    private void FixedUpdate()
+    {
+        if (isMainRecordingOn)
+        {
+            ++frameCount;
+
+            head.Record(frameCount);
+            leftHand.Record(frameCount);
+            rightHand.Record(frameCount);
+
+        }
+        else if (isMainPlaybackOn)
+        {
+
+            if (isAutomaticPlayback)
             {
-                leftHand.playbackObject.GetComponent<HandPlaybackObjectScript>().SetPoseForAllFingerJoints(leftHand.recordedData[currentFrameNum]);
-                leftHand.playbackGestureText.text = InputManager.Instance.GestureToString(leftHand.recordedData[currentFrameNum].gesture);
+                playbackSlider.value += 1;//Time.deltaTime;
+                if (playbackSlider.value >= recordedFramesTotal)
+                {
+                    playbackSlider.value = 0;
+                }
             }
 
-            leftHand.playbackFocusSquare.transform.position = leftHand.recordedData[currentFrameNum].focusSquarePosition;
-            leftHand.playbackFocusSquare.transform.rotation = leftHand.recordedData[currentFrameNum].focusSquareRotation;
-        }
+            int currentFrameNum = (int)playbackSlider.value;
 
-        if (rightHand.playbackObject != null)
-        {
-            rightHand.playbackObject.transform.localPosition = rightHand.recordedData[currentFrameNum].rootPosition;
-            rightHand.playbackObject.transform.localRotation = rightHand.recordedData[currentFrameNum].rootRotation * Quaternion.Euler(rightHand.rotationCorrection);
 
-            if (rightHand.playbackObject.GetComponent<HandPlaybackObjectScript>() != null)
+            if (head.playbackObject != null)
             {
-                rightHand.playbackObject.GetComponent<HandPlaybackObjectScript>().SetPoseForAllFingerJoints(rightHand.recordedData[currentFrameNum]);
-                rightHand.playbackGestureText.text = InputManager.Instance.GestureToString(rightHand.recordedData[currentFrameNum].gesture);
+                head.playbackObject.transform.localPosition = head.recordedData[currentFrameNum].rootPosition;
+                head.playbackObject.transform.localRotation = head.recordedData[currentFrameNum].rootRotation;
+
+                head.playbackFocusSquare.transform.position = head.recordedData[currentFrameNum].focusSquarePosition;
+                head.playbackFocusSquare.transform.rotation = head.recordedData[currentFrameNum].focusSquareRotation;
             }
 
-            rightHand.playbackFocusSquare.transform.position = rightHand.recordedData[currentFrameNum].focusSquarePosition;
-            rightHand.playbackFocusSquare.transform.rotation = rightHand.recordedData[currentFrameNum].focusSquareRotation;
+            if (leftHand.playbackObject != null)
+            {
+                leftHand.playbackObject.transform.localPosition = leftHand.recordedData[currentFrameNum].rootPosition;
+                leftHand.playbackObject.transform.localRotation = leftHand.recordedData[currentFrameNum].rootRotation * Quaternion.Euler(leftHand.rotationCorrection);//Modify the rotation in the recorded data to add 180 degrees to the  axis
+
+                if (leftHand.playbackObject.GetComponent<HandPlaybackObjectScript>() != null)
+                {
+                    leftHand.playbackObject.GetComponent<HandPlaybackObjectScript>().SetPoseForAllFingerJoints(leftHand.recordedData[currentFrameNum]);
+                    leftHand.playbackGestureText.text = InputManager.Instance.GestureToString(leftHand.recordedData[currentFrameNum].gesture);
+                }
+
+                leftHand.playbackFocusSquare.transform.position = leftHand.recordedData[currentFrameNum].focusSquarePosition;
+                leftHand.playbackFocusSquare.transform.rotation = leftHand.recordedData[currentFrameNum].focusSquareRotation;
+            }
+
+            if (rightHand.playbackObject != null)
+            {
+                rightHand.playbackObject.transform.localPosition = rightHand.recordedData[currentFrameNum].rootPosition;
+                rightHand.playbackObject.transform.localRotation = rightHand.recordedData[currentFrameNum].rootRotation * Quaternion.Euler(rightHand.rotationCorrection);
+
+                if (rightHand.playbackObject.GetComponent<HandPlaybackObjectScript>() != null)
+                {
+                    rightHand.playbackObject.GetComponent<HandPlaybackObjectScript>().SetPoseForAllFingerJoints(rightHand.recordedData[currentFrameNum]);
+                    rightHand.playbackGestureText.text = InputManager.Instance.GestureToString(rightHand.recordedData[currentFrameNum].gesture);
+                }
+
+                rightHand.playbackFocusSquare.transform.position = rightHand.recordedData[currentFrameNum].focusSquarePosition;
+                rightHand.playbackFocusSquare.transform.rotation = rightHand.recordedData[currentFrameNum].focusSquareRotation;
+            }
+
         }
 
     }
-
-}
 }
 
 

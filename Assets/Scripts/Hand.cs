@@ -137,14 +137,10 @@ public class Hand : MonoBehaviour
     }
 
     // Clear the recorded data.
-    public void ResetData()
+    /*public void ResetData()
     {
         recordedData.Clear();
-        /*if (lineRenderer != null)
-        {
-            lineRenderer.positionCount = 0;
-        }*/
-    }
+    }*/
 
 
     //For hands

@@ -56,6 +56,9 @@ public class Manager : MonoBehaviour
     public void ChangeToLiveMode()
     {
         currAppState = Manager.AppState.LIVE;
+        Recorder.Instance.SetPlaybackObjectsVisibility(false);
+        AssetManager.Instance.HideMiscObjs();
+        AssetManager.Instance.SetAllAssetMenusPokeable(false);
     }
 
     public void ChangeToTestMode()
@@ -70,7 +73,10 @@ public class Manager : MonoBehaviour
 
     public void ChangeToPlaybackMode()
     {
-        currAppState = Manager.AppState.PLAYBACK;
+        currAppState = Manager.AppState.PLAYBACK;        
+        Recorder.Instance.SetPlaybackObjectsVisibility(true);
+        AssetManager.Instance.ShowMiscObjs();
+        AssetManager.Instance.SetAllAssetMenusPokeable(true);
     }
 
     public void CreateCopyOfObject(GameObject obj)
@@ -137,28 +143,47 @@ public class Manager : MonoBehaviour
 
 public class Example
 {
-    public static int exampleCount = 0;
+    //public static int exampleCount = 0;
     int exampleId;
-    List<HandFrame> leftHandFrames;
-    List<HandFrame> rightHandFrames;
+    public List<HandFrame> leftHandData;
+    public List<HandFrame> rightHandData;
+    public List<HeadFrame> headData;
 
-    List<HeadFrame> headFrames;
+    public Button button;
     //Create a dictionary matching assets to the list of their recordable frames
-    Dictionary<Recordable, List<RecordableFrame>> assetDataDict;
+    //Dictionary<Recordable, List<RecordableFrame>> assetDataDict;
+
+    public List<Recordable> assets;
 
     Dictionary<State, StateTimelineUIElement> StatesDict = new();
 
-    public void CreateExample(Button exampleSelectionButton)
+    public Example(Button _button)
     {
-        ++exampleCount;
-        exampleId = exampleCount;
-        exampleSelectionButton.GetComponentInChildren<TMPro.TMP_Text>().text = exampleId.ToString();
-        leftHandFrames = new List<HandFrame>();
-        rightHandFrames = new List<HandFrame>();
-        headFrames = new List<HeadFrame>();
+        //++exampleCount;
+        //exampleId = exampleCount;
+        //_button.GetComponentInChildren<TMPro.TMP_Text>().text = exampleId.ToString();
+        button = _button;
+        //exampleSelectionButton.onClick.AddListener(() => { DebugLogger.Instance.Log("Example " + exampleId + " selected"); });
+        leftHandData = new List<HandFrame>();
+        rightHandData = new List<HandFrame>();
+        headData = new List<HeadFrame>();
+        assets = new List<Recordable>();
         //Add a new example to the list of examples
         //Create a new example object
         //Add the example object to the list of examples
+    }
+
+    public void ResetData()
+    {
+        DebugLogger.Instance.Log("Resetting data for example " + exampleId);
+        leftHandData.Clear();
+        rightHandData.Clear();
+        headData.Clear();
+        //assets.Clear();
+        foreach(Recordable recordable in assets)
+        {
+            recordable.ResetData();
+        }
     }
 
     public void DeleteExample()
