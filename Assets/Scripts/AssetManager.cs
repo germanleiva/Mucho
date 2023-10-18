@@ -88,7 +88,11 @@ public class AssetManager : MonoBehaviour
             for(int i = 0; i < mainRecorder.GetSizeOfMainRecordedData(); i++)
             {
                 //recordable.recordedData.Add(new RecordFrameData(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", i));
-                recordable.recordedData.Add(new RecordableFrame(recordable.gameObject.transform.position, recordable.gameObject.transform.rotation, recordable.showStatus, "None", "None", null, null, null, i));
+                RecordableFrame item = new RecordableFrame(recordable.gameObject.transform.position, recordable.gameObject.transform.rotation, recordable.showStatus, "None", "None", null, null, null, i);
+                //if(item)
+                
+                
+                recordable.recordedData.Add(item);
             }
 
             //recordable.InsertAssetRecordFrame(0,  collision: "None", action: "Show()", actionDelegate: () => { recordable.SetVisibility(true); });

@@ -1660,7 +1660,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToRightHandFocusSquare
         m_Mode: 2
@@ -1810,8 +1810,6 @@ RectTransform:
   m_Children:
   - {fileID: 1597076312}
   - {fileID: 8869884}
-  - {fileID: 1012747551}
-  - {fileID: 1858612239}
   m_Father: {fileID: 994522718}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3917,7 +3915,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToLeftHandFocusSquare
         m_Mode: 2
@@ -5822,7 +5820,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: StartRecording
         m_Mode: 2
@@ -7872,7 +7870,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToRightHandFocusSquare
         m_Mode: 2
@@ -8442,7 +8440,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToLeftHand
         m_Mode: 2
@@ -14324,7 +14322,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToRightHand
         m_Mode: 2
@@ -20167,7 +20165,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToRightHand
         m_Mode: 2
@@ -22659,7 +22657,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: StopRecording
         m_Mode: 2
@@ -22975,7 +22973,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: DeleteAsset
         m_Mode: 2
@@ -25484,7 +25482,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: DeleteAsset
         m_Mode: 2
@@ -28339,7 +28337,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: DeleteAsset
         m_Mode: 2
@@ -32264,7 +32262,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToRightHandFocusSquare
         m_Mode: 2
@@ -36201,7 +36199,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToLeftHand
         m_Mode: 2
@@ -36786,7 +36784,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: StartRecording
         m_Mode: 2
@@ -40338,7 +40336,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToRightHand
         m_Mode: 2
@@ -40667,7 +40665,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToRightHand
         m_Mode: 2
@@ -40885,6 +40883,8 @@ RectTransform:
   m_Children:
   - {fileID: 384089481}
   - {fileID: 1186146835}
+  - {fileID: 1012747551}
+  - {fileID: 1858612239}
   m_Father: {fileID: 994522718}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -44787,7 +44787,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: Detach
         m_Mode: 2
@@ -45836,7 +45836,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: StartRecording
         m_Mode: 2
@@ -47291,7 +47291,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: DeleteAsset
         m_Mode: 2
@@ -49181,7 +49181,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: ShowMiscObjs
         m_Mode: 1
@@ -49523,7 +49523,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: Detach
         m_Mode: 2
@@ -51094,7 +51094,6 @@ GameObject:
   m_Component:
   - component: {fileID: 916638710}
   - component: {fileID: 916638712}
-  - component: {fileID: 916638714}
   - component: {fileID: 916638717}
   - component: {fileID: 916638709}
   - component: {fileID: 916638711}
@@ -51187,30 +51186,6 @@ MonoBehaviour:
   collisionTimelinePanel: {fileID: 706364288}
   statesTimelinePanel: {fileID: 1957605152}
   mergesStatePanel: {fileID: 1766475105}
---- !u!114 &916638714
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 916638708}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 87c958d5fccbdbc4eb6c69923a10c103, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  recordableAssets: []
-  mainRecorder: {fileID: 916638712}
-  spherePrefab: {fileID: 515536004}
-  cubePrefab: {fileID: 0}
-  forceArrowPrefab: {fileID: 1753841434}
-  textAsset: {fileID: 1081786971}
-  hmd: {fileID: 699495481}
-  defaultMaterial: {fileID: 2100000, guid: 71f0d85d7547348b2a60577b68f64656, type: 2}
-  transparentMaterial: {fileID: 2100000, guid: 71a943f4617ff480e8669041be7d9caf, type: 2}
-  translucentMaterial: {fileID: 2100000, guid: c7d04e9743e47b044815091153bfac87, type: 2}
-  movementRecordThreshold: 0.0001
-  playbackSpeed: 0.15
 --- !u!114 &916638715
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -51265,7 +51240,7 @@ MonoBehaviour:
   recordableAssets: []
   mainRecorder: {fileID: 916638712}
   spherePrefab: {fileID: 515536004}
-  cubePrefab: {fileID: 0}
+  cubePrefab: {fileID: 1320316313}
   forceArrowPrefab: {fileID: 1753841434}
   textAsset: {fileID: 1081786971}
   hmd: {fileID: 699495481}
@@ -54144,7 +54119,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: StopRecording
         m_Mode: 2
@@ -56673,7 +56648,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AddForceArrowToAsset
         m_Mode: 2
@@ -57416,7 +57391,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToLeftHand
         m_Mode: 2
@@ -58743,17 +58718,17 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1012747550}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.000044983}
-  m_LocalScale: {x: 1.3359, y: 1.3359, z: 1.3359}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -0}
+  m_LocalScale: {x: 1.3359002, y: 1.3359003, z: 1.3359002}
   m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 21332226}
+  m_Father: {fileID: 739790129}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 87.69995, y: -0.00031281}
+  m_AnchoredPosition: {x: 88, y: -0.6}
   m_SizeDelta: {x: 58.599976, y: 53.2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1012747552
@@ -58902,7 +58877,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToLeftHand
         m_Mode: 2
@@ -59736,7 +59711,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToHeadFocusSquare
         m_Mode: 2
@@ -61148,7 +61123,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 928751482}
   m_Direction: 0
   m_Value: 1
-  m_Size: 0.99999994
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -63928,7 +63903,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: StopRecording
         m_Mode: 2
@@ -64825,7 +64800,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: StopRecording
         m_Mode: 2
@@ -65904,7 +65879,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: DeleteAsset
         m_Mode: 2
@@ -68644,7 +68619,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToHeadFocusSquare
         m_Mode: 2
@@ -73848,7 +73823,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: Detach
         m_Mode: 2
@@ -77625,7 +77600,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToRightHandFocusSquare
         m_Mode: 2
@@ -78686,7 +78661,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: Show
         m_Mode: 2
@@ -81382,7 +81357,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AddForceArrowToAsset
         m_Mode: 2
@@ -81540,7 +81515,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: Hide
         m_Mode: 2
@@ -82677,7 +82652,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToRightHand
         m_Mode: 2
@@ -83161,7 +83136,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToRightHandFocusSquare
         m_Mode: 2
@@ -84565,7 +84540,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: StartRecording
         m_Mode: 2
@@ -84780,7 +84755,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: HideMiscObjs
         m_Mode: 1
@@ -85369,7 +85344,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToLeftHandFocusSquare
         m_Mode: 2
@@ -88451,7 +88426,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToLeftHand
         m_Mode: 2
@@ -88628,7 +88603,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AddForceArrowToAsset
         m_Mode: 2
@@ -91439,7 +91414,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToLeftHandFocusSquare
         m_Mode: 2
@@ -92978,7 +92953,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToHeadFocusSquare
         m_Mode: 2
@@ -93523,7 +93498,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: ShowMiscObjs
         m_Mode: 1
@@ -95106,7 +95081,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: StopRecording
         m_Mode: 2
@@ -97513,7 +97488,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: DeleteAsset
         m_Mode: 2
@@ -98731,7 +98706,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: DeleteAsset
         m_Mode: 2
@@ -99394,7 +99369,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToLeftHandFocusSquare
         m_Mode: 2
@@ -99852,7 +99827,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AddForceArrowToAsset
         m_Mode: 2
@@ -100947,7 +100922,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToLeftHand
         m_Mode: 2
@@ -101841,7 +101816,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: HideMiscObjs
         m_Mode: 1
@@ -103382,7 +103357,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToLeftHandFocusSquare
         m_Mode: 2
@@ -105193,7 +105168,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: SetDistanceFromHand
         m_Mode: 0
@@ -106872,7 +106847,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: DeleteAsset
         m_Mode: 2
@@ -110610,7 +110585,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToHeadFocusSquare
         m_Mode: 2
@@ -110783,7 +110758,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: SetPlaybackSpeed
         m_Mode: 0
@@ -111941,7 +111916,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToHeadFocusSquare
         m_Mode: 2
@@ -112093,17 +112068,17 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1858612238}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.000044983}
-  m_LocalScale: {x: 1.3359, y: 1.3359, z: 1.3359}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0.000106489635}
+  m_LocalScale: {x: 1.3359002, y: 1.3359003, z: 1.3359002}
   m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 21332226}
+  m_Father: {fileID: 739790129}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 87.19995, y: -0.00031281}
+  m_AnchoredPosition: {x: 87.500015, y: -0.59996295}
   m_SizeDelta: {x: 58.599976, y: 53.2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1858612240
@@ -114200,7 +114175,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: DeleteAsset
         m_Mode: 2
@@ -114607,7 +114582,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToHeadFocusSquare
         m_Mode: 2
@@ -115814,7 +115789,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToLeftHandFocusSquare
         m_Mode: 2
@@ -118630,7 +118605,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: DeleteAsset
         m_Mode: 2
@@ -121096,7 +121071,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToRightHandFocusSquare
         m_Mode: 2
@@ -126478,7 +126453,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: StartRecording
         m_Mode: 2
@@ -126688,7 +126663,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: DeleteAsset
         m_Mode: 2
@@ -127434,7 +127409,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AddForceArrowToAsset
         m_Mode: 2
@@ -128600,7 +128575,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916638714}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AssetPoseRecorder, Assembly-CSharp
         m_MethodName: AttachToRightHand
         m_Mode: 2

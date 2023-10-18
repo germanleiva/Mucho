@@ -35,16 +35,29 @@ public class Recordable : MonoBehaviour
 
 
     //For assets
-    public void InsertAssetRecordFrame(int _frameNumber, string action = "None", string collision = "None", Action actionDelegate = null, Action<Frame> collisionDelegate = null, GameObject collidedObject = null, bool propagateValueToSubsequentFrames = false)
+    public void InsertAssetRecordFrame(int frameNumber, string action = "None", string collision = "None", Action actionDelegate = null, Action<Frame> collisionDelegate = null, GameObject collidedObject = null, bool propagateValueToSubsequentFrames = false)
     {
-        RecordableFrame item = new(transform.position, transform.rotation, showStatus, action, collision, actionDelegate, collisionDelegate, collidedObject, _frameNumber);
-        DebugLogger.Instance.Log("Inserting asset record frame at a specific frame number " + _frameNumber);
-        recordedData[_frameNumber] = item;
+        RecordableFrame item = new(transform.position, transform.rotation, showStatus, action, collision, actionDelegate, collisionDelegate, collidedObject, frameNumber);
+        DebugLogger.Instance.Log("Inserting asset record frame at a specific frame number " + frameNumber);
+
+        if(recordedData[frameNumber].ActionDelegate != null)
+        {
+            DebugLogger.Instance.Log("InsertAssetRecordFrame() - Action delegate at frame number " + frameNumber + " is not null. Adding to the existing delegate.");
+            item.ActionDelegate += recordedData[frameNumber].ActionDelegate;
+            item.Action += "," + recordedData[frameNumber].Action;
+        }
+        /*if(recordedData[frameNumber].CollisionDelegate != null)
+        {
+            DebugLogger.Instance.Log("InsertAssetRecordFrame() - Collision delegate at frame number " + frameNumber + " is not null. Adding to the existing delegate.");
+            item.CollisionDelegate += recordedData[frameNumber].CollisionDelegate;
+        }*/
+
+        recordedData[frameNumber] = item;
 
         if (propagateValueToSubsequentFrames) // Propagate the value to subsequent frames
         {
-            DebugLogger.Instance.Log("InsertAssetRecordFrame() - Propagating value to subsequent frames, starting from index " + _frameNumber + " to " + recordedData.Count);
-            for (int i = _frameNumber + 1; i < recordedData.Count; i++)
+            DebugLogger.Instance.Log("InsertAssetRecordFrame() - Propagating value to subsequent frames, starting from index " + frameNumber + " to " + recordedData.Count);
+            for (int i = frameNumber + 1; i < recordedData.Count; i++)
             {
                 //recordedData[i].showStatusForThisFrame = item.showStatusForThisFrame;
                 if (recordedData[i].Action == "ApplyForce()")
@@ -75,8 +88,14 @@ public class Recordable : MonoBehaviour
             DebugLogger.Instance.Log("Recorded hide for  " + base.gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
             InsertAssetRecordFrame((int)AssetManager.Instance.mainRecorder.playbackSlider.value, 
                                     action: "Hide()", 
-                                    actionDelegate: () => { SetVisibility(false); });
+                                    actionDelegate: () => { GetComponent<Recordable>().SetVisibility(false); });
             SetVisibility(false);
+
+            int _frameStart = (int)Recorder.Instance.playbackSlider.value;
+            for (int i = _frameStart; i < recordedData.Count; i++)
+            {
+                recordedData[i].showStatusForThisFrame = false;
+            }
         }
 
         Recorder.Instance.RefreshAssetsTimeline();
@@ -93,8 +112,14 @@ public class Recordable : MonoBehaviour
             DebugLogger.Instance.Log("Recorded show for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
             InsertAssetRecordFrame((int)AssetManager.Instance.mainRecorder.playbackSlider.value, 
                                     action: "Show()", 
-                                    actionDelegate: () => { SetVisibility(true); });
+                                    actionDelegate: () => { GetComponent<Recordable>().SetVisibility(true); });
             SetVisibility(true);
+                    
+            int _frameStart = (int)Recorder.Instance.playbackSlider.value;
+            for (int i = _frameStart; i < recordedData.Count; i++)
+            {
+                recordedData[i].showStatusForThisFrame = true;
+            }
         }
 
         Recorder.Instance.RefreshAssetsTimeline();

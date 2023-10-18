@@ -422,22 +422,22 @@ public class Recorder : MonoBehaviour
                 DebugLogger.Instance.Log("Action delegate found: " + recordable.recordedData[sequence.StartIndex].ActionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordable.recordedData[sequence.StartIndex].ActionDelegate.Method.GetParameters().Select(x => x.Name)));
             }
 
-            if (sequence.Action.StartsWith("Hide"))
+            if (sequence.Action.Contains("Hide"))
             {
                 GameObject hideElement = Instantiate(hideTimelinePanelPrefab, timelinePanel);
                 hideElement.SetActive(true);
                 hideElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(TimelineUIElement.MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex, GetSizeOfMainRecordedData()), hideElement.GetComponent<RectTransform>().anchoredPosition.y);
             }
-            else if (sequence.Action.StartsWith("Show"))
+            else if (sequence.Action.Contains("Show"))
             {
                 GameObject showElement = Instantiate(showTimelinePanelPrefab, timelinePanel);
                 showElement.SetActive(true);
                 showElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(TimelineUIElement.MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex, GetSizeOfMainRecordedData()), showElement.GetComponent<RectTransform>().anchoredPosition.y);
             }
-            else //Other types of events - physics, attach etc
-            {
-                if(recordable.recordedData[sequence.StartIndex].Action != "Unfollow()" && recordable.recordedData[sequence.StartIndex].Action != "ResetPhysics()")
-                    TimelineUIElement.CreateTimelineElement(assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.Action);
+
+            if(sequence.Action.Contains("Follow") || sequence.Action.Contains("ApplyForce")) //Other types of events - physics, attach etc
+            {                
+                TimelineUIElement.CreateTimelineElement(assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.Action);
             }
         }
         return sequences;
@@ -577,7 +577,7 @@ public class Recorder : MonoBehaviour
         {
             previousState = StatesDict.Keys.ToList()[state1Index - 1];
             //Add a transition from the previous state to the new state
-            previousState.ModifyTransitionTo(newState);
+            //previousState.ModifyTransitionTo(newState);
             //previousState.transitions.Clear();  
         }
 
@@ -589,7 +589,7 @@ public class Recorder : MonoBehaviour
         newState.OnExitActions += state1.OnExitActions;
         //Copy the OnExitActions of state2 to the OnExitActions of the new state
         newState.OnExitActions += state2.OnExitActions;
-        newState.CopyTransitionFromState(state2);
+        //newState.CopyTransitionFromState(state2);
 
         //Assign state.id as "State" plus the digits present in state1.id and state2.id
         string state1ID = state1.id;
@@ -833,12 +833,12 @@ public class Recorder : MonoBehaviour
                     {
                         if(distanceToStateStart < distanceToStateEnd)
                         {
-                            DebugLogger.Instance.Log("Adding action " + assetSequence.Action + " for state " + stateInTimeline.id + " in OnEnterActions");
+                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.Action + " for state " + stateInTimeline.id + " in OnEnterActions");
                             stateInTimeline.OnEnterActions += () => assetSequence.ActionDelegate();
                         }
                         else
                         {
-                            DebugLogger.Instance.Log("Adding action " + assetSequence.Action + " for state " + stateInTimeline.id + " in OnExitActions");
+                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.Action + " for state " + stateInTimeline.id + " in OnExitActions");
                             stateInTimeline.OnExitActions += () => assetSequence.ActionDelegate();
                         }
                     }

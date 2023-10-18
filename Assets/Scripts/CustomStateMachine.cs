@@ -99,8 +99,8 @@ public class State
     private int StartIndex;
     private int Length;
 
-    public GestureSequence? Gesture { get; set; }
-    public AssetAction? Collision { get; set; }
+    public GestureSequence Gesture { get; set; }
+    public AssetAction Collision { get; set; }
 
     public void OnEnter()
     {
@@ -147,7 +147,7 @@ public class State
         });
     }
 
-    public void CopyTransitionFromState(State sourceState)
+    /*public void CopyTransitionFromState(State sourceState)
     {
         foreach (var transition in sourceState.transitions)
         {
@@ -166,7 +166,7 @@ public class State
         {
             transition.to = newState;
         }
-    }
+    }*/
 
     public void PrintDetailsOfState(bool VRConsoleEnabled = false)
     {
