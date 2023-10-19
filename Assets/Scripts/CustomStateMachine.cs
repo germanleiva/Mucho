@@ -55,7 +55,7 @@ public class CustomStateMachine : MonoBehaviour
 
     public void ProcessFrame(Frame lastFrameObject)
     {                
-        DebugLogger.Instance.Log("ProcessFrame in the StateMachine");
+        //DebugLogger.Instance.Log("ProcessFrame in the StateMachine");
 
         foreach (var transition in currentState.transitions)
         {

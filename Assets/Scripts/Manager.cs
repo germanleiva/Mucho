@@ -151,6 +151,8 @@ public class Example
     public List<HandFrame> rightHandData;
     public List<HeadFrame> headData;
 
+    public int numberOfRecordedFrames = 0;
+
     public Button button;
     //Create a dictionary matching assets to the list of their recordable frames
     public Dictionary<Recordable, List<RecordableFrame>> assetDataDict;
@@ -191,13 +193,14 @@ public class Example
         leftHandData = example.leftHandData.ToList();
         rightHandData = example.rightHandData.ToList();
         headData = example.headData.ToList();
-        //assets = new List<Recordable>(example.assets);
-        assetDataDict = new Dictionary<Recordable, List<RecordableFrame>>(example.assetDataDict);
-        //Print details of assetDataDict
-        foreach (Recordable recordable in assetDataDict.Keys)
+
+        assetDataDict = example.assetDataDict.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
+        //assetDataDict = new Dictionary<Recordable, List<RecordableFrame>>();
+        /*foreach (Recordable recordable in example.assetDataDict.Keys) //Deep copy! 
         {
-            DebugLogger.Instance.Log("Asset " + recordable.name + " has " + assetDataDict[recordable].Count + " frames");
-        }
+            assetDataDict.Add(recordable, example.assetDataDict[recordable].ToList());
+        }*/
+
     }
 
     public void RefreshAssetsInExample()

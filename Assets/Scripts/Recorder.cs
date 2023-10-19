@@ -87,7 +87,7 @@ public class Recorder : MonoBehaviour
     void Start()
     {
         SetPlaybackObjectsVisibility(false);
-        AddExample();
+        //AddExample();
         /*Example example = new(firstExampleButton);
         firstExampleButton.onClick.AddListener(() => SelectExample(example));
         examples.Add(example);
@@ -102,8 +102,8 @@ public class Recorder : MonoBehaviour
         {
             ex.button.GetComponent<Image>().color = Color.white;
         }
-        example.button.GetComponent<Image>().color = Color.green;
-        PreparePlayback();
+        currentActiveExample.button.GetComponent<Image>().color = Color.green;
+        //PreparePlayback();
         RefreshAssetsTimeline();
     }
 
@@ -124,6 +124,7 @@ public class Recorder : MonoBehaviour
         {
             //Copy data from previous example
             example.CopyExampleDataFrom(examples[examples.Count - 2]);
+            //PreparePlayback();
         }
 
         SelectExample(example);        
@@ -532,6 +533,7 @@ public class Recorder : MonoBehaviour
 
     public void RefreshAssetsTimeline()
     {
+        DebugLogger.Instance.Log("Refreshing assets timeline for example " + currentActiveExample.exampleId);
         //Delete all existing asset timelines
         foreach (var timeline in assetTimelines)
         {
@@ -561,15 +563,15 @@ public class Recorder : MonoBehaviour
 
 
         //GenerateGestureSequences(timelinePanel, recordable);
-        int recordableCounter = 0;
+        int assetsCounter = 0;
         assetSequencesLists.Clear();
         collisionSequencesLists.Clear();
         foreach (var recordable in currentActiveExample.assetDataDict.Keys)
         {
-            ++recordableCounter;
+            ++assetsCounter;
             GameObject timelinePanel = Instantiate(assetTimelinePanelPrefab, playbackPanelTransform);
             assetTimelines.Add(timelinePanel);
-            timelinePanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(timelinePanel.GetComponent<RectTransform>().anchoredPosition.x, timelinePanel.GetComponent<RectTransform>().anchoredPosition.y - recordableCounter * 100);
+            timelinePanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(timelinePanel.GetComponent<RectTransform>().anchoredPosition.x, timelinePanel.GetComponent<RectTransform>().anchoredPosition.y - assetsCounter * 100);
             timelinePanel.SetActive(true);
             timelinePanel.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text = Manager.Instance.CleanAssetName(recordable.name); //Assign asset name
 

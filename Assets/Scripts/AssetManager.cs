@@ -215,7 +215,10 @@ public class AssetManager : MonoBehaviour
     {
         if(Manager.Instance.currAppState == Manager.AppState.LIVE) return;
         
+        if(Recorder.Instance.currentActiveExample == null) return;
+
         //DebugLogger.Instance.Log("Size of assetDataDict: " + Recorder.Instance.currentActiveExample.assetDataDict.Count);
+        
         foreach(Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
         {
             if(recordable.currentRecordingMode == Recordable.AssetRecordingType.ManualAnimation)

@@ -164,7 +164,7 @@ public class Recordable : MonoBehaviour
     public void AttachToLeftHand()
     {
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
-        DebugLogger.Instance.Log("Attach called for " + gameObject.name);
+        DebugLogger.Instance.Log("Attach called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
         currentRecordingMode = Recordable.AssetRecordingType.Follow;
 
         InsertAssetRecordFrame((int)Recorder.Instance.playbackSlider.value, 
@@ -188,8 +188,8 @@ public class Recordable : MonoBehaviour
     //For assets
     public void AttachToRightHand()
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
-        DebugLogger.Instance.Log("Attach called for " + gameObject.name);
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];        
+        DebugLogger.Instance.Log("Attach called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
         currentRecordingMode = Recordable.AssetRecordingType.Follow;
 
         InsertAssetRecordFrame((int)Recorder.Instance.playbackSlider.value, 
