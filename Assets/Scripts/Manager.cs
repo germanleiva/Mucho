@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -143,34 +145,86 @@ public class Manager : MonoBehaviour
 
 public class Example
 {
-    //public static int exampleCount = 0;
-    int exampleId;
+    public static int exampleCount = 0;
+    public int exampleId { get; private set; }
     public List<HandFrame> leftHandData;
     public List<HandFrame> rightHandData;
     public List<HeadFrame> headData;
 
     public Button button;
     //Create a dictionary matching assets to the list of their recordable frames
-    //Dictionary<Recordable, List<RecordableFrame>> assetDataDict;
+    public Dictionary<Recordable, List<RecordableFrame>> assetDataDict;
 
-    public List<Recordable> assets;
+    //public List<Recordable> assets;
 
     Dictionary<State, StateTimelineUIElement> StatesDict = new();
 
     public Example(Button _button)
     {
-        //++exampleCount;
-        //exampleId = exampleCount;
-        //_button.GetComponentInChildren<TMPro.TMP_Text>().text = exampleId.ToString();
+        ++exampleCount;
+        exampleId = exampleCount;
+        _button.GetComponentInChildren<TMPro.TMP_Text>().text = exampleId.ToString();
         button = _button;
+        //exampleId = int.Parse(button.GetComponentInChildren<TMPro.TMP_Text>().text);
         //exampleSelectionButton.onClick.AddListener(() => { DebugLogger.Instance.Log("Example " + exampleId + " selected"); });
         leftHandData = new List<HandFrame>();
         rightHandData = new List<HandFrame>();
         headData = new List<HeadFrame>();
-        assets = new List<Recordable>();
+        //assets = new List<Recordable>();
+        assetDataDict = new Dictionary<Recordable, List<RecordableFrame>>();
+        //Copy assetsInScene to assets
+        foreach (Recordable recordable in Recorder.Instance.assetsInScene)
+        {            
+            //Create a new list of recordable frames for each asset
+            assetDataDict.Add(recordable, new List<RecordableFrame>());            
+        }
         //Add a new example to the list of examples
         //Create a new example object
         //Add the example object to the list of examples
+
+        DebugLogger.Instance.Log("Created example " + exampleId);
+    }
+
+    public void CopyExampleDataFrom(Example example)
+    {
+        DebugLogger.Instance.Log("Copying data from example " + example.exampleId + " to example " + exampleId);
+        leftHandData = example.leftHandData.ToList();
+        rightHandData = example.rightHandData.ToList();
+        headData = example.headData.ToList();
+        //assets = new List<Recordable>(example.assets);
+        assetDataDict = new Dictionary<Recordable, List<RecordableFrame>>(example.assetDataDict);
+        //Print details of assetDataDict
+        foreach (Recordable recordable in assetDataDict.Keys)
+        {
+            DebugLogger.Instance.Log("Asset " + recordable.name + " has " + assetDataDict[recordable].Count + " frames");
+        }
+    }
+
+    public void RefreshAssetsInExample()
+    {
+        //Copy assetsInScene to assets
+        foreach (Recordable recordable in Recorder.Instance.assetsInScene)
+        {
+            //Create a new list of recordable frames for each asset
+            if (!assetDataDict.ContainsKey(recordable))
+            {
+                assetDataDict.Add(recordable, new List<RecordableFrame>());
+            }
+        }
+
+        //Remove assets that are no longer in the scene
+        List<Recordable> assetsToRemove = new List<Recordable>();
+        foreach (Recordable recordable in assetDataDict.Keys)
+        {
+            if (!Recorder.Instance.assetsInScene.Contains(recordable))
+            {
+                assetsToRemove.Add(recordable);
+            }
+        }
+        foreach (Recordable recordable in assetsToRemove)
+        {
+            assetDataDict.Remove(recordable);
+        }
     }
 
     public void ResetData()
@@ -180,9 +234,9 @@ public class Example
         rightHandData.Clear();
         headData.Clear();
         //assets.Clear();
-        foreach(Recordable recordable in assets)
+        foreach(Recordable recordable in assetDataDict.Keys)
         {
-            recordable.ResetData();
+            assetDataDict[recordable].Clear();
         }
     }
 

@@ -4,7 +4,7 @@ using UnityEngine;
 public class Head : MonoBehaviour
 {
     public GameObject playbackObject;
-    public List<HeadFrame> recordedData = new();
+    //public List<HeadFrame> recordedData = new();
 
     public Vector3 rotationCorrection; 
     public Vector3 positionCorrection;
@@ -61,7 +61,7 @@ public class Head : MonoBehaviour
 
     public void Record(int frameNum)
     {
-        recordedData.Add(new HeadFrame(transform.position, transform.rotation, focusSquare.transform.position, focusSquare.transform.rotation, frameNum));       
+        Recorder.Instance.currentActiveExample.headData.Add(new HeadFrame(transform.position, transform.rotation, focusSquare.transform.position, focusSquare.transform.rotation, frameNum));       
     }
 
     // Clear the recorded data.

@@ -6,7 +6,7 @@ public class Hand : MonoBehaviour
 {
     public GameObject playbackObject;//, playbackObject2, playbackObject3, playbackObject4, playbackObject5;
     //public SkinnedMeshRenderer playbackObject2Renderer, playbackObject3Renderer, playbackObject4Renderer, playbackObject5Renderer;
-    public List<HandFrame> recordedData = new();
+    //public List<HandFrame> recordedData = new();
 
     public Vector3 rotationCorrection; 
     public Vector3 positionCorrection;
@@ -120,13 +120,12 @@ public class Hand : MonoBehaviour
         }
     }
 
-    public void Record(int frameNum)
+    public void Record(int frameNum, string handStr)
     {
-        //If childObjectsToRecord is not empty, then record the position and rotation of each child object
-        //bool isNullOrEmpty = childObjectsToRecord?.Any() != true;
-        //if(!isNullOrEmpty)//Head or Assets
+        var hand = handStr.Equals("lefthand") ? Recorder.Instance.currentActiveExample.leftHandData : Recorder.Instance.currentActiveExample.rightHandData;
+
         { 
-            recordedData.Add(new HandFrame(transform.localPosition, transform.localRotation, 
+            hand.Add(new HandFrame(transform.localPosition, transform.localRotation, 
                 indexJoint1, indexJoint2, indexJoint3, 
                 middleJoint1, middleJoint2, middleJoint3, 
                 ringJoint1, ringJoint2, ringJoint3, 

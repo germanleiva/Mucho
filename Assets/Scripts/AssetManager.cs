@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Assets.OVR.Scripts;
 using Oculus.Interaction;
 using Oculus.Interaction.HandGrab;
 using UnityEngine;
@@ -76,15 +77,15 @@ public class AssetManager : MonoBehaviour
 
     public void ExpandRecordFramesForAssets(int size)
     {
-        foreach(Recordable recordable in Recorder.Instance.currentActiveExample.assets)
+        /*foreach(Recordable recordable in Recorder.Instance.currentActiveExample.assets)
         {
             recordable.recordedData.Capacity = size;
-        }
+        }*/
     }
 
     public void InitializeRecordFramesForAssets()
     {
-        foreach(Recordable recordable in Recorder.Instance.currentActiveExample.assets)
+        foreach(Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
         {
             for(int i = 0; i < mainRecorder.GetSizeOfMainRecordedData(); i++)
             {
@@ -93,7 +94,8 @@ public class AssetManager : MonoBehaviour
                 //if(item)
                 
                 
-                recordable.recordedData.Add(item);
+                //recordable.recordedData.Add(item);
+                Recorder.Instance.currentActiveExample.assetDataDict[recordable].Add(item); 
             }
 
             //recordable.InsertAssetRecordFrame(0,  collision: "None", action: "Show()", actionDelegate: () => { recordable.SetVisibility(true); });
@@ -124,10 +126,10 @@ public class AssetManager : MonoBehaviour
         for (int i = firstFrameOfManualRecording; i <= lastFrameOfManualRecording; i++)
         {
             // Get the RecordFrameData for the current frame
-            var assetFrameData = recordable.recordedData[i];
-            var headFrameData = mainRecorder.head.recordedData[i];//mainRecorder.objectsToRecord[0].recordedData[i];
-            var leftHandFrameData = mainRecorder.leftHand.recordedData[i];
-            var rightHandFrameData = mainRecorder.rightHand.recordedData[i];
+            var assetFrameData = Recorder.Instance.currentActiveExample.assetDataDict[recordable][i];
+            var headFrameData = Recorder.Instance.currentActiveExample.headData[i];//mainRecorder.objectsToRecord[0].recordedData[i];
+            var leftHandFrameData = Recorder.Instance.currentActiveExample.leftHandData[i];
+            var rightHandFrameData = Recorder.Instance.currentActiveExample.rightHandData[i];
 
             // Calculate the distances to the left hand, right hand, left focus square, and right focus square
             // Note: We need to replace the placeholders below with the actual way to access the positions of these objects
@@ -212,8 +214,9 @@ public class AssetManager : MonoBehaviour
     private void FixedUpdate()
     {
         if(Manager.Instance.currAppState == Manager.AppState.LIVE) return;
-
-        foreach(Recordable recordable in Recorder.Instance.currentActiveExample.assets)
+        
+        //DebugLogger.Instance.Log("Size of assetDataDict: " + Recorder.Instance.currentActiveExample.assetDataDict.Count);
+        foreach(Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
         {
             if(recordable.currentRecordingMode == Recordable.AssetRecordingType.ManualAnimation)
             {
@@ -246,15 +249,16 @@ public class AssetManager : MonoBehaviour
             //float currentTime = Time.time - recordStartTime;
             int currentFrameNum = (int)mainRecorder.playbackSlider.value;
             
-            foreach (var recordable in Recorder.Instance.currentActiveExample.assets)
+            foreach (var recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
             {
-                if (recordable.gameObject != null && recordable.recordedData.Count > 0)
+                var data = Recorder.Instance.currentActiveExample.assetDataDict[recordable];
+                if (recordable.gameObject != null && data.Count > 0)
                 {
                     //DebugLogger.Instance.Log("Playing back " + recordable.playbackObject.name + " at " + currentFrameNum);
-                    recordable.transform.position = recordable.recordedData[currentFrameNum].rootPosition;
-                    recordable.transform.rotation = recordable.recordedData[currentFrameNum].rootRotation; 
+                    recordable.transform.position = data[currentFrameNum].rootPosition;
+                    recordable.transform.rotation = data[currentFrameNum].rootRotation; 
 
-                    if (recordable.recordedData[currentFrameNum].showStatusForThisFrame)
+                    if (data[currentFrameNum].showStatusForThisFrame)
                     {
                         //DebugLogger.Instance.Log("Showing " + recordable.playbackObject.name + " at " + currentFrameNum);
                         recordable.gameObject.GetComponent<MeshRenderer>().material = defaultMaterial;
@@ -276,7 +280,8 @@ public class AssetManager : MonoBehaviour
         DebugLogger.Instance.Log("Spawned Sphere");
         GameObject obj = Instantiate(spherePrefab, target.position, Quaternion.identity);
         obj.SetActive(true);
-        Recorder.Instance.currentActiveExample.assets.Add(obj.GetComponentInChildren<Recordable>());
+        Recorder.Instance.assetsInScene.Add(obj.GetComponentInChildren<Recordable>());
+        Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
         mainRecorder.RefreshAssetsTimeline();
         //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
     }
@@ -286,7 +291,8 @@ public class AssetManager : MonoBehaviour
         DebugLogger.Instance.Log("Spawned Cube");
         GameObject obj = Instantiate(cubePrefab, target.position, Quaternion.identity);
         obj.SetActive(true);
-        Recorder.Instance.currentActiveExample.assets.Add(obj.GetComponentInChildren<Recordable>());
+        Recorder.Instance.assetsInScene.Add(obj.GetComponentInChildren<Recordable>());
+        Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
         mainRecorder.RefreshAssetsTimeline();
         //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
     }
@@ -296,7 +302,8 @@ public class AssetManager : MonoBehaviour
         DebugLogger.Instance.Log("Spawned Text");
         GameObject obj = Instantiate(textAsset, target.position, Quaternion.identity);
         obj.SetActive(true);
-        Recorder.Instance.currentActiveExample.assets.Add(obj.GetComponentInChildren<Recordable>());
+        Recorder.Instance.assetsInScene.Add(obj.GetComponentInChildren<Recordable>());
+        Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
         mainRecorder.RefreshAssetsTimeline();
         //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
     }
@@ -304,13 +311,14 @@ public class AssetManager : MonoBehaviour
     public void DeleteAsset(GameObject obj)
     {
         DebugLogger.Instance.Log("Deleted " + obj.name);        
-        Recorder.Instance.currentActiveExample.assets.Remove(obj.GetComponentInChildren<Recordable>());
+        Recorder.Instance.assetsInScene.Remove(obj.GetComponentInChildren<Recordable>());
+        Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
         Destroy(obj);
     }
 
     public void HideMiscObjs()
     {
-        foreach (Recordable recordable in Recorder.Instance.currentActiveExample.assets)
+        foreach (Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
         {
             recordable.assetMenu.SetActive(false);
         }
@@ -318,7 +326,7 @@ public class AssetManager : MonoBehaviour
 
     public void ShowMiscObjs()
     {
-        foreach (Recordable recordable in Recorder.Instance.currentActiveExample.assets)
+        foreach (Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
         {
             recordable.assetMenu.SetActive(true);
         }
@@ -326,7 +334,7 @@ public class AssetManager : MonoBehaviour
 
     public void SetAllAssetMenusPokeable(bool status)
     {
-        foreach (Recordable recordable in Recorder.Instance.currentActiveExample.assets)
+        foreach (Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
         {
             recordable.GetComponent<PokeInteractable>().enabled = status;
         }

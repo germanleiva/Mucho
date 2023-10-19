@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -61,7 +62,9 @@ public class Recorder : MonoBehaviour
     List<GestureSequence> LeftHandGestureSequences = new();
     List<GestureSequence> RightHandGestureSequences = new();
 
-    public Button firstExampleButton;
+    public List<Recordable> assetsInScene = new();
+
+    public GameObject firstExampleButtonObj;
     public Button addExampleButton;
 
     public Example currentActiveExample;
@@ -84,34 +87,46 @@ public class Recorder : MonoBehaviour
     void Start()
     {
         SetPlaybackObjectsVisibility(false);
-        Example example = new(firstExampleButton);
+        AddExample();
+        /*Example example = new(firstExampleButton);
         firstExampleButton.onClick.AddListener(() => SelectExample(example));
         examples.Add(example);
-        currentActiveExample = example;
+        currentActiveExample = example;*/
     }
 
     public void SelectExample(Example example)
     {
+        DebugLogger.Instance.Log("Selecting example " + example.exampleId);
         currentActiveExample = example;
         foreach (var ex in examples)
         {
             ex.button.GetComponent<Image>().color = Color.white;
         }
         example.button.GetComponent<Image>().color = Color.green;
+        PreparePlayback();
         RefreshAssetsTimeline();
     }
 
     public void AddExample()
-    {
-        Example example = new(Instantiate(firstExampleButton, firstExampleButton.transform.parent));
-        example.button.GetComponentInChildren<TMPro.TMP_Text>().text = (examples.Count + 1).ToString();
+    {        
+        var obj = Instantiate(firstExampleButtonObj, firstExampleButtonObj.transform.parent);
+        obj.SetActive(true);
+        Example example = new(obj.GetComponent<Button>());
+        examples.Add(example);
+        //example.button.GetComponentInChildren<TMPro.TMP_Text>().text = (examples.Count + 1).ToString();
         //Place the button 20 units below the previous button
         example.button.GetComponent<RectTransform>().anchoredPosition = new Vector2(example.button.GetComponent<RectTransform>().anchoredPosition.x, example.button.GetComponent<RectTransform>().anchoredPosition.y - examples.Count * 20);
-        addExampleButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(example.button.GetComponent<RectTransform>().anchoredPosition.x, example.button.GetComponent<RectTransform>().anchoredPosition.y - examples.Count * 20 - 20);
-        example.button.onClick.AddListener(() => SelectExample(example));
-        examples.Add(example);
-        currentActiveExample = example;
-        RefreshAssetsTimeline();
+        addExampleButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(addExampleButton.GetComponent<RectTransform>().anchoredPosition.x, addExampleButton.GetComponent<RectTransform>().anchoredPosition.y - 20);
+        example.button.onClick.AddListener(() => SelectExample(example));       
+        
+
+        if (examples.Count >= 2)
+        {
+            //Copy data from previous example
+            example.CopyExampleDataFrom(examples[examples.Count - 2]);
+        }
+
+        SelectExample(example);        
     }
 
     // Start recording.
@@ -141,9 +156,9 @@ public class Recorder : MonoBehaviour
     {
         rootPlaybackArea.SetActive(true);
 
-        DebugLogger.Instance.Log("Size of recordedData head: " + head.recordedData.Count);
-        DebugLogger.Instance.Log("Size of recordedData leftHand: " + leftHand.recordedData.Count);
-        DebugLogger.Instance.Log("Size of recordedData rightHand: " + rightHand.recordedData.Count);
+        DebugLogger.Instance.Log("Size of recordedData head: " + currentActiveExample.headData.Count);
+        DebugLogger.Instance.Log("Size of recordedData leftHand: " + currentActiveExample.leftHandData.Count);
+        DebugLogger.Instance.Log("Size of recordedData rightHand: " + currentActiveExample.rightHandData.Count);
 
         isMainRecordingOn = false;
 
@@ -176,9 +191,9 @@ public class Recorder : MonoBehaviour
             leftHand.playbackObject.SetActive(true);
             rightHand.playbackObject.SetActive(true);
 
-            if (head.recordedData.Count > 0)
+            if (currentActiveExample.headData.Count > 0)
             {
-                framesTotal = Mathf.Max(framesTotal, head.recordedData[head.recordedData.Count - 1].frameNumber);
+                framesTotal = Mathf.Max(framesTotal, currentActiveExample.headData[currentActiveExample.headData.Count - 1].frameNumber);
             }
 
             playButton.SetActive(true);
@@ -284,7 +299,7 @@ public class Recorder : MonoBehaviour
     public int GetSizeOfMainRecordedData()
     {
         //return objectsToRecord[0].recordedData.Count;
-        return head.recordedData.Count;
+        return currentActiveExample.headData.Count;
     }
     public void ExpandRecordedData(int size)
     {
@@ -364,10 +379,11 @@ public class Recorder : MonoBehaviour
 
 
 
-    public List<GestureSequence> GenerateGestureSequences(RectTransform timelinePanel, Hand hand)
+    public List<GestureSequence> GenerateGestureSequences(RectTransform timelinePanel, string handStr)
     {
-        DebugLogger.Instance.Log("Generating gesture sequences for " + hand.name);
-        List<InputManager.Gesture> gestures = hand.recordedData.Select(x => x.gesture).ToList();
+        var hand = handStr.Equals("lefthand") ? Recorder.Instance.currentActiveExample.leftHandData : Recorder.Instance.currentActiveExample.rightHandData;
+        DebugLogger.Instance.Log("Generating gesture sequences for " + handStr);
+        List<InputManager.Gesture> gestures = hand.Select(x => x.gesture).ToList();
         List<GestureSequence> GestureSequences = GetContinuousGestureSequences(gestures);
         foreach (GestureSequence sequence in GestureSequences)
         {
@@ -442,16 +458,18 @@ public class Recorder : MonoBehaviour
     {
         DebugLogger.Instance.Log("Generating asset action sequences for " + recordable.name);
 
-        List<string> changes = recordable.recordedData.Select(x => x.Action).ToList();
+        var recordedData = currentActiveExample.assetDataDict[recordable]; 
+
+        List<string> changes = recordedData.Select(x => x.Action).ToList();
         List<AssetAction> sequences = GetContinuousChangeSequences(changes);
         foreach (AssetAction sequence in sequences)
         {
             //DebugLogger.Instance.Log("Sequence name: " + sequence.Action + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
             //DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
-            if (recordable.recordedData[sequence.StartIndex].ActionDelegate != null)
+            if (recordedData[sequence.StartIndex].ActionDelegate != null)
             {
-                sequence.ActionDelegate = recordable.recordedData[sequence.StartIndex].ActionDelegate;
-                DebugLogger.Instance.Log("Action delegate found: " + recordable.recordedData[sequence.StartIndex].ActionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordable.recordedData[sequence.StartIndex].ActionDelegate.Method.GetParameters().Select(x => x.Name)));
+                sequence.ActionDelegate = recordedData[sequence.StartIndex].ActionDelegate;
+                DebugLogger.Instance.Log("Action delegate found: " + recordedData[sequence.StartIndex].ActionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordedData[sequence.StartIndex].ActionDelegate.Method.GetParameters().Select(x => x.Name)));
             }
 
             if (sequence.Action.Contains("Hide"))
@@ -478,22 +496,23 @@ public class Recorder : MonoBehaviour
     public List<AssetAction> GenerateCollisionSequences(RectTransform collisionTimelinePanelTransform, Recordable recordable) //Strong assumption that all sources of action come from collision
     {
         DebugLogger.Instance.Log("Generating collision sequences for " + recordable.name);
+        var recordedData = currentActiveExample.assetDataDict[recordable]; 
         try
         {
-            List<string> sourcesOfChanges = recordable.recordedData.Select(x => x.Collision).ToList();
+            List<string> sourcesOfChanges = recordedData.Select(x => x.Collision).ToList();
             List<AssetAction> sequences = GetContinuousChangeSequences(sourcesOfChanges);
             foreach (AssetAction sequence in sequences)
             {
                 //DebugLogger.Instance.Log("Collision sequence name: " + sequence.Action + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
                 //DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex + sequence.Length));
 
-                if (recordable.recordedData[sequence.StartIndex].CollisionDelegate != null)
-                    DebugLogger.Instance.Log("Collision delegate found: " + recordable.recordedData[sequence.StartIndex].CollisionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordable.recordedData[sequence.StartIndex].CollisionDelegate.Method.GetParameters().Select(x => x.Name)));
-                if (recordable.recordedData[sequence.StartIndex].CollidedObject != null)
+                if (recordedData[sequence.StartIndex].CollisionDelegate != null)
+                    DebugLogger.Instance.Log("Collision delegate found: " + recordedData[sequence.StartIndex].CollisionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordedData[sequence.StartIndex].CollisionDelegate.Method.GetParameters().Select(x => x.Name)));
+                if (recordedData[sequence.StartIndex].CollidedObject != null)
                 {
-                    DebugLogger.Instance.Log("Collided object: " + recordable.recordedData[sequence.StartIndex].CollidedObject.name);
+                    DebugLogger.Instance.Log("Collided object: " + recordedData[sequence.StartIndex].CollidedObject.name);
                     sequence.CollidingObject1 = recordable.gameObject;
-                    sequence.CollidingObject2 = recordable.recordedData[sequence.StartIndex].CollidedObject;
+                    sequence.CollidingObject2 = recordedData[sequence.StartIndex].CollidedObject;
                 }
 
                 TimelineUIElement.CreateTimelineElement(collisionTimelineElementPrefab, collisionTimelinePanelTransform, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.Action);
@@ -526,7 +545,7 @@ public class Recorder : MonoBehaviour
         }
 
         //Delete all existing left and right hand timeline elements
-        for (int i = 2; i < leftHandTimelinePanel.GetComponent<RectTransform>().childCount; i++)
+        for (int i = 1; i < leftHandTimelinePanel.GetComponent<RectTransform>().childCount; i++)
         {
             Destroy(leftHandTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
         }
@@ -536,8 +555,8 @@ public class Recorder : MonoBehaviour
         }
 
         //Generate gesture sequences for left and right hand
-        LeftHandGestureSequences = GenerateGestureSequences(leftHandTimelinePanel, leftHand);
-        RightHandGestureSequences = GenerateGestureSequences(rightHandTimelinePanel, rightHand);
+        LeftHandGestureSequences = GenerateGestureSequences(leftHandTimelinePanel, "lefthand");
+        RightHandGestureSequences = GenerateGestureSequences(rightHandTimelinePanel, "righthand");
         gestureSequences = LeftHandGestureSequences.Concat(RightHandGestureSequences).ToList();
 
 
@@ -545,7 +564,7 @@ public class Recorder : MonoBehaviour
         int recordableCounter = 0;
         assetSequencesLists.Clear();
         collisionSequencesLists.Clear();
-        foreach (var recordable in currentActiveExample.assets)
+        foreach (var recordable in currentActiveExample.assetDataDict.Keys)
         {
             ++recordableCounter;
             GameObject timelinePanel = Instantiate(assetTimelinePanelPrefab, playbackPanelTransform);
@@ -554,7 +573,7 @@ public class Recorder : MonoBehaviour
             timelinePanel.SetActive(true);
             timelinePanel.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text = Manager.Instance.CleanAssetName(recordable.name); //Assign asset name
 
-            if (recordable.recordedData.Count > 0)
+            if (currentActiveExample.assetDataDict[recordable].Count > 0)
             {
                 assetSequencesLists.Add(GenerateAssetActionSequences(timelinePanel.GetComponent<RectTransform>(), recordable));
                 collisionSequencesLists.Add(GenerateCollisionSequences(collisionTimelinePanel.GetComponent<RectTransform>(), recordable));
@@ -945,8 +964,8 @@ public class Recorder : MonoBehaviour
             ++frameCount;
 
             head.Record(frameCount);
-            leftHand.Record(frameCount);
-            rightHand.Record(frameCount);
+            leftHand.Record(frameCount, "lefthand");
+            rightHand.Record(frameCount, "righthand");
 
         }
         else if (isMainPlaybackOn)
@@ -966,41 +985,41 @@ public class Recorder : MonoBehaviour
 
             if (head.playbackObject != null)
             {
-                head.playbackObject.transform.localPosition = head.recordedData[currentFrameNum].rootPosition;
-                head.playbackObject.transform.localRotation = head.recordedData[currentFrameNum].rootRotation;
+                head.playbackObject.transform.localPosition = currentActiveExample.headData[currentFrameNum].rootPosition;
+                head.playbackObject.transform.localRotation = currentActiveExample.headData[currentFrameNum].rootRotation;
 
-                head.playbackFocusSquare.transform.position = head.recordedData[currentFrameNum].focusSquarePosition;
-                head.playbackFocusSquare.transform.rotation = head.recordedData[currentFrameNum].focusSquareRotation;
+                head.playbackFocusSquare.transform.position = currentActiveExample.headData[currentFrameNum].focusSquarePosition;
+                head.playbackFocusSquare.transform.rotation = currentActiveExample.headData[currentFrameNum].focusSquareRotation;
             }
 
             if (leftHand.playbackObject != null)
             {
-                leftHand.playbackObject.transform.localPosition = leftHand.recordedData[currentFrameNum].rootPosition;
-                leftHand.playbackObject.transform.localRotation = leftHand.recordedData[currentFrameNum].rootRotation * Quaternion.Euler(leftHand.rotationCorrection);//Modify the rotation in the recorded data to add 180 degrees to the  axis
+                leftHand.playbackObject.transform.localPosition = currentActiveExample.leftHandData[currentFrameNum].rootPosition;
+                leftHand.playbackObject.transform.localRotation = currentActiveExample.leftHandData[currentFrameNum].rootRotation * Quaternion.Euler(leftHand.rotationCorrection);//Modify the rotation in the recorded data to add 180 degrees to the  axis
 
                 if (leftHand.playbackObject.GetComponent<HandPlaybackObjectScript>() != null)
                 {
-                    leftHand.playbackObject.GetComponent<HandPlaybackObjectScript>().SetPoseForAllFingerJoints(leftHand.recordedData[currentFrameNum]);
-                    leftHand.playbackGestureText.text = InputManager.Instance.GestureToString(leftHand.recordedData[currentFrameNum].gesture);
+                    leftHand.playbackObject.GetComponent<HandPlaybackObjectScript>().SetPoseForAllFingerJoints(currentActiveExample.leftHandData[currentFrameNum]);
+                    leftHand.playbackGestureText.text = InputManager.Instance.GestureToString(currentActiveExample.leftHandData[currentFrameNum].gesture);
                 }
 
-                leftHand.playbackFocusSquare.transform.position = leftHand.recordedData[currentFrameNum].focusSquarePosition;
-                leftHand.playbackFocusSquare.transform.rotation = leftHand.recordedData[currentFrameNum].focusSquareRotation;
+                leftHand.playbackFocusSquare.transform.position = currentActiveExample.leftHandData[currentFrameNum].focusSquarePosition;
+                leftHand.playbackFocusSquare.transform.rotation = currentActiveExample.leftHandData[currentFrameNum].focusSquareRotation;
             }
 
             if (rightHand.playbackObject != null)
             {
-                rightHand.playbackObject.transform.localPosition = rightHand.recordedData[currentFrameNum].rootPosition;
-                rightHand.playbackObject.transform.localRotation = rightHand.recordedData[currentFrameNum].rootRotation * Quaternion.Euler(rightHand.rotationCorrection);
+                rightHand.playbackObject.transform.localPosition = currentActiveExample.rightHandData[currentFrameNum].rootPosition;
+                rightHand.playbackObject.transform.localRotation = currentActiveExample.rightHandData[currentFrameNum].rootRotation * Quaternion.Euler(rightHand.rotationCorrection);
 
                 if (rightHand.playbackObject.GetComponent<HandPlaybackObjectScript>() != null)
                 {
-                    rightHand.playbackObject.GetComponent<HandPlaybackObjectScript>().SetPoseForAllFingerJoints(rightHand.recordedData[currentFrameNum]);
-                    rightHand.playbackGestureText.text = InputManager.Instance.GestureToString(rightHand.recordedData[currentFrameNum].gesture);
+                    rightHand.playbackObject.GetComponent<HandPlaybackObjectScript>().SetPoseForAllFingerJoints(currentActiveExample.rightHandData[currentFrameNum]);
+                    rightHand.playbackGestureText.text = InputManager.Instance.GestureToString(currentActiveExample.rightHandData[currentFrameNum].gesture);
                 }
 
-                rightHand.playbackFocusSquare.transform.position = rightHand.recordedData[currentFrameNum].focusSquarePosition;
-                rightHand.playbackFocusSquare.transform.rotation = rightHand.recordedData[currentFrameNum].focusSquareRotation;
+                rightHand.playbackFocusSquare.transform.position = currentActiveExample.rightHandData[currentFrameNum].focusSquarePosition;
+                rightHand.playbackFocusSquare.transform.rotation = currentActiveExample.rightHandData[currentFrameNum].focusSquareRotation;
             }
 
         }
