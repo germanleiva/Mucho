@@ -25,7 +25,7 @@ public class Recorder : MonoBehaviour
     public bool isMainRecordingOn = false;
     public bool isMainPlaybackOn = false;
     public int recordStartFrame;
-    public int recordedFramesTotal;
+    //public int recordedFramesTotal;
 
     public bool isAutomaticPlayback = false;
 
@@ -186,25 +186,25 @@ public class Recorder : MonoBehaviour
             Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
             DebugLogger.Instance.Log("StartPlayback");
             // Determine the duration of the recording.
-            int framesTotal = 0;
+            //int framesTotal = 0;
 
             head.playbackObject.SetActive(true);
             leftHand.playbackObject.SetActive(true);
             rightHand.playbackObject.SetActive(true);
 
-            if (currentActiveExample.headData.Count > 0)
+            /*if (currentActiveExample.headData.Count > 0)
             {
                 framesTotal = Mathf.Max(framesTotal, currentActiveExample.headData[currentActiveExample.headData.Count - 1].frameNumber);
-            }
+            }*/
 
             playButton.SetActive(true);
 
             // Set up the slider.
             playbackSlider.minValue = 0;
-            playbackSlider.maxValue = framesTotal;
+            playbackSlider.maxValue = GetSizeOfMainRecordedData(); //framesTotal;
             playbackSlider.value = 0;
-            recordedFramesTotal = framesTotal;
-            DebugLogger.Instance.Log("Duration of recording: " + recordedFramesTotal);
+            //recordedFramesTotal = framesTotal;
+            //DebugLogger.Instance.Log("Duration of recording: " + recordedFramesTotal);
 
             isMainPlaybackOn = true;
             isAutomaticPlayback = false;
@@ -220,7 +220,7 @@ public class Recorder : MonoBehaviour
     public void AlignPlaybackSlider()
     {
         int currentFrameNum = (int)playbackSlider.value;
-        int threshHold = (int)recordedFramesTotal / 50;
+        int threshHold = (int)GetSizeOfMainRecordedData() / 50;
 
         int nearestRightHandGestureSequenceStartIndex = int.MaxValue;
         int nearestRightHandGestureSequenceEndIndex = int.MaxValue;
@@ -590,7 +590,7 @@ public class Recorder : MonoBehaviour
     public List<List<AssetAction>> assetSequencesLists = new();
     public List<List<AssetAction>> collisionSequencesLists = new();
 
-    Dictionary<State, StateTimelineUIElement> StatesDict = new();
+    //Dictionary<State, StateTimelineUIElement> StatesDict = new();
     State CreateState(int startIndex, int length)
     {
         var StateMachine = CustomStateMachine.Instance;
@@ -605,15 +605,15 @@ public class Recorder : MonoBehaviour
         
         state.timelineElement = stateUI;
 
-        StatesDict.Add(state, stateUI.GetComponent<StateTimelineUIElement>());
+        currentActiveExample.StatesDict.Add(state, stateUI.GetComponent<StateTimelineUIElement>());
 
         return state;
     }
 
     State MergeStates(State state1, State state2)
     {
-        var state1UIElement = StatesDict[state1];
-        var state2UIElement = StatesDict[state2];
+        var state1UIElement = currentActiveExample.StatesDict[state1];
+        var state2UIElement = currentActiveExample.StatesDict[state2];
 
 
         var StateMachine = CustomStateMachine.Instance;
@@ -623,12 +623,12 @@ public class Recorder : MonoBehaviour
         };
 
         //Get the index of state1 in the StatesInTimeline dictionary
-        int state1Index = StatesDict.Keys.ToList().IndexOf(state1);
+        int state1Index = currentActiveExample.StatesDict.Keys.ToList().IndexOf(state1);
         //Find the state before state1 in the StatesInTimeline dictionary if the index of state1 is not 0
         State previousState = null;
         if (state1Index != 0)
         {
-            previousState = StatesDict.Keys.ToList()[state1Index - 1];
+            previousState = currentActiveExample.StatesDict.Keys.ToList()[state1Index - 1];
             //Add a transition from the previous state to the new state
             //previousState.ModifyTransitionTo(newState);
             //previousState.transitions.Clear();  
@@ -676,10 +676,10 @@ public class Recorder : MonoBehaviour
         StateMachine.DeleteState(state1.id);
         StateMachine.DeleteState(state2.id);
         //Remove state1 and state2 from the state timeline
-        Destroy(StatesDict[state1].gameObject);
-        Destroy(StatesDict[state2].gameObject);
-        StatesDict.Remove(state1);
-        StatesDict.Remove(state2);
+        Destroy(currentActiveExample.StatesDict[state1].gameObject);
+        Destroy(currentActiveExample.StatesDict[state2].gameObject);
+        currentActiveExample.StatesDict.Remove(state1);
+        currentActiveExample.StatesDict.Remove(state2);
 
         //Insert the new state into the location of state1
 
@@ -696,10 +696,10 @@ public class Recorder : MonoBehaviour
         StatesInTimeline = newStatesInTimeline;*/
 
         //state.id = "State" + StatesInTimeline.Count;
-        StatesDict.Add(newState, stateUI.GetComponent<StateTimelineUIElement>());
+        currentActiveExample.StatesDict.Add(newState, stateUI.GetComponent<StateTimelineUIElement>());
         StateMachine.AddState(newState.id, newState);
 
-        StateMachine.SetInitialState(StatesDict.First().Key.id);
+        StateMachine.SetInitialState(currentActiveExample.StatesDict.First().Key.id);
 
         return newState;
     }
@@ -707,7 +707,7 @@ public class Recorder : MonoBehaviour
 
     public void ResetStateMachine()
     {
-        StatesDict.Clear();
+        currentActiveExample.StatesDict.Clear();
 
         //Delete all existing states
         CustomStateMachine.Instance.DeleteAllStates();
@@ -719,7 +719,7 @@ public class Recorder : MonoBehaviour
         }
     }
 
-    public void CreateStates(List<GestureSequence> gestures, List<AssetAction> collisions, int recordedFramesTotal)
+    public void CreateStates(List<GestureSequence> gestures, List<AssetAction> collisions, List<List<AssetAction>> actions, int recordedFramesTotal)
     {
         ResetStateMachine();
 
@@ -773,41 +773,27 @@ public class Recorder : MonoBehaviour
                 state.Collision = lastEvent.Asset;
             }
         }
-    }
 
 
-    public void CreateStateMachine()
-    {
-        RefreshAssetsTimeline(); 
-        CreateStates(gestureSequences, collisionSequencesLists.SelectMany(x => x).ToList(), recordedFramesTotal);
-
-        //Print all states and the gesture and asset sequences they contain
-
-
-        AddEventsAndTransitionsToStates();
-    }
-
-    public void AddEventsAndTransitionsToStates()
-    {
         DebugLogger.Instance.Log("Adding events and transitions to states");
         //var firstState = StatesInTimeline.First().Key;
         //Add events to states
         //
-        List<State> orderedKeys = new List<State>(StatesDict.Keys);
+        List<State> orderedKeys = new(currentActiveExample.StatesDict.Keys);
 
         for (int i = 0; i < orderedKeys.Count - 1; i++)
         {
-            State prevState = StatesDict[orderedKeys[i]].state;
-            State stateInTimeline = StatesDict[orderedKeys[i + 1]].state;
+            State prevState = currentActiveExample.StatesDict[orderedKeys[i]].state;
+            State stateInTimeline = currentActiveExample.StatesDict[orderedKeys[i + 1]].state;
 
             DebugLogger.Instance.Log("Adding transition from " + prevState.id + " to " + stateInTimeline.id);
             //prevState.AddTransitionTo(state, (frame) => { return true; });
 
 
             //Iterate through gesture sequences and check if GestureType is equal to InputManager.Gesture.RIGHTHANDPINCH or InputManager.Gesture.LEFTHANDPINCH
-            foreach (var gesture in gestureSequences)
+            foreach (var gesture in gestures)
             {
-                if (gesture.StartIndex == StatesDict[stateInTimeline].StartIndex)
+                if (gesture.StartIndex == currentActiveExample.StatesDict[stateInTimeline].StartIndex)
                 {
                     //Add the gesture to the state
                     stateInTimeline.Gesture = gesture;
@@ -820,7 +806,7 @@ public class Recorder : MonoBehaviour
             {
                 foreach (var collisionSequence in collisionSequences)
                 {
-                    if (collisionSequence.StartIndex == StatesDict[stateInTimeline].StartIndex)
+                    if (collisionSequence.StartIndex == currentActiveExample.StatesDict[stateInTimeline].StartIndex)
                     {
                         //Add the collision to the state
                         stateInTimeline.Collision = collisionSequence;
@@ -876,12 +862,12 @@ public class Recorder : MonoBehaviour
                 }
             }
 
-            foreach (var assetSequences in assetSequencesLists)
+            foreach (var assetSequences in actions)
             {
                 foreach (var assetSequence in assetSequences)
                 {
-                    int distanceToStateStart = assetSequence.StartIndex - StatesDict[stateInTimeline].StartIndex;
-                    int distanceToStateEnd = StatesDict[stateInTimeline].StartIndex + StatesDict[stateInTimeline].Length - assetSequence.StartIndex - 1;
+                    int distanceToStateStart = assetSequence.StartIndex - currentActiveExample.StatesDict[stateInTimeline].StartIndex;
+                    int distanceToStateEnd = currentActiveExample.StatesDict[stateInTimeline].StartIndex + currentActiveExample.StatesDict[stateInTimeline].Length - assetSequence.StartIndex - 1;
                     if (distanceToStateStart >= 0 && distanceToStateEnd >= 0)
                     {
                         if(distanceToStateStart < distanceToStateEnd)
@@ -898,21 +884,27 @@ public class Recorder : MonoBehaviour
 
                 }
             }
+        }
+
+        //Set the initial state of the state machine to be the first state in the StatesInTimeline dictionary
+        CustomStateMachine.Instance.SetInitialState(currentActiveExample.StatesDict.First().Key.id);
+     
     }
 
 
-    //Set the initial state of the state machine to be the first state in the StatesInTimeline dictionary
-    CustomStateMachine.Instance.SetInitialState(StatesDict.First().Key.id);
-
-
-
+    public void CreateStateMachine()
+    {
+        RefreshAssetsTimeline(); 
+        CreateStates(gestureSequences, collisionSequencesLists.SelectMany(x => x).ToList(), assetSequencesLists, GetSizeOfMainRecordedData());
     }
+
+
 
     public void PrintDetailsOfStateMachine()
     {
         DebugLogger.Instance.ClearVRDebugText();
         DebugLogger.Instance.Log("Printing details of state machine");
-        foreach (var state in StatesDict.Keys)
+        foreach (var state in currentActiveExample.StatesDict.Keys)
         {
             state.PrintDetailsOfState(VRConsoleEnabled: true);
         }
@@ -920,12 +912,12 @@ public class Recorder : MonoBehaviour
 
     public void MergeToLeftState(StateTimelineUIElement selectedStateUIElement)
     {
-        var selectedState = StatesDict.FirstOrDefault(x => x.Value == selectedStateUIElement).Key;
+        var selectedState = currentActiveExample.StatesDict.FirstOrDefault(x => x.Value == selectedStateUIElement).Key;
         //Find the state to the left of the selected state
-        if (StatesDict.Keys.ToList().IndexOf(selectedState) > 0)
+        if (currentActiveExample.StatesDict.Keys.ToList().IndexOf(selectedState) > 0)
         {
-            var precedingState = StatesDict.ElementAt(StatesDict.Keys.ToList().IndexOf(selectedState) - 1).Key;
-            var precedingStateUIElement = StatesDict.ElementAt(StatesDict.Keys.ToList().IndexOf(selectedState) - 1).Value;
+            var precedingState = currentActiveExample.StatesDict.ElementAt(currentActiveExample.StatesDict.Keys.ToList().IndexOf(selectedState) - 1).Key;
+            var precedingStateUIElement = currentActiveExample.StatesDict.ElementAt(currentActiveExample.StatesDict.Keys.ToList().IndexOf(selectedState) - 1).Value;
             DebugLogger.Instance.Log("Merging state " + selectedState.id + " with state " + precedingState.id);
             MergeStates(precedingState, selectedState);
             //precedingStateUIElement.MergeWithStateUIElement(selectedStateUIElement);
@@ -940,12 +932,12 @@ public class Recorder : MonoBehaviour
 
     public void MergeToRightState(StateTimelineUIElement selectedStateUIElement)
     {
-        var selectedState = StatesDict.FirstOrDefault(x => x.Value == selectedStateUIElement).Key;
+        var selectedState = currentActiveExample.StatesDict.FirstOrDefault(x => x.Value == selectedStateUIElement).Key;
         //Find the state to the right of the selected state
-        if (StatesDict.Keys.ToList().IndexOf(selectedState) < StatesDict.Count - 1)
+        if (currentActiveExample.StatesDict.Keys.ToList().IndexOf(selectedState) < currentActiveExample.StatesDict.Count - 1)
         {
-            var succeedingState = StatesDict.ElementAt(StatesDict.Keys.ToList().IndexOf(selectedState) + 1).Key;
-            var succeedingStateUIElement = StatesDict.ElementAt(StatesDict.Keys.ToList().IndexOf(selectedState) + 1).Value;
+            var succeedingState = currentActiveExample.StatesDict.ElementAt(currentActiveExample.StatesDict.Keys.ToList().IndexOf(selectedState) + 1).Key;
+            var succeedingStateUIElement = currentActiveExample.StatesDict.ElementAt(currentActiveExample.StatesDict.Keys.ToList().IndexOf(selectedState) + 1).Value;
             DebugLogger.Instance.Log("Merging state " + selectedState.id + " with state " + succeedingState.id);
             MergeStates(selectedState, succeedingState);
             //selectedStateUIElement.MergeWithStateUIElement(succeedingStateUIElement);
@@ -976,7 +968,7 @@ public class Recorder : MonoBehaviour
             if (isAutomaticPlayback)
             {
                 playbackSlider.value += 1;//Time.deltaTime;
-                if (playbackSlider.value >= recordedFramesTotal)
+                if (playbackSlider.value >= GetSizeOfMainRecordedData())
                 {
                     playbackSlider.value = 0;
                 }

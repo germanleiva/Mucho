@@ -45,14 +45,9 @@ public class Recordable : MonoBehaviour
         if(currentAssetRecordedData[frameNumber].ActionDelegate != null)
         {
             DebugLogger.Instance.Log("InsertAssetRecordFrame() - Action delegate at frame number " + frameNumber + " is not null. Adding to the existing delegate.");
-            item.ActionDelegate += currentAssetRecordedData[frameNumber].ActionDelegate;
-            item.Action += "," + currentAssetRecordedData[frameNumber].Action;
+            item.ActionDelegate += currentAssetRecordedData[frameNumber].ActionDelegate; //Copy existing action delegate
+            item.Action += "," + currentAssetRecordedData[frameNumber].Action; //Copy existing action
         }
-        /*if(recordedData[frameNumber].CollisionDelegate != null)
-        {
-            DebugLogger.Instance.Log("InsertAssetRecordFrame() - Collision delegate at frame number " + frameNumber + " is not null. Adding to the existing delegate.");
-            item.CollisionDelegate += recordedData[frameNumber].CollisionDelegate;
-        }*/
 
         currentAssetRecordedData[frameNumber] = item;
 
@@ -390,12 +385,12 @@ public class Recordable : MonoBehaviour
             //DebugLogger.Instance.Log("Collision ended between " + gameObject.name + " and " + collision.collider.name);
             if(collision.collider.name == "LeftHandPinchContactSphere")
             {
-                //InputManager.Instance.SetAssetInContactWithLeftHand(null);
+                
                 InputManager.Instance.NotifyCollision(null,null);
             }
             else if(collision.collider.name == "RightHandPinchContactSphere")
             {
-                //InputManager.Instance.SetAssetInContactWithRightHand(null);
+                
                 InputManager.Instance.NotifyCollision(null,null);
             }            
         }
@@ -434,7 +429,7 @@ public class FingerJoint
 }
 
 //[System.Serializable]
-public class RecordableFrame
+public class RecordableFrame : ICloneable
 {
     public Vector3 rootPosition;
     public Quaternion rootRotation;
@@ -473,7 +468,30 @@ public class RecordableFrame
         ActionDelegate = _actionDelegate;
         CollisionDelegate = _collisionDelegate;
         CollidedObject = _collidedObject;
-        //recordingMode = _recordingMode;
+
+    }
+
+    public object Clone()
+    {
+        // Create a new instance of the class
+        RecordableFrame clonedFrame = new
+        (
+            this.rootPosition,
+            this.rootRotation,
+            this.showStatusForThisFrame,
+            this.Action,
+            this.Collision,
+            this.ActionDelegate,
+            this.CollisionDelegate,
+            this.CollidedObject,
+            this.frameNumber
+        );
+
+        clonedFrame.pinchPosition = this.pinchPosition;
+        clonedFrame.gesture = this.gesture;        
+
+        // Return the cloned object
+        return clonedFrame;
     }
 
 

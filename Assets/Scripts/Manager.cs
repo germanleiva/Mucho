@@ -155,11 +155,11 @@ public class Example
 
     public Button button;
     //Create a dictionary matching assets to the list of their recordable frames
-    public Dictionary<Recordable, List<RecordableFrame>> assetDataDict;
+    public Dictionary<Recordable, List<RecordableFrame>> assetDataDict;   
 
     //public List<Recordable> assets;
 
-    Dictionary<State, StateTimelineUIElement> StatesDict = new();
+    public Dictionary<State, StateTimelineUIElement> StatesDict;
 
     public Example(Button _button)
     {
@@ -167,22 +167,19 @@ public class Example
         exampleId = exampleCount;
         _button.GetComponentInChildren<TMPro.TMP_Text>().text = exampleId.ToString();
         button = _button;
-        //exampleId = int.Parse(button.GetComponentInChildren<TMPro.TMP_Text>().text);
-        //exampleSelectionButton.onClick.AddListener(() => { DebugLogger.Instance.Log("Example " + exampleId + " selected"); });
+
         leftHandData = new List<HandFrame>();
         rightHandData = new List<HandFrame>();
         headData = new List<HeadFrame>();
-        //assets = new List<Recordable>();
+
         assetDataDict = new Dictionary<Recordable, List<RecordableFrame>>();
+        StatesDict = new Dictionary<State, StateTimelineUIElement>();
         //Copy assetsInScene to assets
         foreach (Recordable recordable in Recorder.Instance.assetsInScene)
         {            
             //Create a new list of recordable frames for each asset
             assetDataDict.Add(recordable, new List<RecordableFrame>());            
         }
-        //Add a new example to the list of examples
-        //Create a new example object
-        //Add the example object to the list of examples
 
         DebugLogger.Instance.Log("Created example " + exampleId);
     }
@@ -194,12 +191,7 @@ public class Example
         rightHandData = example.rightHandData.ToList();
         headData = example.headData.ToList();
 
-        assetDataDict = example.assetDataDict.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
-        //assetDataDict = new Dictionary<Recordable, List<RecordableFrame>>();
-        /*foreach (Recordable recordable in example.assetDataDict.Keys) //Deep copy! 
-        {
-            assetDataDict.Add(recordable, example.assetDataDict[recordable].ToList());
-        }*/
+        assetDataDict = example.assetDataDict.ToDictionary(entry => entry.Key, entry => entry.Value.Select(item => (RecordableFrame)item.Clone()).ToList());
 
     }
 

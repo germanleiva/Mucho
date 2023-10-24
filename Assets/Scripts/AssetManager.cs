@@ -185,19 +185,6 @@ public class AssetManager : MonoBehaviour
         mainRecorder.RefreshAssetsTimeline();
     }
 
-
-
-    /*public void ResetAssetRecordings()
-    {
-        DebugLogger.Instance.Log("ResetRecording in all assets");
-        foreach (Recordable recordable in Recorder.Instance.currentActiveExample.assets)
-        {                
-        
-            recordable.currentRecordingMode = Recordable.AssetRecordingType.None;
-            recordable.ResetData();
-        }
-    }*/
-   
    public float movementRecordThreshold;
    public float playbackSpeed;
 

@@ -95,10 +95,7 @@ public class State
 
     public GameObject timelineElement;
 
-    Color originalColor;
-    private int StartIndex;
-    private int Length;
-
+    Color originalColor;  
     public GestureSequence Gesture { get; set; }
     public AssetAction Collision { get; set; }
 
@@ -117,6 +114,16 @@ public class State
     public void OnUpdate()
     {
         OnUpdateActions?.Invoke();
+    }
+
+    public bool IsStateEqualTo(State state)
+    {
+        //Check if the state's actions and transitions are equal
+        if(OnEnterActions == state.OnEnterActions && OnUpdateActions == state.OnUpdateActions && OnExitActions == state.OnExitActions && transitions.SequenceEqual(state.transitions))
+        {
+            return true;
+        }
+        return false;
     }
 
     public void OnExit()
