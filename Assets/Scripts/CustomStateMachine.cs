@@ -11,6 +11,8 @@ public class CustomStateMachine : MonoBehaviour
     private State currentState;
     private Dictionary<string, State> states = new Dictionary<string, State>();
 
+    private State initialState;
+
     void Awake()
     {
         if (Instance == null)
@@ -91,6 +93,11 @@ public class State
     public Action OnEnterActions { get; set; }
     public Action OnUpdateActions { get; set; }
     public Action OnExitActions { get; set; }
+
+    public List<string> OnEnterActionsStr = new();
+    public List<string> OnUpdateActionsStr = new();
+    public List<string> OnExitActionsStr = new();
+
     public List<Transition> transitions = new();
 
     public GameObject timelineElement;
@@ -102,7 +109,7 @@ public class State
     public void OnEnter()
     {
         DebugLogger.Instance.Log("OnEnter: " + id);
-        DebugLogger.Instance.Log("OnEnter: " + OnEnterActions);
+        DebugLogger.Instance.Log("OnEnter: " + String.Join(", ", OnEnterActionsStr));
         OnEnterActions?.Invoke();
         //Change the timeline element's image component color to green
         if(timelineElement != null)
@@ -119,17 +126,20 @@ public class State
     public bool IsStateEqualTo(State state)
     {
         //Check if the state's actions and transitions are equal
-        if(OnEnterActions == state.OnEnterActions && OnUpdateActions == state.OnUpdateActions && OnExitActions == state.OnExitActions && transitions.SequenceEqual(state.transitions))
+        if(OnEnterActionsStr.SequenceEqual(state.OnEnterActionsStr) && OnUpdateActionsStr.SequenceEqual(state.OnUpdateActionsStr) && OnExitActionsStr.SequenceEqual(state.OnExitActionsStr) && transitions.Select(t => t.textDescription).SequenceEqual(state.transitions.Select(t => t.textDescription)))
         {
             return true;
         }
-        return false;
+        else
+        {
+            return false;
+        }  
     }
 
     public void OnExit()
     {
         DebugLogger.Instance.Log("OnExit: " + id);
-        DebugLogger.Instance.Log("OnExit: " + OnExitActions);
+        DebugLogger.Instance.Log("OnExit: " + String.Join(", ", OnExitActionsStr));
         OnExitActions?.Invoke();
         //Change the timeline element's image component color back to the original color
         if(timelineElement != null)
@@ -154,12 +164,14 @@ public class State
         });
     }
 
-    /*public void CopyTransitionFromState(State sourceState)
+    public void CopyTransitionFromState(State sourceState)
     {
+        //DebugLogger.Instance.Log("Copying transition from state " + sourceState.id + " to state " + id);
         foreach (var transition in sourceState.transitions)
         {
+            DebugLogger.Instance.Log("Copying transition from state " + sourceState.id + " to state " + id + " with text description " + transition.textDescription);
             transitions.Add(new Transition
-            {
+            {   
                 from = this,
                 to = transition.to,
                 condition = transition.condition
@@ -167,7 +179,7 @@ public class State
         }
     }
 
-    public void ModifyTransitionTo(State newState)
+    /*public void ModifyTransitionTo(State newState)
     {
         foreach (var transition in transitions)
         {
@@ -181,9 +193,13 @@ public class State
         //Iterate and print OnEnter actions
         if(OnEnterActions != null)
         {
-            foreach (var action in OnEnterActions.GetInvocationList())
+            /*foreach (var action in OnEnterActions.GetInvocationList())
             {
                 DebugLogger.Instance.Log("OnEnter: " + action.Method.Name, VRConsoleEnabled);
+            }*/
+            foreach (var action in OnEnterActionsStr)
+            {
+                DebugLogger.Instance.Log("OnEnter: " + action, VRConsoleEnabled);
             }
         } 
         else
@@ -193,9 +209,13 @@ public class State
         //Iterate and print OnExit actions    
         if(OnExitActions != null)
         {
-            foreach (var action in OnExitActions.GetInvocationList())
+            /*foreach (var action in OnExitActions.GetInvocationList())
             {
                 DebugLogger.Instance.Log("OnExit: " + action.Method.Name, VRConsoleEnabled);
+            }*/
+            foreach (var action in OnExitActionsStr)
+            {
+                DebugLogger.Instance.Log("OnExit: " + action, VRConsoleEnabled);
             }
         } 
         else
@@ -210,14 +230,14 @@ public class State
             //Iterate and print transition conditions
             if(transition.condition != null)
             {
-                foreach (var action in transition.condition.GetInvocationList())
+                /*foreach (var action in transition.condition.GetInvocationList())
                 {
                     DebugLogger.Instance.Log("Condition: " + action.Method.Name, VRConsoleEnabled);
-                }
+                }*/
             } 
             else
             {
-                DebugLogger.Instance.Log("Condition: null", VRConsoleEnabled);
+                //DebugLogger.Instance.Log("Condition: null", VRConsoleEnabled);
             }
         }
     }

@@ -35,9 +35,9 @@ public class Recordable : MonoBehaviour
 
 
     //For assets
-    public void InsertAssetRecordFrame(int frameNumber, string action = "None", string collision = "None", Action actionDelegate = null, Action<Frame> collisionDelegate = null, GameObject collidedObject = null, bool propagateValueToSubsequentFrames = false)
+    public void InsertAssetRecordFrame(int frameNumber, string actionStr = "None", string collisionStr = "None", Action actionDelegate = null, Action<Frame> collisionDelegate = null, GameObject collidedObject = null, bool propagateValueToSubsequentFrames = false)
     {
-        RecordableFrame item = new(transform.position, transform.rotation, showStatus, action, collision, actionDelegate, collisionDelegate, collidedObject, frameNumber);
+        RecordableFrame item = new(transform.position, transform.rotation, showStatus, actionStr, collisionStr, actionDelegate, collisionDelegate, collidedObject, frameNumber);
         DebugLogger.Instance.Log("Inserting asset record frame at a specific frame number " + frameNumber);
 
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
@@ -62,7 +62,7 @@ public class Recordable : MonoBehaviour
                     DebugLogger.Instance.Log("InsertAssetRecordFrame() - Encountered ApplyForce() at frame number " + i + ". Breaking out of the loop.");
                     break;
                 }
-                if (currentAssetRecordedData[i].Collision.StartsWith("Collide("))
+                if (currentAssetRecordedData[i].CollisionStr.StartsWith("Collide("))
                 {
                     DebugLogger.Instance.Log("InsertAssetRecordFrame() - Encountered Collide() at frame number " + i + ". Breaking out of the loop.");
                     break;
@@ -85,7 +85,7 @@ public class Recordable : MonoBehaviour
         {
             DebugLogger.Instance.Log("Recorded hide for  " + base.gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
             InsertAssetRecordFrame((int)AssetManager.Instance.mainRecorder.playbackSlider.value, 
-                                    action: "Hide()", 
+                                    actionStr: "Hide()", 
                                     actionDelegate: () => { GetComponent<Recordable>().SetVisibility(false); });
             SetVisibility(false);
 
@@ -110,7 +110,7 @@ public class Recordable : MonoBehaviour
         {
             DebugLogger.Instance.Log("Recorded show for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
             InsertAssetRecordFrame((int)AssetManager.Instance.mainRecorder.playbackSlider.value, 
-                                    action: "Show()", 
+                                    actionStr: "Show()", 
                                     actionDelegate: () => { GetComponent<Recordable>().SetVisibility(true); });
             SetVisibility(true);
                     
@@ -163,10 +163,10 @@ public class Recordable : MonoBehaviour
         currentRecordingMode = Recordable.AssetRecordingType.Follow;
 
         InsertAssetRecordFrame((int)Recorder.Instance.playbackSlider.value, 
-                                    action: "Follow(Left hand)", 
+                                    actionStr: "Follow(Left hand)", 
                                     actionDelegate: () => { GetComponent<Recordable>().Follow(Recorder.Instance.leftHand.transform);}, 
                                     collisionDelegate: (Frame frame) => { frame.IsColliding(base.gameObject, InputManager.Instance.leftHandPinchObj); }, 
-                                    collision: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left hand)", 
+                                    collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left hand)", 
                                     collidedObject: InputManager.Instance.leftHandPinchObj);   
         //Copy the pose from "other" recordable (hands) at index _frameStart, to this asset and propagate the value to subsequent frames
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
@@ -174,7 +174,7 @@ public class Recordable : MonoBehaviour
         {
             currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandData[i].pinchPosition; //Copy the position of the left hand at frame _frameStart
             currentAssetRecordedData[i].Action = "Follow(Left hand)";
-            currentAssetRecordedData[i].Collision = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left hand)";
+            currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left hand)";
         }
         Recorder.Instance.RefreshAssetsTimeline();
 
@@ -188,10 +188,10 @@ public class Recordable : MonoBehaviour
         currentRecordingMode = Recordable.AssetRecordingType.Follow;
 
         InsertAssetRecordFrame((int)Recorder.Instance.playbackSlider.value, 
-                                    action: "Follow(Right hand)", 
+                                    actionStr: "Follow(Right hand)", 
                                     actionDelegate: () => { GetComponent<Recordable>().Follow(Recorder.Instance.rightHand.transform);}, 
                                     collisionDelegate: (Frame frame) => { frame.IsColliding(base.gameObject, InputManager.Instance.rightHandPinchObj); }, 
-                                    collision: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right hand)", 
+                                    collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right hand)", 
                                     collidedObject: InputManager.Instance.rightHandPinchObj);
         //Copy the pose from "other" recordable (hands) at index _frameStart, to this asset and propagate the value to subsequent frames
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
@@ -199,7 +199,7 @@ public class Recordable : MonoBehaviour
         {
             currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandData[i].pinchPosition; //Copy the position of the right hand at frame _frameStart
             currentAssetRecordedData[i].Action = "Follow(Right hand)";
-            currentAssetRecordedData[i].Collision = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right hand)";
+            currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right hand)";
         }
         
         Recorder.Instance.RefreshAssetsTimeline();
@@ -244,14 +244,14 @@ public class Recordable : MonoBehaviour
         currentRecordingMode = Recordable.AssetRecordingType.None;
         //Unfollow();
         InsertAssetRecordFrame((int)Recorder.Instance.playbackSlider.value, 
-                                action: "Unfollow()",  
+                                actionStr: "Unfollow()",  
                                 actionDelegate: () => { GetComponent<Recordable>().Unfollow(); });
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
         {
             currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[_frameStart].rootPosition;
             currentAssetRecordedData[i].Action = "None";
-            currentAssetRecordedData[i].Collision = "None";
+            currentAssetRecordedData[i].CollisionStr = "None";
         }
         //CopyPoseFromRecordable(this, (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:true, copyRotation:false);
         Recorder.Instance.RefreshAssetsTimeline();
@@ -277,12 +277,12 @@ public class Recordable : MonoBehaviour
                 currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[_frameStart].rootPosition;
                 currentAssetRecordedData[i].Action = "None";
                 currentAssetRecordedData[i].ActionDelegate = null;
-                currentAssetRecordedData[i].Collision = "None";
+                currentAssetRecordedData[i].CollisionStr = "None";
                 currentAssetRecordedData[i].CollisionDelegate = null;
             }
 
             InsertAssetRecordFrame((int)Recorder.Instance.playbackSlider.value, 
-                                    action: "ApplyForce()", 
+                                    actionStr: "ApplyForce()", 
                                     actionDelegate: () => { GetComponent<Recordable>().ApplyForce(initialVelocity); });
 
 
@@ -324,8 +324,8 @@ public class Recordable : MonoBehaviour
             DebugLogger.Instance.Log("Collision detected between " + base.gameObject.name + " and " + collision.collider.name);
 
             InsertAssetRecordFrame((int)Recorder.Instance.playbackSlider.value, 
-                                action: "ResetPhysics()", 
-                                collision: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + "," + Manager.Instance.CleanAssetName(collision.collider.name) + ")", 
+                                actionStr: "ResetPhysics()", 
+                                collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + "," + Manager.Instance.CleanAssetName(collision.collider.name) + ")", 
                                 actionDelegate: () => { GetComponent<Recordable>().ResetPhysicsPropertiesInLiveMode(); }, 
                                 collidedObject: collision.collider.gameObject);
 
@@ -452,7 +452,7 @@ public class RecordableFrame : ICloneable
     public Action<Frame> CollisionDelegate;
 
     public GameObject CollidedObject;
-    public string Collision = "None";
+    public string CollisionStr = "None";
 
     //public Vector3 force;
 
@@ -464,7 +464,7 @@ public class RecordableFrame : ICloneable
         showStatusForThisFrame = _showStatus;
         frameNumber = _frameNumber;
         Action = _action;
-        Collision = _collision;
+        CollisionStr = _collision;
         ActionDelegate = _actionDelegate;
         CollisionDelegate = _collisionDelegate;
         CollidedObject = _collidedObject;
@@ -480,7 +480,7 @@ public class RecordableFrame : ICloneable
             this.rootRotation,
             this.showStatusForThisFrame,
             this.Action,
-            this.Collision,
+            this.CollisionStr,
             this.ActionDelegate,
             this.CollisionDelegate,
             this.CollidedObject,

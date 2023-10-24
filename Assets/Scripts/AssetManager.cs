@@ -215,7 +215,7 @@ public class AssetManager : MonoBehaviour
                     DebugLogger.Instance.Log("Added new frame data for " + recordable.gameObject.name + " at " + mainRecorder.playbackSlider.value);
 
                     //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "Collide(" + Manager.Instance.CleanString(recordable.gameObject.name) + ", hand)", true);
-                    recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, action: "None", collision: "None", propagateValueToSubsequentFrames: true);
+                    recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, actionStr: "None", collisionStr: "None", propagateValueToSubsequentFrames: true);
                     //Increment the slider value by a small value proportional to the total recording time
                     mainRecorder.playbackSlider.value += playbackSpeed;
                 }
@@ -227,7 +227,7 @@ public class AssetManager : MonoBehaviour
                 //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "ApplyForce()", true);                
                 //Increment the slider value by frame duration
                 mainRecorder.playbackSlider.value += 1;
-                recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, action: "ApplyForce()", collision: "None", propagateValueToSubsequentFrames: true);
+                recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, actionStr: "ApplyForce()", collisionStr: "None", propagateValueToSubsequentFrames: true);
             }
 
             
@@ -348,7 +348,8 @@ public class AssetManager : MonoBehaviour
 
 public class AssetAction
 {
-    public string Action { get; set; } //None, Physics, Follow, Show, Hide
+    public string ActionStr { get; set; } //None, Physics, Follow, Show, Hide
+    public string CollisionStr { get; set; } 
 
     public Action ActionDelegate { get; set; }
 

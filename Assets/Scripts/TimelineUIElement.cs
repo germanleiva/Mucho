@@ -139,6 +139,16 @@ public class TimelineUIElement : MonoBehaviour
 
     }
 
+    public void Show()
+    {
+        gameObject.SetActive(true);
+    }
+
+    public void Hide()
+    {
+        gameObject.SetActive(false);
+    }
+
     public void SetStartX(float x)
     {
         Vector2 pos = rectTransform.anchoredPosition;       
@@ -168,19 +178,4 @@ public class TimelineUIElement : MonoBehaviour
     {
         GetComponent<UnityEngine.UI.Image>().color = color;
     }
-
-    public void test1()
-    {
-        DebugLogger.Instance.Log("Test1: ");
-        DebugLogger.Instance.Log("Root panel width: " + rootRectTransform.GetComponent<RectTransform>().rect.width);
-        //DebugLogger.Instance.Log("Root panel");
-        SetDimensions(0, 100);
-    }
-
-    public void test2()
-    {
-        SetDimensions(100, 500);
-    }
-
-
 }

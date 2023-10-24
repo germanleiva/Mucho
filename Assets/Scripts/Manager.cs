@@ -101,6 +101,13 @@ public class Manager : MonoBehaviour
 
     public void DestroyCopyAndSpawnAsset(GameObject obj)
     {
+        if(Recorder.Instance.examples.Count == 0)
+        {
+            DebugLogger.Instance.Log("No examples to spawn asset in");
+            Destroy(obj);
+            return;
+        }
+
         if (obj.name.StartsWith("Sphere"))
         {
             AssetManager.Instance.SpawnSphere(obj.transform);
@@ -219,6 +226,15 @@ public class Example
         foreach (Recordable recordable in assetsToRemove)
         {
             assetDataDict.Remove(recordable);
+        }
+    }
+
+    public void Render()
+    {
+        //Render the states
+        foreach (State state in StatesDict.Keys)
+        {
+            //StatesDict[state].Render();
         }
     }
 

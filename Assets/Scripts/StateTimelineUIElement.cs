@@ -22,6 +22,7 @@ public class StateTimelineUIElement : TimelineUIElement
         DebugLogger.Instance.Log("StateTimelineUIElement clicked");
         //StateMachineUIManager.Instance.OnStateTimelineUIElementClicked(this);
     }
+    
 
     public static GameObject CreateStateTimelineElement(GameObject prefab, RectTransform parentTransform, int startIndex, int length, int recordingLength, State _state)//, State previousState, State nextState)//, int _stateIndexOnTimeline)
     {

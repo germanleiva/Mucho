@@ -421,7 +421,7 @@ public class Recorder : MonoBehaviour
                     {
                         StartIndex = startIndex,
                         Length = i - startIndex,
-                        Action = currentAction
+                        ActionStr = currentAction,
                     });
 
                     startIndex = i;
@@ -434,7 +434,7 @@ public class Recorder : MonoBehaviour
                 {
                     StartIndex = startIndex,
                     Length = i - startIndex,
-                    Action = currentAction
+                    ActionStr = currentAction
                 });
 
                 startIndex = -1;
@@ -448,7 +448,7 @@ public class Recorder : MonoBehaviour
             {
                 StartIndex = startIndex,
                 Length = actions.Count - startIndex,
-                Action = currentAction,
+                ActionStr = currentAction,
             });
         }
 
@@ -473,22 +473,22 @@ public class Recorder : MonoBehaviour
                 DebugLogger.Instance.Log("Action delegate found: " + recordedData[sequence.StartIndex].ActionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordedData[sequence.StartIndex].ActionDelegate.Method.GetParameters().Select(x => x.Name)));
             }
 
-            if (sequence.Action.Contains("Hide"))
+            if (sequence.ActionStr.Contains("Hide"))
             {
                 GameObject hideElement = Instantiate(hideTimelinePanelPrefab, timelinePanel);
                 hideElement.SetActive(true);
                 hideElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(TimelineUIElement.MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex, GetSizeOfMainRecordedData()), hideElement.GetComponent<RectTransform>().anchoredPosition.y);
             }
-            else if (sequence.Action.Contains("Show"))
+            else if (sequence.ActionStr.Contains("Show"))
             {
                 GameObject showElement = Instantiate(showTimelinePanelPrefab, timelinePanel);
                 showElement.SetActive(true);
                 showElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(TimelineUIElement.MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex, GetSizeOfMainRecordedData()), showElement.GetComponent<RectTransform>().anchoredPosition.y);
             }
 
-            if(sequence.Action.Contains("Follow") || sequence.Action.Contains("ApplyForce")) //Other types of events - physics, attach etc
+            if(sequence.ActionStr.Contains("Follow") || sequence.ActionStr.Contains("ApplyForce")) //Other types of events - physics, attach etc
             {                
-                TimelineUIElement.CreateTimelineElement(assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.Action);
+                TimelineUIElement.CreateTimelineElement(assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ActionStr);
             }
         }
         return sequences;
@@ -500,7 +500,7 @@ public class Recorder : MonoBehaviour
         var recordedData = currentActiveExample.assetDataDict[recordable]; 
         try
         {
-            List<string> sourcesOfChanges = recordedData.Select(x => x.Collision).ToList();
+            List<string> sourcesOfChanges = recordedData.Select(x => x.CollisionStr).ToList();
             List<AssetAction> sequences = GetContinuousChangeSequences(sourcesOfChanges);
             foreach (AssetAction sequence in sequences)
             {
@@ -514,9 +514,10 @@ public class Recorder : MonoBehaviour
                     DebugLogger.Instance.Log("Collided object: " + recordedData[sequence.StartIndex].CollidedObject.name);
                     sequence.CollidingObject1 = recordable.gameObject;
                     sequence.CollidingObject2 = recordedData[sequence.StartIndex].CollidedObject;
+                    sequence.CollisionStr = recordedData[sequence.StartIndex].CollisionStr;
                 }
 
-                TimelineUIElement.CreateTimelineElement(collisionTimelineElementPrefab, collisionTimelinePanelTransform, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.Action);
+                TimelineUIElement.CreateTimelineElement(collisionTimelineElementPrefab, collisionTimelinePanelTransform, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ActionStr);
             }
             return sequences;
         }
@@ -705,7 +706,7 @@ public class Recorder : MonoBehaviour
     }
 
 
-    public void ResetStateMachine()
+    public void ResetExampleStateMachine()
     {
         currentActiveExample.StatesDict.Clear();
 
@@ -721,10 +722,10 @@ public class Recorder : MonoBehaviour
 
     public void CreateStates(List<GestureSequence> gestures, List<AssetAction> collisions, List<List<AssetAction>> actions, int recordedFramesTotal)
     {
-        ResetStateMachine();
+        ResetExampleStateMachine();
 
         // Create a list of events (start or end of a sequence)
-        var events = new List<(int Index, string Type, GestureSequence Gesture, AssetAction Asset)>();
+        var events = new List<(int Index, string Type, GestureSequence Gesture, AssetAction Collision)>();
 
         foreach (var gesture in gestures)
         {
@@ -754,7 +755,8 @@ public class Recorder : MonoBehaviour
                 {
                     var prevEvent = events[i - 1];
                     state.Gesture = prevEvent.Gesture;
-                    state.Collision = prevEvent.Asset;
+                    state.Collision = prevEvent.Collision;
+                    //state.Collision.Collision = prevEvent.Collision.Collision;
                 }
             }
 
@@ -770,7 +772,7 @@ public class Recorder : MonoBehaviour
             {
                 var lastEvent = events.Last();
                 state.Gesture = lastEvent.Gesture;
-                state.Collision = lastEvent.Asset;
+                state.Collision = lastEvent.Collision;
             }
         }
 
@@ -810,7 +812,7 @@ public class Recorder : MonoBehaviour
                     {
                         //Add the collision to the state
                         stateInTimeline.Collision = collisionSequence;
-                        DebugLogger.Instance.Log("Added collision " + collisionSequence.Action + " to state " + stateInTimeline.id);
+                        DebugLogger.Instance.Log("Added collision " + collisionSequence.ActionStr + " to state " + stateInTimeline.id);
                     }
                 }
             }
@@ -872,13 +874,15 @@ public class Recorder : MonoBehaviour
                     {
                         if(distanceToStateStart < distanceToStateEnd)
                         {
-                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.Action + " for state " + stateInTimeline.id + " in OnEnterActions");
+                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionStr + " for state " + stateInTimeline.id + " in OnEnterActions");
                             stateInTimeline.OnEnterActions += () => assetSequence.ActionDelegate();
+                            stateInTimeline.OnEnterActionsStr.Add(assetSequence.ActionStr);
                         }
                         else
                         {
-                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.Action + " for state " + stateInTimeline.id + " in OnExitActions");
+                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionStr + " for state " + stateInTimeline.id + " in OnExitActions");
                             stateInTimeline.OnExitActions += () => assetSequence.ActionDelegate();
+                            stateInTimeline.OnExitActionsStr.Add(assetSequence.ActionStr);
                         }
                     }
 
@@ -898,16 +902,104 @@ public class Recorder : MonoBehaviour
         CreateStates(gestureSequences, collisionSequencesLists.SelectMany(x => x).ToList(), assetSequencesLists, GetSizeOfMainRecordedData());
     }
 
+    public void ResetStateMachine()
+    {
+        CustomStateMachine.Instance.SetInitialState("0");
+    }
+
+    public void CombineExamples()
+    {
+        DebugLogger.Instance.Log("Combining examples");
+        List<List<State>> allStatesInExamples = new List<List<State>>();
+        foreach (var example in examples)
+        {
+            allStatesInExamples.Add(example.StatesDict.Keys.ToList());
+        }
+       
+        allStatesInExamples = allStatesInExamples.OrderBy(x => x.Count).ToList();
+        var shortestList = allStatesInExamples.First();
+        int shortestListLength = shortestList.Count;
+        DebugLogger.Instance.Log("The shortest list of states has " + shortestList.Count + " states");
+
+        List<State> commonStates = new List<State>();
+        int lastCommonStateIndex = 0;
+        for (int i = 0; i < shortestListLength; i++)
+        {
+            lastCommonStateIndex = i;
+            bool allStatesEqual = true;
+            for (int j = 0; j < allStatesInExamples.Count; j++)
+            {
+                if (!shortestList[i].IsStateEqualTo(allStatesInExamples[j][i]))
+                {
+                    allStatesEqual = false;
+                    break;
+                }
+            }
+            
+            if (allStatesEqual)
+            {
+                commonStates.Add(shortestList[i]);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        if(lastCommonStateIndex == 0)
+        {
+            DebugLogger.Instance.Log("No common states found");
+            return;
+        }
+
+        DebugLogger.Instance.Log("The last common state is " + commonStates.Last().id + " at index " + (lastCommonStateIndex-1));
+
+        //Print the common states
+        DebugLogger.Instance.ClearVRDebugText();
+        DebugLogger.Instance.Log("Common states: ", VRConsoleEnabled : true);
+        foreach (var state in commonStates)
+        {
+            state.PrintDetailsOfState(VRConsoleEnabled : true);
+        }
+
+        //Printing the states at lastCommonStateIndex-1 for each List<State> in allStatesInExamples except the first
+        DebugLogger.Instance.Log("States at index " + (lastCommonStateIndex - 1) + " for each example except the first: ", VRConsoleEnabled : true);
+        for (int i = 1; i < allStatesInExamples.Count; i++)
+        {
+            allStatesInExamples[i][lastCommonStateIndex].PrintDetailsOfState(VRConsoleEnabled : true);
+            commonStates.Last().CopyTransitionFromState(allStatesInExamples[i][lastCommonStateIndex]);
+        }
+
+        CustomStateMachine.Instance.DeleteAllStates();
+        int newId = 0;
+        foreach (var state in commonStates)
+        {
+            CustomStateMachine.Instance.AddState(newId.ToString(), state);
+            newId++;
+        }
+
+        CustomStateMachine.Instance.SetInitialState(commonStates.First().id);
+
+    }
 
 
     public void PrintDetailsOfStateMachine()
     {
         DebugLogger.Instance.ClearVRDebugText();
         DebugLogger.Instance.Log("Printing details of state machine");
-        foreach (var state in currentActiveExample.StatesDict.Keys)
+
+        foreach(var example in examples)
+        {
+            DebugLogger.Instance.Log("Example " + example.exampleId);
+            foreach (var state in example.StatesDict.Keys)
+            {
+                state.PrintDetailsOfState(VRConsoleEnabled: true);
+            }
+        }
+        /*foreach (var state in currentActiveExample.StatesDict.Keys)
         {
             state.PrintDetailsOfState(VRConsoleEnabled: true);
-        }
+        }*/
     }
 
     public void MergeToLeftState(StateTimelineUIElement selectedStateUIElement)
