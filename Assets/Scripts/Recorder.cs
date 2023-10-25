@@ -34,11 +34,15 @@ public class Recorder : MonoBehaviour
     [SerializeField]
     RectTransform stateTimelinePanel;
     [SerializeField]
+    RectTransform stateGraphPanel;
+    [SerializeField]
     RectTransform rightHandTimelinePanel;
     [SerializeField]
     RectTransform leftHandTimelinePanel;
     [SerializeField]
     GameObject stateTimelineElementPrefab;
+    [SerializeField]
+    GameObject stateGraphElementPrefab;    
     [SerializeField]
     GameObject handTimelineElementPrefab;
     [SerializeField]
@@ -904,11 +908,13 @@ public class Recorder : MonoBehaviour
 
     public void ResetStateMachine()
     {
-        CustomStateMachine.Instance.SetInitialState("0");
+        CustomStateMachine.Instance.SetInitialState("State 0");
     }
 
     public void CombineExamples()
     {
+        DebugLogger.Instance.ClearVRDebugText();
+
         DebugLogger.Instance.Log("Combining examples");
         List<List<State>> allStatesInExamples = new List<List<State>>();
         foreach (var example in examples)
@@ -954,29 +960,53 @@ public class Recorder : MonoBehaviour
 
         DebugLogger.Instance.Log("The last common state is " + commonStates.Last().id + " at index " + (lastCommonStateIndex-1));
 
-        //Print the common states
-        DebugLogger.Instance.ClearVRDebugText();
-        DebugLogger.Instance.Log("Common states: ", VRConsoleEnabled : true);
-        foreach (var state in commonStates)
+        if (lastCommonStateIndex < shortestListLength)
         {
-            state.PrintDetailsOfState(VRConsoleEnabled : true);
-        }
+            commonStates.Add(shortestList[lastCommonStateIndex]); //Add the state after the last common state
 
-        //Printing the states at lastCommonStateIndex-1 for each List<State> in allStatesInExamples except the first
-        DebugLogger.Instance.Log("States at index " + (lastCommonStateIndex - 1) + " for each example except the first: ", VRConsoleEnabled : true);
-        for (int i = 1; i < allStatesInExamples.Count; i++)
-        {
-            allStatesInExamples[i][lastCommonStateIndex].PrintDetailsOfState(VRConsoleEnabled : true);
-            commonStates.Last().CopyTransitionFromState(allStatesInExamples[i][lastCommonStateIndex]);
-        }
+            
+            
+            //Printing the states at lastCommonStateIndex-1 for each List<State> in allStatesInExamples except the first
+            DebugLogger.Instance.Log("States at index " + (lastCommonStateIndex - 1) + " for each example except the first: ");
+            for (int i = 1; i < allStatesInExamples.Count; i++)
+            {
+                //allStatesInExamples[i][lastCommonStateIndex].PrintDetailsOfState(VRConsoleEnabled : true);            
+                commonStates.Last().CopyTransitionFromState(allStatesInExamples[i][lastCommonStateIndex]);
+                //DebugLogger.Instance.Log("Transition copied from " + allStatesInExamples[i][lastCommonStateIndex].id + " to " + commonStates.Last().id);
+                //DebugLogger.Instance.Log("Details of allStatesInExamples[" + i + "][" + lastCommonStateIndex + "]: ");
+                //allStatesInExamples[i][lastCommonStateIndex].PrintDetailsOfState(VRConsoleEnabled : true);
+                //DebugLogger.Instance.Log("Details of commonStates.Last(): ", VRConsoleEnabled : true);
+                //commonStates.Last().PrintDetailsOfState(VRConsoleEnabled : true);
 
-        CustomStateMachine.Instance.DeleteAllStates();
-        int newId = 0;
-        foreach (var state in commonStates)
-        {
-            CustomStateMachine.Instance.AddState(newId.ToString(), state);
-            newId++;
+            }
+
+            CustomStateMachine.Instance.DeleteAllStates();
+            int newId = 0;
+            foreach (var state in commonStates)
+            {
+                CustomStateMachine.Instance.AddState("State " + newId.ToString(), state);
+                newId++;
+            }
+
+            for (int i = 0; i < allStatesInExamples.Count; i++)
+            {
+                //Copy all states from lastCommonStateIndex to the end of each list
+                for (int j = lastCommonStateIndex + 1; j < allStatesInExamples[i].Count; j++)
+                {
+                    CustomStateMachine.Instance.AddState("State " + newId.ToString(), allStatesInExamples[i][j]);
+                    newId++;
+                }
+            }
+
+
+            //Print the common states
+            
+            CustomStateMachine.Instance.PrintDetailsOfStateMachine(VRConsoleEnabled : true);
+
+            CustomStateMachine.Instance.CreateStateGraph(stateGraphElementPrefab, stateGraphPanel.GetComponent<RectTransform>());
+
         }
+        
 
         CustomStateMachine.Instance.SetInitialState(commonStates.First().id);
 

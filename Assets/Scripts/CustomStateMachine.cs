@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using UnityEngine;
 
 public class CustomStateMachine : MonoBehaviour
@@ -10,6 +11,8 @@ public class CustomStateMachine : MonoBehaviour
 
     private State currentState;
     private Dictionary<string, State> states = new Dictionary<string, State>();
+
+    public TMPro.TMP_Text currentActiveStateText;
 
     private State initialState;
 
@@ -36,6 +39,10 @@ public class CustomStateMachine : MonoBehaviour
     {
         DebugLogger.Instance.Log("Setting initial state to " + name,true);
         currentState = states[name];
+        foreach (var state in states)
+        {
+            state.Value.ResetColor();
+        }
         // currentState.OnEnter();
     }
 
@@ -54,10 +61,29 @@ public class CustomStateMachine : MonoBehaviour
         states.Clear();
     }
 
+    public void PrintDetailsOfStateMachine(bool VRConsoleEnabled = false)
+    {
+        DebugLogger.Instance.Log("Printing details of state machine", VRConsoleEnabled);
+        foreach (var state in states)
+        {
+            state.Value.PrintDetailsOfState(VRConsoleEnabled);
+        }
+    }
+
+
+    public void CreateStateGraph(GameObject stateElementPrefab, RectTransform parentTransform)
+    {
+        foreach (var state in states)
+        {
+            state.Value.stateGraphElement = StateGraphUI.CreateStateGraphElement(stateElementPrefab, parentTransform, state.Value);
+        }
+        //StateGraphUI.CreateStateGraphElement(stateElementPrefab, parentTransform, initialState);
+    }
 
     public void ProcessFrame(Frame lastFrameObject)
     {                
         //DebugLogger.Instance.Log("ProcessFrame in the StateMachine");
+        currentActiveStateText.text = "Current state: " + currentState.id;
 
         foreach (var transition in currentState.transitions)
         {
@@ -77,6 +103,7 @@ public class CustomStateMachine : MonoBehaviour
 
     private void ApplyTransition(Transition transition)
     {
+        DebugLogger.Instance.Log("Applying transition from " + transition.from + " to " + transition.to, VRConsoleEnabled: true);
         DebugLogger.Instance.Log("Transitioning from " + transition.from + " to " + transition.to);
         this.currentState.OnExit();
         this.currentState = transition.to;
@@ -102,9 +129,17 @@ public class State
 
     public GameObject timelineElement;
 
-    Color originalColor;  
+    public GameObject stateGraphElement;
+
+    Color originalColor = Color.white;  
     public GestureSequence Gesture { get; set; }
     public AssetAction Collision { get; set; }
+
+    public void ResetColor()
+    {
+        //timelineElement.GetComponent<UnityEngine.UI.Image>().color = originalColor;
+        stateGraphElement.GetComponent<UnityEngine.UI.Image>().color = originalColor;
+    }
 
     public void OnEnter()
     {
@@ -112,10 +147,15 @@ public class State
         DebugLogger.Instance.Log("OnEnter: " + String.Join(", ", OnEnterActionsStr));
         OnEnterActions?.Invoke();
         //Change the timeline element's image component color to green
-        if(timelineElement != null)
+        /*if(timelineElement != null)
         {            
             originalColor = timelineElement.GetComponent<UnityEngine.UI.Image>().color;
             timelineElement.GetComponent<UnityEngine.UI.Image>().color = Color.green;
+        }*/
+        if(stateGraphElement != null)
+        {            
+            //originalColor = stateGraphElement.GetComponent<UnityEngine.UI.Image>().color;
+            stateGraphElement.GetComponent<UnityEngine.UI.Image>().color = Color.green;
         }
     }
     public void OnUpdate()
@@ -142,9 +182,13 @@ public class State
         DebugLogger.Instance.Log("OnExit: " + String.Join(", ", OnExitActionsStr));
         OnExitActions?.Invoke();
         //Change the timeline element's image component color back to the original color
-        if(timelineElement != null)
+        /*if(timelineElement != null)
         {   
             timelineElement.GetComponent<UnityEngine.UI.Image>().color = originalColor;
+        }*/
+        if(stateGraphElement != null)
+        {   
+            stateGraphElement.GetComponent<UnityEngine.UI.Image>().color = originalColor;
         }
     }
 
@@ -174,7 +218,8 @@ public class State
             {   
                 from = this,
                 to = transition.to,
-                condition = transition.condition
+                condition = transition.condition,
+                textDescription = transition.textDescription
             });
         }
     }
