@@ -22,8 +22,8 @@ public class Recorder : MonoBehaviour
     public Hand rightHand;
 
     
-    public bool isMainRecordingOn = false;
-    public bool isMainPlaybackOn = false;
+    //public bool isMainRecordingOn = false;
+    //public bool isMainPlaybackOn = false;
     public int recordStartFrame;
     //public int recordedFramesTotal;
 
@@ -147,8 +147,8 @@ public class Recorder : MonoBehaviour
         //AssetManager.Instance.ResetAssetRecordings();
         //RefreshAssetsTimeline(); 
 
-        isMainRecordingOn = true;
-        isMainPlaybackOn = false;
+        //isMainRecordingOn = true;
+        //isMainPlaybackOn = false;
         recordStartFrame = 0;//Time.time;
         frameCount = 0;
         RefreshAssetsTimeline(); 
@@ -165,10 +165,12 @@ public class Recorder : MonoBehaviour
         DebugLogger.Instance.Log("Size of recordedData leftHand: " + currentActiveExample.leftHandData.Count);
         DebugLogger.Instance.Log("Size of recordedData rightHand: " + currentActiveExample.rightHandData.Count);
 
-        isMainRecordingOn = false;
+        //isMainRecordingOn = false;
+        Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
 
         //AssetPoseRecorder.Instance.EnableGrabForAllAssets();
-        AssetManager.Instance.InitializeRecordFramesForAssets();
+        //AssetManager.Instance.InitializeRecordFramesForAssets();
+        AssetManager.Instance.DoRecordSizesMatch();
         RefreshAssetsTimeline();   
 
         PreparePlayback();
@@ -186,8 +188,8 @@ public class Recorder : MonoBehaviour
     {
         try
         {
-            if (isMainRecordingOn) return; // Don't allow playback while recording.
-            Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
+            if (Manager.Instance.currAppState == Manager.AppState.RECORDING) return; // Don't allow playback while recording.
+            
             DebugLogger.Instance.Log("StartPlayback");
             // Determine the duration of the recording.
             //int framesTotal = 0;
@@ -210,7 +212,7 @@ public class Recorder : MonoBehaviour
             //recordedFramesTotal = framesTotal;
             //DebugLogger.Instance.Log("Duration of recording: " + recordedFramesTotal);
 
-            isMainPlaybackOn = true;
+            //isMainPlaybackOn = true;
             isAutomaticPlayback = false;
             recordStartFrame = 0;//Time.time;
             
@@ -285,7 +287,7 @@ public class Recorder : MonoBehaviour
     public void StopPlayback()
     {
         //DebugLogger.Instance.Log("StopPlayback");
-        isMainPlaybackOn = false;
+        //isMainPlaybackOn = false;
     }
 
     public void SetTestMode()
@@ -895,7 +897,7 @@ public class Recorder : MonoBehaviour
         }
 
         //Set the initial state of the state machine to be the first state in the StatesInTimeline dictionary
-        CustomStateMachine.Instance.SetInitialState(currentActiveExample.StatesDict.First().Key.id);
+        //CustomStateMachine.Instance.SetInitialState(currentActiveExample.StatesDict.First().Key.id);
      
     }
 
@@ -1075,7 +1077,7 @@ public class Recorder : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (isMainRecordingOn)
+        if (Manager.Instance.currAppState == Manager.AppState.RECORDING)
         {
             ++frameCount;
 
@@ -1084,7 +1086,7 @@ public class Recorder : MonoBehaviour
             rightHand.Record(frameCount, "righthand");
 
         }
-        else if (isMainPlaybackOn)
+        else if (Manager.Instance.currAppState == Manager.AppState.PLAYBACK)
         {
 
             if (isAutomaticPlayback)

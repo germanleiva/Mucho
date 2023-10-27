@@ -25802,6 +25802,7 @@ GameObject:
   m_Component:
   - component: {fileID: 520477201}
   - component: {fileID: 520477202}
+  - component: {fileID: 520477203}
   m_Layer: 0
   m_Name: focus_square_gaze
   m_TagString: Untagged
@@ -25876,6 +25877,19 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!65 &520477203
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 520477200}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 9.21, y: 10.075527, z: 5.860431}
+  m_Center: {x: 0, y: 0.7572382, z: -2.8302197}
 --- !u!1 &522709075
 GameObject:
   m_ObjectHideFlags: 0
@@ -49015,8 +49029,6 @@ MonoBehaviour:
   head: {fileID: 1806977784}
   leftHand: {fileID: 1809399752}
   rightHand: {fileID: 699899342}
-  isMainRecordingOn: 0
-  isMainPlaybackOn: 0
   recordStartFrame: 0
   isAutomaticPlayback: 0
   stateTimelinePanel: {fileID: 1957605153}
@@ -49269,6 +49281,7 @@ GameObject:
   m_Component:
   - component: {fileID: 917292528}
   - component: {fileID: 917292529}
+  - component: {fileID: 917292530}
   m_Layer: 0
   m_Name: focus_square_right
   m_TagString: Untagged
@@ -49343,6 +49356,19 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!65 &917292530
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 917292527}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 9.21, y: 10.075527, z: 5.860431}
+  m_Center: {x: 0, y: 0.7572382, z: -2.8302197}
 --- !u!1 &917956984
 GameObject:
   m_ObjectHideFlags: 0
@@ -88046,6 +88072,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1564673911}
   - component: {fileID: 1564673912}
+  - component: {fileID: 1564673913}
   m_Layer: 0
   m_Name: focus_square_left
   m_TagString: Untagged
@@ -88120,6 +88147,19 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!65 &1564673913
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1564673910}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 9.21, y: 10.075527, z: 5.860431}
+  m_Center: {x: 0, y: 0.7572382, z: -2.8302197}
 --- !u!1 &1564973219
 GameObject:
   m_ObjectHideFlags: 0
@@ -88854,12 +88894,12 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1584394313}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2128465259}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -99411,7 +99451,7 @@ RectTransform:
   m_Children:
   - {fileID: 779920582}
   m_Father: {fileID: 2128465259}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
@@ -120669,8 +120709,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1763086620}
   - {fileID: 1584394314}
+  - {fileID: 1763086620}
   m_Father: {fileID: 609769552}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

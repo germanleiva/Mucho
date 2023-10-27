@@ -18,7 +18,7 @@ public class AssetManager : MonoBehaviour
     //List of all force arrow components
     
 
-    Vector3 lastAssetPosition = Vector3.zero;
+
 
     // Start is called before the first frame update
 
@@ -31,7 +31,7 @@ public class AssetManager : MonoBehaviour
 
     public Material defaultMaterial, transparentMaterial, translucentMaterial;
 
-    int firstFrameOfManualRecording, lastFrameOfManualRecording;
+
     
     private void Awake()
     {
@@ -48,30 +48,23 @@ public class AssetManager : MonoBehaviour
     
     void Start()
     {
-        lastAssetPosition = transform.position;
+        //lastAssetPosition = transform.position;
     }
 
-    public void StartRecording(Recordable recordable)
-    {
-        Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
-        DebugLogger.Instance.Log("StartRecording in " + recordable.gameObject.name);
-        firstFrameOfManualRecording = (int)mainRecorder.playbackSlider.value;
-        //currentActiveRecordable = recordable;
-        //recordable.currentRecordingMode = Recordable.RecordingType.ManualAnimation;
-    }
+
 
     public bool DoRecordSizesMatch()
     {
-        /*int size = mainRecorder.GetSizeOfMainRecordedData(); //Get size of head in main recorder
-        foreach(Recordable recordable in assets)
+        int size = mainRecorder.GetSizeOfMainRecordedData(); //Get size of head in main recorder
+        foreach(Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
         {
-            if(recordable.recordedData.Count != size)
+            if(Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count != size)
             {
-                DebugLogger.Instance.Log("Asset recording sizes are different");
+                DebugLogger.Instance.Log("Asset recording sizes are different from main recording size");
                 return false;
             }
         }
-        DebugLogger.Instance.Log("Asset recording sizes are same");*/
+        DebugLogger.Instance.Log("Asset recording sizes are same as main recording size");
         return true;
     }
 
@@ -83,14 +76,14 @@ public class AssetManager : MonoBehaviour
         }*/
     }
 
-    public void InitializeRecordFramesForAssets()
+    /*public void InitializeRecordFramesForAssets()
     {
         foreach(Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
         {
             for(int i = 0; i < mainRecorder.GetSizeOfMainRecordedData(); i++)
             {
                 //recordable.recordedData.Add(new RecordFrameData(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", i));
-                RecordableFrame item = new RecordableFrame(recordable.gameObject.transform.position, recordable.gameObject.transform.rotation, recordable.showStatus, "None", "None", null, null, null, i);
+                AssetFrame item = new AssetFrame(recordable.gameObject.transform.position, recordable.gameObject.transform.rotation, recordable.showStatus, "None", "None", null, null, null, i);
                 //if(item)
                 
                 
@@ -100,90 +93,11 @@ public class AssetManager : MonoBehaviour
 
             //recordable.InsertAssetRecordFrame(0,  collision: "None", action: "Show()", actionDelegate: () => { recordable.SetVisibility(true); });
         }
-    }
+    }*/
 
-    public void StopRecording(Recordable recordable)
-    {
-        Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
-        recordable.currentRecordingMode = Recordable.AssetRecordingType.None;
-        DebugLogger.Instance.Log("StopRecording in " + recordable.gameObject.name);
-        lastFrameOfManualRecording = (int)mainRecorder.playbackSlider.value;
-        DebugLogger.Instance.Log("First frame: " + firstFrameOfManualRecording + " Last frame: " + lastFrameOfManualRecording);
-        //CheckIfAssetIsFollowingAnything(recordable);
-        mainRecorder.RefreshAssetsTimeline();
-    }
 
-    public void CheckIfAssetIsFollowingAnything(Recordable recordable)
-    {
-        // Initialize variables to keep track of the count of the closest objects
-        int leftHandCount = 0;
-        int rightHandCount = 0;
-        int leftFocusSquareCount = 0;
-        int rightFocusSquareCount = 0;
-        int headFocusSquareCount = 0;
 
-        // Iterate over the frames from firstFrameOfManualRecording to lastFrameOfManualRecording
-        for (int i = firstFrameOfManualRecording; i <= lastFrameOfManualRecording; i++)
-        {
-            // Get the RecordFrameData for the current frame
-            var assetFrameData = Recorder.Instance.currentActiveExample.assetDataDict[recordable][i];
-            var headFrameData = Recorder.Instance.currentActiveExample.headData[i];//mainRecorder.objectsToRecord[0].recordedData[i];
-            var leftHandFrameData = Recorder.Instance.currentActiveExample.leftHandData[i];
-            var rightHandFrameData = Recorder.Instance.currentActiveExample.rightHandData[i];
-
-            // Calculate the distances to the left hand, right hand, left focus square, and right focus square
-            // Note: We need to replace the placeholders below with the actual way to access the positions of these objects
-            float distanceToLeftHand = Vector3.Distance(assetFrameData.rootPosition, leftHandFrameData.rootPosition);
-            float distanceToRightHand = Vector3.Distance(assetFrameData.rootPosition, rightHandFrameData.rootPosition);
-            float distanceToLeftFocusSquare = Vector3.Distance(assetFrameData.rootPosition, leftHandFrameData.focusSquarePosition);
-            float distanceToRightFocusSquare = Vector3.Distance(assetFrameData.rootPosition, rightHandFrameData.focusSquarePosition);
-            float distanceToHeadFocusSquare = Vector3.Distance(assetFrameData.rootPosition, headFrameData.focusSquarePosition);
-
-            // Find the minimum distance and increment the count for the corresponding object
-            float minDistance = Mathf.Min(distanceToLeftHand, distanceToRightHand, distanceToLeftFocusSquare, distanceToRightFocusSquare, distanceToHeadFocusSquare);
-            if (minDistance == distanceToLeftHand) leftHandCount++;
-            else if (minDistance == distanceToRightHand) rightHandCount++;
-            else if (minDistance == distanceToLeftFocusSquare) leftFocusSquareCount++;
-            else if (minDistance == distanceToRightFocusSquare) rightFocusSquareCount++;
-            else headFocusSquareCount++;
-        }
-
-        // Determine which object was closest most frequently and return that information
-        int maxCount = Mathf.Max(leftHandCount, rightHandCount, leftFocusSquareCount, rightFocusSquareCount, headFocusSquareCount);
-        if (maxCount == leftHandCount)
-        {
-            DebugLogger.Instance.Log("Asset is following left hand");            
-            //recordable.CopyPoseFromRecordable(mainRecorder.objectsToRecord[1], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
-            //recordable.CopyPoseFromRecordable(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
-        }
-        else if (maxCount == rightHandCount)
-        {
-            DebugLogger.Instance.Log("Asset is following right hand");
-            //recordable.CopyPoseFromRecordable(mainRecorder.objectsToRecord[2], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
-            //recordable.CopyPoseFromRecordable(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
-        }
-        else if (maxCount == leftFocusSquareCount)
-        {
-            DebugLogger.Instance.Log("Asset is following left focus square");
-            //recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[1], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
-            //recordable.CopyPoseFromFocusSquare(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
-        }
-        else if (maxCount == rightFocusSquareCount)
-        {
-            DebugLogger.Instance.Log("Asset is following right focus square");
-            //recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[2], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
-            //recordable.CopyPoseFromFocusSquare(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
-        }
-        else
-        {
-            DebugLogger.Instance.Log("Asset is following head focus square");
-            //recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[0], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
-            //recordable.CopyPoseFromFocusSquare(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
-        }
-  
-        //Finally, refresh the timeline
-        mainRecorder.RefreshAssetsTimeline();
-    }
+    
 
    public float movementRecordThreshold;
    public float playbackSpeed;
@@ -206,62 +120,20 @@ public class AssetManager : MonoBehaviour
 
         //DebugLogger.Instance.Log("Size of assetDataDict: " + Recorder.Instance.currentActiveExample.assetDataDict.Count);
         
-        foreach(Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
-        {
-            if(recordable.currentRecordingMode == Recordable.AssetRecordingType.ManualAnimation)
-            {
-                if (Vector3.Distance(recordable.gameObject.transform.position, lastAssetPosition) > movementRecordThreshold)
-                {
-                    DebugLogger.Instance.Log("Added new frame data for " + recordable.gameObject.name + " at " + mainRecorder.playbackSlider.value);
 
-                    //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "Collide(" + Manager.Instance.CleanString(recordable.gameObject.name) + ", hand)", true);
-                    recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, actionStr: "None", collisionStr: "None", propagateValueToSubsequentFrames: true);
-                    //Increment the slider value by a small value proportional to the total recording time
-                    mainRecorder.playbackSlider.value += playbackSpeed;
-                }
-                lastAssetPosition = recordable.gameObject.transform.position;
+        if(Manager.Instance.currAppState == Manager.AppState.RECORDING)
+        {
+            foreach(Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
+            {
+                recordable.RecordAssetFrame();
                 
             }
-            else if(recordable.currentRecordingMode == Recordable.AssetRecordingType.Physics)
-            {
-                //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "ApplyForce()", true);                
-                //Increment the slider value by frame duration
-                mainRecorder.playbackSlider.value += 1;
-                recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, actionStr: "ApplyForce()", collisionStr: "None", propagateValueToSubsequentFrames: true);
-            }
-
-            
         }
-
-            //else if (currentActiveRecordable.isAssetPlaybackOn)
-        if(mainRecorder.GetSizeOfMainRecordedData() > 0)
+        else if (Manager.Instance.currAppState == Manager.AppState.PLAYBACK)
         {
-            //float currentTime = Time.time - recordStartTime;
-            int currentFrameNum = (int)mainRecorder.playbackSlider.value;
-            
-            foreach (var recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
+            foreach(Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
             {
-                var data = Recorder.Instance.currentActiveExample.assetDataDict[recordable];
-                if (recordable.gameObject != null && data.Count > 0)
-                {
-                    //DebugLogger.Instance.Log("Playing back " + recordable.playbackObject.name + " at " + currentFrameNum);
-                    recordable.transform.position = data[currentFrameNum].rootPosition;
-                    recordable.transform.rotation = data[currentFrameNum].rootRotation; 
-
-                    if (data[currentFrameNum].showStatusForThisFrame)
-                    {
-                        //DebugLogger.Instance.Log("Showing " + recordable.playbackObject.name + " at " + currentFrameNum);
-                        recordable.gameObject.GetComponent<MeshRenderer>().material = defaultMaterial;
-                    }
-                    else
-                    {
-                        //DebugLogger.Instance.Log("Hiding " + recordable.playbackObject.name + " at " + currentFrameNum);
-                        if(mainRecorder.isAutomaticPlayback) 
-                            recordable.gameObject.GetComponent<MeshRenderer>().material = transparentMaterial;
-                        else 
-                            recordable.gameObject.GetComponent<MeshRenderer>().material = translucentMaterial;
-                    }
-                }
+                recordable.PlaybackAssetFrame();
             }
         }
     }
@@ -339,7 +211,7 @@ public class AssetManager : MonoBehaviour
         recordable.forceArrows.Add(forceArrow);
         forceArrowScript.asset = recordable.gameObject.transform;
         //forceArrowScript.arrowHead should be positioned 1 unit above the arrowEnd in the y axis
-        forceArrowScript.arrowHead.position = recordable.gameObject.transform.position + new Vector3(0.2f,0.2f,0);
+        forceArrowScript.arrowHead.position = recordable.gameObject.transform.position + new Vector3(0f,0.2f,0.2f);
         forceArrowScript.ReOrientArrow();
              
     }

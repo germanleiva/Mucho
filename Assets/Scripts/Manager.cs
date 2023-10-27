@@ -162,7 +162,7 @@ public class Example
 
     public Button button;
     //Create a dictionary matching assets to the list of their recordable frames
-    public Dictionary<Recordable, List<RecordableFrame>> assetDataDict;   
+    public Dictionary<Recordable, List<AssetFrame>> assetDataDict;   
 
     //public List<Recordable> assets;
 
@@ -179,13 +179,13 @@ public class Example
         rightHandData = new List<HandFrame>();
         headData = new List<HeadFrame>();
 
-        assetDataDict = new Dictionary<Recordable, List<RecordableFrame>>();
+        assetDataDict = new Dictionary<Recordable, List<AssetFrame>>();
         StatesDict = new Dictionary<State, StateTimelineUIElement>();
         //Copy assetsInScene to assets
         foreach (Recordable recordable in Recorder.Instance.assetsInScene)
         {            
             //Create a new list of recordable frames for each asset
-            assetDataDict.Add(recordable, new List<RecordableFrame>());            
+            assetDataDict.Add(recordable, new List<AssetFrame>());            
         }
 
         DebugLogger.Instance.Log("Created example " + exampleId);
@@ -198,7 +198,7 @@ public class Example
         rightHandData = example.rightHandData.ToList();
         headData = example.headData.ToList();
 
-        assetDataDict = example.assetDataDict.ToDictionary(entry => entry.Key, entry => entry.Value.Select(item => (RecordableFrame)item.Clone()).ToList());
+        assetDataDict = example.assetDataDict.ToDictionary(entry => entry.Key, entry => entry.Value.Select(item => (AssetFrame)item.Clone()).ToList());
 
     }
 
@@ -210,7 +210,7 @@ public class Example
             //Create a new list of recordable frames for each asset
             if (!assetDataDict.ContainsKey(recordable))
             {
-                assetDataDict.Add(recordable, new List<RecordableFrame>());
+                assetDataDict.Add(recordable, new List<AssetFrame>());
             }
         }
 
