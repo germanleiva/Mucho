@@ -154,7 +154,7 @@ public class Recordable : MonoBehaviour
         {
             DebugLogger.Instance.Log("InsertAssetRecordFrame() - Action delegate at frame number " + frameNumber + " is not null. Adding to the existing delegate.");
             item.ActionDelegate += currentAssetRecordedData[frameNumber].ActionDelegate; //Copy existing action delegate
-            item.Action += "," + currentAssetRecordedData[frameNumber].Action; //Copy existing action
+            item.ActionStr += "," + currentAssetRecordedData[frameNumber].ActionStr; //Copy existing action
         }
 
         currentAssetRecordedData[frameNumber] = item;
@@ -165,7 +165,7 @@ public class Recordable : MonoBehaviour
             for (int i = frameNumber + 1; i < currentAssetRecordedData.Count; i++)
             {
                 //recordedData[i].showStatusForThisFrame = item.showStatusForThisFrame;
-                if (currentAssetRecordedData[i].Action == "ApplyForce()")
+                if (currentAssetRecordedData[i].ActionStr == "ApplyForce()")
                 {
                     DebugLogger.Instance.Log("InsertAssetRecordFrame() - Encountered ApplyForce() at frame number " + i + ". Breaking out of the loop.");
                     break;
@@ -371,14 +371,46 @@ public class Recordable : MonoBehaviour
                                     collidedObject: InputManager.Instance.leftHandPinchObj);   
         //Copy the pose from "other" recordable (hands) at index _frameStart, to this asset and propagate the value to subsequent frames
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
-        for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
+        DebugLogger.Instance.Log("Copying pose from left hand at frame " + _frameStart + " to frame " + currentAssetRecordedData.Count);
+
+        //Iterate through Recorder.Instance.gestureSequences and find the StartIndex closest to _frameStart and greater than _frameStart
+        int followEndIndex = 0;
+        for (int i = 0; i < Recorder.Instance.gestureSequences.Count; i++)
         {
+            int gestureEndIndex = Recorder.Instance.gestureSequences[i].StartIndex + Recorder.Instance.gestureSequences[i].Length;
+            if(gestureEndIndex > _frameStart)
+            {
+                followEndIndex = gestureEndIndex;
+                break;
+            }
+        }
+
+        DebugLogger.Instance.Log("Copying pose from left hand at frame " + _frameStart + " to frame " + followEndIndex);
+
+        for (int i = _frameStart + 1; i < followEndIndex; i++)
+        {
+            
             currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandData[i].pinchPosition; //Copy the position of the left hand at frame _frameStart
-            currentAssetRecordedData[i].Action = "Follow(Left hand)";
+            currentAssetRecordedData[i].ActionStr = "Follow(Left hand)";
             currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left hand)";
         }
-        Recorder.Instance.RefreshAssetsTimeline();
 
+        DebugLogger.Instance.Log("Unfollowing at frame " + followEndIndex);
+
+        ModifyAssetFrame(followEndIndex, 
+                        actionStr: "Unfollow()",  
+                        actionDelegate: () => { GetComponent<Recordable>().Unfollow(); });
+
+        currentAssetRecordedData[followEndIndex].rootPosition = currentAssetRecordedData[followEndIndex - 1].rootPosition;                          
+
+        for (int i = followEndIndex + 1; i < currentAssetRecordedData.Count; i++)
+        {
+            currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[followEndIndex - 1].rootPosition;
+            currentAssetRecordedData[i].ActionStr = "None";
+            currentAssetRecordedData[i].CollisionStr = "None";
+        }
+
+        Recorder.Instance.RefreshAssetsTimeline();
     }
 
     //For assets
@@ -397,17 +429,51 @@ public class Recordable : MonoBehaviour
         //Copy the pose from "other" recordable (hands) at index _frameStart, to this asset and propagate the value to subsequent frames
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
         DebugLogger.Instance.Log("Copying pose from right hand at frame " + _frameStart + " to frame " + currentAssetRecordedData.Count);
-        for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
+
+        //Iterate through Recorder.Instance.gestureSequences and find the StartIndex closest to _frameStart and greater than _frameStart
+        int followEndIndex = 0;
+        for (int i = 0; i < Recorder.Instance.gestureSequences.Count; i++)
+        {
+            int gestureEndIndex = Recorder.Instance.gestureSequences[i].StartIndex + Recorder.Instance.gestureSequences[i].Length;
+            if(gestureEndIndex > _frameStart)
+            {
+                followEndIndex = gestureEndIndex;
+                break;
+            }
+        }
+
+
+        DebugLogger.Instance.Log("Copying pose from right hand at frame " + _frameStart + " to frame " + followEndIndex);
+
+        for (int i = _frameStart + 1; i < followEndIndex; i++)
         {
             
             currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandData[i].pinchPosition; //Copy the position of the right hand at frame _frameStart
-            currentAssetRecordedData[i].Action = "Follow(Right hand)";
+            currentAssetRecordedData[i].ActionStr = "Follow(Right hand)";
             currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right hand)";
         }
+
+        DebugLogger.Instance.Log("Unfollowing at frame " + followEndIndex);
+
+        ModifyAssetFrame(followEndIndex, 
+                        actionStr: "Unfollow()",  
+                        actionDelegate: () => { GetComponent<Recordable>().Unfollow(); });
+
+        //TODO:Change ModifyAssetFrame to also accept modifications to position!
+        currentAssetRecordedData[followEndIndex].rootPosition = currentAssetRecordedData[followEndIndex - 1].rootPosition;                        
+
+        for (int i = followEndIndex + 1; i < currentAssetRecordedData.Count; i++)
+        {
+            currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[followEndIndex-1].rootPosition;
+            currentAssetRecordedData[i].ActionStr = "None";
+            currentAssetRecordedData[i].CollisionStr = "None";
+        }                        
         
         Recorder.Instance.RefreshAssetsTimeline();
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[2].playbackObject.transform);
     }
+
+
 
     //For assets
     public void AttachToLeftHandFocusSquare()
@@ -453,7 +519,7 @@ public class Recordable : MonoBehaviour
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
         {
             currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[_frameStart].rootPosition;
-            currentAssetRecordedData[i].Action = "None";
+            currentAssetRecordedData[i].ActionStr = "None";
             currentAssetRecordedData[i].CollisionStr = "None";
         }
         //CopyPoseFromRecordable(this, (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:true, copyRotation:false);
@@ -478,7 +544,7 @@ public class Recordable : MonoBehaviour
             for (int i = _frameStart; i < currentAssetRecordedData.Count; i++)
             {
                 currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[_frameStart].rootPosition;
-                currentAssetRecordedData[i].Action = "None";
+                currentAssetRecordedData[i].ActionStr = "None";
                 currentAssetRecordedData[i].ActionDelegate = null;
                 currentAssetRecordedData[i].CollisionStr = "None";
                 currentAssetRecordedData[i].CollisionDelegate = null;
@@ -671,7 +737,7 @@ public class AssetFrame : ICloneable
     public bool showStatusForThisFrame = true;
     public InputManager.Gesture gesture;
 
-    public string Action = "None";
+    public string ActionStr = "None";
 
     //public Recordable.RecordingType recordingMode;
 
@@ -691,7 +757,7 @@ public class AssetFrame : ICloneable
         rootRotation = _rotation;
         showStatusForThisFrame = _showStatus;
         frameNumber = _frameNumber;
-        Action = _action;
+        ActionStr = _action;
         CollisionStr = _collision;
         ActionDelegate = _actionDelegate;
         CollisionDelegate = _collisionDelegate;
@@ -707,7 +773,7 @@ public class AssetFrame : ICloneable
             this.rootPosition,
             this.rootRotation,
             this.showStatusForThisFrame,
-            this.Action,
+            this.ActionStr,
             this.CollisionStr,
             this.ActionDelegate,
             this.CollisionDelegate,

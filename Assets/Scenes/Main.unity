@@ -6016,7 +6016,7 @@ MonoBehaviour:
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
-          m_BoolArgument: 1
+          m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 558477666}
         m_TargetAssemblyTypeName: Recordable, Assembly-CSharp
@@ -40915,8 +40915,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 48.5, y: -0.6}
-  m_SizeDelta: {x: 88.4, y: 46.5}
+  m_AnchoredPosition: {x: 35.21, y: -0.34}
+  m_SizeDelta: {x: 65.13, y: 32.46}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &779920583
 MonoBehaviour:
@@ -40938,7 +40938,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Event
+  m_text: State 110
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -40965,8 +40965,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 15
-  m_fontSizeBase: 15
+  m_fontSize: 12
+  m_fontSizeBase: 12
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -46333,7 +46333,7 @@ MonoBehaviour:
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
-          m_BoolArgument: 0
+          m_BoolArgument: 1
         m_CallState: 2
 --- !u!114 &872149953
 MonoBehaviour:
@@ -50902,7 +50902,7 @@ MonoBehaviour:
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
-          m_BoolArgument: 1
+          m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 558477666}
         m_TargetAssemblyTypeName: Recordable, Assembly-CSharp
@@ -53922,7 +53922,7 @@ MonoBehaviour:
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
-          m_BoolArgument: 1
+          m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 558477666}
         m_TargetAssemblyTypeName: Recordable, Assembly-CSharp
@@ -57346,7 +57346,7 @@ MonoBehaviour:
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
-          m_BoolArgument: 1
+          m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 558477666}
         m_TargetAssemblyTypeName: Recordable, Assembly-CSharp
@@ -89298,7 +89298,7 @@ MonoBehaviour:
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
-          m_BoolArgument: 1
+          m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 558477666}
         m_TargetAssemblyTypeName: Recordable, Assembly-CSharp
@@ -99455,8 +99455,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 22, y: 145}
-  m_SizeDelta: {x: 98.1, y: 58.5}
+  m_AnchoredPosition: {x: -70.58, y: 153.06}
+  m_SizeDelta: {x: 70.58, y: 37.53}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &1763086621
 MonoBehaviour:

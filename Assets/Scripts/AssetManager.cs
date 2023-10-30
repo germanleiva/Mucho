@@ -38,7 +38,6 @@ public class AssetManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -204,6 +203,11 @@ public class AssetManager : MonoBehaviour
 
     public void AddForceArrowToAsset(Recordable recordable)
     {
+        foreach (GameObject obj in recordable.forceArrows)
+        {
+            Destroy(obj);
+        } 
+
         //GameObject obj = Instantiate(cubePrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
         GameObject forceArrow = Instantiate(forceArrowPrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);   
         forceArrow.SetActive(true);     

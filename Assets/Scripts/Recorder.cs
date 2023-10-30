@@ -80,7 +80,6 @@ public class Recorder : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -467,7 +466,7 @@ public class Recorder : MonoBehaviour
 
         var recordedData = currentActiveExample.assetDataDict[recordable]; 
 
-        List<string> changes = recordedData.Select(x => x.Action).ToList();
+        List<string> changes = recordedData.Select(x => x.ActionStr).ToList();
         List<AssetAction> sequences = GetContinuousChangeSequences(changes);
         foreach (AssetAction sequence in sequences)
         {
