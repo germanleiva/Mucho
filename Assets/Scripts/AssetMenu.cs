@@ -14,7 +14,7 @@ public class AssetMenu : MonoBehaviour
     void Awake()
     {
         //set position 60cm in front of target
-        transform.position = target.position + target.forward * 0.6f;
+        //transform.position = target.position + target.forward * 0.6f;
     }
 
     // Update is called once per frame

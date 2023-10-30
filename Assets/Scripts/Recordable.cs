@@ -34,7 +34,7 @@ public class Recordable : MonoBehaviour
 
     private float oldMainPlaybackSliderValue = 0;
 
-
+    public GameObject followLineObj;
     public bool showStatus = true;
 
     void Start()
@@ -273,6 +273,12 @@ public class Recordable : MonoBehaviour
   
         //Finally, refresh the timeline
         Recorder.Instance.RefreshAssetsTimeline();
+    }
+
+    public void CreateFollowLine()
+    {
+        //GameObject followLineObj = Instantiate(followLinePrefab, transform.position, Quaternion.identity);        
+        followLineObj.GetComponent<FollowLine>().InitializeLine(InputManager.Instance.rightHandPinchObj.transform);
     }
 
     //For assets
