@@ -15,8 +15,8 @@ TagManager:
   - InteractableSurface
   - RecordableAsset
   - ObjUI
-  - Extra
-  - 
+  - FollowIndicator
+  - ColliderGizmo
   - 
   - 
   - 

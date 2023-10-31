@@ -35,6 +35,9 @@ public class Recordable : MonoBehaviour
     private float oldMainPlaybackSliderValue = 0;
 
     public GameObject followLineObj;
+
+    public GameObject colliderVisualizerObj, colliderBoundaryGizmoObj1, colliderBoundaryGizmoObj2;
+    
     public bool showStatus = true;
 
     void Start()
@@ -706,6 +709,16 @@ public class Recordable : MonoBehaviour
     public void Unfollow()
     {
         transform.SetParent(null);
+    }
+
+    public void ShowColliderVisualizer(bool status)
+    {
+        colliderVisualizerObj.SetActive(status);
+        colliderBoundaryGizmoObj1.SetActive(status);
+        if(colliderBoundaryGizmoObj2 != null) //Two gizmos for box collider
+        {
+            colliderBoundaryGizmoObj2.SetActive(status);
+        }
     }
 
 }
