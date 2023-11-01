@@ -14,7 +14,7 @@ public class InputManager : MonoBehaviour
 
     public GameObject collidingObjectNotified_1, collidingObjectNotified_2;
 
-    public GameObject leftHandPinchObj, rightHandPinchObj;
+    public GameObject leftHandPinchObj, rightHandPinchObj, headContactObj;
 
     public GameObject leftHandGrabObj, rightHandGrabObj;
 

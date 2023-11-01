@@ -68,7 +68,8 @@ public class Recordable : MonoBehaviour
         {
             //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "ApplyForce()", true);                
             //Increment the slider value by frame duration
-            Recorder.Instance.playbackSlider.value += 1;
+            if( Recorder.Instance.playbackSlider.value < Recorder.Instance.playbackSlider.maxValue)
+                Recorder.Instance.playbackSlider.value += 1;
             ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, actionStr: "ApplyForce()", collisionStr: "None", propagateValueToSubsequentFrames: true);
         }
     }
@@ -97,6 +98,9 @@ public class Recordable : MonoBehaviour
                 currentAssetRecordedData.Add(new(transform.position, transform.rotation, showStatus, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + ", Left hand)", null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.leftHandPinchObj); }, InputManager.Instance.leftHandPinchObj, currentAssetRecordedData.Count));
             else if(collidedObject == InputManager.Instance.rightHandPinchObj)
                 currentAssetRecordedData.Add(new(transform.position, transform.rotation, showStatus, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + ", Right hand)", null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.rightHandPinchObj); }, InputManager.Instance.rightHandPinchObj, currentAssetRecordedData.Count));
+            else if(collidedObject == InputManager.Instance.headContactObj)
+                currentAssetRecordedData.Add(new(transform.position, transform.rotation, showStatus, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + ", Head)", null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.headContactObj); }, InputManager.Instance.headContactObj, currentAssetRecordedData.Count));
+            
             //else //collision with other assets
             //     currentAssetRecordedData.Add(new(transform.position, transform.rotation, showStatus, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + "," + Manager.Instance.CleanAssetName(InputManager.Instance.collidingObjectNotified_2.name), null, null, null, currentAssetRecordedData.Count));    
 
@@ -596,7 +600,7 @@ public class Recordable : MonoBehaviour
     //For assets
     void OnCollisionEnter(Collision collision)
     {
-        DebugLogger.Instance.Log("Collision detected between " + base.gameObject.name + " and " + collision.collider.name);
+        //DebugLogger.Instance.Log("Collision detected between " + base.gameObject.name + " and " + collision.collider.name);
         InputManager.Instance.NotifyCollision(base.gameObject, collision.collider.gameObject);
 
 
@@ -607,7 +611,7 @@ public class Recordable : MonoBehaviour
             return;
         }
 
-        if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
+        if(currentRecordingMode == Recordable.AssetRecordingType.Physics)
         {
             //Delete all force arrows
             foreach (GameObject obj in forceArrows)
@@ -617,7 +621,9 @@ public class Recordable : MonoBehaviour
 
             currentRecordingMode = Recordable.AssetRecordingType.None;
 
-            //DebugLogger.Instance.Log("Collision detected between " + base.gameObject.name + " and " + collision.collider.name);
+            DebugLogger.Instance.Log("Collision detected between " + base.gameObject.name + " and " + collision.collider.name);
+
+            
 
             ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionStr: "ResetPhysics()", 
@@ -625,7 +631,7 @@ public class Recordable : MonoBehaviour
                                 actionDelegate: () => { GetComponent<Recordable>().ResetPhysicsPropertiesInLiveMode(); }, 
                                 collidedObject: collision.collider.gameObject);
 
-            ResetPhysicsProperties();          
+            ResetPhysicsProperties();                
             
         }
 
@@ -662,14 +668,11 @@ public class Recordable : MonoBehaviour
         if(Manager.Instance.currAppState != Manager.AppState.RECORDING)
         {
             DebugLogger.Instance.Log("Collision detected between " + base.gameObject.name + " and " + collision.collider.name);
-            if(collision.collider.name == "LeftHandPinchContactSphere")
-            {                
+            if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere" || collision.collider.name == "HeadContactSphere")
+            {                 
                 InputManager.Instance.NotifyCollision(base.gameObject, collision.collider.gameObject);
             }
-            else if(collision.collider.name == "RightHandPinchContactSphere")
-            {                
-                InputManager.Instance.NotifyCollision(base.gameObject, collision.collider.gameObject);
-            }            
+                      
         }
         else //Recording
         {
@@ -683,15 +686,10 @@ public class Recordable : MonoBehaviour
         if(Manager.Instance.currAppState != Manager.AppState.RECORDING)
         {
             //DebugLogger.Instance.Log("Collision ended between " + gameObject.name + " and " + collision.collider.name);
-            if(collision.collider.name == "LeftHandPinchContactSphere")
+            if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere" || collision.collider.name == "HeadContactSphere")
             {      
                 InputManager.Instance.NotifyCollision(null,null);
-            }
-            else if(collision.collider.name == "RightHandPinchContactSphere")
-            {
-                
-                InputManager.Instance.NotifyCollision(null,null);
-            }            
+            }          
         }
         else //Recording
         {

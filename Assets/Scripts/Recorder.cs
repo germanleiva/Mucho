@@ -97,6 +97,17 @@ public class Recorder : MonoBehaviour
         currentActiveExample = example;*/
     }
 
+    public void HighlightAllFollowTargets()
+    {
+
+    }
+
+    public void HighlightSelectedFollowTarget()
+    {
+
+    }
+
+
     public void SelectExample(Example example)
     {
         DebugLogger.Instance.Log("Selecting example " + example.exampleId);
