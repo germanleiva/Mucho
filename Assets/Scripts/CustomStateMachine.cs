@@ -93,7 +93,7 @@ public class CustomStateMachine : MonoBehaviour
         {
             if (transition.ShouldApply(lastFrameObject))
             {
-                DebugLogger.Instance.Log("Transition applied from" + transition.from + " to " + transition.to);
+                //DebugLogger.Instance.Log("Transition applied from" + transition.from + " to " + transition.to);
                 ApplyTransition(transition);
             }
             else
@@ -107,7 +107,7 @@ public class CustomStateMachine : MonoBehaviour
 
     private void ApplyTransition(Transition transition)
     {
-        DebugLogger.Instance.Log("Applying transition from " + transition.from + " to " + transition.to, VRConsoleEnabled: true);
+        //DebugLogger.Instance.Log("Applying transition from " + transition.from + " to " + transition.to, VRConsoleEnabled: true);
         DebugLogger.Instance.Log("Transitioning from " + transition.from + " to " + transition.to);
         this.currentState.OnExit();
         this.currentState = transition.to;

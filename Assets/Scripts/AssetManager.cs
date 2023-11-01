@@ -75,29 +75,6 @@ public class AssetManager : MonoBehaviour
         }*/
     }
 
-    /*public void InitializeRecordFramesForAssets()
-    {
-        foreach(Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
-        {
-            for(int i = 0; i < mainRecorder.GetSizeOfMainRecordedData(); i++)
-            {
-                //recordable.recordedData.Add(new RecordFrameData(recordable.playbackObject.transform.position, recordable.playbackObject.transform.rotation, recordable.showStatus, "None", i));
-                AssetFrame item = new AssetFrame(recordable.gameObject.transform.position, recordable.gameObject.transform.rotation, recordable.showStatus, "None", "None", null, null, null, i);
-                //if(item)
-                
-                
-                //recordable.recordedData.Add(item);
-                Recorder.Instance.currentActiveExample.assetDataDict[recordable].Add(item); 
-            }
-
-            //recordable.InsertAssetRecordFrame(0,  collision: "None", action: "Show()", actionDelegate: () => { recordable.SetVisibility(true); });
-        }
-    }*/
-
-
-
-    
-
    public float movementRecordThreshold;
    public float playbackSpeed;
 
