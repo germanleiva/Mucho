@@ -22,6 +22,12 @@ public class StateGraphUI : MonoBehaviour
         
     }
 
+    public static void ResetStateGraph()
+    {
+        lastStatePosX = 0;
+        lastStatePosY = 0;
+    }
+
     public static GameObject CreateStateGraphElement(GameObject prefab, RectTransform parentTransform, State _state)//, State previousState, State nextState)//, int _stateIndexOnTimeline)
     {
         GameObject timelineElement = Instantiate(prefab, parentTransform);

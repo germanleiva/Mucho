@@ -72,6 +72,8 @@ public class CustomStateMachine : MonoBehaviour
 
     public void CreateStateGraph(GameObject stateElementPrefab, RectTransform parentTransform)
     {
+        StateGraphUI.ResetStateGraph();
+        
         for(int i = 2;i < parentTransform.childCount; i++)
         {
             Destroy(parentTransform.GetChild(i).gameObject);

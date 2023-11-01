@@ -587,7 +587,7 @@ public class Recorder : MonoBehaviour
                 collisionSequencesLists.Add(GenerateCollisionSequences(collisionTimelinePanel.GetComponent<RectTransform>(), recordable));
             }
         }
-        //CreateStateMachine();
+        CreateStateMachine();
        
     }
 
@@ -903,8 +903,9 @@ public class Recorder : MonoBehaviour
 
     public void CreateStateMachine()
     {
-        RefreshAssetsTimeline(); 
+        //RefreshAssetsTimeline(); 
         CreateStates(gestureSequences, collisionSequencesLists.SelectMany(x => x).ToList(), assetSequencesLists, GetSizeOfMainRecordedData());
+        CombineExamples();
     }
 
     public void ResetStateMachine()
@@ -924,6 +925,7 @@ public class Recorder : MonoBehaviour
         }
        
         allStatesInExamples = allStatesInExamples.OrderBy(x => x.Count).ToList();
+
         var shortestList = allStatesInExamples.First();
         int shortestListLength = shortestList.Count;
         DebugLogger.Instance.Log("The shortest list of states has " + shortestList.Count + " states");
@@ -962,15 +964,12 @@ public class Recorder : MonoBehaviour
         DebugLogger.Instance.Log("The last common state is " + commonStates.Last().id + " at index " + (lastCommonStateIndex-1));
 
         if (lastCommonStateIndex < shortestListLength)
-        {
-            commonStates.Add(shortestList[lastCommonStateIndex]); //Add the state after the last common state
-
-            
-            
+        { 
             //Printing the states at lastCommonStateIndex-1 for each List<State> in allStatesInExamples except the first
             DebugLogger.Instance.Log("States at index " + (lastCommonStateIndex - 1) + " for each example except the first: ");
             for (int i = 1; i < allStatesInExamples.Count; i++)
             {
+                commonStates.Add(shortestList[lastCommonStateIndex]); //Add the state after the last common state
                 //allStatesInExamples[i][lastCommonStateIndex].PrintDetailsOfState(VRConsoleEnabled : true);            
                 commonStates.Last().CopyTransitionFromState(allStatesInExamples[i][lastCommonStateIndex]);
                 //DebugLogger.Instance.Log("Transition copied from " + allStatesInExamples[i][lastCommonStateIndex].id + " to " + commonStates.Last().id);
@@ -1009,7 +1008,7 @@ public class Recorder : MonoBehaviour
         }
         
 
-        CustomStateMachine.Instance.SetInitialState(commonStates.First().id);
+        //CustomStateMachine.Instance.SetInitialState(commonStates.First().id);
 
     }
 
@@ -1017,6 +1016,10 @@ public class Recorder : MonoBehaviour
     public void PrintDetailsOfStateMachine()
     {
         DebugLogger.Instance.ClearVRDebugText();
+
+        CustomStateMachine.Instance.PrintDetailsOfStateMachine(VRConsoleEnabled : true);
+
+        /*
         DebugLogger.Instance.Log("Printing details of state machine");
 
         foreach(var example in examples)

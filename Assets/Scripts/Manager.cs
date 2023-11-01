@@ -60,6 +60,7 @@ public class Manager : MonoBehaviour
         Recorder.Instance.SetPlaybackObjectsVisibility(false);
         AssetManager.Instance.HideMiscObjs();
         AssetManager.Instance.SetAllAssetMenusPokeable(false);
+        Recorder.Instance.ResetStateMachine();
     }
 
     public void ChangeToTestMode()
@@ -78,6 +79,7 @@ public class Manager : MonoBehaviour
         Recorder.Instance.SetPlaybackObjectsVisibility(true);
         AssetManager.Instance.ShowMiscObjs();
         AssetManager.Instance.SetAllAssetMenusPokeable(true);
+        Recorder.Instance.ResetStateMachine();
     }
 
     public void CreateCopyOfObject(GameObject obj)

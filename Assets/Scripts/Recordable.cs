@@ -149,16 +149,16 @@ public class Recordable : MonoBehaviour
     public void ModifyAssetFrame(int frameNumber, string actionStr = "None", string collisionStr = "None", Action actionDelegate = null, Action<Frame> collisionDelegate = null, GameObject collidedObject = null, bool propagateValueToSubsequentFrames = false)
     {
         AssetFrame item = new(transform.position, transform.rotation, showStatus, actionStr, collisionStr, actionDelegate, collisionDelegate, collidedObject, frameNumber);
-        DebugLogger.Instance.Log("Inserting asset record frame at a specific frame number " + frameNumber);
+        DebugLogger.Instance.Log("Inserting asset record frame at index " + frameNumber);
 
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
 
-        if(currentAssetRecordedData[frameNumber].ActionDelegate != null)
+        /*if(currentAssetRecordedData[frameNumber].ActionDelegate != null)
         {
             DebugLogger.Instance.Log("InsertAssetRecordFrame() - Action delegate at frame number " + frameNumber + " is not null. Adding to the existing delegate.");
             item.ActionDelegate += currentAssetRecordedData[frameNumber].ActionDelegate; //Copy existing action delegate
             item.ActionStr += "," + currentAssetRecordedData[frameNumber].ActionStr; //Copy existing action
-        }
+        }*/
 
         currentAssetRecordedData[frameNumber] = item;
 
@@ -617,7 +617,7 @@ public class Recordable : MonoBehaviour
 
             currentRecordingMode = Recordable.AssetRecordingType.None;
 
-            DebugLogger.Instance.Log("Collision detected between " + base.gameObject.name + " and " + collision.collider.name);
+            //DebugLogger.Instance.Log("Collision detected between " + base.gameObject.name + " and " + collision.collider.name);
 
             ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionStr: "ResetPhysics()", 
@@ -653,7 +653,7 @@ public class Recordable : MonoBehaviour
         GetComponent<Rigidbody>().mass = 0f;
         GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
         GetComponent<Rigidbody>().useGravity = false;
-        Recorder.Instance.RefreshAssetsTimeline();
+        //Recorder.Instance.RefreshAssetsTimeline();
     }
 
     //For assets
