@@ -30,7 +30,7 @@ namespace Whisper.Samples
         private string _buffer;
 
         private void Awake()
-        {
+        {/*
             whisper.OnNewSegment += OnNewSegment;
             whisper.OnProgress += OnProgressHandler;
             
@@ -45,7 +45,7 @@ namespace Whisper.Samples
             translateToggle.onValueChanged.AddListener(OnTranslateChanged);
 
             vadToggle.isOn = microphoneRecord.vadStop;
-            vadToggle.onValueChanged.AddListener(OnVadChanged);
+            vadToggle.onValueChanged.AddListener(OnVadChanged);*/
         }
 
         private void OnVadChanged(bool vadStop)
