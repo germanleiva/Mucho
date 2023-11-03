@@ -189,6 +189,8 @@ public class Recordable : MonoBehaviour
         }
     }
 
+
+
     public void StartManualRecording()
     {
         Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
@@ -764,6 +766,8 @@ public class AssetFrame : ICloneable
 
     public GameObject CollidedObject;
     public string CollisionStr = "None";
+
+    //public string voiceCommand = "None";
 
     //public Vector3 force;
 

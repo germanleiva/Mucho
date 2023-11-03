@@ -510,6 +510,19 @@ public class Recorder : MonoBehaviour
         return sequences;
     }
 
+    /*public void GenerateVoiceCommandSequences(RectTransform timelinePanel)
+    {
+        DebugLogger.Instance.Log("Generating voice command sequences");
+        List<string> voiceCommands = currentActiveExample.headData.Select(x => x).ToList();
+        List<AssetAction> sequences = GetContinuousChangeSequences(voiceCommands);
+        foreach (AssetAction sequence in sequences)
+        {
+            //DebugLogger.Instance.Log("Sequence name: " + sequence.Action + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
+            //DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
+            TimelineUIElement.CreateTimelineElement(assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ActionStr);
+        }
+    }*/
+
     public List<AssetAction> GenerateCollisionSequences(RectTransform collisionTimelinePanelTransform, Recordable recordable) //Strong assumption that all sources of action come from collision
     {
         DebugLogger.Instance.Log("Generating collision sequences for " + recordable.name);

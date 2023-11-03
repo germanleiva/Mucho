@@ -10,13 +10,22 @@ public class SpeechToText : MonoBehaviour
     public MicrophoneRecord microphoneRecord;
 
     public TMPro.TMP_Text outputText;
-
-    private string _buffer;
+    private WhisperStream _stream;
     // Start is called before the first frame update
-    void Start()
+    async void Start()
     {
-        microphoneRecord.vadStop = false;
-        microphoneRecord.OnRecordStop += OnRecordStop;
+        //microphoneRecord.vadStop = false;
+        //microphoneRecord.OnRecordStop += OnRecordStop;
+        
+        _stream = await whisper.CreateStream(microphoneRecord);
+        _stream.OnResultUpdated += OnResult;
+        _stream.OnSegmentUpdated += OnSegmentUpdated;
+        _stream.OnSegmentFinished += OnSegmentFinished;
+        _stream.OnStreamFinished += OnFinished;
+
+        //microphoneRecord.OnRecordStop += OnRecordStop;
+        //button.onClick.AddListener(OnButtonPressed);
+        StartRecording();
     }
 
     // Update is called once per frame
@@ -27,6 +36,7 @@ public class SpeechToText : MonoBehaviour
 
     public void StartRecording()
     {
+        _stream.StartStream();
         microphoneRecord.StartRecord();
         DebugLogger.Instance.Log("Start Recording");
     }
@@ -37,29 +47,31 @@ public class SpeechToText : MonoBehaviour
         DebugLogger.Instance.Log("Stop Recording");
     }
 
-    private async void OnRecordStop(AudioChunk recordedAudio)
+    private void OnApplicationQuit()
     {
-        //buttonText.text = "Record";
-        _buffer = "";
+        StopRecording();
+    }
 
-        var sw = new Stopwatch();
-        sw.Start();
-        
-        var res = await whisper.GetTextAsync(recordedAudio.Data, recordedAudio.Frequency, recordedAudio.Channels);
-        if (res == null || !outputText) 
-            return;
-
-        var time = sw.ElapsedMilliseconds;
-        var rate = recordedAudio.Length / (time * 0.001f);
-        string timeDetails = $"Time: {time} ms\nRate: {rate:F1}x";
-        DebugLogger.Instance.Log("Speech to text details: " + timeDetails);
-
-        var text = res.Result;
-
-        DebugLogger.Instance.Log("Speech to text result: " + text);
-                
-        outputText.text = text;
+    private void OnResult(string result)
+    {
+        //text.text = result;
+        //UiUtils.ScrollDown(scroll);
+    }
     
+    private void OnSegmentUpdated(WhisperResult segment)
+    {
+        print($"Segment updated: {segment.Result}");
+    }
+    
+    private void OnSegmentFinished(WhisperResult segment)
+    {
+        outputText.text = segment.Result;
+        print($"Segment finished: {segment.Result}");
+    }
+    
+    private void OnFinished(string finalResult)
+    {
+        print("Stream finished!");
     }
 
     //public void 

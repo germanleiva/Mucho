@@ -134275,7 +134275,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 330294876760523020}
   m_HandleRect: {fileID: 330294876760523021}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -135232,7 +135232,6 @@ GameObject:
   m_Component:
   - component: {fileID: 330294876592042428}
   - component: {fileID: 330294876592042430}
-  - component: {fileID: 4443345514525557373}
   - component: {fileID: 4443345514525557374}
   m_Layer: 0
   m_Name: Demo
@@ -135253,8 +135252,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bc03a4c19604ea394e364f8fc632928, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxLengthSec: 30
-  loop: 0
+  maxLengthSec: 60
+  loop: 1
   frequency: 16000
   chunksLengthSec: 0.5
   echo: 0
@@ -135262,12 +135261,12 @@ MonoBehaviour:
   vadUpdateRateSec: 0.1
   vadContextSec: 30
   vadLastSec: 1.25
-  vadThd: 0.6
+  vadThd: 1
   vadFreqThd: 100
   vadIndicatorImage: {fileID: 330294875971832347}
-  vadStop: 1
+  vadStop: 0
   dropVadPart: 1
-  vadStopTime: 0.3
+  vadStopTime: 3
   microphoneDropdown: {fileID: 330294876775383523}
   microphoneDefaultLabel: Default mic
 --- !u!224 &330294876610649362
@@ -135668,7 +135667,7 @@ RectTransform:
   m_AnchorMin: {x: 0.05, y: 1}
   m_AnchorMax: {x: 0.95, y: 1}
   m_AnchoredPosition: {x: 0, y: 0.000061035156}
-  m_SizeDelta: {x: 0, y: 71.12954}
+  m_SizeDelta: {x: 0, y: 72.06372}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &330294876760523020
 MonoBehaviour:
@@ -135754,8 +135753,8 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330294876775383521}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.29289, y: 0.29289, z: 0.29289}
+  m_LocalPosition: {x: 0, y: 0, z: -0}
+  m_LocalScale: {x: 0.2048707, y: 0.2048707, z: 0.2048707}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 330294876366825628}
@@ -135766,7 +135765,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 129.7, y: -5}
+  m_AnchoredPosition: {x: 157.1, y: -10.5}
   m_SizeDelta: {x: -120, y: 97.334}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!1 &330294876775383521
@@ -135871,7 +135870,19 @@ MonoBehaviour:
       m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 4443345514525557374}
+        m_TargetAssemblyTypeName: SpeechToText, Assembly-CSharp
+        m_MethodName: StartRecording
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_AlphaFadeSpeed: 0.15
 --- !u!222 &330294876775383549
 CanvasRenderer:
@@ -136181,7 +136192,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.17822656, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -2.5, y: -0.5}
+  m_AnchoredPosition: {x: -2.4999695, y: -0.5}
   m_SizeDelta: {x: -5, y: -3}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &330294876796838823
@@ -136868,14 +136879,14 @@ MonoBehaviour:
   modelPath: Whisper/ggml-tiny.bin
   isModelPathInStreamingAssets: 1
   initOnAwake: 1
-  language: auto
+  language: en
   translateToEnglish: 0
   strategy: 0
   noContext: 1
   singleSegment: 1
   enableTokens: 0
   initialPrompt: 
-  stepSec: 3
+  stepSec: 1
   keepSec: 0.2
   lengthSec: 10
   updatePrompt: 1
@@ -137161,7 +137172,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.17822656, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -2.5, y: -0.5}
+  m_AnchoredPosition: {x: -2.4999695, y: -0.5}
   m_SizeDelta: {x: -5, y: -3}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &330294877468572108
@@ -149402,30 +149413,6 @@ MonoBehaviour:
   _activeState: {fileID: 0}
   _candidateComparer: {fileID: 0}
   _maxIterationsPerFrame: 3
---- !u!114 &4443345514525557373
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 330294876592042429}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 93995dcf8024f43248b1a05a90326b73, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  whisper: {fileID: 330294877203651954}
-  microphoneRecord: {fileID: 330294876592042430}
-  streamSegments: 1
-  printLanguage: 1
-  button: {fileID: 330294875763043802}
-  buttonText: {fileID: 330294876427516240}
-  outputText: {fileID: 330294876735327113}
-  timeText: {fileID: 330294877560556033}
-  languageDropdown: {fileID: 330294876395256669}
-  translateToggle: {fileID: 330294876437090476}
-  vadToggle: {fileID: 330294876578518272}
-  scroll: {fileID: 330294876786348465}
 --- !u!114 &4443345514525557374
 MonoBehaviour:
   m_ObjectHideFlags: 0

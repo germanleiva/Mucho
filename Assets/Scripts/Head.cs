@@ -57,6 +57,11 @@ public class Head : MonoBehaviour
         }
     }
 
+    public void InsertVoiceCommand(int frameNumber, string _voiceCommand)
+    {
+        var currentHeadRecordedData = Recorder.Instance.currentActiveExample.headData;
+        currentHeadRecordedData[frameNumber].voiceCommand = _voiceCommand;
+    }
    
 
     public void Record(int frameNum)
@@ -80,6 +85,8 @@ public class HeadFrame
     public Quaternion rootRotation;
 
     public int frameNumber;
+
+    public string voiceCommand;
 
 
     //Focus square position and rotation
