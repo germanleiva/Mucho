@@ -40,9 +40,14 @@ public class CustomStateMachine : MonoBehaviour
         currentState = states[name];
         foreach (var state in states)
         {
-            state.Value.ResetColor();
-        }
-        // currentState.OnEnter();
+            state.Value.ResetStateUIColor();
+        }        
+    }
+
+    public void InvokeOnEnterActionsOfInitialState()
+    {
+        DebugLogger.Instance.Log("Invoking OnEnter actions of initial state " + currentState.id,true);
+        currentState.OnEnter();
     }
 
     public int GetSize()
@@ -141,7 +146,7 @@ public class State
     public GestureSequence Gesture { get; set; }
     public AssetAction Collision { get; set; }
 
-    public void ResetColor()
+    public void ResetStateUIColor()
     {
         //timelineElement.GetComponent<UnityEngine.UI.Image>().color = originalColor;
         stateGraphElement.GetComponent<UnityEngine.UI.Image>().color = originalColor;

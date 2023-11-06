@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -61,6 +60,7 @@ public class Manager : MonoBehaviour
         AssetManager.Instance.HideMiscObjs();
         AssetManager.Instance.SetAllAssetMenusPokeable(false);
         Recorder.Instance.ResetStateMachine();
+        CustomStateMachine.Instance.InvokeOnEnterActionsOfInitialState();
     }
 
     public void ChangeToTestMode()
@@ -75,7 +75,8 @@ public class Manager : MonoBehaviour
 
     public void ChangeToPlaybackMode()
     {
-        currAppState = Manager.AppState.PLAYBACK;        
+        currAppState = Manager.AppState.PLAYBACK; 
+        AssetManager.Instance.ResetMeshRendererForAllAssets();       
         Recorder.Instance.SetPlaybackObjectsVisibility(true);
         AssetManager.Instance.ShowMiscObjs();
         AssetManager.Instance.SetAllAssetMenusPokeable(true);

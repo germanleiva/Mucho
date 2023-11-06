@@ -9,6 +9,8 @@ public class TextAsset : MonoBehaviour
     public TMP_Text text;
     public TMP_InputField inputField;
 
+    //public UnityEngine.UI.Image TextPanelBackground;
+
     public GameObject AssetMenu;
     // Start is called before the first frame update
     
@@ -20,6 +22,11 @@ public class TextAsset : MonoBehaviour
     void Start()
     {
         
+    }
+
+    public void SetTextVisibility(bool status)
+    {
+        text.gameObject.SetActive(status);
     }
 
     public void CopyTextFromInputField()

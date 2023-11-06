@@ -170,6 +170,14 @@ public class AssetManager : MonoBehaviour
         }
     }
 
+    public void ResetMeshRendererForAllAssets()
+    {
+        foreach (Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
+        {
+            recordable.GetComponent<MeshRenderer>().enabled = true;
+        }
+    }
+
     public void SetAllAssetMenusPokeable(bool status)
     {
         foreach (Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)

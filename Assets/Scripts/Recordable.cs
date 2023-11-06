@@ -38,7 +38,7 @@ public class Recordable : MonoBehaviour
 
     public GameObject colliderVisualizerObj, colliderBoundaryGizmoObj1, colliderBoundaryGizmoObj2;
     
-    public bool showStatus = true;
+    //public bool showStatus = true;
 
     void Start()
     {
@@ -87,6 +87,11 @@ public class Recordable : MonoBehaviour
         }
     }*/
 
+    public void InitializeVisibility()
+    {
+
+    }
+
     public void RecordAssetFrame()
     {
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
@@ -95,11 +100,11 @@ public class Recordable : MonoBehaviour
         {
             DebugLogger.Instance.Log("Collision between " + gameObject.name + " and " + collidedObject.name + "during recording");
             if(collidedObject == InputManager.Instance.leftHandPinchObj)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, showStatus, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + ", Left hand)", null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.leftHandPinchObj); }, InputManager.Instance.leftHandPinchObj, currentAssetRecordedData.Count));
+                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + ", Left hand)", null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.leftHandPinchObj); }, InputManager.Instance.leftHandPinchObj, currentAssetRecordedData.Count));
             else if(collidedObject == InputManager.Instance.rightHandPinchObj)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, showStatus, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + ", Right hand)", null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.rightHandPinchObj); }, InputManager.Instance.rightHandPinchObj, currentAssetRecordedData.Count));
+                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + ", Right hand)", null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.rightHandPinchObj); }, InputManager.Instance.rightHandPinchObj, currentAssetRecordedData.Count));
             else if(collidedObject == InputManager.Instance.headContactObj)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, showStatus, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + ", Head)", null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.headContactObj); }, InputManager.Instance.headContactObj, currentAssetRecordedData.Count));
+                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + ", Head)", null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.headContactObj); }, InputManager.Instance.headContactObj, currentAssetRecordedData.Count));
             
             //else //collision with other assets
             //     currentAssetRecordedData.Add(new(transform.position, transform.rotation, showStatus, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + "," + Manager.Instance.CleanAssetName(InputManager.Instance.collidingObjectNotified_2.name), null, null, null, currentAssetRecordedData.Count));    
@@ -115,7 +120,17 @@ public class Recordable : MonoBehaviour
                 currentAssetRecordedData.Add(new(transform.position, transform.rotation, showStatus, "None", "None", null, null, null, currentAssetRecordedData.Count));  */  
         }
         else 
-            currentAssetRecordedData.Add(new(transform.position, transform.rotation, showStatus, "None", "None", null, null, null, currentAssetRecordedData.Count));
+        {
+            currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, "None", "None", null, null, null, currentAssetRecordedData.Count));
+            if(currentAssetRecordedData.Count == 1)
+            {
+                DebugLogger.Instance.Log("Setting visibility to true for " + gameObject.name + " at index 0");
+                ModifyAssetFrame(0, 
+                        actionStr: "Show()", 
+                        actionDelegate: () => { GetComponent<Recordable>().SetVisibility(true); });
+                //ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, actionStr: "None", collisionStr: "None", propagateValueToSubsequentFrames: true);
+            }
+        }
         //AssetFrame item = new AssetFrame(recordable.gameObject.transform.position, recordable.gameObject.transform.rotation, recordable.showStatus, "None", "None", null, null, null, i);
     }
 
@@ -132,7 +147,8 @@ public class Recordable : MonoBehaviour
                 recordable.transform.position = data[currentFrameNum].rootPosition;
                 recordable.transform.rotation = data[currentFrameNum].rootRotation; 
 
-                if (data[currentFrameNum].showStatusForThisFrame)
+                recordable.SetVisibility(data[currentFrameNum].showStatusForThisFrame);
+                /*if (data[currentFrameNum].showStatusForThisFrame)
                 {
                     //DebugLogger.Instance.Log("Showing " + recordable.playbackObject.name + " at " + currentFrameNum);
                     recordable.gameObject.GetComponent<MeshRenderer>().material = AssetManager.Instance.defaultMaterial;
@@ -144,7 +160,7 @@ public class Recordable : MonoBehaviour
                         recordable.gameObject.GetComponent<MeshRenderer>().material = AssetManager.Instance.transparentMaterial;
                     else 
                         recordable.gameObject.GetComponent<MeshRenderer>().material = AssetManager.Instance.translucentMaterial;
-                }
+                }*/
             }
         }
     }
@@ -152,7 +168,7 @@ public class Recordable : MonoBehaviour
     //For assets
     public void ModifyAssetFrame(int frameNumber, string actionStr = "None", string collisionStr = "None", Action actionDelegate = null, Action<Frame> collisionDelegate = null, GameObject collidedObject = null, bool propagateValueToSubsequentFrames = false)
     {
-        AssetFrame item = new(transform.position, transform.rotation, showStatus, actionStr, collisionStr, actionDelegate, collisionDelegate, collidedObject, frameNumber);
+        //AssetFrame item = new(transform.position, transform.rotation, showStatus, actionStr, collisionStr, actionDelegate, collisionDelegate, collidedObject, frameNumber);
         DebugLogger.Instance.Log("Inserting asset record frame at index " + frameNumber);
 
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
@@ -164,7 +180,17 @@ public class Recordable : MonoBehaviour
             item.ActionStr += "," + currentAssetRecordedData[frameNumber].ActionStr; //Copy existing action
         }*/
 
+        AssetFrame item = currentAssetRecordedData[frameNumber];
+        item.rootPosition = transform.position;
+        item.rootRotation = transform.rotation;
+        item.ActionStr = actionStr;
+        item.ActionDelegate = actionDelegate;
+        item.CollisionStr = collisionStr;
+        item.CollisionDelegate = collisionDelegate;
+        item.CollidedObject = collidedObject;
+        //item.showStatusForThisFrame = item.showStatusForThisFrame;
         currentAssetRecordedData[frameNumber] = item;
+        //currentAssetRecordedData[frameNumber] = item;
 
         if (propagateValueToSubsequentFrames) // Propagate the value to subsequent frames
         {
@@ -296,7 +322,7 @@ public class Recordable : MonoBehaviour
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
         //Turn the material in recordable.playbackObject to 0.5 alpha
         gameObject.GetComponent<MeshRenderer>().material = AssetManager.Instance.translucentMaterial;
-        showStatus = false;
+        //showStatus = false;
         if(Recorder.Instance.GetSizeOfMainRecordedData() > 0)
         {
             DebugLogger.Instance.Log("Recorded hide for  " + base.gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
@@ -321,7 +347,7 @@ public class Recordable : MonoBehaviour
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
         //Turn the material in recordable.playbackObject to 1 alpha
         gameObject.GetComponent<MeshRenderer>().material = AssetManager.Instance.defaultMaterial;
-        showStatus = true;
+        //showStatus = true;
         if(Recorder.Instance.GetSizeOfMainRecordedData() > 0)
         {
             DebugLogger.Instance.Log("Recorded show for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
@@ -350,6 +376,12 @@ public class Recordable : MonoBehaviour
             {
                 //Set mesh renderer for playbackObject 
                 gameObject.GetComponent<MeshRenderer>().enabled = true;
+                gameObject.GetComponent<MeshRenderer>().material = AssetManager.Instance.defaultMaterial;
+                //If gameobject has TextAsset component then call ChangeTextPanelBackground(Material mat)
+                if(gameObject.GetComponentInChildren<TextAsset>() != null)
+                {
+                    gameObject.GetComponent<TextAsset>().SetTextVisibility(true);
+                }
             }
             else
             {
@@ -362,6 +394,10 @@ public class Recordable : MonoBehaviour
             {
                 //Set mesh renderer for playbackObject 
                 gameObject.GetComponent<MeshRenderer>().enabled = false;
+                if(gameObject.GetComponentInChildren<TextAsset>() != null)
+                {
+                    gameObject.GetComponent<TextAsset>().SetTextVisibility(false);
+                }
             }
             else
             {
@@ -369,6 +405,47 @@ public class Recordable : MonoBehaviour
             }
             
         }
+    }
+
+    int FindFollowEndIndex(int _frameStart) //TODO: Check if collision indices should be considered
+    {
+        //Iterate through Recorder.Instance.LeftHandGestureSequences and Recorder.Instance.RightHandGestureSequences and find the StartIndex closest to _frameStart and greater than _frameStart
+        int followEndIndexFromLeftGestures = 0;
+        if(Recorder.Instance.LeftHandGestureSequences.Count > 0)
+        {
+            for (int i = 0; i < Recorder.Instance.LeftHandGestureSequences.Count; i++)
+            {
+                int gestureEndIndex = Recorder.Instance.LeftHandGestureSequences[i].StartIndex + Recorder.Instance.LeftHandGestureSequences[i].Length;
+                if(gestureEndIndex > _frameStart)
+                {
+                    followEndIndexFromLeftGestures = gestureEndIndex;
+                    break;
+                }
+            }
+        }
+
+        int followEndIndexFromRightGestures = 0;
+        if(Recorder.Instance.RightHandGestureSequences.Count > 0)
+        {
+            for (int i = 0; i < Recorder.Instance.RightHandGestureSequences.Count; i++)
+            {
+                int gestureEndIndex = Recorder.Instance.RightHandGestureSequences[i].StartIndex + Recorder.Instance.RightHandGestureSequences[i].Length;
+                if(gestureEndIndex > _frameStart)
+                {
+                    followEndIndexFromRightGestures = gestureEndIndex;
+                    break;
+                }
+            }
+        }
+
+        if(followEndIndexFromLeftGestures != 0 && followEndIndexFromRightGestures != 0)
+            return Mathf.Min(followEndIndexFromLeftGestures, followEndIndexFromRightGestures);
+        else if(followEndIndexFromLeftGestures == 0 && followEndIndexFromRightGestures != 0)
+            return followEndIndexFromRightGestures;
+        else if(followEndIndexFromLeftGestures != 0 && followEndIndexFromRightGestures == 0)
+            return followEndIndexFromLeftGestures;
+        else 
+            return 0;
     }
 
     //For assets
@@ -388,17 +465,7 @@ public class Recordable : MonoBehaviour
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
         DebugLogger.Instance.Log("Copying pose from left hand at frame " + _frameStart + " to frame " + currentAssetRecordedData.Count);
 
-        //Iterate through Recorder.Instance.gestureSequences and find the StartIndex closest to _frameStart and greater than _frameStart
-        int followEndIndex = 0;
-        for (int i = 0; i < Recorder.Instance.gestureSequences.Count; i++)
-        {
-            int gestureEndIndex = Recorder.Instance.gestureSequences[i].StartIndex + Recorder.Instance.gestureSequences[i].Length;
-            if(gestureEndIndex > _frameStart)
-            {
-                followEndIndex = gestureEndIndex;
-                break;
-            }
-        }
+        int followEndIndex = FindFollowEndIndex(_frameStart);
 
         DebugLogger.Instance.Log("Copying pose from left hand at frame " + _frameStart + " to frame " + followEndIndex);
 
@@ -445,18 +512,8 @@ public class Recordable : MonoBehaviour
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
         DebugLogger.Instance.Log("Copying pose from right hand at frame " + _frameStart + " to frame " + currentAssetRecordedData.Count);
 
-        //Iterate through Recorder.Instance.gestureSequences and find the StartIndex closest to _frameStart and greater than _frameStart
-        int followEndIndex = 0;
-        for (int i = 0; i < Recorder.Instance.gestureSequences.Count; i++)
-        {
-            int gestureEndIndex = Recorder.Instance.gestureSequences[i].StartIndex + Recorder.Instance.gestureSequences[i].Length;
-            if(gestureEndIndex > _frameStart)
-            {
-                followEndIndex = gestureEndIndex;
-                break;
-            }
-        }
-
+                
+        int followEndIndex = FindFollowEndIndex(_frameStart);
 
         DebugLogger.Instance.Log("Copying pose from right hand at frame " + _frameStart + " to frame " + followEndIndex);
 

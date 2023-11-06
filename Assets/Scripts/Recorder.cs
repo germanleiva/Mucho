@@ -63,8 +63,12 @@ public class Recorder : MonoBehaviour
     public GameObject mergesStatePanel;
 
 
-    List<GestureSequence> LeftHandGestureSequences = new();
-    List<GestureSequence> RightHandGestureSequences = new();
+    public List<GestureSequence> LeftHandGestureSequences = new();
+    public List<GestureSequence> RightHandGestureSequences = new();
+
+    public List<GestureSequence> AllGestureSequences = new();
+    public List<List<AssetAction>> assetSequencesLists = new();
+    public List<List<AssetAction>> collisionSequencesLists = new();
 
     public List<Recordable> assetsInScene = new();
 
@@ -589,7 +593,7 @@ public class Recorder : MonoBehaviour
         //Generate gesture sequences for left and right hand
         LeftHandGestureSequences = GenerateGestureSequences(leftHandTimelinePanel, "lefthand");
         RightHandGestureSequences = GenerateGestureSequences(rightHandTimelinePanel, "righthand");
-        gestureSequences = LeftHandGestureSequences.Concat(RightHandGestureSequences).ToList();
+        AllGestureSequences = LeftHandGestureSequences.Concat(RightHandGestureSequences).ToList();
 
 
         //GenerateGestureSequences(timelinePanel, recordable);
@@ -616,9 +620,7 @@ public class Recorder : MonoBehaviour
     }
 
 
-    public List<GestureSequence> gestureSequences = new();
-    public List<List<AssetAction>> assetSequencesLists = new();
-    public List<List<AssetAction>> collisionSequencesLists = new();
+
 
     //Dictionary<State, StateTimelineUIElement> StatesDict = new();
     State CreateState(int startIndex, int length)
@@ -749,9 +751,14 @@ public class Recorder : MonoBehaviour
         }
     }
 
-    public void CreateStates(List<GestureSequence> gestures, List<AssetAction> collisions, List<List<AssetAction>> actions, int recordedFramesTotal)
+    public void CreateStates()
     {
         ResetExampleStateMachine();
+
+        int recordedFramesTotal = GetSizeOfMainRecordedData();
+
+        var gestures = AllGestureSequences;
+        var collisions = collisionSequencesLists.SelectMany(x => x).ToList();
 
         // Create a list of events (start or end of a sequence)
         var events = new List<(int Index, string Type, GestureSequence Gesture, AssetAction Collision)>();
@@ -811,6 +818,16 @@ public class Recorder : MonoBehaviour
         //Add events to states
         //
         List<State> orderedKeys = new(currentActiveExample.StatesDict.Keys);
+
+        if (orderedKeys.Count == 0)
+        {
+            DebugLogger.Instance.Log("No states found");
+            return;
+        }
+        //Add actions to the first state
+        var firstState = currentActiveExample.StatesDict[orderedKeys[0]].state;
+        AddActionsToState(firstState);
+
 
         for (int i = 0; i < orderedKeys.Count - 1; i++)
         {
@@ -893,30 +910,8 @@ public class Recorder : MonoBehaviour
                 }
             }
 
-            foreach (var assetSequences in actions)
-            {
-                foreach (var assetSequence in assetSequences)
-                {
-                    int distanceToStateStart = assetSequence.StartIndex - currentActiveExample.StatesDict[stateInTimeline].StartIndex;
-                    int distanceToStateEnd = currentActiveExample.StatesDict[stateInTimeline].StartIndex + currentActiveExample.StatesDict[stateInTimeline].Length - assetSequence.StartIndex - 1;
-                    if (distanceToStateStart >= 0 && distanceToStateEnd >= 0)
-                    {
-                        if(distanceToStateStart < distanceToStateEnd)
-                        {
-                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionStr + " for state " + stateInTimeline.id + " in OnEnterActions");
-                            stateInTimeline.OnEnterActions += () => assetSequence.ActionDelegate();
-                            stateInTimeline.OnEnterActionsStr.Add(assetSequence.ActionStr);
-                        }
-                        else
-                        {
-                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionStr + " for state " + stateInTimeline.id + " in OnExitActions");
-                            stateInTimeline.OnExitActions += () => assetSequence.ActionDelegate();
-                            stateInTimeline.OnExitActionsStr.Add(assetSequence.ActionStr);
-                        }
-                    }
-
-                }
-            }
+            //Add actions to states
+            AddActionsToState(stateInTimeline);
         }
 
         //Set the initial state of the state machine to be the first state in the StatesInTimeline dictionary
@@ -924,11 +919,41 @@ public class Recorder : MonoBehaviour
      
     }
 
+    public void AddActionsToState(State stateInTimeline)
+    {
+        var actions = assetSequencesLists;
+        //var stateInTimeline = currentActiveExample.StatesDict.First().Key;
+        foreach (var assetSequences in actions)
+        {
+            foreach (var assetSequence in assetSequences)
+            {
+                int distanceToStateStart = assetSequence.StartIndex - currentActiveExample.StatesDict[stateInTimeline].StartIndex;
+                int distanceToStateEnd = currentActiveExample.StatesDict[stateInTimeline].StartIndex + currentActiveExample.StatesDict[stateInTimeline].Length - assetSequence.StartIndex - 1;
+                if (distanceToStateStart >= 0 && distanceToStateEnd >= 0)
+                {
+                    if(distanceToStateStart < distanceToStateEnd)
+                    {
+                        DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionStr + " for state " + stateInTimeline.id + " in OnEnterActions");
+                        stateInTimeline.OnEnterActions += () => assetSequence.ActionDelegate();
+                        stateInTimeline.OnEnterActionsStr.Add(assetSequence.ActionStr);
+                    }
+                    else
+                    {
+                        DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionStr + " for state " + stateInTimeline.id + " in OnExitActions");
+                        stateInTimeline.OnExitActions += () => assetSequence.ActionDelegate();
+                        stateInTimeline.OnExitActionsStr.Add(assetSequence.ActionStr);
+                    }
+                }
+
+            }
+        }
+    }
+
 
     public void CreateStateMachine()
     {
         //RefreshAssetsTimeline(); 
-        CreateStates(gestureSequences, collisionSequencesLists.SelectMany(x => x).ToList(), assetSequencesLists, GetSizeOfMainRecordedData());
+        CreateStates();
         CombineExamples();
     }
 
@@ -942,7 +967,7 @@ public class Recorder : MonoBehaviour
         DebugLogger.Instance.ClearVRDebugText();
 
         DebugLogger.Instance.Log("Combining examples");
-        List<List<State>> allStatesInExamples = new List<List<State>>();
+        List<List<State>> allStatesInExamples = new();
         foreach (var example in examples)
         {
             allStatesInExamples.Add(example.StatesDict.Keys.ToList());
