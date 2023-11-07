@@ -320,6 +320,8 @@ public class Frame
     public InputManager.Gesture leftHandGesture;
     public InputManager.Gesture rightHandGesture;
 
+    public string voiceCommand;
+
     public GameObject collidingObjectThisFrame_1, collidingObjectThisFrame_2;
 
     public bool IsColliding(GameObject object1, GameObject object2)

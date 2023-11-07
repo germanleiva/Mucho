@@ -23,6 +23,8 @@ public class AssetMenu : MonoBehaviour
         if(!isGrabbed) 
         {
             transform.LookAt(target);
+            //Change the position of the transform to be 20cm above the lineEnd gameobject's highest point
+            transform.position = lineEnd.position + new Vector3(0, 0.2f, 0);
         }
 
         lineRenderer.SetPosition(0, lineStart.position);

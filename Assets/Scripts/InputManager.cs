@@ -14,6 +14,8 @@ public class InputManager : MonoBehaviour
 
     public GameObject collidingObjectNotified_1, collidingObjectNotified_2;
 
+    public string currentVoiceCommand;
+
     public GameObject leftHandPinchObj, rightHandPinchObj, headContactObj;
 
     public GameObject leftHandGrabObj, rightHandGrabObj;
@@ -37,6 +39,7 @@ public class InputManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        currentVoiceCommand = "";
         //CreateTestStates();
     }
 
@@ -124,6 +127,12 @@ public class InputManager : MonoBehaviour
         rightHand.SetGestureText(GestureToString(rightHand.currentGesture));
     }
 
+    public void NotifyVoiceCommand(string command)
+    {
+        DebugLogger.Instance.Log("Voice Command: " + command);
+        currentVoiceCommand = command;
+    }
+
     public void NotifyCollision(GameObject object1, GameObject object2)
     {
         if (object1 != null && object2 != null)
@@ -151,7 +160,8 @@ public class InputManager : MonoBehaviour
             leftHandGesture = leftHand.currentGesture,
             rightHandGesture = rightHand.currentGesture,
             collidingObjectThisFrame_1 = collidingObjectNotified_1,
-            collidingObjectThisFrame_2 = collidingObjectNotified_2
+            collidingObjectThisFrame_2 = collidingObjectNotified_2,
+            voiceCommand = currentVoiceCommand
         };
         
 
@@ -202,6 +212,7 @@ public class InputManager : MonoBehaviour
                     
             collidingObjectNotified_1 = null;
             collidingObjectNotified_2 = null;
+            currentVoiceCommand = "";
             
         } 
     }
@@ -246,7 +257,15 @@ public class GestureSequence
     public int StartIndex { get; set; }
     public int Length { get; set; }
     public InputManager.Gesture GestureType { get; set; }
-    //public Action GestureDelegate { get; set; }
+ 
+}
+
+public class VoiceSequence
+{
+    public int StartIndex { get; set; }
+    public int Length { get; set; }
+    public string VoiceCommand { get; set; }
+
 }
 
 

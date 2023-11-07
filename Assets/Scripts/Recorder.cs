@@ -40,11 +40,15 @@ public class Recorder : MonoBehaviour
     [SerializeField]
     RectTransform leftHandTimelinePanel;
     [SerializeField]
+    RectTransform voiceTimelinePanel;
+    [SerializeField]
     GameObject stateTimelineElementPrefab;
     [SerializeField]
     GameObject stateGraphElementPrefab;    
     [SerializeField]
     GameObject handTimelineElementPrefab;
+     [SerializeField]
+    GameObject voiceCommandTimelineElementPrefab;
     [SerializeField]
     GameObject assetTimelineElementPrefab;
     [SerializeField]
@@ -65,6 +69,8 @@ public class Recorder : MonoBehaviour
 
     public List<GestureSequence> LeftHandGestureSequences = new();
     public List<GestureSequence> RightHandGestureSequences = new();
+
+    public List<VoiceSequence> VoiceCommandSequences = new();
 
     public List<GestureSequence> AllGestureSequences = new();
     public List<List<AssetAction>> assetSequencesLists = new();
@@ -122,7 +128,7 @@ public class Recorder : MonoBehaviour
         }
         currentActiveExample.button.GetComponent<Image>().color = Color.green;
         //PreparePlayback();
-        RefreshAssetsTimeline();
+        RefreshTimelineAndStates();
     }
 
     public void AddExample()
@@ -151,6 +157,10 @@ public class Recorder : MonoBehaviour
     // Start recording.
     public void StartRecording()
     {
+        if(examples.Count == 0)
+        {
+            return;
+        }
         Manager.Instance.currAppState = Manager.AppState.RECORDING;
         rootPlaybackArea.SetActive(false);
         DebugLogger.Instance.Log("StartRecording");
@@ -165,7 +175,7 @@ public class Recorder : MonoBehaviour
         //isMainPlaybackOn = false;
         recordStartFrame = 0;//Time.time;
         frameCount = 0;
-        RefreshAssetsTimeline(); 
+        RefreshTimelineAndStates(); 
     }
 
 
@@ -185,7 +195,7 @@ public class Recorder : MonoBehaviour
         //AssetPoseRecorder.Instance.EnableGrabForAllAssets();
         //AssetManager.Instance.InitializeRecordFramesForAssets();
         AssetManager.Instance.DoRecordSizesMatch();
-        RefreshAssetsTimeline();   
+        RefreshTimelineAndStates();   
 
         PreparePlayback();
     }
@@ -403,7 +413,7 @@ public class Recorder : MonoBehaviour
     public List<GestureSequence> GenerateGestureSequences(RectTransform timelinePanel, string handStr)
     {
         var hand = handStr.Equals("lefthand") ? Recorder.Instance.currentActiveExample.leftHandData : Recorder.Instance.currentActiveExample.rightHandData;
-        DebugLogger.Instance.Log("Generating gesture sequences for " + handStr);
+        //DebugLogger.Instance.Log("Generating gesture sequences for " + handStr);
         List<InputManager.Gesture> gestures = hand.Select(x => x.gesture).ToList();
         List<GestureSequence> GestureSequences = GetContinuousGestureSequences(gestures);
         foreach (GestureSequence sequence in GestureSequences)
@@ -414,11 +424,82 @@ public class Recorder : MonoBehaviour
         }
         return GestureSequences;
     }
-    
 
+    public List<VoiceSequence> GenerateVoiceCommandSequences(RectTransform timelinePanel)
+    {        
+        DebugLogger.Instance.Log("Generating voice command sequences");
+        List<string> voiceCommands = Recorder.Instance.currentActiveExample.headData.Select(x => x.voiceCommand).ToList();
+        List<VoiceSequence> voiceSequences = GetVoiceCommandSequences(voiceCommands);
+        foreach (VoiceSequence sequence in voiceSequences)
+        {
+            DebugLogger.Instance.Log("Voice sequence name: " + sequence.VoiceCommand + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
+            TimelineUIElement.CreateTimelineElement(voiceCommandTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.VoiceCommand);
+        }
+        return voiceSequences;
+    }
+    
+    public List<VoiceSequence> GetVoiceCommandSequences(List<string> voiceCommands)
+    {
+        List<VoiceSequence> sequences = new();
+
+        int startIndex = -1;
+        string currentVoiceCommand = null;
+
+        for (int i = 0; i < voiceCommands.Count; i++)
+        {
+            if (voiceCommands[i] != null)
+            {
+                if (currentVoiceCommand == null || currentVoiceCommand == voiceCommands[i])
+                {
+                    if (currentVoiceCommand == null)
+                    {
+                        currentVoiceCommand = voiceCommands[i];
+                        startIndex = i;
+                    }
+                }
+                else
+                {
+                    sequences.Add(new VoiceSequence
+                    {
+                        StartIndex = startIndex,
+                        Length = i - startIndex,
+                        VoiceCommand = currentVoiceCommand
+                    });
+
+                    startIndex = i;
+                    currentVoiceCommand = voiceCommands[i];
+                }
+            }
+            else if (currentVoiceCommand != null)
+            {
+                sequences.Add(new VoiceSequence
+                {
+                    StartIndex = startIndex,
+                    Length = i - startIndex,
+                    VoiceCommand = currentVoiceCommand
+                });
+
+                startIndex = -1;
+                currentVoiceCommand = null;
+            }
+        }
+
+        if (currentVoiceCommand != null)
+        {
+            sequences.Add(new VoiceSequence
+            {
+                StartIndex = startIndex,
+                Length = voiceCommands.Count - startIndex,
+                VoiceCommand = currentVoiceCommand
+            });
+        }
+
+        return sequences;
+    }
+    
     public List<AssetAction> GetContinuousChangeSequences(List<string> actions)
     {
-        List<AssetAction> sequences = new List<AssetAction>();
+        List<AssetAction> sequences = new();
 
         int startIndex = -1;
         string currentAction = null;
@@ -506,7 +587,7 @@ public class Recorder : MonoBehaviour
                 showElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(TimelineUIElement.MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex, GetSizeOfMainRecordedData()), showElement.GetComponent<RectTransform>().anchoredPosition.y);
             }
 
-            if(sequence.ActionStr.Contains("Follow") || sequence.ActionStr.Contains("ApplyForce")) //Other types of events - physics, attach etc
+            if(sequence.ActionStr.Contains("Follow") || sequence.ActionStr.Contains("ApplyForce") || sequence.ActionStr.Contains("ChangeColor")) //Other types of events - physics, attach etc
             {                
                 TimelineUIElement.CreateTimelineElement(assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ActionStr);
             }
@@ -565,7 +646,7 @@ public class Recorder : MonoBehaviour
     //List of asset timelines
     List<GameObject> assetTimelines = new List<GameObject>();
 
-    public void RefreshAssetsTimeline()
+    public void RefreshTimelineAndStates()
     {
         DebugLogger.Instance.Log("Refreshing assets timeline for example " + currentActiveExample.exampleId);
         //Delete all existing asset timelines
@@ -589,11 +670,18 @@ public class Recorder : MonoBehaviour
         {
             Destroy(rightHandTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
         }
+        for (int i = 4; i < voiceTimelinePanel.GetComponent<RectTransform>().childCount; i++)
+        {
+            Destroy(voiceTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
+        }
 
         //Generate gesture sequences for left and right hand
         LeftHandGestureSequences = GenerateGestureSequences(leftHandTimelinePanel, "lefthand");
         RightHandGestureSequences = GenerateGestureSequences(rightHandTimelinePanel, "righthand");
         AllGestureSequences = LeftHandGestureSequences.Concat(RightHandGestureSequences).ToList();
+
+        //Generate voice command sequences
+        VoiceCommandSequences = GenerateVoiceCommandSequences(voiceTimelinePanel);
 
 
         //GenerateGestureSequences(timelinePanel, recordable);

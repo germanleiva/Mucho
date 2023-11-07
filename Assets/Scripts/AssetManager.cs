@@ -29,7 +29,7 @@ public class AssetManager : MonoBehaviour
     public GameObject textAsset;
     public GameObject hmd;
 
-    public Material defaultMaterial, transparentMaterial, translucentMaterial;
+    public Material transparentMaterial, translucentMaterial;
 
 
     
@@ -120,7 +120,7 @@ public class AssetManager : MonoBehaviour
         obj.SetActive(true);
         Recorder.Instance.assetsInScene.Add(obj.GetComponentInChildren<Recordable>());
         Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
-        mainRecorder.RefreshAssetsTimeline();
+        mainRecorder.RefreshTimelineAndStates();
         //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
     }
 
@@ -131,7 +131,7 @@ public class AssetManager : MonoBehaviour
         obj.SetActive(true);
         Recorder.Instance.assetsInScene.Add(obj.GetComponentInChildren<Recordable>());
         Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
-        mainRecorder.RefreshAssetsTimeline();
+        mainRecorder.RefreshTimelineAndStates();
         //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
     }
 
@@ -142,7 +142,7 @@ public class AssetManager : MonoBehaviour
         obj.SetActive(true);
         Recorder.Instance.assetsInScene.Add(obj.GetComponentInChildren<Recordable>());
         Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
-        mainRecorder.RefreshAssetsTimeline();
+        mainRecorder.RefreshTimelineAndStates();
         //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
     }
 

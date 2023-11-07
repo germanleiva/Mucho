@@ -12,6 +12,10 @@ public class Head : MonoBehaviour
     public Vector3 initPosBeforePhysicsSimulation;
     public Quaternion initRotBeforePhysicsSimulation;
 
+    public SpeechToText speechToTextEngine;
+
+    public GameObject startRecordingButton;
+    public GameObject stopRecordingButton;
 
 
     [Header("Recordable Ray and Focus squares")]
@@ -57,10 +61,56 @@ public class Head : MonoBehaviour
         }
     }
 
-    public void InsertVoiceCommand(int frameNumber, string _voiceCommand)
+    public void StartVoiceRecord()
     {
+        voiceCommandNotInserted = true;
+        stopRecordingButton.SetActive(true);
+        startRecordingButton.SetActive(false);
+        speechToTextEngine.isRecording = true;
+        //Start a coroutine which checks for speechToTextEngine.outputText and if it is not empty, insert it into the recorded data
+        StartCoroutine(InsertVoiceCommandCoroutine());
+    }
+
+    bool voiceCommandNotInserted = true;
+
+    IEnumerator<WaitForSeconds> InsertVoiceCommandCoroutine()
+    {
+        while(voiceCommandNotInserted)
+        {
+            if(speechToTextEngine.currentRecognisedText != "" && speechToTextEngine.currentRecognisedText != "[BLANK_AUDIO]")
+            {
+                string currentRecognisedText = speechToTextEngine.outputText.text;
+                        //Extract substring before the first dot
+                string cleanedVoiceCommand = currentRecognisedText.Substring(0, currentRecognisedText.IndexOf('.'));
+                InsertVoiceCommand(cleanedVoiceCommand);
+                DebugLogger.Instance.Log("Voice command inserted: " + cleanedVoiceCommand);
+                speechToTextEngine.currentRecognisedText = "";
+                StopVoiceRecord();
+            }
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
+
+    public void StopVoiceRecord()
+    {
+        speechToTextEngine.isRecording = true;
+        voiceCommandNotInserted = false;
+        stopRecordingButton.SetActive(false);
+        startRecordingButton.SetActive(true);
+    }
+
+    public void InsertVoiceCommand(string _voiceCommand)
+    {
+        int frameNumber = (int)Recorder.Instance.playbackSlider.value;
+        if(Recorder.Instance.currentActiveExample.headData.Count == 0 || frameNumber >= Recorder.Instance.currentActiveExample.headData.Count)
+        {
+            return;
+        }
         var currentHeadRecordedData = Recorder.Instance.currentActiveExample.headData;
+
         currentHeadRecordedData[frameNumber].voiceCommand = _voiceCommand;
+
+        Recorder.Instance.RefreshTimelineAndStates();
     }
    
 

@@ -11,6 +11,11 @@ public class SpeechToText : MonoBehaviour
 
     public TMPro.TMP_Text outputText;
     private WhisperStream _stream;
+
+    public bool isRecording = false;
+
+    public string currentRecognisedText = "";
+
     // Start is called before the first frame update
     async void Start()
     {
@@ -25,7 +30,7 @@ public class SpeechToText : MonoBehaviour
 
         //microphoneRecord.OnRecordStop += OnRecordStop;
         //button.onClick.AddListener(OnButtonPressed);
-        StartRecording();
+        StartListening();
     }
 
     // Update is called once per frame
@@ -34,14 +39,14 @@ public class SpeechToText : MonoBehaviour
         
     }
 
-    public void StartRecording()
+    public void StartListening()
     {
         _stream.StartStream();
         microphoneRecord.StartRecord();
         DebugLogger.Instance.Log("Start Recording");
     }
 
-    public void StopRecording()
+    public void StopListening()
     {
         microphoneRecord.StopRecord();
         DebugLogger.Instance.Log("Stop Recording");
@@ -49,7 +54,7 @@ public class SpeechToText : MonoBehaviour
 
     private void OnApplicationQuit()
     {
-        StopRecording();
+        StopListening();
     }
 
     private void OnResult(string result)
@@ -60,14 +65,21 @@ public class SpeechToText : MonoBehaviour
     
     private void OnSegmentUpdated(WhisperResult segment)
     {
-        print($"Segment updated: {segment.Result}");
+        //print($"Segment updated: {segment.Result}");
     }
     
     private void OnSegmentFinished(WhisperResult segment)
     {
         outputText.text = segment.Result;
         print($"Segment finished: {segment.Result}");
+        InputManager.Instance.NotifyVoiceCommand(segment.Result);
+        if(isRecording)
+        {
+            currentRecognisedText = segment.Result;            
+        }
     }
+
+    
     
     private void OnFinished(string finalResult)
     {
