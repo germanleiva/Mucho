@@ -366,6 +366,11 @@ public class Recordable : MonoBehaviour
         Recorder.Instance.RefreshAssetsTimeline();
 
     }
+
+    public void ChangeColor(Color color)
+    {
+        gameObject.GetComponent<MeshRenderer>().material.color = color;
+    }
     
     //For assets
     public void SetVisibility(bool _showStatus)
