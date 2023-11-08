@@ -63,7 +63,7 @@ public class Head : MonoBehaviour
 
     public void StartVoiceRecord()
     {
-        voiceCommandNotInserted = true;
+        //voiceCommandNotInserted = true;
         stopRecordingButton.SetActive(true);
         startRecordingButton.SetActive(false);
         speechToTextEngine.isRecording = true;
@@ -71,20 +71,21 @@ public class Head : MonoBehaviour
         StartCoroutine(InsertVoiceCommandCoroutine());
     }
 
-    bool voiceCommandNotInserted = true;
+    //bool voiceCommandNotInserted = true;
 
     IEnumerator<WaitForSeconds> InsertVoiceCommandCoroutine()
     {
-        while(voiceCommandNotInserted)
+        while(speechToTextEngine.isRecording)
         {
-            if(speechToTextEngine.currentRecognisedText != "" && speechToTextEngine.currentRecognisedText != "[BLANK_AUDIO]")
+            if(speechToTextEngine.outputText.text != "" && speechToTextEngine.outputText.text != "[BLANK_AUDIO]")
             {
                 string currentRecognisedText = speechToTextEngine.outputText.text;
                         //Extract substring before the first dot
-                string cleanedVoiceCommand = currentRecognisedText.Substring(0, currentRecognisedText.IndexOf('.'));
+                string cleanedVoiceCommand = currentRecognisedText;//.Substring(0, currentRecognisedText.IndexOf('.'));
                 InsertVoiceCommand(cleanedVoiceCommand);
                 DebugLogger.Instance.Log("Voice command inserted: " + cleanedVoiceCommand);
-                speechToTextEngine.currentRecognisedText = "";
+                //speechToTextEngine.outputText.text = "";
+                //speechToTextEngine.currentRecognisedText = "";
                 StopVoiceRecord();
             }
             yield return new WaitForSeconds(0.1f);
@@ -93,8 +94,8 @@ public class Head : MonoBehaviour
 
     public void StopVoiceRecord()
     {
-        speechToTextEngine.isRecording = true;
-        voiceCommandNotInserted = false;
+        speechToTextEngine.isRecording = false;
+        //voiceCommandNotInserted = false;
         stopRecordingButton.SetActive(false);
         startRecordingButton.SetActive(true);
     }

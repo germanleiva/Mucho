@@ -146,6 +146,8 @@ public class State
     public GestureSequence Gesture { get; set; }
     public AssetAction Collision { get; set; }
 
+    public VoiceSequence VoiceSequence { get; set; }
+
     public void ResetStateUIColor()
     {
         //timelineElement.GetComponent<UnityEngine.UI.Image>().color = originalColor;

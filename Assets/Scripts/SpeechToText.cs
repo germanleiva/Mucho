@@ -14,8 +14,6 @@ public class SpeechToText : MonoBehaviour
 
     public bool isRecording = false;
 
-    public string currentRecognisedText = "";
-
     // Start is called before the first frame update
     async void Start()
     {
@@ -73,10 +71,19 @@ public class SpeechToText : MonoBehaviour
         outputText.text = segment.Result;
         print($"Segment finished: {segment.Result}");
         InputManager.Instance.NotifyVoiceCommand(segment.Result);
-        if(isRecording)
+        //if(isRecording)
         {
-            currentRecognisedText = segment.Result;            
+            //currentRecognisedText = segment.Result;            
         }
+
+        //Call coroutine to clear outputText.text after 2 seconds
+        StartCoroutine(ClearOutputText());
+    }
+
+    IEnumerator ClearOutputText()
+    {
+        yield return new WaitForSeconds(2f);
+        outputText.text = "";
     }
 
     

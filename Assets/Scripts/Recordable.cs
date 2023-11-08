@@ -409,6 +409,12 @@ public class Recordable : MonoBehaviour
         Recorder.Instance.RefreshTimelineAndStates();
     }
 
+    public void ReplaceMesh(GameObject newMeshObj)
+    {
+        //Replace the mesh of the current gameObject with the mesh of newMeshObj
+        gameObject.GetComponent<MeshFilter>().mesh = newMeshObj.GetComponent<MeshFilter>().mesh;
+    }
+
     public void SetColor(Color _color)
     {
         currentObjColor = _color;

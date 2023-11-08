@@ -2,12 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class TextAsset : MonoBehaviour
 {
     //textmesh pro text object
     public TMP_Text text;
-    public TMP_InputField inputField;
+    //public TMP_InputField inputField;
+    public InputField inputField;
 
     //public UnityEngine.UI.Image TextPanelBackground;
 
