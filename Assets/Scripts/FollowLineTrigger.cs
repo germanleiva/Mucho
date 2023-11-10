@@ -10,10 +10,14 @@ public class FollowLineTrigger : MonoBehaviour
 
     public FollowTargetType followTargetType;
 
+    new public Renderer renderer;
+    public Material highlightMaterial;
+    Material defaultMaterial;
+
     // Start is called before the first frame update
     void Start()
     {
-        
+        defaultMaterial = renderer.material;
     }
 
     // Update is called once per frame
@@ -24,37 +28,80 @@ public class FollowLineTrigger : MonoBehaviour
     
     void OnTriggerEnter(Collider other)
     {
-        DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerEnter, collision with " + other.name);
+        //DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerEnter, collision with " + other.gameObject.name);
         //Check if the parent of the other collider has the FollowLine component
-        FollowLine followLine = other.transform.parent.GetComponent<FollowLine>();
+        if(other.gameObject.name != "FollowGuideSphere")
+        {
+            DebugLogger.Instance.Log("FollowGuideSphere not found");
+            return;
+        }
+
+        if(other.gameObject.transform.parent?.GetComponentInChildren<FollowLine>() == null)
+        {
+            DebugLogger.Instance.Log("FollowLineTrigger: No FollowLine component found for collider " + other.gameObject.name);
+            return;
+        }
+        
+        FollowLine followLine = other.gameObject.transform.parent.GetComponentInChildren<FollowLine>();
+
         if(followLine != null)
         {
-            followLine.Deactivate();
+            //followLine.DeactivateFollowLine();
+            renderer.material = highlightMaterial;  
             if(followTargetType == FollowTargetType.LEFTHAND)
-            {
-                followLine.asset.GetComponent<Recordable>().AttachToLeftHand();
+            {                
+                followLine.FollowLineAction = () => { followLine.asset.GetComponent<Recordable>().AttachToLeftHand(); renderer.material = defaultMaterial;};             
+                //followLine.asset.GetComponent<Recordable>().AttachToLeftHand();
             }
             else if(followTargetType == FollowTargetType.RIGHTHAND)
-            {
-                followLine.asset.GetComponent<Recordable>().AttachToRightHand();
+            {                
+                followLine.FollowLineAction = () => { followLine.asset.GetComponent<Recordable>().AttachToRightHand(); renderer.material = defaultMaterial;};
+                //followLine.asset.GetComponent<Recordable>().AttachToRightHand();
             }
             else if(followTargetType == FollowTargetType.LEFTFOCUS)
             {
-                followLine.asset.GetComponent<Recordable>().AttachToLeftHandFocusSquare(); 
+                //followLine.asset.GetComponent<Recordable>().AttachToLeftHandFocusSquare(); 
             }
             else if(followTargetType == FollowTargetType.RIGHTFOCUS)
             {
-               followLine.asset.GetComponent<Recordable>().AttachToRightHandFocusSquare();
+               //followLine.asset.GetComponent<Recordable>().AttachToRightHandFocusSquare();
             }
             else if(followTargetType == FollowTargetType.GAZEFOCUS)
             {
-                followLine.asset.GetComponent<Recordable>().AttachToHeadFocusSquare();
+                //followLine.asset.GetComponent<Recordable>().AttachToHeadFocusSquare();
             }
             else
             {
                 DebugLogger.Instance.Log("FollowLineTrigger: No follow target type specified");
             }
             
+        }
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        //DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerExit, collision with " + other.gameObject.name);
+        //Check if the parent of the other collider has the FollowLine component
+
+        if(other.gameObject.name != "FollowGuideSphere")
+        {
+            DebugLogger.Instance.Log("FollowGuideSphere not found");
+            return;
+        }
+
+        if(other.gameObject.transform.parent?.GetComponentInChildren<FollowLine>() == null)
+        {
+            DebugLogger.Instance.Log("FollowLineTrigger: No FollowLine component found for collider " + other.gameObject.name);
+            return;
+        }
+        
+        FollowLine followLine = other.gameObject.transform.parent.GetComponentInChildren<FollowLine>();
+
+        if(followLine != null)
+        {
+            //followLine.ResetFollowLine();
+            renderer.material = defaultMaterial;
+            followLine.FollowLineAction = null;
         }
     }
 }

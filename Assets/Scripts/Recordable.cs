@@ -1,9 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using Oculus.Voice.Windows;
 using UnityEngine;
 
 //[RequireComponent(typeof(LineRenderer))]
@@ -324,11 +320,11 @@ public class Recordable : MonoBehaviour
         Recorder.Instance.RefreshTimelineAndStates();
     }
 
-    public void CreateFollowLine()
+    /*public void CreateFollowLine()
     {
         //GameObject followLineObj = Instantiate(followLinePrefab, transform.position, Quaternion.identity);        
-        followLineObj.GetComponent<FollowLine>().InitializeLine(InputManager.Instance.rightHandPinchObj.transform);
-    }
+        followLineObj.GetComponent<FollowLine>().ResetFollowLine();
+    }*/
 
     //For assets
     public void RecordHide()

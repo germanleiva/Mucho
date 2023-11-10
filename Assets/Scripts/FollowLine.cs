@@ -1,13 +1,19 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class FollowLine : MonoBehaviour
 {
-    public Transform asset;
-    public Transform lineHead;
+    public Transform followLineStart;
+    public Transform followGuide;
 
-    Transform targetTransform;
+    public Action FollowLineAction;
+
+    //public Transform fo
+
+    //Transform targetTransform;
+    public GameObject asset;
 
     bool isInitialized = false;
 
@@ -26,14 +32,31 @@ public class FollowLine : MonoBehaviour
         }
     }
 
-    public void InitializeLine(Transform _targetTransform)
+    public void TriggerFollowLineAction()
     {
-        targetTransform = _targetTransform;
-        isInitialized = true;
-        gameObject.SetActive(true);
+        if(FollowLineAction != null)
+        {
+            DebugLogger.Instance.Log("Calling FollowLine: TriggerFollowLineAction");
+            FollowLineAction?.Invoke();
+        }    
+        else
+        {
+            DebugLogger.Instance.Log("FollowLine: FollowLineAction is null");
+        }
+        gameObject.SetActive(false);
+        followGuide.gameObject.SetActive(false);
     }
 
-    public void Deactivate()
+    public void ResetFollowLine()
+    {
+        //targetTransform = _targetTransform;
+        isInitialized = true;
+        gameObject.SetActive(true);
+        followGuide.gameObject.SetActive(true);
+        followGuide.position = followLineStart.position;
+    }
+
+    public void DeactivateFollowLine()
     {
         isInitialized = false;
         gameObject.SetActive(false);
@@ -41,17 +64,17 @@ public class FollowLine : MonoBehaviour
 
     private void PositionAndScaleLineBody()
     {
-        lineHead.position = targetTransform.position;
+        //lineHead.position = targetTransform.position;
 
         // Position the cylinder
-        transform.position = Vector3.Lerp(asset.position, lineHead.position, 0.5f);
+        transform.position = Vector3.Lerp(followLineStart.position, followGuide.position, 0.5f);
 
         // Scale the cylinder
-        float distance = Vector3.Distance(asset.position, lineHead.position);
+        float distance = Vector3.Distance(followLineStart.position, followGuide.position);
         transform.localScale = new Vector3(transform.localScale.x, distance / 2, transform.localScale.z);
 
         // Rotate the cylinder
-        Vector3 direction = lineHead.position - asset.position;
+        Vector3 direction = followGuide.position - followLineStart.position;
         Quaternion rotation = Quaternion.FromToRotation(Vector3.up, direction);
         transform.rotation = rotation;
     }
