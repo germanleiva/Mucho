@@ -13,6 +13,8 @@ public class ForceArrow : MonoBehaviour
     public GameObject connectedAsset;
     public Material arrowTranslucentMaterial;
 
+    public TMPro.TextMeshProUGUI forceMagnitudeText;
+
     readonly int layerMask = 1 << 6;
     Vector3 previousArrowHeadPosition;
 
@@ -80,6 +82,8 @@ public class ForceArrow : MonoBehaviour
 
         // Initial velocity is just the direction
         initialVelocity = direction * 10f;
+
+        forceMagnitudeText.text = initialVelocity.magnitude.ToString("F2");
 
         // Set the number of points in the LineRenderer
         lineRenderer.positionCount = numberOfPoints;
