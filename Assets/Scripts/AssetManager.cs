@@ -188,21 +188,23 @@ public class AssetManager : MonoBehaviour
 
     public void AddForceArrowToAsset(Recordable recordable)
     {
-        foreach (GameObject obj in recordable.forceArrows)
+        /*foreach (GameObject obj in recordable.forceArrows)
         {
             Destroy(obj);
-        } 
+        }*/ 
 
         //GameObject obj = Instantiate(cubePrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
         GameObject forceArrow = Instantiate(forceArrowPrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);   
         forceArrow.SetActive(true);     
         ForceArrow forceArrowScript = forceArrow.GetComponent<ForceArrow>();
+        forceArrowScript.indexWhereArrowIsVisible = (int) Recorder.Instance.playbackSlider.value;
+        forceArrowScript.associatedExample = Recorder.Instance.currentActiveExample;
         recordable.forceArrows.Add(forceArrow);
         forceArrowScript.asset = recordable.gameObject.transform;
         //forceArrowScript.arrowHead should be positioned 1 unit above the arrowEnd in the y axis
         forceArrowScript.arrowHead.position = recordable.gameObject.transform.position + new Vector3(0f,0.2f,0.2f);
         forceArrowScript.ReOrientArrow();
-             
+        forceArrowScript.DrawTrajectory();     
     }
    
 }

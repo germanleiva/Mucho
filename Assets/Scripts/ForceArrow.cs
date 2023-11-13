@@ -13,7 +13,12 @@ public class ForceArrow : MonoBehaviour
     public GameObject connectedAsset;
     public Material arrowTranslucentMaterial;
 
+    public int indexWhereArrowIsVisible = 0;
+
+    public Example associatedExample = null;
     public TMPro.TextMeshProUGUI forceMagnitudeText;
+
+    public GameObject forceMagnitudeUI;
 
     readonly int layerMask = 1 << 6;
     Vector3 previousArrowHeadPosition;
@@ -24,6 +29,15 @@ public class ForceArrow : MonoBehaviour
     //TODO: Make this event driven from grab
     void Update()
     {
+        if((int) Recorder.Instance.playbackSlider.value == indexWhereArrowIsVisible && associatedExample == Recorder.Instance.currentActiveExample && !Recorder.Instance.isAutomaticPlayback)
+        {
+            ShowTrajectoryAndArrow();
+        }
+        else
+        {
+            HideTrajectoryAndArrow();
+        }
+
         //Call DrawTrajectory() when the current position of arrowHead is different from the previous position
         if ((arrowHead.position-previousArrowHeadPosition).magnitude > 0.0001f)
         {
@@ -83,7 +97,13 @@ public class ForceArrow : MonoBehaviour
         // Initial velocity is just the direction
         initialVelocity = direction * 10f;
 
-        forceMagnitudeText.text = initialVelocity.magnitude.ToString("F2");
+        forceMagnitudeUI.transform.position = (arrowHead.position + arrowBody.position) / 2;    
+        forceMagnitudeUI.transform.position += new Vector3(0, 0.2f, 0);
+        
+        forceMagnitudeUI.transform.LookAt(Camera.main.transform.position);
+        forceMagnitudeUI.transform.rotation = forceMagnitudeUI.transform.rotation * Quaternion.Euler(0, 180, 0);
+
+        forceMagnitudeText.text = System.Math.Round(initialVelocity.magnitude * 10, 2).ToString("F1");
 
         // Set the number of points in the LineRenderer
         lineRenderer.positionCount = numberOfPoints;
@@ -135,6 +155,7 @@ public class ForceArrow : MonoBehaviour
         lineRenderer.enabled = false;
         arrowHead.gameObject.SetActive(false);
         arrowBody.gameObject.SetActive(false);
+        forceMagnitudeUI.SetActive(false);
     }
 
     public void ShowTrajectoryAndArrow()
@@ -142,6 +163,7 @@ public class ForceArrow : MonoBehaviour
         lineRenderer.enabled = true;
         arrowHead.gameObject.SetActive(true);
         arrowBody.gameObject.SetActive(true);
+        forceMagnitudeUI.SetActive(true);
     }
 
 

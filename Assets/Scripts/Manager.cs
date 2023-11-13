@@ -87,12 +87,13 @@ public class Manager : MonoBehaviour
     {
         GameObject newObj = Instantiate(obj);
         newObj.transform.SetParent(obj.transform.parent);
-        newObj.transform.localPosition = obj.transform.localPosition;
-        newObj.transform.localRotation = obj.transform.localRotation;
+        newObj.transform.SetLocalPositionAndRotation(obj.transform.localPosition, obj.transform.localRotation);
         newObj.transform.localScale = obj.transform.localScale;
         newObj.name = obj.name + "Copy";
         DetachFromAllParents(obj.transform);
     }
+
+    //public void Create
 
     public void DetachFromAllParents(Transform transform)
     {

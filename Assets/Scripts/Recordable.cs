@@ -38,8 +38,6 @@ public class Recordable : MonoBehaviour
     public Color currentObjColor;
 
     Material defaultMaterial;
-
-    
     
     //public bool showStatus = true;
 
@@ -77,23 +75,7 @@ public class Recordable : MonoBehaviour
                 Recorder.Instance.playbackSlider.value += 1;
             ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, actionStr: "ApplyForce()", collisionStr: "None", propagateValueToSubsequentFrames: true);
         }
-    }
 
-    /*public void RecordPassiveInteractions()
-    {
-        if(Manager.Instance.currAppState == Manager.AppState.RECORDING)
-        {
-            if(Recorder.Instance.playbackSlider.value != oldMainPlaybackSliderValue)
-            {
-                oldMainPlaybackSliderValue = Recorder.Instance.playbackSlider.value;
-                //DebugLogger.Instance.Log("Recording passive interactions for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
-                RecordAssetFrame();
-            }
-        }
-    }*/
-
-    public void InitializeVisibility()
-    {
 
     }
 
@@ -696,8 +678,8 @@ public class Recordable : MonoBehaviour
 
             ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionStr: "ApplyForce()", 
-                                    actionDelegate: () => { GetComponent<Recordable>().ApplyForce(initialVelocity); });
-
+                                    actionDelegate: () => { GetComponent<Recordable>().ApplyForceInLiveMode(initialVelocity); });
+                                    //actionDelegate: () => { GetComponent<Recordable>().ApplyForce(initialVelocity); });
 
 
             ApplyForce(initialVelocity);
@@ -712,12 +694,29 @@ public class Recordable : MonoBehaviour
         GetComponent<Rigidbody>().AddForce(initialVelocity, ForceMode.VelocityChange);
     }
 
-    public void ApplyForceInLiveMode(GameObject pinchObj)
+    [SerializeField]
+    int velocityScalingFactor = 20;
+
+    public void ApplyForceInLiveMode(Vector3 initialVelocity)
     {        
+        DebugLogger.Instance.Log("ApplyForceInLiveMode : Velocity during recording is " + initialVelocity);
         GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
         GetComponent<Rigidbody>().useGravity = true;
-        //Add force based on the velocity of the rigidbody component of the hand that is pinching this object
-        GetComponent<Rigidbody>().AddForce(pinchObj.GetComponent<Rigidbody>().velocity, ForceMode.VelocityChange);
+        //Find whether InputManager.Instance.leftPinchObj or InputManager.Instance.rightPinchObj is closest to the asset
+        float distanceToLeftPinchObj = Vector3.Distance(transform.position, InputManager.Instance.leftHandPinchObj.transform.position);
+        float distanceToRightPinchObj = Vector3.Distance(transform.position, InputManager.Instance.rightHandPinchObj.transform.position);
+        if(distanceToLeftPinchObj < distanceToRightPinchObj)
+        {
+            DebugLogger.Instance.Log("ApplyForceInLiveMode : Applying force to left pinch objectm with velocity " + InputManager.Instance.leftHandVelocity / velocityScalingFactor);
+            GetComponent<Rigidbody>().AddForce(InputManager.Instance.leftHandVelocity / velocityScalingFactor, ForceMode.VelocityChange);
+        }
+        else
+        {
+            DebugLogger.Instance.Log("ApplyForceInLiveMode : Applying force to right pinch object with velocity " + InputManager.Instance.rightHandVelocity / velocityScalingFactor);
+            GetComponent<Rigidbody>().AddForce(InputManager.Instance.rightHandVelocity / velocityScalingFactor, ForceMode.VelocityChange);
+        }
+
+        //GetComponent<Rigidbody>().AddForce(pinchObj.GetComponent<Rigidbody>().velocity, ForceMode.VelocityChange);
 
     }
 
@@ -745,10 +744,10 @@ public class Recordable : MonoBehaviour
         if(currentRecordingMode == Recordable.AssetRecordingType.Physics)
         {
             //Delete all force arrows
-            foreach (GameObject obj in forceArrows)
+            /*foreach (GameObject obj in forceArrows)
             {
                 Destroy(obj);
-            } 
+            }*/ 
 
             currentRecordingMode = Recordable.AssetRecordingType.None;
 

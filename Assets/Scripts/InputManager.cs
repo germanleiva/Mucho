@@ -18,7 +18,11 @@ public class InputManager : MonoBehaviour
 
     public GameObject leftHandPinchObj, rightHandPinchObj, headContactObj;
 
-    public GameObject leftHandGrabObj, rightHandGrabObj;
+    Vector3 leftHandLastPos, rightHandLastPos, headLastPos;
+
+    public Vector3 leftHandVelocity, rightHandVelocity, headVelocity;
+
+    //public GameObject leftHandGrabObj, rightHandGrabObj;
 
     //public 
 
@@ -46,7 +50,22 @@ public class InputManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        ProcessEvents();        
+        ProcessEvents(); 
+
+
+        //Calculating velocity manually as rigidbody velocity is not computed 
+        Vector3 currRightHandLastPos = (InputManager.Instance.rightHandPinchObj.transform.position);
+        rightHandVelocity = (currRightHandLastPos - rightHandLastPos) / Time.deltaTime;
+        rightHandLastPos = currRightHandLastPos;
+
+        Vector3 currLeftHandLastPos = (InputManager.Instance.leftHandPinchObj.transform.position);
+        leftHandVelocity = (currLeftHandLastPos - leftHandLastPos) / Time.deltaTime;
+        leftHandLastPos = currLeftHandLastPos;
+
+        Vector3 currHeadLastPos = (InputManager.Instance.headContactObj.transform.position);
+        headVelocity = (currHeadLastPos - headLastPos) / Time.deltaTime;
+        headLastPos = currHeadLastPos;
+        
     }
 
     public void CreateTestStates()
