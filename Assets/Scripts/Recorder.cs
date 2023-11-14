@@ -1,10 +1,5 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
-using TMPro;
-using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -587,7 +582,7 @@ public class Recorder : MonoBehaviour
                 showElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(TimelineUIElement.MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex, GetSizeOfMainRecordedData()), showElement.GetComponent<RectTransform>().anchoredPosition.y);
             }
 
-            if(sequence.ActionStr.Contains("Follow") || sequence.ActionStr.Contains("ApplyForce") || sequence.ActionStr.Contains("ChangeColor")) //Other types of events - physics, attach etc
+            if(sequence.ActionStr.Contains("Follow") || sequence.ActionStr.Contains("ApplyForce") || sequence.ActionStr.Contains("ChangeColor") || sequence.ActionStr.Contains("Pin")) //Other types of events - physics, attach etc
             {                
                 TimelineUIElement.CreateTimelineElement(assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ActionStr);
             }
@@ -1321,41 +1316,32 @@ public class Recorder : MonoBehaviour
 
             if (head.playbackObject != null)
             {
-                head.playbackObject.transform.localPosition = currentActiveExample.headData[currentFrameNum].rootPosition;
-                head.playbackObject.transform.localRotation = currentActiveExample.headData[currentFrameNum].rootRotation;
-
-                head.playbackFocusSquare.transform.position = currentActiveExample.headData[currentFrameNum].focusSquarePosition;
-                head.playbackFocusSquare.transform.rotation = currentActiveExample.headData[currentFrameNum].focusSquareRotation;
+                head.playbackObject.transform.SetLocalPositionAndRotation(currentActiveExample.headData[currentFrameNum].rootPosition, currentActiveExample.headData[currentFrameNum].rootRotation);
+                head.playbackFocusSquare.transform.SetPositionAndRotation(currentActiveExample.headData[currentFrameNum].focusSquarePosition, currentActiveExample.headData[currentFrameNum].focusSquareRotation);
             }
 
             if (leftHand.playbackObject != null)
             {
-                leftHand.playbackObject.transform.localPosition = currentActiveExample.leftHandData[currentFrameNum].rootPosition;
-                leftHand.playbackObject.transform.localRotation = currentActiveExample.leftHandData[currentFrameNum].rootRotation * Quaternion.Euler(leftHand.rotationCorrection);//Modify the rotation in the recorded data to add 180 degrees to the  axis
-
+                leftHand.playbackObject.transform.SetLocalPositionAndRotation(currentActiveExample.leftHandData[currentFrameNum].rootPosition, currentActiveExample.leftHandData[currentFrameNum].rootRotation * Quaternion.Euler(leftHand.rotationCorrection));
                 if (leftHand.playbackObject.GetComponent<HandPlaybackObjectScript>() != null)
                 {
                     leftHand.playbackObject.GetComponent<HandPlaybackObjectScript>().SetPoseForAllFingerJoints(currentActiveExample.leftHandData[currentFrameNum]);
                     leftHand.playbackGestureText.text = InputManager.Instance.GestureToString(currentActiveExample.leftHandData[currentFrameNum].gesture);
                 }
 
-                leftHand.playbackFocusSquare.transform.position = currentActiveExample.leftHandData[currentFrameNum].focusSquarePosition;
-                leftHand.playbackFocusSquare.transform.rotation = currentActiveExample.leftHandData[currentFrameNum].focusSquareRotation;
+                leftHand.playbackFocusSquare.transform.SetPositionAndRotation(currentActiveExample.leftHandData[currentFrameNum].focusSquarePosition, currentActiveExample.leftHandData[currentFrameNum].focusSquareRotation);
             }
 
             if (rightHand.playbackObject != null)
             {
-                rightHand.playbackObject.transform.localPosition = currentActiveExample.rightHandData[currentFrameNum].rootPosition;
-                rightHand.playbackObject.transform.localRotation = currentActiveExample.rightHandData[currentFrameNum].rootRotation * Quaternion.Euler(rightHand.rotationCorrection);
-
+                rightHand.playbackObject.transform.SetLocalPositionAndRotation(currentActiveExample.rightHandData[currentFrameNum].rootPosition, currentActiveExample.rightHandData[currentFrameNum].rootRotation * Quaternion.Euler(rightHand.rotationCorrection));
                 if (rightHand.playbackObject.GetComponent<HandPlaybackObjectScript>() != null)
                 {
                     rightHand.playbackObject.GetComponent<HandPlaybackObjectScript>().SetPoseForAllFingerJoints(currentActiveExample.rightHandData[currentFrameNum]);
                     rightHand.playbackGestureText.text = InputManager.Instance.GestureToString(currentActiveExample.rightHandData[currentFrameNum].gesture);
                 }
 
-                rightHand.playbackFocusSquare.transform.position = currentActiveExample.rightHandData[currentFrameNum].focusSquarePosition;
-                rightHand.playbackFocusSquare.transform.rotation = currentActiveExample.rightHandData[currentFrameNum].focusSquareRotation;
+                rightHand.playbackFocusSquare.transform.SetPositionAndRotation(currentActiveExample.rightHandData[currentFrameNum].focusSquarePosition, currentActiveExample.rightHandData[currentFrameNum].focusSquareRotation);
             }
 
         }

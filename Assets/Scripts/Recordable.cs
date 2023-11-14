@@ -406,12 +406,12 @@ public class Recordable : MonoBehaviour
         DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
         ModifyAssetFrame((int)AssetManager.Instance.mainRecorder.playbackSlider.value, 
                                 actionStr: "Pin()", 
-                                actionDelegate: () => { GetComponent<Recordable>().Pin(Recorder.Instance.leftHand.GetCurrentPosition()); }); 
+                                actionDelegate: () => { GetComponent<Recordable>().Pin(InputManager.Instance.leftHandPinchObj.transform.position); }); 
         
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
         {
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandData[i].pinchPosition;
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandData[_frameStart].pinchPosition;
             //currentAssetRecordedData[i].ActionStr = "Pin()";
         }
 
@@ -427,12 +427,12 @@ public class Recordable : MonoBehaviour
         DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
         ModifyAssetFrame((int)AssetManager.Instance.mainRecorder.playbackSlider.value, 
                                 actionStr: "Pin()", 
-                                actionDelegate: () => { GetComponent<Recordable>().Pin(Recorder.Instance.rightHand.GetCurrentPosition()); }); 
+                                actionDelegate: () => { GetComponent<Recordable>().Pin(InputManager.Instance.rightHandPinchObj.transform.position); });
         
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
         {
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandData[i].pinchPosition;
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandData[_frameStart].pinchPosition;
             //currentAssetRecordedData[i].ActionStr = "Pin()";
         }
 

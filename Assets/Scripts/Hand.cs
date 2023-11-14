@@ -84,7 +84,7 @@ public class Hand : MonoBehaviour
 
     public Vector3 GetCurrentPosition()
     {
-        return transform.position;
+        return transform.localPosition;
     }
 
 

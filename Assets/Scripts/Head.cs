@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 public class Head : MonoBehaviour
@@ -77,7 +78,7 @@ public class Head : MonoBehaviour
     {
         while(speechToTextEngine.isRecording)
         {
-            if(speechToTextEngine.outputText.text != "" && speechToTextEngine.outputText.text != "[BLANK_AUDIO]")
+            if(Regex.IsMatch(speechToTextEngine.outputText.text, @"^[a-zA-Z\.]+$"))
             {
                 string currentRecognisedText = speechToTextEngine.outputText.text;
                         //Extract substring before the first dot

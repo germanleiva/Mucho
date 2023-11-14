@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Assets.OVR.Scripts;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -55,7 +56,19 @@ public class Manager : MonoBehaviour
 
     public void ChangeToLiveMode()
     {
+        if(currAppState == Manager.AppState.LIVE)
+        {
+            return;
+        }
+
+        if(Recorder.Instance.examples.Count == 0)
+        {
+            DebugLogger.Instance.Log("No examples to change to live mode");
+            return;
+        }
+
         currAppState = Manager.AppState.LIVE;
+        Recorder.Instance.playbackSlider.value = 0;
         Recorder.Instance.SetPlaybackObjectsVisibility(false);
         AssetManager.Instance.HideMiscObjs();
         AssetManager.Instance.SetAllAssetMenusPokeable(false);
@@ -202,7 +215,7 @@ public class Example
         headData = example.headData.ToList();
         foreach(var data in headData) // Clear the voice commands
         {
-            data.voiceCommand = "";
+            data.voiceCommand = null;
         }
 
         assetDataDict = example.assetDataDict.ToDictionary(entry => entry.Key, entry => entry.Value.Select(item => (AssetFrame)item.Clone()).ToList());
