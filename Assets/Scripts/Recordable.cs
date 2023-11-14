@@ -400,25 +400,52 @@ public class Recordable : MonoBehaviour
         //DebugLogger.Instance.Log("Setting color to " + _color + " for " + gameObject.name);
     }
 
-    public void RecordPinTo()
+    public void RecordPinToLeftHand()
     {
-        /*
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
-        //showStatus = true;
-        if(Recorder.Instance.GetSizeOfMainRecordedData() > 0)
+        DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
+        ModifyAssetFrame((int)AssetManager.Instance.mainRecorder.playbackSlider.value, 
+                                actionStr: "Pin()", 
+                                actionDelegate: () => { GetComponent<Recordable>().Pin(Recorder.Instance.leftHand.GetCurrentPosition()); }); 
+        
+        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
+        for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
         {
-            DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
-            ModifyAssetFrame((int)AssetManager.Instance.mainRecorder.playbackSlider.value, 
-                                    actionStr: "Pin()", 
-                                    actionDelegate: () => { GetComponent<Recordable>().Pin(); });
-            
-                    
-    
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandData[i].pinchPosition;
+            //currentAssetRecordedData[i].ActionStr = "Pin()";
         }
 
-        Pin();
 
-        Recorder.Instance.RefreshTimelineAndStates();*/
+        //Pin(Recorder.Instance.leftHand.GetCurrentPosition());
+
+        Recorder.Instance.RefreshTimelineAndStates();
+    }
+
+    public void RecordPinToRightHand()
+    {
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
+        DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
+        ModifyAssetFrame((int)AssetManager.Instance.mainRecorder.playbackSlider.value, 
+                                actionStr: "Pin()", 
+                                actionDelegate: () => { GetComponent<Recordable>().Pin(Recorder.Instance.rightHand.GetCurrentPosition()); }); 
+        
+        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
+        for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
+        {
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandData[i].pinchPosition;
+            //currentAssetRecordedData[i].ActionStr = "Pin()";
+        }
+
+        //Pin(Recorder.Instance.rightHand.GetCurrentPosition());
+
+        Recorder.Instance.RefreshTimelineAndStates();
+    }
+
+
+
+    public void Pin(Vector3 location)
+    {
+        transform.position = location;
     }
     
     //For assets

@@ -82,6 +82,12 @@ public class Hand : MonoBehaviour
         }
     }
 
+    public Vector3 GetCurrentPosition()
+    {
+        return transform.position;
+    }
+
+
     private void Update()
     {
         //For hands as focus squares are parts of hands

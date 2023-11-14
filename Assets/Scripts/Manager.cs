@@ -200,6 +200,10 @@ public class Example
         leftHandData = example.leftHandData.ToList();
         rightHandData = example.rightHandData.ToList();
         headData = example.headData.ToList();
+        foreach(var data in headData) // Clear the voice commands
+        {
+            data.voiceCommand = "";
+        }
 
         assetDataDict = example.assetDataDict.ToDictionary(entry => entry.Key, entry => entry.Value.Select(item => (AssetFrame)item.Clone()).ToList());
 
