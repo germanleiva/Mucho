@@ -631,21 +631,53 @@ public class Recordable : MonoBehaviour
     //For assets
     public void AttachToLeftHandFocusSquare()
     {
-        DebugLogger.Instance.Log("Attach called for " + gameObject.name);
-        //currentRecordingMode = Recordable.RecordingType.Follow;
-        //CopyPoseFromFocusSquare(Recorder.Instance.objectsToRecord[1], (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];  
+        DebugLogger.Instance.Log("Follow left focus called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
+        currentRecordingMode = Recordable.AssetRecordingType.Follow;
+
+        ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
+                                    actionStr: "Follow(L-focus)", 
+                                    actionDelegate: () => { GetComponent<Recordable>().Follow(InputManager.Instance.leftFocus.transform);}, 
+                                    collisionDelegate: (Frame frame) => { frame.IsColliding(base.gameObject, InputManager.Instance.leftFocus); }, 
+                                    collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left focus square)", 
+                                    collidedObject: InputManager.Instance.leftFocus);
+
+        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
+
+        for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
+        {   
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandData[i].focusSquarePosition;
+            currentAssetRecordedData[i].ActionStr = "Follow(L-focus)";
+            currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left focus square)";
+        }
+
         Recorder.Instance.RefreshTimelineAndStates();
-        //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[1].playbackObject.transform);
     }
 
     //For assets
     public void AttachToRightHandFocusSquare()
     {
-        DebugLogger.Instance.Log("Attach called for " + gameObject.name);
-        //currentRecordingMode = Recordable.RecordingType.Follow;
-        //CopyPoseFromFocusSquare(Recorder.Instance.objectsToRecord[2], (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];  
+        DebugLogger.Instance.Log("Follow right focus called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
+        currentRecordingMode = Recordable.AssetRecordingType.Follow;
+
+        ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
+                                    actionStr: "Follow(R-focus)", 
+                                    actionDelegate: () => { GetComponent<Recordable>().Follow(InputManager.Instance.rightFocus.transform);}, 
+                                    collisionDelegate: (Frame frame) => { frame.IsColliding(base.gameObject, InputManager.Instance.rightFocus); }, 
+                                    collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right focus square)", 
+                                    collidedObject: InputManager.Instance.rightFocus);
+
+        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
+
+        for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
+        {   
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandData[i].focusSquarePosition;
+            currentAssetRecordedData[i].ActionStr = "Follow(R-focus)";
+            currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right focus square)";
+        }
+
         Recorder.Instance.RefreshTimelineAndStates();
-        //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[2].playbackObject.transform);
     }
 
     //For assets
@@ -662,7 +694,7 @@ public class Recordable : MonoBehaviour
     public void Detach()
     {
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
-        DebugLogger.Instance.Log("Detach called for " + gameObject.name);
+        DebugLogger.Instance.Log("Unfollow called for " + gameObject.name);
         currentRecordingMode = Recordable.AssetRecordingType.None;
         //Unfollow();
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 

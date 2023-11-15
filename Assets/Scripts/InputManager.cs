@@ -10,6 +10,8 @@ public class InputManager : MonoBehaviour
 
     public Hand leftHand, rightHand;
 
+    public GameObject leftFocus, rightFocus;
+
     public GameObject testBall, testTarget, floor, testHitMessage, testMissMessage;
 
     public GameObject collidingObjectNotified_1, collidingObjectNotified_2;
