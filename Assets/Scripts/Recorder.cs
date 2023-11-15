@@ -184,6 +184,14 @@ public class Recorder : MonoBehaviour
         DebugLogger.Instance.Log("Size of recordedData leftHand: " + currentActiveExample.leftHandData.Count);
         DebugLogger.Instance.Log("Size of recordedData rightHand: " + currentActiveExample.rightHandData.Count);
 
+        foreach(var asset in currentActiveExample.assetDataDict.Keys)
+        {
+            DebugLogger.Instance.Log("Size of recordedData asset: " + asset.name + ", " + currentActiveExample.assetDataDict[asset].Count);
+        }
+        
+        //TODO: If sizes do no match raise an error
+        
+
         //isMainRecordingOn = false;
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
 

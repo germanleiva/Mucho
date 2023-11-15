@@ -60,15 +60,15 @@ public class PinLineTrigger : MonoBehaviour
             }
             else if(pinTargetType == PinTargetType.LEFTFOCUS)
             {
-                //followLine.asset.GetComponent<Recordable>().AttachToLeftHandFocusSquare(); 
+                pinLine.PinAction = () => { pinLine.asset.GetComponent<Recordable>().RecordPinToLeftFocus(); renderer.material = defaultMaterial;}; 
             }
             else if(pinTargetType == PinTargetType.RIGHTFOCUS)
             {
-               //followLine.asset.GetComponent<Recordable>().AttachToRightHandFocusSquare();
+                pinLine.PinAction = () => { pinLine.asset.GetComponent<Recordable>().RecordPinToRightFocus(); renderer.material = defaultMaterial;};
             }
             else if(pinTargetType == PinTargetType.GAZEFOCUS)
             {
-                //followLine.asset.GetComponent<Recordable>().AttachToHeadFocusSquare();
+                pinLine.PinAction = () => { pinLine.asset.GetComponent<Recordable>().RecordPinToGazeFocus(); renderer.material = defaultMaterial;};
             }
             else
             {
@@ -85,13 +85,13 @@ public class PinLineTrigger : MonoBehaviour
 
         if(other.gameObject.name != "PinGuideSphere")
         {
-            DebugLogger.Instance.Log("PinGuideSphere not found");
+           //DebugLogger.Instance.Log("PinGuideSphere not found");
             return;
         }
 
         if(other.gameObject.transform.parent?.GetComponentInChildren<PinLine>() == null)
         {
-            DebugLogger.Instance.Log("PinLineTrigger: No PinLine component found for collider " + other.gameObject.name);
+            //DebugLogger.Instance.Log("PinLineTrigger: No PinLine component found for collider " + other.gameObject.name);
             return;
         }
         

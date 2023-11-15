@@ -78,7 +78,7 @@ public class Head : MonoBehaviour
     {
         while(speechToTextEngine.isRecording)
         {
-            if(Regex.IsMatch(speechToTextEngine.outputText.text, @"^[a-zA-Z\.]+$"))
+            if(speechToTextEngine.outputText.text != "" && speechToTextEngine.outputText.text != "[BLANK_AUDIO]")
             {
                 string currentRecognisedText = speechToTextEngine.outputText.text;
                         //Extract substring before the first dot

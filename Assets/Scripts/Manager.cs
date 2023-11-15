@@ -135,8 +135,12 @@ public class Manager : MonoBehaviour
         else if (obj.name.StartsWith("Text"))
         {
             AssetManager.Instance.SpawnText(obj.transform);
+        }        
+        
+        if (obj.GetComponent<MeshCopy>() == null)
+        {
+           Destroy(obj);
         }
-        Destroy(obj);
     }
 
     public string CleanAssetName(string str)
@@ -268,6 +272,10 @@ public class Example
         foreach(Recordable recordable in assetDataDict.Keys)
         {
             assetDataDict[recordable].Clear();
+            foreach (GameObject obj in recordable.forceArrows)
+            {
+                UnityEngine.Object.Destroy(obj);
+            }
         }
     }
 

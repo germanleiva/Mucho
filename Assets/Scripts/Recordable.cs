@@ -37,7 +37,7 @@ public class Recordable : MonoBehaviour
 
     public Color currentObjColor;
 
-    Material defaultMaterial;
+    public Material defaultMaterial;
     
     //public bool showStatus = true;
 
@@ -84,28 +84,25 @@ public class Recordable : MonoBehaviour
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
         //DebugLogger.Instance.Log("Recording frame for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
         if(collidedObject != null)
-        {
-            
-            DebugLogger.Instance.Log("Collision between " + gameObject.name + " and " + collidedObject.name + "during recording");
+        {            
+            //DebugLogger.Instance.Log("RecordAssetFrame: Collision between " + gameObject.name + " and " + collidedObject.name + "during recording");
             if(collidedObject == InputManager.Instance.leftHandPinchObj)
                 currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + ", Left hand)", null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.leftHandPinchObj); }, InputManager.Instance.leftHandPinchObj, currentObjColor, currentAssetRecordedData.Count));
             else if(collidedObject == InputManager.Instance.rightHandPinchObj)
                 currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + ", Right hand)", null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.rightHandPinchObj); }, InputManager.Instance.rightHandPinchObj, currentObjColor, currentAssetRecordedData.Count));
             else if(collidedObject == InputManager.Instance.headContactObj)
                 currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + ", Head)", null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.headContactObj); }, InputManager.Instance.headContactObj, currentObjColor, currentAssetRecordedData.Count));
-            
-            //else //collision with other assets
-            //     currentAssetRecordedData.Add(new(transform.position, transform.rotation, showStatus, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + "," + Manager.Instance.CleanAssetName(InputManager.Instance.collidingObjectNotified_2.name), null, null, null, currentAssetRecordedData.Count));    
-
-
-            /*else if(InputManager.Instance.collidingObjectNotified_2 == InputManager.Instance.leftFocusSquareObj)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, showStatus, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + ", Left focus square)", null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.leftFocusSquareObj); }, InputManager.Instance.leftFocusSquareObj, currentAssetRecordedData.Count));
-            else if(InputManager.Instance.collidingObjectNotified_2 == InputManager.Instance.rightFocusSquareObj)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, showStatus, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + ", Right focus square)", null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.rightFocusSquareObj); }, InputManager.Instance.rightFocusSquareObj, currentAssetRecordedData.Count));
-            else if(InputManager.Instance.collidingObjectNotified_2 == InputManager.Instance.headFocusSquareObj)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, showStatus, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + ", Head focus square)", null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.headFocusSquareObj); }, InputManager.Instance.headFocusSquareObj, currentAssetRecordedData.Count));
+            else if(collidedObject == InputManager.Instance.leftFocus)
+                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + ", Left focus square)", null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.leftFocus); }, InputManager.Instance.leftFocus, currentObjColor, currentAssetRecordedData.Count));
+            else if(collidedObject == InputManager.Instance.rightFocus)
+                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + ", Right focus square)", null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.rightFocus); }, InputManager.Instance.rightFocus, currentObjColor, currentAssetRecordedData.Count));
+            else if(collidedObject == InputManager.Instance.gazeFocus)
+                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, "None", "Collide(" + Manager.Instance.CleanAssetName(gameObject.name) + ", Gaze square)", null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.gazeFocus); }, InputManager.Instance.gazeFocus, currentObjColor, currentAssetRecordedData.Count));
             else
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, showStatus, "None", "None", null, null, null, currentAssetRecordedData.Count));  */  
+            {
+                DebugLogger.Instance.Log("RecordAssetFrame: unaccounted collision between " + gameObject.name + " and " + collidedObject.name + "during recording");
+                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, "None", "None", null, null, null, currentObjColor, currentAssetRecordedData.Count));    
+            }
         }
         else 
         {
@@ -441,6 +438,65 @@ public class Recordable : MonoBehaviour
         Recorder.Instance.RefreshTimelineAndStates();
     }
 
+    public void RecordPinToLeftFocus()
+    {
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
+        DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
+        ModifyAssetFrame((int)AssetManager.Instance.mainRecorder.playbackSlider.value, 
+                                actionStr: "Pin()", 
+                                actionDelegate: () => { GetComponent<Recordable>().Pin(InputManager.Instance.leftFocus.transform.position); });
+        
+        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
+        for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
+        {
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandData[_frameStart].focusSquarePosition;
+            //currentAssetRecordedData[i].ActionStr = "Pin()";
+        }
+
+        //Pin(Recorder.Instance.leftFocus.transform.position);
+
+        Recorder.Instance.RefreshTimelineAndStates();
+    }
+
+    public void RecordPinToRightFocus()
+    {
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
+        DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
+        ModifyAssetFrame((int)AssetManager.Instance.mainRecorder.playbackSlider.value, 
+                                actionStr: "Pin()", 
+                                actionDelegate: () => { GetComponent<Recordable>().Pin(InputManager.Instance.rightFocus.transform.position); });
+        
+        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
+        for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
+        {
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandData[_frameStart].focusSquarePosition;
+            //currentAssetRecordedData[i].ActionStr = "Pin()";
+        }
+
+        //Pin(Recorder.Instance.rightFocus.transform.position);
+
+        Recorder.Instance.RefreshTimelineAndStates();
+    }
+
+    public void RecordPinToGazeFocus()
+    {
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
+        DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
+        ModifyAssetFrame((int)AssetManager.Instance.mainRecorder.playbackSlider.value, 
+                                actionStr: "Pin()", 
+                                actionDelegate: () => { GetComponent<Recordable>().Pin(InputManager.Instance.gazeFocus.transform.position); });
+        
+        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
+        for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
+        {
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.headData[_frameStart].focusSquarePosition;
+            //currentAssetRecordedData[i].ActionStr = "Pin()";
+        }
+
+        //Pin(Recorder.Instance.gazeFocus.transform.position);
+
+        Recorder.Instance.RefreshTimelineAndStates();
+    }
 
 
     public void Pin(Vector3 location)
@@ -639,16 +695,35 @@ public class Recordable : MonoBehaviour
                                     actionStr: "Follow(L-focus)", 
                                     actionDelegate: () => { GetComponent<Recordable>().Follow(InputManager.Instance.leftFocus.transform);}, 
                                     collisionDelegate: (Frame frame) => { frame.IsColliding(base.gameObject, InputManager.Instance.leftFocus); }, 
-                                    collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left focus square)", 
+                                    collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left focus)", 
                                     collidedObject: InputManager.Instance.leftFocus);
 
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
 
-        for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
+        int followEndIndex = FindFollowEndIndex(_frameStart);
+
+        DebugLogger.Instance.Log("Copying pose from left focus square at frame " + _frameStart + " to frame " + followEndIndex);
+
+        for (int i = _frameStart + 1; i < followEndIndex; i++)
         {   
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandData[i].focusSquarePosition;
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandData[i].focusSquarePosition;
             currentAssetRecordedData[i].ActionStr = "Follow(L-focus)";
-            currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left focus square)";
+            currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left focus)";
+        }
+
+        DebugLogger.Instance.Log("Unfollowing at frame " + followEndIndex);
+
+        ModifyAssetFrame(followEndIndex, 
+                        actionStr: "Unfollow()",  
+                        actionDelegate: () => { GetComponent<Recordable>().Unfollow(); });
+
+        currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.leftHandData[followEndIndex - 1].focusSquarePosition;
+
+        for (int i = followEndIndex + 1; i < currentAssetRecordedData.Count; i++)
+        {
+            currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[followEndIndex - 1].rootPosition;
+            currentAssetRecordedData[i].ActionStr = "None";
+            currentAssetRecordedData[i].CollisionStr = "None";
         }
 
         Recorder.Instance.RefreshTimelineAndStates();
@@ -658,36 +733,90 @@ public class Recordable : MonoBehaviour
     public void AttachToRightHandFocusSquare()
     {
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];  
-        DebugLogger.Instance.Log("Follow right focus called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
+        DebugLogger.Instance.Log("AttachToRightHandFocusSquare: Follow right focus called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
         currentRecordingMode = Recordable.AssetRecordingType.Follow;
 
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionStr: "Follow(R-focus)", 
                                     actionDelegate: () => { GetComponent<Recordable>().Follow(InputManager.Instance.rightFocus.transform);}, 
                                     collisionDelegate: (Frame frame) => { frame.IsColliding(base.gameObject, InputManager.Instance.rightFocus); }, 
-                                    collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right focus square)", 
+                                    collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right focus)", 
                                     collidedObject: InputManager.Instance.rightFocus);
 
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
 
-        for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
+        int followEndIndex = FindFollowEndIndex(_frameStart);
+
+        DebugLogger.Instance.Log("Copying pose from right focus square at frame " + _frameStart + " to frame " + followEndIndex);
+
+        for (int i = _frameStart + 1; i < followEndIndex; i++)
         {   
             currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandData[i].focusSquarePosition;
             currentAssetRecordedData[i].ActionStr = "Follow(R-focus)";
-            currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right focus square)";
+            currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right focus)";
+        }
+
+        DebugLogger.Instance.Log("Unfollowing at frame " + followEndIndex);
+
+        ModifyAssetFrame(followEndIndex, 
+                        actionStr: "Unfollow()",  
+                        actionDelegate: () => { GetComponent<Recordable>().Unfollow(); });
+        
+        currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.rightHandData[followEndIndex - 1].focusSquarePosition;
+
+        for (int i = followEndIndex + 1; i < currentAssetRecordedData.Count; i++)
+        {
+            currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[followEndIndex - 1].rootPosition;
+            currentAssetRecordedData[i].ActionStr = "None";
+            currentAssetRecordedData[i].CollisionStr = "None";
         }
 
         Recorder.Instance.RefreshTimelineAndStates();
     }
 
     //For assets
-    public void AttachToHeadFocusSquare()
+    public void AttachToGazeFocusSquare()
     {
-        DebugLogger.Instance.Log("Attach called for " + gameObject.name);
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];  
+        DebugLogger.Instance.Log("AttachToGazeFocusSquare: Follow gaze focus called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
         currentRecordingMode = Recordable.AssetRecordingType.Follow;
-        //CopyPoseFromFocusSquare(Recorder.Instance.objectsToRecord[0], (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:false, copyRotation:false);
+
+        ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
+                                    actionStr: "Follow(G-focus)", 
+                                    actionDelegate: () => { GetComponent<Recordable>().Follow(InputManager.Instance.gazeFocus.transform);}, 
+                                    collisionDelegate: (Frame frame) => { frame.IsColliding(base.gameObject, InputManager.Instance.gazeFocus); }, 
+                                    collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Gaze focus)", 
+                                    collidedObject: InputManager.Instance.gazeFocus);
+
+        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
+
+        int followEndIndex = FindFollowEndIndex(_frameStart);
+
+        DebugLogger.Instance.Log("Copying pose from head focus square at frame " + _frameStart + " to frame " + followEndIndex);
+
+        for (int i = _frameStart + 1; i < followEndIndex; i++)
+        {   
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.headData[i].focusSquarePosition;
+            currentAssetRecordedData[i].ActionStr = "Follow(G-focus)";
+            currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Gaze focus)";
+        }
+
+        DebugLogger.Instance.Log("Unfollowing at frame " + followEndIndex);
+
+        ModifyAssetFrame(followEndIndex, 
+                        actionStr: "Unfollow()",  
+                        actionDelegate: () => { GetComponent<Recordable>().Unfollow(); });
+
+        currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.headData[followEndIndex - 1].focusSquarePosition;
+
+        for (int i = followEndIndex + 1; i < currentAssetRecordedData.Count; i++)
+        {
+            currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[followEndIndex - 1].rootPosition;
+            currentAssetRecordedData[i].ActionStr = "None";
+            currentAssetRecordedData[i].CollisionStr = "None";
+        }
+
         Recorder.Instance.RefreshTimelineAndStates();
-        //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[0].playbackObject.transform);
     }
     
     //For assets
@@ -720,6 +849,8 @@ public class Recordable : MonoBehaviour
 
         if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
         {
+            AssetManager.Instance.HideMiscObjs();
+            
             oldMainPlaybackSliderValue = Recorder.Instance.playbackSlider.value; //This is so awkward, but it works
             currentRecordingMode = Recordable.AssetRecordingType.Physics;
             initPosBeforePhysicsSimulation = transform.position;
@@ -737,8 +868,8 @@ public class Recordable : MonoBehaviour
 
             ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionStr: "ApplyForce()", 
-                                    actionDelegate: () => { GetComponent<Recordable>().ApplyForceInLiveMode(initialVelocity); });
-                                    //actionDelegate: () => { GetComponent<Recordable>().ApplyForce(initialVelocity); });
+                                    //actionDelegate: () => { GetComponent<Recordable>().ApplyForceInLiveMode(initialVelocity); });
+                                    actionDelegate: () => { GetComponent<Recordable>().ApplyForce(initialVelocity); });
 
 
             ApplyForce(initialVelocity);
@@ -766,7 +897,7 @@ public class Recordable : MonoBehaviour
         float distanceToRightPinchObj = Vector3.Distance(transform.position, InputManager.Instance.rightHandPinchObj.transform.position);
         if(distanceToLeftPinchObj < distanceToRightPinchObj)
         {
-            DebugLogger.Instance.Log("ApplyForceInLiveMode : Applying force to left pinch objectm with velocity " + InputManager.Instance.leftHandVelocity / velocityScalingFactor);
+            DebugLogger.Instance.Log("ApplyForceInLiveMode : Applying force to left pinch object with velocity " + InputManager.Instance.leftHandVelocity / velocityScalingFactor);
             GetComponent<Rigidbody>().AddForce(InputManager.Instance.leftHandVelocity / velocityScalingFactor, ForceMode.VelocityChange);
         }
         else

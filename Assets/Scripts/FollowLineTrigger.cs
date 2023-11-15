@@ -60,15 +60,15 @@ public class FollowLineTrigger : MonoBehaviour
             }
             else if(followTargetType == FollowTargetType.LEFTFOCUS)
             {
-                //followLine.asset.GetComponent<Recordable>().AttachToLeftHandFocusSquare(); 
+                followLine.FollowLineAction = () => { followLine.asset.GetComponent<Recordable>().AttachToLeftHandFocusSquare(); renderer.material = defaultMaterial;};
             }
             else if(followTargetType == FollowTargetType.RIGHTFOCUS)
             {
-               //followLine.asset.GetComponent<Recordable>().AttachToRightHandFocusSquare();
+               followLine.FollowLineAction = () => { followLine.asset.GetComponent<Recordable>().AttachToRightHandFocusSquare(); renderer.material = defaultMaterial;};
             }
             else if(followTargetType == FollowTargetType.GAZEFOCUS)
             {
-                //followLine.asset.GetComponent<Recordable>().AttachToHeadFocusSquare();
+                followLine.FollowLineAction = () => { followLine.asset.GetComponent<Recordable>().AttachToGazeFocusSquare(); renderer.material = defaultMaterial;};
             }
             else
             {
@@ -85,13 +85,13 @@ public class FollowLineTrigger : MonoBehaviour
 
         if(other.gameObject.name != "FollowGuideSphere")
         {
-            DebugLogger.Instance.Log("FollowGuideSphere not found");
+            //DebugLogger.Instance.Log("FollowGuideSphere not found");
             return;
         }
 
         if(other.gameObject.transform.parent?.GetComponentInChildren<FollowLine>() == null)
         {
-            DebugLogger.Instance.Log("FollowLineTrigger: No FollowLine component found for collider " + other.gameObject.name);
+            //DebugLogger.Instance.Log("FollowLineTrigger: No FollowLine component found for collider " + other.gameObject.name);
             return;
         }
         
