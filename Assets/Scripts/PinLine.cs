@@ -36,12 +36,12 @@ public class PinLine : MonoBehaviour
     {
         if(PinAction != null)
         {
-            DebugLogger.Instance.Log("Calling PinLine: TriggerPinAction");
+            //DebugLogger.Instance.Log("Calling PinLine: TriggerPinAction");
             PinAction?.Invoke();
         }    
         else
         {
-            DebugLogger.Instance.Log("PinLine: PinAction is null");
+            //DebugLogger.Instance.Log("PinLine: PinAction is null");
         }
         gameObject.SetActive(false);
         pinGuide.gameObject.SetActive(false);

@@ -36,12 +36,12 @@ public class FollowLine : MonoBehaviour
     {
         if(FollowLineAction != null)
         {
-            DebugLogger.Instance.Log("Calling FollowLine: TriggerFollowLineAction");
+            //DebugLogger.Instance.Log("Calling FollowLine: TriggerFollowLineAction");
             FollowLineAction?.Invoke();
         }    
         else
         {
-            DebugLogger.Instance.Log("FollowLine: FollowLineAction is null");
+            //DebugLogger.Instance.Log("FollowLine: FollowLineAction is null");
         }
         gameObject.SetActive(false);
         followGuide.gameObject.SetActive(false);

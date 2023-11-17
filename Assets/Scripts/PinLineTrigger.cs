@@ -32,13 +32,13 @@ public class PinLineTrigger : MonoBehaviour
         //Check if the parent of the other collider has the FollowLine component
         if(other.gameObject.name != "PinGuideSphere")
         {
-            DebugLogger.Instance.Log("PinGuideSphere not found");
+            //DebugLogger.Instance.Log("PinGuideSphere not found");
             return;
         }
 
         if(other.gameObject.transform.parent?.GetComponentInChildren<PinLine>() == null)
         {
-            DebugLogger.Instance.Log("PinLineTrigger: No PinLine component found for collider " + other.gameObject.name);
+            //DebugLogger.Instance.Log("PinLineTrigger: No PinLine component found for collider " + other.gameObject.name);
             return;
         }
         

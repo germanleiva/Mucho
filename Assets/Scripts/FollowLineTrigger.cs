@@ -32,13 +32,13 @@ public class FollowLineTrigger : MonoBehaviour
         //Check if the parent of the other collider has the FollowLine component
         if(other.gameObject.name != "FollowGuideSphere")
         {
-            DebugLogger.Instance.Log("FollowGuideSphere not found");
+            //DebugLogger.Instance.Log("FollowGuideSphere not found");
             return;
         }
 
         if(other.gameObject.transform.parent?.GetComponentInChildren<FollowLine>() == null)
         {
-            DebugLogger.Instance.Log("FollowLineTrigger: No FollowLine component found for collider " + other.gameObject.name);
+            //DebugLogger.Instance.Log("FollowLineTrigger: No FollowLine component found for collider " + other.gameObject.name);
             return;
         }
         
