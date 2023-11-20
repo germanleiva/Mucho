@@ -700,7 +700,8 @@ public class Recordable : MonoBehaviour
 
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
 
-        int followEndIndex = FindFollowEndIndex(_frameStart);
+        //int followEndIndex = FindFollowEndIndex(_frameStart);
+        int followEndIndex = Recorder.Instance.GetSizeOfMainRecordedData();
 
         DebugLogger.Instance.Log("Copying pose from left focus square at frame " + _frameStart + " to frame " + followEndIndex);
 
@@ -710,6 +711,8 @@ public class Recordable : MonoBehaviour
             currentAssetRecordedData[i].ActionStr = "Follow(L-focus)";
             currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left focus)";
         }
+
+        /*
 
         DebugLogger.Instance.Log("Unfollowing at frame " + followEndIndex);
 
@@ -724,7 +727,7 @@ public class Recordable : MonoBehaviour
             currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[followEndIndex - 1].rootPosition;
             currentAssetRecordedData[i].ActionStr = "None";
             currentAssetRecordedData[i].CollisionStr = "None";
-        }
+        }*/
 
         Recorder.Instance.RefreshTimelineAndStates();
     }
@@ -745,7 +748,8 @@ public class Recordable : MonoBehaviour
 
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
 
-        int followEndIndex = FindFollowEndIndex(_frameStart);
+        //int followEndIndex = FindFollowEndIndex(_frameStart);
+        int followEndIndex = Recorder.Instance.GetSizeOfMainRecordedData();
 
         DebugLogger.Instance.Log("Copying pose from right focus square at frame " + _frameStart + " to frame " + followEndIndex);
 
@@ -755,6 +759,8 @@ public class Recordable : MonoBehaviour
             currentAssetRecordedData[i].ActionStr = "Follow(R-focus)";
             currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right focus)";
         }
+
+         /*
 
         DebugLogger.Instance.Log("Unfollowing at frame " + followEndIndex);
 
@@ -769,7 +775,7 @@ public class Recordable : MonoBehaviour
             currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[followEndIndex - 1].rootPosition;
             currentAssetRecordedData[i].ActionStr = "None";
             currentAssetRecordedData[i].CollisionStr = "None";
-        }
+        }*/
 
         Recorder.Instance.RefreshTimelineAndStates();
     }
@@ -1041,23 +1047,6 @@ public class Recordable : MonoBehaviour
 
 }
 
-public class FingerJoint
-{
-    public Vector3 position;
-    public Quaternion rotation;
-
-    public FingerJoint(Vector3 _position, Quaternion _rotation)
-    {
-        position = _position;
-        rotation = _rotation;
-    }
-
-    public FingerJoint(GameObject _joint)
-    {
-        position = _joint.transform.localPosition;
-        rotation = _joint.transform.localRotation;
-    }
-}
 
 //[System.Serializable]
 public class AssetFrame : ICloneable

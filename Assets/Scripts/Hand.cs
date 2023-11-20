@@ -130,15 +130,15 @@ public class Hand : MonoBehaviour
     {
         var hand = handStr.Equals("lefthand") ? Recorder.Instance.currentActiveExample.leftHandData : Recorder.Instance.currentActiveExample.rightHandData;
 
-        { 
-            hand.Add(new HandFrame(transform.localPosition, transform.localRotation, 
-                indexJoint1, indexJoint2, indexJoint3, 
-                middleJoint1, middleJoint2, middleJoint3, 
-                ringJoint1, ringJoint2, ringJoint3, 
-                pinkyJoint0, pinkyJoint1, pinkyJoint2, pinkyJoint3, 
-                thumbJoint0, thumbJoint1, thumbJoint2, thumbJoint3, 
-                focusSquare.transform.position, focusSquare.transform.rotation, currentGesture, pinchObj.transform.position, frameNum));
-        }
+    
+        hand.Add(new HandFrame(transform.localPosition, transform.localRotation,
+            new FingerJoint(indexJoint1.transform.localPosition, indexJoint1.transform.localRotation), new FingerJoint(indexJoint2.transform.localPosition, indexJoint2.transform.localRotation), new FingerJoint(indexJoint3.transform.localPosition, indexJoint3.transform.localRotation),
+            new FingerJoint(middleJoint1.transform.localPosition, middleJoint1.transform.localRotation), new FingerJoint(middleJoint2.transform.localPosition, middleJoint2.transform.localRotation), new FingerJoint(middleJoint3.transform.localPosition, middleJoint3.transform.localRotation),
+            new FingerJoint(ringJoint1.transform.localPosition, ringJoint1.transform.localRotation), new FingerJoint(ringJoint2.transform.localPosition, ringJoint2.transform.localRotation), new FingerJoint(ringJoint3.transform.localPosition, ringJoint3.transform.localRotation),
+            new FingerJoint(pinkyJoint0.transform.localPosition, pinkyJoint0.transform.localRotation), new FingerJoint(pinkyJoint1.transform.localPosition, pinkyJoint1.transform.localRotation), new FingerJoint(pinkyJoint2.transform.localPosition, pinkyJoint2.transform.localRotation), new FingerJoint(pinkyJoint3.transform.localPosition, pinkyJoint3.transform.localRotation),
+            new FingerJoint(thumbJoint0.transform.localPosition, thumbJoint0.transform.localRotation), new FingerJoint(thumbJoint1.transform.localPosition, thumbJoint1.transform.localRotation), new FingerJoint(thumbJoint2.transform.localPosition, thumbJoint2.transform.localRotation), new FingerJoint(thumbJoint3.transform.localPosition, thumbJoint3.transform.localRotation),            
+            focusSquare.transform.position, focusSquare.transform.rotation, currentGesture, pinchObj.transform.position, frameNum));
+    
     }
 
     // Clear the recorded data.
@@ -201,32 +201,37 @@ public class HandFrame
 
 
     //Hands
-    public HandFrame(Vector3 _position, Quaternion _rotation, GameObject _indexJoint0, GameObject _indexJoint1, GameObject _indexJoint2, GameObject _middleJoint0, GameObject _middleJoint1, GameObject _middleJoint2, GameObject _ringJoint0, GameObject _ringJoint1, GameObject _ringJoint2, GameObject _pinkyJoint0, GameObject _pinkyJoint1, GameObject _pinkyJoint2, GameObject _pinkyJoint3, GameObject _thumbJoint0, GameObject _thumbJoint1, GameObject _thumbJoint2, GameObject _thumbJoint3, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, InputManager.Gesture  _gesture, Vector3 _pinchPosition, int _frameNumber)
+    public HandFrame(Vector3 _position, Quaternion _rotation, FingerJoint _indexJoint0, FingerJoint _indexJoint1, FingerJoint _indexJoint2, 
+                    FingerJoint _middleJoint0, FingerJoint _middleJoint1, FingerJoint _middleJoint2, 
+                    FingerJoint _ringJoint0, FingerJoint _ringJoint1, FingerJoint _ringJoint2, 
+                    FingerJoint _pinkyJoint0, FingerJoint _pinkyJoint1, FingerJoint _pinkyJoint2, FingerJoint _pinkyJoint3, 
+                    FingerJoint _thumbJoint0, FingerJoint _thumbJoint1, FingerJoint _thumbJoint2, FingerJoint _thumbJoint3, 
+                    Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, InputManager.Gesture  _gesture, Vector3 _pinchPosition, int _frameNumber)
     {
         rootPosition = _position;
         rootRotation = _rotation;
 
-        indexJoint1 = new FingerJoint(_indexJoint0);
-        indexJoint2 = new FingerJoint(_indexJoint1);
-        indexJoint3 = new FingerJoint(_indexJoint2);
+        indexJoint1 = _indexJoint0;
+        indexJoint2 = _indexJoint1;
+        indexJoint3 = _indexJoint2;
 
-        middleJoint1 = new FingerJoint(_middleJoint0);
-        middleJoint2 = new FingerJoint(_middleJoint1);
-        middleJoint3 = new FingerJoint(_middleJoint2);
+        middleJoint1 = _middleJoint0;
+        middleJoint2 = _middleJoint1;
+        middleJoint3 = _middleJoint2;
 
-        ringJoint1 = new FingerJoint(_ringJoint0);
-        ringJoint2 = new FingerJoint(_ringJoint1);
-        ringJoint3 = new FingerJoint(_ringJoint2);
+        ringJoint1 = _ringJoint0;
+        ringJoint2 = _ringJoint1;
+        ringJoint3 = _ringJoint2;
+        
+        pinkyJoint0 = _pinkyJoint0;
+        pinkyJoint1 = _pinkyJoint1;
+        pinkyJoint2 = _pinkyJoint2;
+        pinkyJoint3 = _pinkyJoint3;
 
-        pinkyJoint0 = new FingerJoint(_pinkyJoint0);
-        pinkyJoint1 = new FingerJoint(_pinkyJoint1);
-        pinkyJoint2 = new FingerJoint(_pinkyJoint2);
-        pinkyJoint3 = new FingerJoint(_pinkyJoint3);
-
-        thumbJoint0 = new FingerJoint(_thumbJoint0);
-        thumbJoint1 = new FingerJoint(_thumbJoint1);
-        thumbJoint2 = new FingerJoint(_thumbJoint2);
-        thumbJoint3 = new FingerJoint(_thumbJoint3);
+        thumbJoint0 = _thumbJoint0;
+        thumbJoint1 = _thumbJoint1;
+        thumbJoint2 = _thumbJoint2;
+        thumbJoint3 = _thumbJoint3;
 
         focusSquarePosition = _focusSquarePosition;
         focusSquareRotation = _focusSquareRotation;
@@ -239,6 +244,68 @@ public class HandFrame
 
     }
 
+    public object Clone()
+    {
+        // Create a new instance of the class
+        HandFrame clonedFrame = new
+        (
+            rootPosition,
+            rootRotation,
+            new FingerJoint(indexJoint1.position, indexJoint1.rotation),
+            new FingerJoint(indexJoint2.position, indexJoint2.rotation),
+            new FingerJoint(indexJoint3.position, indexJoint3.rotation),
+            new FingerJoint(middleJoint1.position, middleJoint1.rotation),
+            new FingerJoint(middleJoint2.position, middleJoint2.rotation),
+            new FingerJoint(middleJoint3.position, middleJoint3.rotation),
+            new FingerJoint(ringJoint1.position, ringJoint1.rotation),
+            new FingerJoint(ringJoint2.position, ringJoint2.rotation),
+            new FingerJoint(ringJoint3.position, ringJoint3.rotation),
+            new FingerJoint(pinkyJoint0.position, pinkyJoint0.rotation),
+            new FingerJoint(pinkyJoint1.position, pinkyJoint1.rotation),
+            new FingerJoint(pinkyJoint2.position, pinkyJoint2.rotation),
+            new FingerJoint(pinkyJoint3.position, pinkyJoint3.rotation),
+            new FingerJoint(thumbJoint0.position, thumbJoint0.rotation),
+            new FingerJoint(thumbJoint1.position, thumbJoint1.rotation),
+            new FingerJoint(thumbJoint2.position, thumbJoint2.rotation),
+            new FingerJoint(thumbJoint3.position, thumbJoint3.rotation),
+            focusSquarePosition,
+            focusSquareRotation,
+            gesture,
+            pinchPosition,
+            frameNumber
+        );
+
+        return clonedFrame;
+
+    }
+
+}
+
+public class FingerJoint
+{
+    public Vector3 position;
+    public Quaternion rotation;
+
+    public FingerJoint(Vector3 _position, Quaternion _rotation)
+    {
+        position = _position;
+        rotation = _rotation;
+    }
+
+    public FingerJoint(GameObject _joint)
+    {
+        position = _joint.transform.localPosition;
+        rotation = _joint.transform.localRotation;
+    }
+
+    public object Clone()
+    {
+        // Create a new instance of the class
+        FingerJoint clonedJoint = new(this.position, this.rotation);
+
+        // Return the cloned object
+        return clonedJoint;
+    }
 }
 
 

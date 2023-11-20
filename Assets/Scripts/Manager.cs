@@ -214,16 +214,19 @@ public class Example
     public void CopyExampleDataFrom(Example example)
     {
         DebugLogger.Instance.Log("Copying data from example " + example.exampleId + " to example " + exampleId);
-        leftHandData = example.leftHandData.ToList();
-        rightHandData = example.rightHandData.ToList();
-        headData = example.headData.ToList();
-        foreach(var data in headData) // Clear the voice commands
+        leftHandData = new List<HandFrame>(example.leftHandData.Select(item => (HandFrame)item.Clone()));
+        rightHandData = new List<HandFrame>(example.rightHandData.Select(item => (HandFrame)item.Clone()));
+        headData = new List<HeadFrame>(example.headData.Select(item => (HeadFrame)item.Clone()));
+        foreach (var data in headData) // Clear the voice commands
         {
             data.voiceCommand = null;
         }
 
-        assetDataDict = example.assetDataDict.ToDictionary(entry => entry.Key, entry => entry.Value.Select(item => (AssetFrame)item.Clone()).ToList());
-
+        assetDataDict = new Dictionary<Recordable, List<AssetFrame>>();
+        foreach (var entry in example.assetDataDict)
+        {
+            assetDataDict.Add(entry.Key, new List<AssetFrame>(entry.Value.Select(item => (AssetFrame)item.Clone())));
+        }
     }
 
     public void RefreshAssetsInExample()

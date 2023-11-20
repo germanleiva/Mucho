@@ -65,7 +65,7 @@ public class Head : MonoBehaviour
     public void StartVoiceRecord()
     {
         //voiceCommandNotInserted = true;
-        stopRecordingButton.SetActive(true);
+        //stopRecordingButton.SetActive(true);
         startRecordingButton.SetActive(false);
         speechToTextEngine.isRecording = true;
         //Start a coroutine which checks for speechToTextEngine.outputText and if it is not empty, insert it into the recorded data
@@ -84,7 +84,7 @@ public class Head : MonoBehaviour
                         //Extract substring before the first dot
                 string cleanedVoiceCommand = currentRecognisedText;//.Substring(0, currentRecognisedText.IndexOf('.'));
                 InsertVoiceCommand(cleanedVoiceCommand);
-                DebugLogger.Instance.Log("Voice command inserted: " + cleanedVoiceCommand);
+                
                 //speechToTextEngine.outputText.text = "";
                 //speechToTextEngine.currentRecognisedText = "";
                 StopVoiceRecord();
@@ -112,13 +112,32 @@ public class Head : MonoBehaviour
 
         currentHeadRecordedData[frameNumber].voiceCommand = _voiceCommand;
 
+        DebugLogger.Instance.Log("Voice command inserted: " + _voiceCommand);
+
         Recorder.Instance.RefreshTimelineAndStates();
+    }
+
+    public void PrintAllVoiceCommands()
+    {
+        //Iterate through all the headData in all the examples and print the voice commands
+        foreach(var example in Recorder.Instance.examples)
+        {
+            DebugLogger.Instance.Log("PrintAllVoiceCommands: Example name - " + example.exampleId);
+            foreach(var headData in example.headData)
+            {
+                if(headData.voiceCommand != null)
+                {
+                    DebugLogger.Instance.Log("PrintAllVoiceCommands: Voice command - " + headData.voiceCommand);
+                }
+                
+            }
+        }
     }
    
 
     public void Record(int frameNum)
     {
-        Recorder.Instance.currentActiveExample.headData.Add(new HeadFrame(transform.position, transform.rotation, focusSquare.transform.position, focusSquare.transform.rotation, frameNum));       
+        Recorder.Instance.currentActiveExample.headData.Add(new HeadFrame(transform.position, transform.rotation, focusSquare.transform.position, focusSquare.transform.rotation, null, frameNum));       
     }
 
     // Clear the recorded data.
@@ -146,14 +165,29 @@ public class HeadFrame
     public Quaternion focusSquareRotation;
 
 
-    public HeadFrame(Vector3 _position, Quaternion _rotation, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, int _frameNumber)
+    public HeadFrame(Vector3 _position, Quaternion _rotation, Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, string _voiceCommand, int _frameNumber)
     {
         rootPosition = _position;
         rootRotation = _rotation;
         focusSquarePosition = _focusSquarePosition;
         focusSquareRotation = _focusSquareRotation;
         frameNumber = _frameNumber;
-        
+        voiceCommand = _voiceCommand;        
+    }
+
+    public object Clone()
+    {
+                // Create a new instance of the class
+        HeadFrame clonedFrame = new
+        (
+            rootPosition,
+            rootRotation,
+            focusSquarePosition,
+            focusSquareRotation,
+            voiceCommand,
+            frameNumber
+        );
+        return clonedFrame;
     }
 
 }

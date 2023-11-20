@@ -95,7 +95,7 @@ public class Recorder : MonoBehaviour
     void Start()
     {
         SetPlaybackObjectsVisibility(false);
-        //AddExample();
+        AddExample();
         /*Example example = new(firstExampleButton);
         firstExampleButton.onClick.AddListener(() => SelectExample(example));
         examples.Add(example);

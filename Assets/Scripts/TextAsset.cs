@@ -8,8 +8,8 @@ public class TextAsset : MonoBehaviour
 {
     //textmesh pro text object
     public TMP_Text text;
-    //public TMP_InputField inputField;
-    public InputField inputField;
+    public TMP_InputField inputField;
+    //public InputField inputField;
 
     //public UnityEngine.UI.Image TextPanelBackground;
 

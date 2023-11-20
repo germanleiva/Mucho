@@ -17,7 +17,6 @@ public class Keyboard : MonoBehaviour
 
     void Start()
     {
-        //Add listeners to the buttons
         key_a.onClick.AddListener(() => { inputField.text += "a"; });
         key_b.onClick.AddListener(() => { inputField.text += "b"; });
         key_c.onClick.AddListener(() => { inputField.text += "c"; });
@@ -56,10 +55,10 @@ public class Keyboard : MonoBehaviour
         key_8.onClick.AddListener(() => { inputField.text += "8"; });
         key_9.onClick.AddListener(() => { inputField.text += "9"; });
 
-        //key_space.onClick.AddListener(() => { inputField.text += " "; });
-        //key_backspace.onClick.AddListener(() => { inputField.text = inputField.text.Substring(0, inputField.text.Length - 1); });   
+        key_space.onClick.AddListener(() => { inputField.text += " "; });
+        key_backspace.onClick.AddListener(() => { inputField.text = inputField.text.Substring(0, inputField.text.Length - 1); });   
         //key_enter.onClick.AddListener(() => { gameObject.SetActive(false); });        
-        ActivateKeyboard(inputField);
+        //ActivateKeyboard(inputField);
 
     }
 
@@ -69,9 +68,10 @@ public class Keyboard : MonoBehaviour
     {
         inputField = _inputField;
         gameObject.SetActive(true);
+        //inputField.Select(); inputField.ActivateInputField();
         //Orient the keyboard towards the target transform and position it in front of the camera
-        //transform.position = targetTransform.position + targetTransform.forward * 0.5f;
-        //transform.LookAt(targetTransform);
+        transform.position = targetTransform.position + targetTransform.forward * 0.4f;
+        transform.LookAt(targetTransform);
 
     }
 
