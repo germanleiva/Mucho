@@ -44,7 +44,8 @@ public class FollowLine : MonoBehaviour
             //DebugLogger.Instance.Log("FollowLine: FollowLineAction is null");
         }
         gameObject.SetActive(false);
-        followGuide.gameObject.SetActive(false);
+        followGuide.transform.position = followLineStart.position;
+        //followGuide.gameObject.SetActive(false);
     }
 
     public void ResetFollowLine()

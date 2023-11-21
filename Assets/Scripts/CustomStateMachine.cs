@@ -179,7 +179,10 @@ public class State
     public bool IsStateEqualTo(State state)
     {
         //Check if the state's actions and transitions are equal
-        if(OnEnterActionsStr.SequenceEqual(state.OnEnterActionsStr) && OnUpdateActionsStr.SequenceEqual(state.OnUpdateActionsStr) && OnExitActionsStr.SequenceEqual(state.OnExitActionsStr) && transitions.Select(t => t.textDescription).SequenceEqual(state.transitions.Select(t => t.textDescription)))
+        if(OnEnterActionsStr.SequenceEqual(state.OnEnterActionsStr) && 
+           OnUpdateActionsStr.SequenceEqual(state.OnUpdateActionsStr) && 
+           OnExitActionsStr.SequenceEqual(state.OnExitActionsStr) && 
+           transitions.Select(t => t.textDescription).SequenceEqual(state.transitions.Select(t => t.textDescription)))
         {
             return true;
         }

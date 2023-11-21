@@ -710,137 +710,13 @@ public class Recorder : MonoBehaviour
        
     }
 
-
-
-
-    //Dictionary<State, StateTimelineUIElement> StatesDict = new();
-    State CreateState(int startIndex, int length)
+    public void CreateStateMachine()
     {
-        var StateMachine = CustomStateMachine.Instance;
-        var state = new State
-        {
-            id = "State" + StateMachine.GetSize()
-        };
-        StateMachine.AddState(state.id, state);
-
-        var stateUI = StateTimelineUIElement.CreateStateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(),
-                                                        startIndex, length, GetSizeOfMainRecordedData(), state);
-        
-        state.timelineElement = stateUI;
-
-        currentActiveExample.StatesDict.Add(state, stateUI.GetComponent<StateTimelineUIElement>());
-
-        return state;
+        //RefreshAssetsTimeline(); 
+        CreateStates();
+        CombineExamples();
     }
 
-    State MergeStates(State state1, State state2)
-    {
-        var state1UIElement = currentActiveExample.StatesDict[state1];
-        var state2UIElement = currentActiveExample.StatesDict[state2];
-
-
-        var StateMachine = CustomStateMachine.Instance;
-        var newState = new State
-        {
-            id = "tempState" + StateMachine.GetSize()
-        };
-
-        //Get the index of state1 in the StatesInTimeline dictionary
-        int state1Index = currentActiveExample.StatesDict.Keys.ToList().IndexOf(state1);
-        //Find the state before state1 in the StatesInTimeline dictionary if the index of state1 is not 0
-        State previousState = null;
-        if (state1Index != 0)
-        {
-            previousState = currentActiveExample.StatesDict.Keys.ToList()[state1Index - 1];
-            //Add a transition from the previous state to the new state
-            //previousState.ModifyTransitionTo(newState);
-            //previousState.transitions.Clear();  
-        }
-
-        //Copy the OnEnterActions of state1 to the OnEnterActions of the new state
-        newState.OnEnterActions += state1.OnEnterActions;
-        //Copy the OnEnterActions of state2 to the OnExitActions of the new state
-        //newState.OnExitActions += state2.OnEnterActions;
-        //Copy the OnExitActions of state1 to the OnExitActions of the new state
-        newState.OnExitActions += state1.OnExitActions;
-        //Copy the OnExitActions of state2 to the OnExitActions of the new state
-        newState.OnExitActions += state2.OnExitActions;
-        //newState.CopyTransitionFromState(state2);
-
-        //Assign state.id as "State" plus the digits present in state1.id and state2.id
-        string state1ID = state1.id;
-        string state2ID = state2.id;
-        string stateID = "State";
-        foreach (char c in state1ID)
-        {
-            if (char.IsDigit(c))
-            {
-                stateID += c;
-            }
-        }
-        foreach (char c in state2ID)
-        {
-            if (char.IsDigit(c))
-            {
-                stateID += c;
-            }
-        }
-        newState.id = stateID;
-
-        var stateUI = StateTimelineUIElement.CreateStateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(),
-                                                        state1UIElement.StartIndex, state1UIElement.Length + state2UIElement.Length, GetSizeOfMainRecordedData(), newState);
-
-        state1UIElement = stateUI.GetComponent<StateTimelineUIElement>();
-
-        DebugLogger.Instance.Log("Merging states " + state1.id + " and " + state2.id + " to create state " + newState.id);
-        DebugLogger.Instance.Log("Size of new state: " + state1UIElement.Length);
-
-        //Remove state1 and state2 from the state machine
-        StateMachine.DeleteState(state1.id);
-        StateMachine.DeleteState(state2.id);
-        //Remove state1 and state2 from the state timeline
-        Destroy(currentActiveExample.StatesDict[state1].gameObject);
-        Destroy(currentActiveExample.StatesDict[state2].gameObject);
-        currentActiveExample.StatesDict.Remove(state1);
-        currentActiveExample.StatesDict.Remove(state2);
-
-        //Insert the new state into the location of state1
-
-        //StatesInTimeline.Add(state, stateUI.GetComponent<StateTimelineUIElement>());
-
-        //Iterate through the StatesInTimeline dictionary keys and change the key to be "State" + index of the key
-        /*Dictionary<State, StateTimelineUIElement> newStatesInTimeline = new Dictionary<State, StateTimelineUIElement>();
-        foreach (var stateInTimeline in StatesInTimeline)
-        {
-            State newState = new State();
-            newState.id = "State" + newStatesInTimeline.Count;
-            newStatesInTimeline.Add(newState, stateInTimeline.Value);
-        }
-        StatesInTimeline = newStatesInTimeline;*/
-
-        //state.id = "State" + StatesInTimeline.Count;
-        currentActiveExample.StatesDict.Add(newState, stateUI.GetComponent<StateTimelineUIElement>());
-        StateMachine.AddState(newState.id, newState);
-
-        StateMachine.SetInitialState(currentActiveExample.StatesDict.First().Key.id);
-
-        return newState;
-    }
-
-
-    public void ResetExampleStateMachine()
-    {
-        currentActiveExample.StatesDict.Clear();
-
-        //Delete all existing states
-        CustomStateMachine.Instance.DeleteAllStates();
-
-        //Delete all existing state timeline UI elements
-        for (int i = 2; i < stateTimelinePanel.GetComponent<RectTransform>().childCount; i++)
-        {
-            Destroy(stateTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
-        }
-    }
 
     public void CreateStates()
     {
@@ -1064,21 +940,6 @@ public class Recorder : MonoBehaviour
             {
                 DebugLogger.Instance.Log("No transition added for state " + stateInTimeline.id);
             }
-            
-            /*else
-            {
-                //DebugLogger.Instance.Log("State " + state.id + " has gesture " + InputManager.Instance.GestureToString(state.Gesture.GestureType) + " and collision " + state.Collision.Action);
-                if (stateInTimeline.Gesture.GestureType == InputManager.Gesture.RIGHTHANDPINCH)
-                {
-                    DebugLogger.Instance.Log("Adding transition from " + prevState.id + " to " + stateInTimeline.id + ": frame.rightHandGesture == InputManager.Gesture.RIGHTHANDPINCH && frame.IsColliding(" + stateInTimeline.Collision.CollidingObject1.name + ", " + stateInTimeline.Collision.CollidingObject2.name + "); ");
-                    prevState.AddTransitionTo(stateInTimeline, (frame) => { return frame.rightHandGesture == stateInTimeline.Gesture.GestureType && frame.IsColliding(stateInTimeline.Collision.CollidingObject1, stateInTimeline.Collision.CollidingObject2); }, "" + prevState.id + "->" + stateInTimeline.id + ": frame.rightHandGesture == InputManager.Gesture.RIGHTHANDPINCH && frame.IsColliding(" + stateInTimeline.Collision.CollidingObject1.name + ", " + stateInTimeline.Collision.CollidingObject2.name + "); ");
-                }
-                else if (stateInTimeline.Gesture.GestureType == InputManager.Gesture.LEFTHANDPINCH)
-                {
-                    DebugLogger.Instance.Log("Adding transition from " + prevState.id + " to " + stateInTimeline.id + ": frame.lefthandgesture == InputManager.Gesture.LEFTHANDPINCH && frame.IsColliding(" + stateInTimeline.Collision.CollidingObject1.name + ", " + stateInTimeline.Collision.CollidingObject2.name + "); ");
-                    prevState.AddTransitionTo(stateInTimeline, (frame) => { return frame.leftHandGesture == stateInTimeline.Gesture.GestureType && frame.IsColliding(stateInTimeline.Collision.CollidingObject1, stateInTimeline.Collision.CollidingObject2); }, "" + prevState.id + "->" + stateInTimeline.id + ": frame.lefthandgesture == InputManager.Gesture.LEFTHANDPINCH && frame.IsColliding(" + stateInTimeline.Collision.CollidingObject1.name + ", " + stateInTimeline.Collision.CollidingObject2.name + "); ");
-                }
-            }*/
 
             //Add actions to states
             AddActionsToState(stateInTimeline);
@@ -1087,6 +948,235 @@ public class Recorder : MonoBehaviour
         //Set the initial state of the state machine to be the first state in the StatesInTimeline dictionary
         //CustomStateMachine.Instance.SetInitialState(currentActiveExample.StatesDict.First().Key.id);
      
+    }
+
+
+    public void CombineExamples()
+    {
+        DebugLogger.Instance.ClearVRDebugText();
+
+        //DebugLogger.Instance.Log("Combining examples");
+        List<List<State>> allStatesInExamples = new();
+        foreach (var example in examples)
+        {
+            allStatesInExamples.Add(example.StatesDict.Keys.ToList());
+        }
+       
+        allStatesInExamples = allStatesInExamples.OrderBy(x => x.Count).ToList();
+
+        var shortestList = allStatesInExamples.First();
+        int shortestListLength = shortestList.Count;
+        DebugLogger.Instance.Log("CombineExamples: The shortest list of states has " + shortestList.Count + " states");
+
+        List<State> commonStates = new List<State>();
+        int lastCommonStateIndex = 0;
+        for (int i = 0; i < shortestListLength; i++)
+        {
+            lastCommonStateIndex = i;
+            bool allStatesEqual = true;
+            for (int j = 0; j < allStatesInExamples.Count; j++)
+            {
+                if (!shortestList[i].IsStateEqualTo(allStatesInExamples[j][i]))
+                {
+                    allStatesEqual = false;
+                    break;
+                }
+            }
+            
+            if (allStatesEqual)
+            {
+                commonStates.Add(shortestList[i]);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        if(lastCommonStateIndex == 0)
+        {
+            DebugLogger.Instance.Log("CombineExamples: No common states found");
+            return;
+        }
+
+        DebugLogger.Instance.Log("CombineExamples: The last common state is " + commonStates.Last().id + " at index " + (lastCommonStateIndex-1));
+
+        if (lastCommonStateIndex < shortestListLength)
+        { 
+            //Printing the states at lastCommonStateIndex-1 for each List<State> in allStatesInExamples except the first
+            DebugLogger.Instance.Log("CombineExamples: States at index " + (lastCommonStateIndex - 1) + " for each example except the first: ");
+            for (int i = 1; i < allStatesInExamples.Count; i++)
+            {
+                commonStates.Add(shortestList[lastCommonStateIndex]); //Add the state after the last common state
+                //allStatesInExamples[i][lastCommonStateIndex].PrintDetailsOfState(VRConsoleEnabled : true);            
+                commonStates.Last().CopyTransitionFromState(allStatesInExamples[i][lastCommonStateIndex]);
+                //DebugLogger.Instance.Log("Transition copied from " + allStatesInExamples[i][lastCommonStateIndex].id + " to " + commonStates.Last().id);
+                //DebugLogger.Instance.Log("Details of allStatesInExamples[" + i + "][" + lastCommonStateIndex + "]: ");
+                //allStatesInExamples[i][lastCommonStateIndex].PrintDetailsOfState(VRConsoleEnabled : true);
+                //DebugLogger.Instance.Log("Details of commonStates.Last(): ", VRConsoleEnabled : true);
+                //commonStates.Last().PrintDetailsOfState(VRConsoleEnabled : true);
+
+            }
+
+            CustomStateMachine.Instance.DeleteAllStates();
+            int newId = 0;
+            foreach (var state in commonStates)
+            {
+                CustomStateMachine.Instance.AddState("State " + newId.ToString(), state);
+                newId++;
+            }
+
+            for (int i = 0; i < allStatesInExamples.Count; i++)
+            {
+                //Copy all states from lastCommonStateIndex to the end of each list
+                for (int j = lastCommonStateIndex + 1; j < allStatesInExamples[i].Count; j++)
+                {
+                    CustomStateMachine.Instance.AddState("State " + newId.ToString(), allStatesInExamples[i][j]);
+                    newId++;
+                }
+            }
+
+
+            //Print the common states          
+            
+
+            CustomStateMachine.Instance.CreateStateGraph(stateGraphElementPrefab, stateGraphPanel.GetComponent<RectTransform>());
+
+        }
+        
+        CustomStateMachine.Instance.PrintDetailsOfStateMachine(VRConsoleEnabled : true);
+
+        //CustomStateMachine.Instance.SetInitialState(commonStates.First().id);
+
+    }
+
+    //Dictionary<State, StateTimelineUIElement> StatesDict = new();
+    State CreateState(int startIndex, int length)
+    {
+        var StateMachine = CustomStateMachine.Instance;
+        var state = new State
+        {
+            id = "State " + StateMachine.GetSize()
+        };
+        StateMachine.AddState(state.id, state);
+
+        var stateUI = StateTimelineUIElement.CreateStateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(),
+                                                        startIndex, length, GetSizeOfMainRecordedData(), state);
+        
+        state.timelineElement = stateUI;
+
+        currentActiveExample.StatesDict.Add(state, stateUI.GetComponent<StateTimelineUIElement>());
+
+        return state;
+    }
+
+    State MergeStates(State state1, State state2)
+    {
+        var state1UIElement = currentActiveExample.StatesDict[state1];
+        var state2UIElement = currentActiveExample.StatesDict[state2];
+
+
+        var StateMachine = CustomStateMachine.Instance;
+        var newState = new State
+        {
+            id = "tempState" + StateMachine.GetSize()
+        };
+
+        //Get the index of state1 in the StatesInTimeline dictionary
+        int state1Index = currentActiveExample.StatesDict.Keys.ToList().IndexOf(state1);
+        //Find the state before state1 in the StatesInTimeline dictionary if the index of state1 is not 0
+        State previousState = null;
+        if (state1Index != 0)
+        {
+            previousState = currentActiveExample.StatesDict.Keys.ToList()[state1Index - 1];
+            //Add a transition from the previous state to the new state
+            //previousState.ModifyTransitionTo(newState);
+            //previousState.transitions.Clear();  
+        }
+
+        //Copy the OnEnterActions of state1 to the OnEnterActions of the new state
+        newState.OnEnterActions += state1.OnEnterActions;
+        //Copy the OnEnterActions of state2 to the OnExitActions of the new state
+        //newState.OnExitActions += state2.OnEnterActions;
+        //Copy the OnExitActions of state1 to the OnExitActions of the new state
+        newState.OnExitActions += state1.OnExitActions;
+        //Copy the OnExitActions of state2 to the OnExitActions of the new state
+        newState.OnExitActions += state2.OnExitActions;
+        //newState.CopyTransitionFromState(state2);
+
+        //Assign state.id as "State" plus the digits present in state1.id and state2.id
+        string state1ID = state1.id;
+        string state2ID = state2.id;
+        string stateID = "State";
+        foreach (char c in state1ID)
+        {
+            if (char.IsDigit(c))
+            {
+                stateID += c;
+            }
+        }
+        foreach (char c in state2ID)
+        {
+            if (char.IsDigit(c))
+            {
+                stateID += c;
+            }
+        }
+        newState.id = stateID;
+
+        var stateUI = StateTimelineUIElement.CreateStateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(),
+                                                        state1UIElement.StartIndex, state1UIElement.Length + state2UIElement.Length, GetSizeOfMainRecordedData(), newState);
+
+        state1UIElement = stateUI.GetComponent<StateTimelineUIElement>();
+
+        DebugLogger.Instance.Log("Merging states " + state1.id + " and " + state2.id + " to create state " + newState.id);
+        DebugLogger.Instance.Log("Size of new state: " + state1UIElement.Length);
+
+        //Remove state1 and state2 from the state machine
+        StateMachine.DeleteState(state1.id);
+        StateMachine.DeleteState(state2.id);
+        //Remove state1 and state2 from the state timeline
+        Destroy(currentActiveExample.StatesDict[state1].gameObject);
+        Destroy(currentActiveExample.StatesDict[state2].gameObject);
+        currentActiveExample.StatesDict.Remove(state1);
+        currentActiveExample.StatesDict.Remove(state2);
+
+        //Insert the new state into the location of state1
+
+        //StatesInTimeline.Add(state, stateUI.GetComponent<StateTimelineUIElement>());
+
+        //Iterate through the StatesInTimeline dictionary keys and change the key to be "State" + index of the key
+        /*Dictionary<State, StateTimelineUIElement> newStatesInTimeline = new Dictionary<State, StateTimelineUIElement>();
+        foreach (var stateInTimeline in StatesInTimeline)
+        {
+            State newState = new State();
+            newState.id = "State" + newStatesInTimeline.Count;
+            newStatesInTimeline.Add(newState, stateInTimeline.Value);
+        }
+        StatesInTimeline = newStatesInTimeline;*/
+
+        //state.id = "State" + StatesInTimeline.Count;
+        currentActiveExample.StatesDict.Add(newState, stateUI.GetComponent<StateTimelineUIElement>());
+        StateMachine.AddState(newState.id, newState);
+
+        StateMachine.SetInitialState(currentActiveExample.StatesDict.First().Key.id);
+
+        return newState;
+    }
+
+
+    public void ResetExampleStateMachine()
+    {
+        currentActiveExample.StatesDict.Clear();
+
+        //Delete all existing states
+        CustomStateMachine.Instance.DeleteAllStates();
+
+        //Delete all existing state timeline UI elements
+        for (int i = 2; i < stateTimelinePanel.GetComponent<RectTransform>().childCount; i++)
+        {
+            Destroy(stateTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
+        }
     }
 
     public void AddActionsToState(State stateInTimeline)
@@ -1120,115 +1210,11 @@ public class Recorder : MonoBehaviour
     }
 
 
-    public void CreateStateMachine()
-    {
-        //RefreshAssetsTimeline(); 
-        CreateStates();
-        CombineExamples();
-    }
+
 
     public void ResetStateMachine()
     {
         CustomStateMachine.Instance.SetInitialState("State 0");
-    }
-
-    public void CombineExamples()
-    {
-        DebugLogger.Instance.ClearVRDebugText();
-
-        DebugLogger.Instance.Log("Combining examples");
-        List<List<State>> allStatesInExamples = new();
-        foreach (var example in examples)
-        {
-            allStatesInExamples.Add(example.StatesDict.Keys.ToList());
-        }
-       
-        allStatesInExamples = allStatesInExamples.OrderBy(x => x.Count).ToList();
-
-        var shortestList = allStatesInExamples.First();
-        int shortestListLength = shortestList.Count;
-        DebugLogger.Instance.Log("The shortest list of states has " + shortestList.Count + " states");
-
-        List<State> commonStates = new List<State>();
-        int lastCommonStateIndex = 0;
-        for (int i = 0; i < shortestListLength; i++)
-        {
-            lastCommonStateIndex = i;
-            bool allStatesEqual = true;
-            for (int j = 0; j < allStatesInExamples.Count; j++)
-            {
-                if (!shortestList[i].IsStateEqualTo(allStatesInExamples[j][i]))
-                {
-                    allStatesEqual = false;
-                    break;
-                }
-            }
-            
-            if (allStatesEqual)
-            {
-                commonStates.Add(shortestList[i]);
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        if(lastCommonStateIndex == 0)
-        {
-            DebugLogger.Instance.Log("No common states found");
-            return;
-        }
-
-        DebugLogger.Instance.Log("The last common state is " + commonStates.Last().id + " at index " + (lastCommonStateIndex-1));
-
-        if (lastCommonStateIndex < shortestListLength)
-        { 
-            //Printing the states at lastCommonStateIndex-1 for each List<State> in allStatesInExamples except the first
-            DebugLogger.Instance.Log("States at index " + (lastCommonStateIndex - 1) + " for each example except the first: ");
-            for (int i = 1; i < allStatesInExamples.Count; i++)
-            {
-                commonStates.Add(shortestList[lastCommonStateIndex]); //Add the state after the last common state
-                //allStatesInExamples[i][lastCommonStateIndex].PrintDetailsOfState(VRConsoleEnabled : true);            
-                commonStates.Last().CopyTransitionFromState(allStatesInExamples[i][lastCommonStateIndex]);
-                //DebugLogger.Instance.Log("Transition copied from " + allStatesInExamples[i][lastCommonStateIndex].id + " to " + commonStates.Last().id);
-                //DebugLogger.Instance.Log("Details of allStatesInExamples[" + i + "][" + lastCommonStateIndex + "]: ");
-                //allStatesInExamples[i][lastCommonStateIndex].PrintDetailsOfState(VRConsoleEnabled : true);
-                //DebugLogger.Instance.Log("Details of commonStates.Last(): ", VRConsoleEnabled : true);
-                //commonStates.Last().PrintDetailsOfState(VRConsoleEnabled : true);
-
-            }
-
-            CustomStateMachine.Instance.DeleteAllStates();
-            int newId = 0;
-            foreach (var state in commonStates)
-            {
-                CustomStateMachine.Instance.AddState("State " + newId.ToString(), state);
-                newId++;
-            }
-
-            for (int i = 0; i < allStatesInExamples.Count; i++)
-            {
-                //Copy all states from lastCommonStateIndex to the end of each list
-                for (int j = lastCommonStateIndex + 1; j < allStatesInExamples[i].Count; j++)
-                {
-                    CustomStateMachine.Instance.AddState("State " + newId.ToString(), allStatesInExamples[i][j]);
-                    newId++;
-                }
-            }
-
-
-            //Print the common states
-            
-            CustomStateMachine.Instance.PrintDetailsOfStateMachine(VRConsoleEnabled : true);
-
-            CustomStateMachine.Instance.CreateStateGraph(stateGraphElementPrefab, stateGraphPanel.GetComponent<RectTransform>());
-
-        }
-        
-
-        //CustomStateMachine.Instance.SetInitialState(commonStates.First().id);
-
     }
 
 

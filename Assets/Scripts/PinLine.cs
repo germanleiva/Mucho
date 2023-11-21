@@ -44,7 +44,8 @@ public class PinLine : MonoBehaviour
             //DebugLogger.Instance.Log("PinLine: PinAction is null");
         }
         gameObject.SetActive(false);
-        pinGuide.gameObject.SetActive(false);
+        pinGuide.transform.position = pinLineStart.position;
+        //pinGuide.gameObject.SetActive(false);
     }
 
     public void ResetPinLine()

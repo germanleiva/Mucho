@@ -38,50 +38,6 @@ public class HandPlaybackObjectScript : MonoBehaviour
 
     public GameObject pinchObj;
 
-    //public GameObject indexJoint1, middleJoint1, ringJoint1, pinkyJoint0, thumbJoint0;
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    private void LerpBetweenFrames(Transform joint, FingerJoint previousFrameJoint, FingerJoint nextFrameJoint, float t)
-    {
-        joint.transform.localPosition = Vector3.Lerp(previousFrameJoint.position, nextFrameJoint.position, t);
-        joint.transform.localRotation = Quaternion.Lerp(previousFrameJoint.rotation, nextFrameJoint.rotation, t);
-    }
-
-    /*public void InterpolatePoseForAllFingerJoints(HandFrame previousFrame, HandFrame nextFrame, float t)
-    {
-        LerpBetweenFrames(indexJoint1.transform, previousFrame.indexJoint1, nextFrame.indexJoint1, t);
-        LerpBetweenFrames(indexJoint2.transform, previousFrame.indexJoint2, nextFrame.indexJoint2, t);
-        LerpBetweenFrames(indexJoint3.transform, previousFrame.indexJoint3, nextFrame.indexJoint3, t);
-
-        LerpBetweenFrames(middleJoint1.transform, previousFrame.middleJoint1, nextFrame.middleJoint1, t);
-        LerpBetweenFrames(middleJoint2.transform, previousFrame.middleJoint2, nextFrame.middleJoint2, t);
-        LerpBetweenFrames(middleJoint3.transform, previousFrame.middleJoint3, nextFrame.middleJoint3, t);
-
-        LerpBetweenFrames(ringJoint1.transform, previousFrame.ringJoint1, nextFrame.ringJoint1, t);
-        LerpBetweenFrames(ringJoint2.transform, previousFrame.ringJoint2, nextFrame.ringJoint2, t);
-        LerpBetweenFrames(ringJoint3.transform, previousFrame.ringJoint3, nextFrame.ringJoint3, t);
-
-        LerpBetweenFrames(pinkyJoint0.transform, previousFrame.pinkyJoint0, nextFrame.pinkyJoint0, t);
-        LerpBetweenFrames(pinkyJoint1.transform, previousFrame.pinkyJoint1, nextFrame.pinkyJoint1, t);
-        LerpBetweenFrames(pinkyJoint2.transform, previousFrame.pinkyJoint2, nextFrame.pinkyJoint2, t);
-        LerpBetweenFrames(pinkyJoint3.transform, previousFrame.pinkyJoint3, nextFrame.pinkyJoint3, t);
-
-        LerpBetweenFrames(thumbJoint0.transform, previousFrame.thumbJoint0, nextFrame.thumbJoint0, t);
-        LerpBetweenFrames(thumbJoint1.transform, previousFrame.thumbJoint1, nextFrame.thumbJoint1, t);
-        LerpBetweenFrames(thumbJoint2.transform, previousFrame.thumbJoint2, nextFrame.thumbJoint2, t);
-        LerpBetweenFrames(thumbJoint3.transform, previousFrame.thumbJoint3, nextFrame.thumbJoint3, t);
-    }*/
 
     public void SetPoseForAllFingerJoints(HandFrame frame)
     {
@@ -127,19 +83,5 @@ public class HandPlaybackObjectScript : MonoBehaviour
         pinchObj.transform.position = frame.pinchPosition;
     }
 
-
-    /*public void I(TransformData previousFrame, TransformData nextFrame, float t)
-    {
-        indexJoint1.transform.localPosition = Vector3.Lerp(previousFrame.indexJoint1.position, nextFrame.indexJoint1.position, t);
-        indexJoint1.transform.localRotation = Quaternion.Lerp(previousFrame.indexJoint1.rotation, nextFrame.indexJoint1.rotation, t);
-        middleJoint1.transform.localPosition = Vector3.Lerp(previousFrame.middleJoint1.position, nextFrame.middleJoint1.position, t);
-        middleJoint1.transform.localRotation = Quaternion.Lerp(previousFrame.middleJoint1.rotation, nextFrame.middleJoint1.rotation, t);
-        ringJoint1.transform.localPosition = Vector3.Lerp(previousFrame.ringJoint1.position, nextFrame.ringJoint1.position, t);
-        ringJoint1.transform.localRotation = Quaternion.Lerp(previousFrame.ringJoint1.rotation, nextFrame.ringJoint1.rotation, t);
-        pinkyJoint0.transform.localPosition = Vector3.Lerp(previousFrame.pinkyJoint0.position, nextFrame.pinkyJoint0.position, t);
-        pinkyJoint0.transform.localRotation = Quaternion.Lerp(previousFrame.pinkyJoint0.rotation, nextFrame.pinkyJoint0.rotation, t);
-        thumbJoint0.transform.localPosition = Vector3.Lerp(previousFrame.thumbJoint0.position, nextFrame.thumbJoint0.position, t);
-        thumbJoint0.transform.localRotation = Quaternion.Lerp(previousFrame.thumbJoint0.rotation, nextFrame.thumbJoint0.rotation, t);
-    }*/
 
 }

@@ -4,6 +4,7 @@ using UnityEngine;
 using Whisper.Utils;
 using Whisper;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 public class SpeechToText : MonoBehaviour
 {
     public WhisperManager whisper;
@@ -51,7 +52,8 @@ public class SpeechToText : MonoBehaviour
     }
 
     private void OnApplicationQuit()
-    {
+    {        
+        StopAllCoroutines();
         StopListening();
     }
 
@@ -68,9 +70,15 @@ public class SpeechToText : MonoBehaviour
     
     private void OnSegmentFinished(WhisperResult segment)
     {
-        outputText.text = segment.Result;
+        outputText.text = Regex.Replace(segment.Result, "[!><.]", "").ToLower();
+        //Remove first character if it is a space
+        if(outputText.text[0] == ' ' && outputText.text.Length > 0)
+        {
+            outputText.text = outputText.text.Substring(1);
+        }
+
         print($"Segment finished: {segment.Result}");
-        InputManager.Instance.NotifyVoiceCommand(segment.Result);
+        InputManager.Instance.NotifyVoiceCommand(outputText.text);
         //if(isRecording)
         {
             //currentRecognisedText = segment.Result;            
@@ -83,6 +91,7 @@ public class SpeechToText : MonoBehaviour
     IEnumerator ClearOutputText()
     {
         yield return new WaitForSeconds(2f);
+        InputManager.Instance.NotifyVoiceCommand("");
         outputText.text = "";
     }
 

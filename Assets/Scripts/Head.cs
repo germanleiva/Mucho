@@ -78,7 +78,7 @@ public class Head : MonoBehaviour
     {
         while(speechToTextEngine.isRecording)
         {
-            if(speechToTextEngine.outputText.text != "" && speechToTextEngine.outputText.text != "[BLANK_AUDIO]")
+            if(speechToTextEngine.outputText.text != "")
             {
                 string currentRecognisedText = speechToTextEngine.outputText.text;
                         //Extract substring before the first dot

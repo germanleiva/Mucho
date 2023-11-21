@@ -157,7 +157,7 @@ public class Recordable : MonoBehaviour
     public void ModifyAssetFrame(int frameNumber, string actionStr = "None", string collisionStr = "None", Action actionDelegate = null, Action<Frame> collisionDelegate = null, GameObject collidedObject = null, bool propagateValueToSubsequentFrames = false)
     {
         //AssetFrame item = new(transform.position, transform.rotation, showStatus, actionStr, collisionStr, actionDelegate, collisionDelegate, collidedObject, frameNumber);
-        DebugLogger.Instance.Log("Inserting asset record frame at index " + frameNumber);
+        //DebugLogger.Instance.Log("Inserting asset record frame at index " + frameNumber);
 
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
 
@@ -183,7 +183,7 @@ public class Recordable : MonoBehaviour
 
         if (propagateValueToSubsequentFrames) // Propagate the value to subsequent frames
         {
-            DebugLogger.Instance.Log("InsertAssetRecordFrame() - Propagating value to subsequent frames, starting from index " + frameNumber + " to " + currentAssetRecordedData.Count);
+            //DebugLogger.Instance.Log("InsertAssetRecordFrame() - Propagating value to subsequent frames, starting from index " + frameNumber + " to " + currentAssetRecordedData.Count);
             for (int i = frameNumber + 1; i < currentAssetRecordedData.Count; i++)
             {
                 //recordedData[i].showStatusForThisFrame = item.showStatusForThisFrame;
@@ -926,9 +926,8 @@ public class Recordable : MonoBehaviour
     //For assets
     void OnCollisionEnter(Collision collision)
     {
-        //DebugLogger.Instance.Log("Collision detected between " + base.gameObject.name + " and " + collision.collider.name);
+        DebugLogger.Instance.Log("Notifying collision detected between " + base.gameObject.name + " and " + collision.collider.name);
         InputManager.Instance.NotifyCollision(base.gameObject, collision.collider.gameObject);
-
 
 
         //Return if asset is colliding with inputmanager's left or right pinch objects
@@ -968,7 +967,8 @@ public class Recordable : MonoBehaviour
     {
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         //Recorder.Instance.isMainPlaybackOn = false;
-        DebugLogger.Instance.Log("Resetting physics properties");        
+        DebugLogger.Instance.Log("Resetting physics properties"); 
+        InputManager.Instance.NotifyCollision(null,null);       
         Recorder.Instance.playbackSlider.value = oldMainPlaybackSliderValue;
         transform.position = initPosBeforePhysicsSimulation;
         transform.rotation = initRotBeforePhysicsSimulation;
@@ -985,6 +985,8 @@ public class Recordable : MonoBehaviour
         GetComponent<Rigidbody>().mass = 0f;
         GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
         GetComponent<Rigidbody>().useGravity = false;
+
+        
         //Recorder.Instance.RefreshAssetsTimeline();
     }
 
@@ -993,7 +995,7 @@ public class Recordable : MonoBehaviour
     {
         if(Manager.Instance.currAppState != Manager.AppState.RECORDING)
         {
-            DebugLogger.Instance.Log("Collision detected between " + base.gameObject.name + " and " + collision.collider.name);
+            DebugLogger.Instance.Log("Notifying collision detected between " + base.gameObject.name + " and " + collision.collider.name);
             if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere" || collision.collider.name == "HeadContactSphere")
             {                 
                 InputManager.Instance.NotifyCollision(base.gameObject, collision.collider.gameObject);
@@ -1011,7 +1013,7 @@ public class Recordable : MonoBehaviour
     {
         if(Manager.Instance.currAppState != Manager.AppState.RECORDING)
         {
-            //DebugLogger.Instance.Log("Collision ended between " + gameObject.name + " and " + collision.collider.name);
+            DebugLogger.Instance.Log("Notifying collision ended between " + gameObject.name + " and " + collision.collider.name);
             if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere" || collision.collider.name == "HeadContactSphere")
             {      
                 InputManager.Instance.NotifyCollision(null,null);

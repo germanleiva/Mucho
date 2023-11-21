@@ -73,6 +73,7 @@ public class Manager : MonoBehaviour
         AssetManager.Instance.HideMiscObjs();
         AssetManager.Instance.SetAllAssetMenusPokeable(false);
         Recorder.Instance.ResetStateMachine();
+        InputManager.Instance.NotifyCollision(null,null);
         CustomStateMachine.Instance.InvokeOnEnterActionsOfInitialState();
     }
 
