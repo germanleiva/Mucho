@@ -11,6 +11,8 @@ public class AssetMenu : MonoBehaviour
     public LineRenderer lineRenderer;
     bool isGrabbed = false;
 
+    public GameObject rootObject;
+
     void Awake()
     {
         //set position 60cm in front of target
@@ -44,5 +46,10 @@ public class AssetMenu : MonoBehaviour
     public void hideAssetMenu()
     {
         gameObject.SetActive(false);
+    }
+
+    public void DeleteRootObject()
+    {
+        Destroy(rootObject);
     }
 }

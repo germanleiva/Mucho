@@ -72,9 +72,10 @@ public class SpeechToText : MonoBehaviour
     {
         outputText.text = Regex.Replace(segment.Result, "[!><.]", "").ToLower();
         //Remove first character if it is a space
-        if(outputText.text[0] == ' ' && outputText.text.Length > 0)
+        if(outputText.text.Length > 0)
         {
-            outputText.text = outputText.text.Substring(1);
+            if(outputText.text[0] == ' ') 
+                outputText.text = outputText.text.Substring(1);
         }
 
         print($"Segment finished: {segment.Result}");

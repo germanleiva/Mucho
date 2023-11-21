@@ -121,7 +121,26 @@ public class AssetManager : MonoBehaviour
         Recorder.Instance.assetsInScene.Add(obj.GetComponentInChildren<Recordable>());
         Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
         mainRecorder.RefreshTimelineAndStates();
+        if(mainRecorder.GetSizeOfMainRecordedData() > 0)
+        {
+            mainRecorder.playbackSlider.value = 0;
+            //Start a coroutine which will be called every 0.1 seconds and will add a new asset frame to the assetDataDict
+            StartCoroutine(AddAssetFrameToAssetDataDict(obj.GetComponentInChildren<Recordable>()));
+            //Recorder.Instance.currentActiveExample.assetDataDict[obj.GetComponentInChildren<Recordable>()] = new List<AssetFrame>(mainRecorder.GetSizeOfMainRecordedData());
+            
+        }
         //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
+    }
+
+    IEnumerator AddAssetFrameToAssetDataDict(Recordable recordable)
+    {
+        //Call recordable.RecordAssetFrame() every 0.1 seconds until the size of the assetDataDict is equal to the size of the main recording
+        while(Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count < mainRecorder.GetSizeOfMainRecordedData())
+        {
+            mainRecorder.playbackSlider.value = Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count;
+            recordable.RecordAssetFrame();
+            yield return new WaitForSeconds(0.04f);
+        }
     }
 
     public void SpawnCube(Transform target)
@@ -151,6 +170,7 @@ public class AssetManager : MonoBehaviour
         DebugLogger.Instance.Log("Deleted " + obj.name);        
         Recorder.Instance.assetsInScene.Remove(obj.GetComponentInChildren<Recordable>());
         Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
+        mainRecorder.RefreshTimelineAndStates();
         Destroy(obj);
     }
 

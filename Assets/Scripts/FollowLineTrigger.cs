@@ -28,21 +28,15 @@ public class FollowLineTrigger : MonoBehaviour
     
     void OnTriggerEnter(Collider other)
     {
-        //DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerEnter, collision with " + other.gameObject.name);
+        DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerEnter, collision with " + other.gameObject.name);
         //Check if the parent of the other collider has the FollowLine component
         if(other.gameObject.name != "FollowGuideSphere")
         {
             //DebugLogger.Instance.Log("FollowGuideSphere not found");
             return;
         }
-
-        if(other.gameObject.transform.parent?.GetComponentInChildren<FollowLine>() == null)
-        {
-            //DebugLogger.Instance.Log("FollowLineTrigger: No FollowLine component found for collider " + other.gameObject.name);
-            return;
-        }
         
-        FollowLine followLine = other.gameObject.transform.parent.GetComponentInChildren<FollowLine>();
+        FollowLine followLine = other.gameObject.transform.parent.parent.GetComponentInChildren<FollowLine>();
 
         if(followLine != null)
         {
@@ -80,7 +74,7 @@ public class FollowLineTrigger : MonoBehaviour
 
     void OnTriggerExit(Collider other)
     {
-        //DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerExit, collision with " + other.gameObject.name);
+        DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerExit, collision with " + other.gameObject.name);
         //Check if the parent of the other collider has the FollowLine component
 
         if(other.gameObject.name != "FollowGuideSphere")
@@ -88,14 +82,8 @@ public class FollowLineTrigger : MonoBehaviour
             //DebugLogger.Instance.Log("FollowGuideSphere not found");
             return;
         }
-
-        if(other.gameObject.transform.parent?.GetComponentInChildren<FollowLine>() == null)
-        {
-            //DebugLogger.Instance.Log("FollowLineTrigger: No FollowLine component found for collider " + other.gameObject.name);
-            return;
-        }
         
-        FollowLine followLine = other.gameObject.transform.parent.GetComponentInChildren<FollowLine>();
+        FollowLine followLine = other.gameObject.transform.parent.parent.GetComponentInChildren<FollowLine>();
 
         if(followLine != null)
         {

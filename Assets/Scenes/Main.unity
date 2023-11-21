@@ -6093,6 +6093,7 @@ MonoBehaviour:
   lineEnd: {fileID: 595010870}
   lineStart: {fileID: 604024971}
   lineRenderer: {fileID: 1794591561}
+  rootObject: {fileID: 0}
 --- !u!65 &95445050
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -26274,6 +26275,7 @@ MonoBehaviour:
   lineEnd: {fileID: 781693697}
   lineStart: {fileID: 891514393}
   lineRenderer: {fileID: 2043542067}
+  rootObject: {fileID: 0}
 --- !u!1 &477608242
 GameObject:
   m_ObjectHideFlags: 0
@@ -28061,7 +28063,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &515536005
 Transform:
   m_ObjectHideFlags: 0
@@ -32867,6 +32869,7 @@ MonoBehaviour:
   lineEnd: {fileID: 831533425}
   lineStart: {fileID: 807537418}
   lineRenderer: {fileID: 1766086772}
+  rootObject: {fileID: 0}
 --- !u!1 &586100107
 GameObject:
   m_ObjectHideFlags: 0
@@ -36231,6 +36234,7 @@ MonoBehaviour:
   lineEnd: {fileID: 831533425}
   lineStart: {fileID: 807537418}
   lineRenderer: {fileID: 1766086772}
+  rootObject: {fileID: 0}
 --- !u!65 &624260989
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -51901,6 +51905,18 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 558477656}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 1159954571}
+        m_TargetAssemblyTypeName: AssetMenu, Assembly-CSharp
+        m_MethodName: DeleteRootObject
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -73122,7 +73138,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1159954570
 Transform:
   m_ObjectHideFlags: 0
@@ -73157,6 +73173,7 @@ MonoBehaviour:
   lineEnd: {fileID: 1221130482}
   lineStart: {fileID: 1726376414}
   lineRenderer: {fileID: 2144937060}
+  rootObject: {fileID: 515536004}
 --- !u!1 &1161105308
 GameObject:
   m_ObjectHideFlags: 0
@@ -78768,7 +78785,7 @@ Rigidbody:
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 126
   m_CollisionDetection: 0
 --- !u!135 &1226543256
 SphereCollider:
@@ -81656,6 +81673,7 @@ MonoBehaviour:
   lineEnd: {fileID: 589059250}
   lineStart: {fileID: 1794542002}
   lineRenderer: {fileID: 1739994171}
+  rootObject: {fileID: 0}
 --- !u!1 &1271349485
 GameObject:
   m_ObjectHideFlags: 0
@@ -95217,6 +95235,7 @@ MonoBehaviour:
   lineEnd: {fileID: 2427963}
   lineStart: {fileID: 896228541}
   lineRenderer: {fileID: 267687386}
+  rootObject: {fileID: 0}
 --- !u!1 &1503982815
 GameObject:
   m_ObjectHideFlags: 0
@@ -109406,8 +109425,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0.02489, z: 0}
   m_LocalScale: {x: 0.0034563574, y: 0.060438182, z: 0.0034563574}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1860763285}
+  m_Children: []
   m_Father: {fileID: 515536005}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -111079,6 +111097,7 @@ MonoBehaviour:
   lineEnd: {fileID: 1875992466}
   lineStart: {fileID: 1976202531}
   lineRenderer: {fileID: 2068468632}
+  rootObject: {fileID: 0}
 --- !u!65 &1748900842
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -119628,120 +119647,6 @@ Transform:
   m_Father: {fileID: 1431504124}
   m_RootOrder: 18
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1860763284
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1860763285}
-  - component: {fileID: 1860763290}
-  - component: {fileID: 1860763289}
-  - component: {fileID: 1860763288}
-  - component: {fileID: 1860763291}
-  m_Layer: 9
-  m_Name: FollowLineHead
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &1860763285
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1860763284}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -0}
-  m_LocalScale: {x: 0.5045534, y: 0.05046653, z: 0.5159231}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1723312800}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!135 &1860763288
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1860763284}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.69
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!23 &1860763289
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1860763284}
-  m_Enabled: 0
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &1860763290
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1860763284}
-  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
---- !u!54 &1860763291
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1860763284}
-  serializedVersion: 2
-  m_Mass: 0.0000001
-  m_Drag: 0
-  m_AngularDrag: 0
-  m_UseGravity: 0
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
 --- !u!1 &1862809007
 GameObject:
   m_ObjectHideFlags: 0
@@ -120021,6 +119926,7 @@ MonoBehaviour:
   lineEnd: {fileID: 1221130482}
   lineStart: {fileID: 1072409121}
   lineRenderer: {fileID: 69330775}
+  rootObject: {fileID: 0}
 --- !u!1 &1872619145
 GameObject:
   m_ObjectHideFlags: 0
@@ -125102,6 +125008,7 @@ MonoBehaviour:
   lineEnd: {fileID: 1875992466}
   lineStart: {fileID: 1976202531}
   lineRenderer: {fileID: 2068468632}
+  rootObject: {fileID: 0}
 --- !u!1 &1949838988
 GameObject:
   m_ObjectHideFlags: 0
@@ -128624,6 +128531,7 @@ MonoBehaviour:
   lineEnd: {fileID: 781693697}
   lineStart: {fileID: 891514393}
   lineRenderer: {fileID: 2043542067}
+  rootObject: {fileID: 0}
 --- !u!65 &2001158095
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -130640,6 +130548,7 @@ MonoBehaviour:
   lineEnd: {fileID: 2427963}
   lineStart: {fileID: 896228541}
   lineRenderer: {fileID: 267687386}
+  rootObject: {fileID: 0}
 --- !u!65 &2029697829
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -133838,6 +133747,7 @@ MonoBehaviour:
   lineEnd: {fileID: 595010870}
   lineStart: {fileID: 604024971}
   lineRenderer: {fileID: 1794591561}
+  rootObject: {fileID: 0}
 --- !u!1 &2082216350
 GameObject:
   m_ObjectHideFlags: 0
@@ -136703,6 +136613,7 @@ MonoBehaviour:
   lineEnd: {fileID: 1221130482}
   lineStart: {fileID: 716643606}
   lineRenderer: {fileID: 1329345888}
+  rootObject: {fileID: 0}
 --- !u!4 &2126671558
 Transform:
   m_ObjectHideFlags: 0
