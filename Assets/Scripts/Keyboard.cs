@@ -75,4 +75,9 @@ public class Keyboard : MonoBehaviour
 
     }
 
+    public void DeactivateKeyboard()
+    {
+        gameObject.SetActive(false);
+    }
+
 }

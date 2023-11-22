@@ -117,20 +117,110 @@ public class AssetManager : MonoBehaviour
     {
         DebugLogger.Instance.Log("Spawned Sphere");
         GameObject obj = Instantiate(spherePrefab, target.position, Quaternion.identity);
+
+        Destroy(target.gameObject);
+
         obj.SetActive(true);
         Recorder.Instance.assetsInScene.Add(obj.GetComponentInChildren<Recordable>());
         Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
         mainRecorder.RefreshTimelineAndStates();
-        if(mainRecorder.GetSizeOfMainRecordedData() > 0)
+        if(mainRecorder.GetSizeOfMainRecordedData() > 0) //Recording already exists
         {
+            //Manager.Instance.currAppState = Manager.AppState.RECORDING;
             mainRecorder.playbackSlider.value = 0;
-            //Start a coroutine which will be called every 0.1 seconds and will add a new asset frame to the assetDataDict
+            //InputManager.Instance.SetPlaybackContactSphereActive(true);
+   
+            if (obj != null)
+            {
+                Recordable recordable = obj.GetComponentInChildren<Recordable>();
+                if (recordable != null)
+                {
+                    recordable.SetColor(Color.gray);
+                }
+                {
+                    DebugLogger.Instance.Log("SpawnSphere: No Recordable component attached to obj");
+                }
+            }
+            else
+            {
+                DebugLogger.Instance.Log("SpawnSphere: obj is null");
+            }
             StartCoroutine(AddAssetFrameToAssetDataDict(obj.GetComponentInChildren<Recordable>()));
-            //Recorder.Instance.currentActiveExample.assetDataDict[obj.GetComponentInChildren<Recordable>()] = new List<AssetFrame>(mainRecorder.GetSizeOfMainRecordedData());
-            
         }
-        //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
     }
+
+    public void SpawnCube(Transform target)
+    {
+        DebugLogger.Instance.Log("Spawned Cube");
+        GameObject obj = Instantiate(cubePrefab, target.position, Quaternion.identity);
+
+        Destroy(target.gameObject);
+
+        obj.SetActive(true);
+        Recorder.Instance.assetsInScene.Add(obj.GetComponentInChildren<Recordable>());
+        Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
+        mainRecorder.RefreshTimelineAndStates();
+        if(mainRecorder.GetSizeOfMainRecordedData() > 0) //Recording already exists
+        {
+            //Manager.Instance.currAppState = Manager.AppState.RECORDING;
+            mainRecorder.playbackSlider.value = 0;
+            //InputManager.Instance.SetPlaybackContactSphereActive(true);
+   
+            if (obj != null)
+            {
+                Recordable recordable = obj.GetComponentInChildren<Recordable>();
+                if (recordable != null)
+                {
+                    recordable.SetColor(Color.gray);
+                }
+                {
+                    DebugLogger.Instance.Log("SpawnCube: No Recordable component attached to obj");
+                }
+            }
+            else
+            {
+                DebugLogger.Instance.Log("SpawnCube: obj is null");
+            }
+            StartCoroutine(AddAssetFrameToAssetDataDict(obj.GetComponentInChildren<Recordable>()));
+        }
+    }
+
+    public void SpawnText(Transform target)
+    {
+        DebugLogger.Instance.Log("Spawned Text");
+        GameObject obj = Instantiate(textAsset, target.position, Quaternion.identity);
+
+        Destroy(target.gameObject);
+
+        obj.SetActive(true);
+        Recorder.Instance.assetsInScene.Add(obj.GetComponentInChildren<Recordable>());
+        Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
+        mainRecorder.RefreshTimelineAndStates();
+        if(mainRecorder.GetSizeOfMainRecordedData() > 0) //Recording already exists
+        {
+            //Manager.Instance.currAppState = Manager.AppState.RECORDING;
+            mainRecorder.playbackSlider.value = 0;
+            //InputManager.Instance.SetPlaybackContactSphereActive(true);
+   
+            if (obj != null)
+            {
+                Recordable recordable = obj.GetComponentInChildren<Recordable>();
+                if (recordable != null)
+                {
+                    recordable.SetColor(Color.gray);
+                }
+                {
+                    DebugLogger.Instance.Log("SpawnText: No Recordable component attached to obj");
+                }
+            }
+            else
+            {
+                DebugLogger.Instance.Log("SpawnText: obj is null");
+            }
+            StartCoroutine(AddAssetFrameToAssetDataDict(obj.GetComponentInChildren<Recordable>()));
+        }
+    }
+
 
     IEnumerator AddAssetFrameToAssetDataDict(Recordable recordable)
     {
@@ -139,11 +229,14 @@ public class AssetManager : MonoBehaviour
         {
             mainRecorder.playbackSlider.value = Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count;
             recordable.RecordAssetFrame();
-            yield return new WaitForSeconds(0.04f);
+            yield return new WaitForSeconds(0.01f);
         }
+        //Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
+        //InputManager.Instance.SetPlaybackContactSphereActive(false);
+        DebugLogger.Instance.Log("AddAssetFrameToAssetDataDict: DoRecordSizesMatch() - " + DoRecordSizesMatch());
     }
 
-    public void SpawnCube(Transform target)
+    /*public void SpawnCube(Transform target)
     {
         DebugLogger.Instance.Log("Spawned Cube");
         GameObject obj = Instantiate(cubePrefab, target.position, Quaternion.identity);
@@ -163,7 +256,7 @@ public class AssetManager : MonoBehaviour
         Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
         mainRecorder.RefreshTimelineAndStates();
         //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
-    }
+    }*/
 
     public void DeleteAsset(GameObject obj)
     {

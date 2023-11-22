@@ -507,10 +507,12 @@ public class Recordable : MonoBehaviour
     //For assets
     public void SetVisibility(bool _showStatus)
     {
+        //DebugLogger.Instance.Log("SetVisibility: true for " + gameObject.name + " at index " + (int)Recorder.Instance.playbackSlider.value);
         if(_showStatus)
         {
             if(Manager.Instance.currAppState == Manager.AppState.LIVE)
             {
+                
                 //Set mesh renderer for playbackObject 
                 gameObject.GetComponent<MeshRenderer>().enabled = true;
                 gameObject.GetComponent<MeshRenderer>().material = defaultMaterial;
@@ -1050,7 +1052,7 @@ public class Recordable : MonoBehaviour
 }
 
 
-//[System.Serializable]
+[System.Serializable]
 public class AssetFrame : ICloneable
 {
     public Vector3 rootPosition;

@@ -138,9 +138,9 @@ public class Manager : MonoBehaviour
             AssetManager.Instance.SpawnText(obj.transform);
         }        
         
-        if (obj.GetComponent<MeshCopy>() == null)
+        //if (obj.GetComponent<MeshCopy>() == null)
         {
-           Destroy(obj);
+           //Destroy(obj);
         }
     }
 

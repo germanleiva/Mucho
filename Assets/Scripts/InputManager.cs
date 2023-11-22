@@ -20,6 +20,8 @@ public class InputManager : MonoBehaviour
 
     public GameObject leftHandPinchObj, rightHandPinchObj, headContactObj;
 
+    public GameObject playbackLeftHandPinchObj, playbackRightHandPinchObj, playbackHeadContactObj;
+
     Vector3 leftHandLastPos, rightHandLastPos, headLastPos;
 
     public Vector3 leftHandVelocity, rightHandVelocity, headVelocity;
@@ -253,6 +255,14 @@ public class InputManager : MonoBehaviour
             assetInContactWithRightHand = asset;
         }
     }
+
+    public void SetPlaybackContactSphereActive(bool active)
+    {
+        playbackLeftHandPinchObj.SetActive(active);
+        playbackRightHandPinchObj.SetActive(active);
+        playbackHeadContactObj.SetActive(active);
+    }
+
 
     public string GestureToString(Gesture gesture)
     {
