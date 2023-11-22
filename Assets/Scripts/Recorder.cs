@@ -1159,7 +1159,7 @@ public class Recorder : MonoBehaviour
         currentActiveExample.StatesDict.Add(newState, stateUI.GetComponent<StateTimelineUIElement>());
         StateMachine.AddState(newState.id, newState);
 
-        StateMachine.SetInitialState(currentActiveExample.StatesDict.First().Key.id);
+        //StateMachine.SetInitialState(currentActiveExample.StatesDict.First().Key.id);
 
         return newState;
     }

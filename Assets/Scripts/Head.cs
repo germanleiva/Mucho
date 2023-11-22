@@ -64,6 +64,7 @@ public class Head : MonoBehaviour
 
     public void StartVoiceRecord()
     {
+        speechToTextEngine.StartListening();
         //voiceCommandNotInserted = true;
         //stopRecordingButton.SetActive(true);
         startRecordingButton.SetActive(false);
@@ -95,6 +96,7 @@ public class Head : MonoBehaviour
 
     public void StopVoiceRecord()
     {
+        speechToTextEngine.StopListening();
         speechToTextEngine.isRecording = false;
         //voiceCommandNotInserted = false;
         stopRecordingButton.SetActive(false);

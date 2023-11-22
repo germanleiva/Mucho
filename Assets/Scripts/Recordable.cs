@@ -548,6 +548,8 @@ public class Recordable : MonoBehaviour
 
     int FindFollowEndIndex(int _frameStart) //TODO: Check if collision indices should be considered
     {
+        //Iterate through Recoeder.Instance.currentActiveExample.StatesDict
+
         //Iterate through Recorder.Instance.LeftHandGestureSequences and Recorder.Instance.RightHandGestureSequences and find the StartIndex closest to _frameStart and greater than _frameStart
         int followEndIndexFromLeftGestures = 0;
         if(Recorder.Instance.LeftHandGestureSequences.Count > 0)
