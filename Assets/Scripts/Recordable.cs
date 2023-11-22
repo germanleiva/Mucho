@@ -548,8 +548,22 @@ public class Recordable : MonoBehaviour
 
     int FindFollowEndIndex(int _frameStart) //TODO: Check if collision indices should be considered
     {
-        //Iterate through Recoeder.Instance.currentActiveExample.StatesDict
+        //Iterate through Recoeder.Instance.currentActiveExample.StatesDict and find the StartIndex closest to _frameStart and greater than _frameStart
+        int followEndIndexFromStates = 0;
+        List<State> orderedKeys = new(Recorder.Instance.currentActiveExample.StatesDict.Keys);
+        for (int i = 0; i < orderedKeys.Count; i++)
+        {
+            int stateEndIndex = Recorder.Instance.currentActiveExample.StatesDict[orderedKeys[i]].StartIndex + Recorder.Instance.currentActiveExample.StatesDict[orderedKeys[i]].Length;
+            if(stateEndIndex > _frameStart)
+            {
+                followEndIndexFromStates = stateEndIndex;
+                break;
+            }
+        }      
 
+        return followEndIndexFromStates;  
+
+        /*
         //Iterate through Recorder.Instance.LeftHandGestureSequences and Recorder.Instance.RightHandGestureSequences and find the StartIndex closest to _frameStart and greater than _frameStart
         int followEndIndexFromLeftGestures = 0;
         if(Recorder.Instance.LeftHandGestureSequences.Count > 0)
@@ -587,6 +601,7 @@ public class Recordable : MonoBehaviour
             return followEndIndexFromLeftGestures;
         else 
             return 0;
+            */
     }
 
     //For assets
@@ -606,7 +621,7 @@ public class Recordable : MonoBehaviour
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
         DebugLogger.Instance.Log("Copying pose from left hand at frame " + _frameStart + " to frame " + currentAssetRecordedData.Count);
 
-        int followEndIndex = FindFollowEndIndex(_frameStart);
+        int followEndIndex = FindFollowEndIndex(_frameStart) - 1;
 
         DebugLogger.Instance.Log("Copying pose from left hand at frame " + _frameStart + " to frame " + followEndIndex);
 
@@ -654,7 +669,7 @@ public class Recordable : MonoBehaviour
         DebugLogger.Instance.Log("Copying pose from right hand at frame " + _frameStart + " to frame " + currentAssetRecordedData.Count);
 
                 
-        int followEndIndex = FindFollowEndIndex(_frameStart);
+        int followEndIndex = FindFollowEndIndex(_frameStart) - 1;
 
         DebugLogger.Instance.Log("Copying pose from right hand at frame " + _frameStart + " to frame " + followEndIndex);
 
@@ -704,8 +719,8 @@ public class Recordable : MonoBehaviour
 
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
 
-        //int followEndIndex = FindFollowEndIndex(_frameStart);
-        int followEndIndex = Recorder.Instance.GetSizeOfMainRecordedData();
+        int followEndIndex = FindFollowEndIndex(_frameStart) - 1;
+        //int followEndIndex = Recorder.Instance.GetSizeOfMainRecordedData();
 
         DebugLogger.Instance.Log("Copying pose from left focus square at frame " + _frameStart + " to frame " + followEndIndex);
 
@@ -715,9 +730,7 @@ public class Recordable : MonoBehaviour
             currentAssetRecordedData[i].ActionStr = "Follow(L-focus)";
             currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left focus)";
         }
-
-        /*
-
+       
         DebugLogger.Instance.Log("Unfollowing at frame " + followEndIndex);
 
         ModifyAssetFrame(followEndIndex, 
@@ -731,7 +744,7 @@ public class Recordable : MonoBehaviour
             currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[followEndIndex - 1].rootPosition;
             currentAssetRecordedData[i].ActionStr = "None";
             currentAssetRecordedData[i].CollisionStr = "None";
-        }*/
+        }
 
         Recorder.Instance.RefreshTimelineAndStates();
     }
@@ -752,8 +765,8 @@ public class Recordable : MonoBehaviour
 
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
 
-        //int followEndIndex = FindFollowEndIndex(_frameStart);
-        int followEndIndex = Recorder.Instance.GetSizeOfMainRecordedData();
+        int followEndIndex = FindFollowEndIndex(_frameStart) - 1;
+        //int followEndIndex = Recorder.Instance.GetSizeOfMainRecordedData();
 
         DebugLogger.Instance.Log("Copying pose from right focus square at frame " + _frameStart + " to frame " + followEndIndex);
 
@@ -763,8 +776,6 @@ public class Recordable : MonoBehaviour
             currentAssetRecordedData[i].ActionStr = "Follow(R-focus)";
             currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right focus)";
         }
-
-         /*
 
         DebugLogger.Instance.Log("Unfollowing at frame " + followEndIndex);
 
@@ -779,7 +790,7 @@ public class Recordable : MonoBehaviour
             currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[followEndIndex - 1].rootPosition;
             currentAssetRecordedData[i].ActionStr = "None";
             currentAssetRecordedData[i].CollisionStr = "None";
-        }*/
+        }
 
         Recorder.Instance.RefreshTimelineAndStates();
     }
@@ -1041,10 +1052,20 @@ public class Recordable : MonoBehaviour
         transform.SetParent(null);
     }
 
+    Manager.AppState oldAppState;
     public void ShowColliderVisualizer(bool status)
     {
         colliderVisualizerObj.SetActive(status);
         colliderBoundaryGizmoObj1.SetActive(status);
+        if(status)
+        {
+            oldAppState = Manager.Instance.currAppState;
+            Manager.Instance.currAppState = Manager.AppState.EDITCOLLIDERS;
+        }
+        else
+        {
+            Manager.Instance.currAppState = oldAppState;
+        }
         if(colliderBoundaryGizmoObj2 != null) //Two gizmos for box collider
         {
             colliderBoundaryGizmoObj2.SetActive(status);

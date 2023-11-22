@@ -195,7 +195,7 @@ public class InputManager : MonoBehaviour
         {
             sm.ProcessFrame(frame);
         }
-        else if (Manager.Instance.currAppState != Manager.AppState.PLAYBACK && Manager.Instance.currAppState != Manager.AppState.ASSETRECORDING && Manager.Instance.currAppState != Manager.AppState.RECORDING)
+        else if (Manager.Instance.currAppState != Manager.AppState.PLAYBACK && Manager.Instance.currAppState != Manager.AppState.ASSETRECORDING && Manager.Instance.currAppState != Manager.AppState.RECORDING && Manager.Instance.currAppState != Manager.AppState.EDITCOLLIDERS)
         {
             if(frame.collidingObjectThisFrame_1 != null && frame.collidingObjectThisFrame_2 != null)
             {
@@ -235,12 +235,15 @@ public class InputManager : MonoBehaviour
                     
             collidingObjectNotified_1 = null;
             collidingObjectNotified_2 = null;
+            assetInContactWithLeftHand = null;
+            assetInContactWithRightHand = null;
+
             currentVoiceCommand = "";
             
         } 
     }
 
-    public void SetAssetInContactWithLeftHand(Recordable asset)
+    /*public void SetAssetInContactWithLeftHand(Recordable asset)
     {
         if (assetInContactWithLeftHand != asset) //assign only if it is a different asset
         {
@@ -254,7 +257,7 @@ public class InputManager : MonoBehaviour
         {
             assetInContactWithRightHand = asset;
         }
-    }
+    }*/
 
     public void SetPlaybackContactSphereActive(bool active)
     {

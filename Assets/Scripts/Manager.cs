@@ -11,6 +11,8 @@ public class Manager : MonoBehaviour
 
     public AppState currAppState;
 
+    public SpeechToText speechToTextEngine;
+
     public enum AppState
     {
         INIT,
@@ -18,7 +20,8 @@ public class Manager : MonoBehaviour
         ASSETRECORDING,
         PLAYBACK,
         TEST,
-        LIVE
+        LIVE,
+        EDITCOLLIDERS
     }
 
     public static Manager Instance { get; private set; }
@@ -75,6 +78,7 @@ public class Manager : MonoBehaviour
         Recorder.Instance.ResetStateMachine();
         InputManager.Instance.NotifyCollision(null,null);
         CustomStateMachine.Instance.InvokeOnEnterActionsOfInitialState();
+        speechToTextEngine.StartListening();
     }
 
     public void ChangeToTestMode()
@@ -95,6 +99,7 @@ public class Manager : MonoBehaviour
         AssetManager.Instance.ShowMiscObjs();
         AssetManager.Instance.SetAllAssetMenusPokeable(true);
         Recorder.Instance.ResetStateMachine();
+        speechToTextEngine.StopListening();
     }
 
     public void CreateCopyOfObject(GameObject obj)

@@ -1094,15 +1094,12 @@ public class Recorder : MonoBehaviour
             //previousState.transitions.Clear();  
         }
 
-        //Copy the OnEnterActions of state1 to the OnEnterActions of the new state
+
         newState.OnEnterActions += state1.OnEnterActions;
-        //Copy the OnEnterActions of state2 to the OnExitActions of the new state
-        //newState.OnExitActions += state2.OnEnterActions;
-        //Copy the OnExitActions of state1 to the OnExitActions of the new state
-        newState.OnExitActions += state1.OnExitActions;
-        //Copy the OnExitActions of state2 to the OnExitActions of the new state
+        newState.OnEnterActions += state2.OnEnterActions;
+        newState.OnExitActions += state1.OnExitActions; //We only have unfollow so this is fine for now TODO: Fix this for other use cases
         newState.OnExitActions += state2.OnExitActions;
-        //newState.CopyTransitionFromState(state2);
+
 
         //Assign state.id as "State" plus the digits present in state1.id and state2.id
         string state1ID = state1.id;

@@ -29,7 +29,7 @@ public class SpeechToText : MonoBehaviour
 
         //microphoneRecord.OnRecordStop += OnRecordStop;
         //button.onClick.AddListener(OnButtonPressed);
-        StartListening();
+        //StartListening();
     }
 
     // Update is called once per frame
