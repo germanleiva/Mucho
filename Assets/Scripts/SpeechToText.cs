@@ -5,6 +5,7 @@ using Whisper.Utils;
 using Whisper;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 public class SpeechToText : MonoBehaviour
 {
     public WhisperManager whisper;
@@ -29,7 +30,9 @@ public class SpeechToText : MonoBehaviour
         _stream.StartStream();
         microphoneRecord.StartRecord();
         DebugLogger.Instance.Log("Start Recording");
+
     }
+
 
     public void StopListening()
     {

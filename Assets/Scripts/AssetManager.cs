@@ -159,27 +159,6 @@ public class AssetManager : MonoBehaviour
         DebugLogger.Instance.Log("AddAssetFrameToAssetDataDict: DoRecordSizesMatch() - " + DoRecordSizesMatch());
     }
 
-    /*public void SpawnCube(Transform target)
-    {
-        DebugLogger.Instance.Log("Spawned Cube");
-        GameObject obj = Instantiate(cubePrefab, target.position, Quaternion.identity);
-        obj.SetActive(true);
-        Recorder.Instance.assetsInScene.Add(obj.GetComponentInChildren<Recordable>());
-        Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
-        mainRecorder.RefreshTimelineAndStates();
-        //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
-    }
-
-    public void SpawnText(Transform target)
-    {
-        DebugLogger.Instance.Log("Spawned Text");
-        GameObject obj = Instantiate(textAsset, target.position, Quaternion.identity);
-        obj.SetActive(true);
-        Recorder.Instance.assetsInScene.Add(obj.GetComponentInChildren<Recordable>());
-        Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
-        mainRecorder.RefreshTimelineAndStates();
-        //obj.GetComponent<Rigidbody>().AddForce(hmd.transform.forward * 1000);
-    }*/
 
     public void DeleteAsset(GameObject obj)
     {

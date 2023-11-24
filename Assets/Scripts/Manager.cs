@@ -59,7 +59,7 @@ public class Manager : MonoBehaviour
         
     }
 
-    public void ChangeToLiveMode()
+    public async void ChangeToLiveMode()
     {
         if(currAppState == Manager.AppState.LIVE)
         {
@@ -75,7 +75,7 @@ public class Manager : MonoBehaviour
         currAppState = Manager.AppState.LIVE;
         Recorder.Instance.playbackSlider.value = 0;
         Recorder.Instance.SetPlaybackObjectsVisibility(false);
-        AssetManager.Instance.HideMiscObjs();
+        //AssetManager.Instance.HideMiscObjs();
         AssetManager.Instance.SetAllAssetMenusPokeable(false);
         Recorder.Instance.ResetStateMachine();
         InputManager.Instance.NotifyCollision(null,null);
@@ -98,7 +98,7 @@ public class Manager : MonoBehaviour
         currAppState = Manager.AppState.PLAYBACK; 
         AssetManager.Instance.ResetMeshRendererForAllAssets();       
         Recorder.Instance.SetPlaybackObjectsVisibility(true);
-        AssetManager.Instance.ShowMiscObjs();
+        //AssetManager.Instance.ShowMiscObjs();
         AssetManager.Instance.SetAllAssetMenusPokeable(true);
         Recorder.Instance.ResetStateMachine();
         speechToTextEngine.StopListening();

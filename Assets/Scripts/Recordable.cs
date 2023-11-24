@@ -24,8 +24,6 @@ public class Recordable : MonoBehaviour
         Visibility
     }
 
-    public AssetRecordingType currentRecordingMode = AssetRecordingType.None;
-
     public Vector3 initPosBeforePhysicsSimulation;
     public Quaternion initRotBeforePhysicsSimulation;
 
@@ -67,7 +65,7 @@ public class Recordable : MonoBehaviour
         }
         */
 
-        if(currentRecordingMode == Recordable.AssetRecordingType.Physics)
+        if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
         {
             //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "ApplyForce()", true);                
             //Increment the slider value by frame duration
@@ -209,7 +207,7 @@ public class Recordable : MonoBehaviour
     public void StartManualRecording()
     {
         Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
-        currentRecordingMode = AssetRecordingType.ManualAnimation;
+
         DebugLogger.Instance.Log("StartRecording in " + gameObject.name);
         firstFrameOfManualRecording = (int)Recorder.Instance.playbackSlider.value;
         //currentActiveRecordable = recordable;
@@ -219,7 +217,7 @@ public class Recordable : MonoBehaviour
     public void StopManualRecording()
     {
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
-        currentRecordingMode = Recordable.AssetRecordingType.None;
+
         DebugLogger.Instance.Log("StopRecording in " + gameObject.name);
         lastFrameOfManualRecording = (int)Recorder.Instance.playbackSlider.value;
         DebugLogger.Instance.Log("First frame: " + firstFrameOfManualRecording + " Last frame: " + lastFrameOfManualRecording);
@@ -609,7 +607,6 @@ public class Recordable : MonoBehaviour
     {
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
         DebugLogger.Instance.Log("Attach called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
-        currentRecordingMode = Recordable.AssetRecordingType.Follow;
 
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionStr: "Follow(Left hand)", 
@@ -656,7 +653,7 @@ public class Recordable : MonoBehaviour
     {
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];        
         DebugLogger.Instance.Log("Attach called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
-        currentRecordingMode = Recordable.AssetRecordingType.Follow;
+
 
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionStr: "Follow(Right hand)", 
@@ -708,7 +705,7 @@ public class Recordable : MonoBehaviour
     {
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];  
         DebugLogger.Instance.Log("Follow left focus called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
-        currentRecordingMode = Recordable.AssetRecordingType.Follow;
+
 
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionStr: "Follow(L-focus)", 
@@ -754,7 +751,7 @@ public class Recordable : MonoBehaviour
     {
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];  
         DebugLogger.Instance.Log("AttachToRightHandFocusSquare: Follow right focus called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
-        currentRecordingMode = Recordable.AssetRecordingType.Follow;
+
 
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionStr: "Follow(R-focus)", 
@@ -800,7 +797,7 @@ public class Recordable : MonoBehaviour
     {
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];  
         DebugLogger.Instance.Log("AttachToGazeFocusSquare: Follow gaze focus called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
-        currentRecordingMode = Recordable.AssetRecordingType.Follow;
+
 
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionStr: "Follow(G-focus)", 
@@ -845,7 +842,7 @@ public class Recordable : MonoBehaviour
     {
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
         DebugLogger.Instance.Log("Unfollow called for " + gameObject.name);
-        currentRecordingMode = Recordable.AssetRecordingType.None;
+
         //Unfollow();
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionStr: "Unfollow()",  
@@ -871,9 +868,12 @@ public class Recordable : MonoBehaviour
         if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
         {
             AssetManager.Instance.HideMiscObjs();
+
+            InputManager.Instance.leftHandPinchObj.SetActive(false);
+            InputManager.Instance.rightHandPinchObj.SetActive(false);
             
             oldMainPlaybackSliderValue = Recorder.Instance.playbackSlider.value; //This is so awkward, but it works
-            currentRecordingMode = Recordable.AssetRecordingType.Physics;
+
             initPosBeforePhysicsSimulation = transform.position;
             initRotBeforePhysicsSimulation = transform.rotation;
 
@@ -889,11 +889,12 @@ public class Recordable : MonoBehaviour
 
             ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionStr: "ApplyForce()", 
-                                    //actionDelegate: () => { GetComponent<Recordable>().ApplyForceInLiveMode(initialVelocity); });
-                                    actionDelegate: () => { GetComponent<Recordable>().ApplyForce(initialVelocity); });
+                                    actionDelegate: () => { GetComponent<Recordable>().ApplyForceInLiveMode(initialVelocity); });
+                                    //actionDelegate: () => { GetComponent<Recordable>().ApplyForce(initialVelocity); });
 
 
             ApplyForce(initialVelocity);
+            DebugLogger.Instance.Log("Intial velocity magnitude is " + initialVelocity.magnitude);
         }
     }
 
@@ -905,8 +906,6 @@ public class Recordable : MonoBehaviour
         GetComponent<Rigidbody>().AddForce(initialVelocity, ForceMode.VelocityChange);
     }
 
-    [SerializeField]
-    int velocityScalingFactor = 20;
 
     public void ApplyForceInLiveMode(Vector3 initialVelocity)
     {        
@@ -918,13 +917,14 @@ public class Recordable : MonoBehaviour
         float distanceToRightPinchObj = Vector3.Distance(transform.position, InputManager.Instance.rightHandPinchObj.transform.position);
         if(distanceToLeftPinchObj < distanceToRightPinchObj)
         {
-            DebugLogger.Instance.Log("ApplyForceInLiveMode : Applying force to left pinch object with velocity " + InputManager.Instance.leftHandVelocity / velocityScalingFactor);
-            GetComponent<Rigidbody>().AddForce(InputManager.Instance.leftHandVelocity / velocityScalingFactor, ForceMode.VelocityChange);
+            DebugLogger.Instance.Log("ApplyForceInLiveMode : Applying force to left pinch object with velocity magnitude " + InputManager.Instance.leftHandVelocity.magnitude);
+            GetComponent<Rigidbody>().AddForce(InputManager.Instance.leftHandVelocity , ForceMode.VelocityChange);
+            //GetComponent<Rigidbody>().AddForce(initialVelocity , ForceMode.VelocityChange);
         }
         else
         {
-            DebugLogger.Instance.Log("ApplyForceInLiveMode : Applying force to right pinch object with velocity " + InputManager.Instance.rightHandVelocity / velocityScalingFactor);
-            GetComponent<Rigidbody>().AddForce(InputManager.Instance.rightHandVelocity / velocityScalingFactor, ForceMode.VelocityChange);
+            DebugLogger.Instance.Log("ApplyForceInLiveMode : Applying force to right pinch object with velocity " + InputManager.Instance.rightHandVelocity.magnitude);
+            GetComponent<Rigidbody>().AddForce(InputManager.Instance.rightHandVelocity, ForceMode.VelocityChange);
         }
 
         //GetComponent<Rigidbody>().AddForce(pinchObj.GetComponent<Rigidbody>().velocity, ForceMode.VelocityChange);
@@ -951,7 +951,7 @@ public class Recordable : MonoBehaviour
             return;
         }
 
-        if(currentRecordingMode == Recordable.AssetRecordingType.Physics)
+        if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
         {
             //Delete all force arrows
             /*foreach (GameObject obj in forceArrows)
@@ -959,7 +959,7 @@ public class Recordable : MonoBehaviour
                 Destroy(obj);
             }*/ 
 
-            currentRecordingMode = Recordable.AssetRecordingType.None;
+            Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
 
             DebugLogger.Instance.Log("Collision detected between " + base.gameObject.name + " and " + collision.collider.name);
 
@@ -980,8 +980,10 @@ public class Recordable : MonoBehaviour
     //For assets
     public void ResetPhysicsProperties()
     {
-        Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
+        //Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         //Recorder.Instance.isMainPlaybackOn = false;
+        InputManager.Instance.leftHandPinchObj.SetActive(true);
+        InputManager.Instance.rightHandPinchObj.SetActive(true);
         DebugLogger.Instance.Log("Resetting physics properties"); 
         InputManager.Instance.NotifyCollision(null,null);       
         Recorder.Instance.playbackSlider.value = oldMainPlaybackSliderValue;

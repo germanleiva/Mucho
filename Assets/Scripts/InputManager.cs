@@ -22,9 +22,10 @@ public class InputManager : MonoBehaviour
 
     public GameObject playbackLeftHandPinchObj, playbackRightHandPinchObj, playbackHeadContactObj;
 
-    Vector3 leftHandLastPos, rightHandLastPos, headLastPos;
+    Vector3 lastLeftHandPos, lastRightHandPos, headLastPos;
 
     public Vector3 leftHandVelocity, rightHandVelocity, headVelocity;
+    public float velocityScalingFactor = 10;
 
     //public GameObject leftHandGrabObj, rightHandGrabObj;
 
@@ -51,24 +52,44 @@ public class InputManager : MonoBehaviour
         //CreateTestStates();
     }
 
+    int frameCount = 0;
+
     // Update is called once per frame
+    
+    Queue<Vector3> rightHandPositions = new Queue<Vector3>();
+    Queue<Vector3> leftHandPositions = new Queue<Vector3>();
+
     void Update()
     {
         ProcessEvents(); 
+        // Add the current positions to the queues
+        rightHandPositions.Enqueue(rightHandPinchObj.transform.position);
+        leftHandPositions.Enqueue(leftHandPinchObj.transform.position);
 
+        // If there are more than ten positions in the queue, remove the oldest
+        if (rightHandPositions.Count > 10)
+        {
+            rightHandPositions.Dequeue();
+        }
+        if (leftHandPositions.Count > 10)
+        {
+            leftHandPositions.Dequeue();
+        }
 
-        //Calculating velocity manually as rigidbody velocity is not computed 
-        Vector3 currRightHandLastPos = (InputManager.Instance.rightHandPinchObj.transform.position);
-        rightHandVelocity = (currRightHandLastPos - rightHandLastPos) / Time.deltaTime;
-        rightHandLastPos = currRightHandLastPos;
+        // Calculate velocities
+        if (rightHandPositions.Count == 10)
+        {
+            Vector3 currRightHandPos = rightHandPinchObj.transform.position;
+            Vector3 tenFramesAgoRightHandPos = rightHandPositions.Peek();
+            rightHandVelocity = ((currRightHandPos - tenFramesAgoRightHandPos) / (10 * Time.deltaTime)) / velocityScalingFactor;
+        }
+        if (leftHandPositions.Count == 10)
+        {
+            Vector3 currLeftHandPos = leftHandPinchObj.transform.position;
+            Vector3 tenFramesAgoLeftHandPos = leftHandPositions.Peek();
+            leftHandVelocity = ((currLeftHandPos - tenFramesAgoLeftHandPos) / (10 * Time.deltaTime)) / velocityScalingFactor;
+        }
 
-        Vector3 currLeftHandLastPos = (InputManager.Instance.leftHandPinchObj.transform.position);
-        leftHandVelocity = (currLeftHandLastPos - leftHandLastPos) / Time.deltaTime;
-        leftHandLastPos = currLeftHandLastPos;
-
-        Vector3 currHeadLastPos = (InputManager.Instance.headContactObj.transform.position);
-        headVelocity = (currHeadLastPos - headLastPos) / Time.deltaTime;
-        headLastPos = currHeadLastPos;
         
     }
 
