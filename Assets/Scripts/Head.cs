@@ -23,6 +23,8 @@ public class Head : MonoBehaviour
     public LineRenderer ray;
     public GameObject focusSquare;
     public GameObject playbackFocusSquare; 
+
+    public bool voiceRecordStarted = false;
     
     private void Update()
     {
@@ -65,11 +67,8 @@ public class Head : MonoBehaviour
     public void StartVoiceRecord()
     {
         speechToTextEngine.StartListening();
-        //voiceCommandNotInserted = true;
-        //stopRecordingButton.SetActive(true);
         startRecordingButton.SetActive(false);
-        speechToTextEngine.isRecording = true;
-        //Start a coroutine which checks for speechToTextEngine.outputText and if it is not empty, insert it into the recorded data
+        voiceRecordStarted = true;
         StartCoroutine(InsertVoiceCommandCoroutine());
     }
 
@@ -77,17 +76,14 @@ public class Head : MonoBehaviour
 
     IEnumerator<WaitForSeconds> InsertVoiceCommandCoroutine()
     {
-        while(speechToTextEngine.isRecording)
+        while(voiceRecordStarted)
         {
-            if(speechToTextEngine.outputText.text != "")
+            if(InputManager.Instance.currentVoiceCommand != "")
             {
-                string currentRecognisedText = speechToTextEngine.outputText.text;
-                        //Extract substring before the first dot
-                string cleanedVoiceCommand = currentRecognisedText;//.Substring(0, currentRecognisedText.IndexOf('.'));
-                InsertVoiceCommand(cleanedVoiceCommand);
-                
-                //speechToTextEngine.outputText.text = "";
-                //speechToTextEngine.currentRecognisedText = "";
+                string currentRecognisedText = InputManager.Instance.currentVoiceCommand;
+                string cleanedVoiceCommand = currentRecognisedText;
+                InsertVoiceCommand(cleanedVoiceCommand);                
+
                 StopVoiceRecord();
             }
             yield return new WaitForSeconds(0.1f);
@@ -97,7 +93,7 @@ public class Head : MonoBehaviour
     public void StopVoiceRecord()
     {
         speechToTextEngine.StopListening();
-        speechToTextEngine.isRecording = false;
+        voiceRecordStarted = false;
         //voiceCommandNotInserted = false;
         stopRecordingButton.SetActive(false);
         startRecordingButton.SetActive(true);
@@ -141,12 +137,6 @@ public class Head : MonoBehaviour
     {
         Recorder.Instance.currentActiveExample.headData.Add(new HeadFrame(transform.position, transform.rotation, focusSquare.transform.position, focusSquare.transform.rotation, null, frameNum));       
     }
-
-    // Clear the recorded data.
-    /*public void ResetData()
-    {
-        recordedData.Clear();
-    }*/
 
 }
 

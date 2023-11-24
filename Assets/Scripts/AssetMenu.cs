@@ -31,6 +31,7 @@ public class AssetMenu : MonoBehaviour
 
         lineRenderer.SetPosition(0, lineStart.position);
         lineRenderer.SetPosition(1, lineEnd.position);
+
     }
 
     public void MenuGrabbed(bool _isGrabbed)

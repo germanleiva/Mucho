@@ -15,18 +15,12 @@ public class AssetManager : MonoBehaviour
 
     public Recorder mainRecorder;
 
-    //List of all force arrow components
-    
-
-
-
     // Start is called before the first frame update
 
-    public GameObject spherePrefab;
-    public GameObject cubePrefab;
+
     public GameObject forceArrowPrefab;
     //public GameObject cylinderPrefab;
-    public GameObject textAsset;
+
     public GameObject hmd;
 
     public Material transparentMaterial, translucentMaterial;
@@ -113,10 +107,11 @@ public class AssetManager : MonoBehaviour
             }
         }
     }
-    public void SpawnSphere(Transform target)
+
+    public void CreateAsset(Transform target, GameObject prefab)
     {
-        DebugLogger.Instance.Log("Spawned Sphere");
-        GameObject obj = Instantiate(spherePrefab, target.position, Quaternion.identity);
+        DebugLogger.Instance.Log("Spawned Asset");
+        GameObject obj = Instantiate(prefab, target.position, Quaternion.identity);
 
         Destroy(target.gameObject);
 
@@ -138,84 +133,12 @@ public class AssetManager : MonoBehaviour
                     recordable.SetColor(Color.gray);
                 }
                 {
-                    DebugLogger.Instance.Log("SpawnSphere: No Recordable component attached to obj");
+                    DebugLogger.Instance.Log("SpawnAsset: No Recordable component attached to obj");
                 }
             }
             else
             {
-                DebugLogger.Instance.Log("SpawnSphere: obj is null");
-            }
-            StartCoroutine(AddAssetFrameToAssetDataDict(obj.GetComponentInChildren<Recordable>()));
-        }
-    }
-
-    public void SpawnCube(Transform target)
-    {
-        DebugLogger.Instance.Log("Spawned Cube");
-        GameObject obj = Instantiate(cubePrefab, target.position, Quaternion.identity);
-
-        Destroy(target.gameObject);
-
-        obj.SetActive(true);
-        Recorder.Instance.assetsInScene.Add(obj.GetComponentInChildren<Recordable>());
-        Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
-        mainRecorder.RefreshTimelineAndStates();
-        if(mainRecorder.GetSizeOfMainRecordedData() > 0) //Recording already exists
-        {
-            //Manager.Instance.currAppState = Manager.AppState.RECORDING;
-            mainRecorder.playbackSlider.value = 0;
-            //InputManager.Instance.SetPlaybackContactSphereActive(true);
-   
-            if (obj != null)
-            {
-                Recordable recordable = obj.GetComponentInChildren<Recordable>();
-                if (recordable != null)
-                {
-                    recordable.SetColor(Color.gray);
-                }
-                {
-                    DebugLogger.Instance.Log("SpawnCube: No Recordable component attached to obj");
-                }
-            }
-            else
-            {
-                DebugLogger.Instance.Log("SpawnCube: obj is null");
-            }
-            StartCoroutine(AddAssetFrameToAssetDataDict(obj.GetComponentInChildren<Recordable>()));
-        }
-    }
-
-    public void SpawnText(Transform target)
-    {
-        DebugLogger.Instance.Log("Spawned Text");
-        GameObject obj = Instantiate(textAsset, target.position, Quaternion.identity);
-
-        Destroy(target.gameObject);
-
-        obj.SetActive(true);
-        Recorder.Instance.assetsInScene.Add(obj.GetComponentInChildren<Recordable>());
-        Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
-        mainRecorder.RefreshTimelineAndStates();
-        if(mainRecorder.GetSizeOfMainRecordedData() > 0) //Recording already exists
-        {
-            //Manager.Instance.currAppState = Manager.AppState.RECORDING;
-            mainRecorder.playbackSlider.value = 0;
-            //InputManager.Instance.SetPlaybackContactSphereActive(true);
-   
-            if (obj != null)
-            {
-                Recordable recordable = obj.GetComponentInChildren<Recordable>();
-                if (recordable != null)
-                {
-                    recordable.SetColor(Color.gray);
-                }
-                {
-                    DebugLogger.Instance.Log("SpawnText: No Recordable component attached to obj");
-                }
-            }
-            else
-            {
-                DebugLogger.Instance.Log("SpawnText: obj is null");
+                DebugLogger.Instance.Log("SpawnAsset: obj is null");
             }
             StartCoroutine(AddAssetFrameToAssetDataDict(obj.GetComponentInChildren<Recordable>()));
         }
@@ -322,17 +245,4 @@ public class AssetManager : MonoBehaviour
    
 }
 
-public class AssetAction
-{
-    public string ActionStr { get; set; } //None, Physics, Follow, Show, Hide
-    public string CollisionStr { get; set; } 
 
-    public Action ActionDelegate { get; set; }
-
-    public int StartIndex { get; set; }
-    public int Length { get; set; }
-    //public GestureManager.Gesture GestureType { get; set; }
-
-    public GameObject CollidingObject1 { get; set; }
-    public GameObject CollidingObject2 { get; set; }
-}

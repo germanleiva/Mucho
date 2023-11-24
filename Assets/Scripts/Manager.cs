@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,10 +9,11 @@ using UnityEngine.UI;
 public class Manager : MonoBehaviour
 {
     public GameObject leftHandMenu;
-
     public AppState currAppState;
-
     public SpeechToText speechToTextEngine;
+    public GameObject spherePrefab;
+    public GameObject cubePrefab;
+    public GameObject textAssetPrefab;
 
     public enum AppState
     {
@@ -132,15 +134,15 @@ public class Manager : MonoBehaviour
 
         if (obj.name.StartsWith("Sphere"))
         {
-            AssetManager.Instance.SpawnSphere(obj.transform);
+            AssetManager.Instance.CreateAsset(obj.transform, spherePrefab);
         }
         else if (obj.name.StartsWith("Cube"))
         {
-            AssetManager.Instance.SpawnCube(obj.transform);
+            AssetManager.Instance.CreateAsset(obj.transform, cubePrefab);
         }
         else if (obj.name.StartsWith("Text"))
         {
-            AssetManager.Instance.SpawnText(obj.transform);
+            AssetManager.Instance.CreateAsset(obj.transform, textAssetPrefab);
         }        
         
         //if (obj.GetComponent<MeshCopy>() == null)
@@ -292,6 +294,37 @@ public class Example
     {
         //Delete the example from the list of examples
     }
+
+}
+
+public class AssetAction
+{
+    public string ActionStr { get; set; } //None, Physics, Follow, Show, Hide
+    public string CollisionStr { get; set; } 
+
+    public Action ActionDelegate { get; set; }
+
+    public int StartIndex { get; set; }
+    public int Length { get; set; }
+    //public GestureManager.Gesture GestureType { get; set; }
+
+    public GameObject CollidingObject1 { get; set; }
+    public GameObject CollidingObject2 { get; set; }
+}
+
+public class GestureSequence
+{
+    public int StartIndex { get; set; }
+    public int Length { get; set; }
+    public InputManager.Gesture GestureType { get; set; }
+ 
+}
+
+public class VoiceSequence
+{
+    public int StartIndex { get; set; }
+    public int Length { get; set; }
+    public string VoiceCommand { get; set; }
 
 }
 

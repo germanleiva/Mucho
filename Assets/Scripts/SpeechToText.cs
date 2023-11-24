@@ -13,29 +13,15 @@ public class SpeechToText : MonoBehaviour
     public TMPro.TMP_Text outputText;
     private WhisperStream _stream;
 
-    public bool isRecording = false;
+    //public bool isRecording = false;
 
-    // Start is called before the first frame update
     async void Start()
     {
-        //microphoneRecord.vadStop = false;
-        //microphoneRecord.OnRecordStop += OnRecordStop;
-        
         _stream = await whisper.CreateStream(microphoneRecord);
         _stream.OnResultUpdated += OnResult;
         _stream.OnSegmentUpdated += OnSegmentUpdated;
         _stream.OnSegmentFinished += OnSegmentFinished;
         _stream.OnStreamFinished += OnFinished;
-
-        //microphoneRecord.OnRecordStop += OnRecordStop;
-        //button.onClick.AddListener(OnButtonPressed);
-        //StartListening();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     public void StartListening()
@@ -96,7 +82,10 @@ public class SpeechToText : MonoBehaviour
         outputText.text = "";
     }
 
-    
+    public void SendSyntheticVoiceCommand(string _fakeVoiceCommand)
+    {
+        InputManager.Instance.NotifyVoiceCommand(_fakeVoiceCommand);
+    }
     
     private void OnFinished(string finalResult)
     {

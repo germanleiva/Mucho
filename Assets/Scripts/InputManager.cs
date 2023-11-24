@@ -243,22 +243,6 @@ public class InputManager : MonoBehaviour
         } 
     }
 
-    /*public void SetAssetInContactWithLeftHand(Recordable asset)
-    {
-        if (assetInContactWithLeftHand != asset) //assign only if it is a different asset
-        {
-            assetInContactWithLeftHand = asset;
-        }
-    }
-
-    public void SetAssetInContactWithRightHand(Recordable asset)
-    {
-        if (assetInContactWithRightHand != asset) //assign only if it is a different asset
-        {
-            assetInContactWithRightHand = asset;
-        }
-    }*/
-
     public void SetPlaybackContactSphereActive(bool active)
     {
         playbackLeftHandPinchObj.SetActive(active);
@@ -286,21 +270,6 @@ public class InputManager : MonoBehaviour
 
 }
 
-public class GestureSequence
-{
-    public int StartIndex { get; set; }
-    public int Length { get; set; }
-    public InputManager.Gesture GestureType { get; set; }
- 
-}
-
-public class VoiceSequence
-{
-    public int StartIndex { get; set; }
-    public int Length { get; set; }
-    public string VoiceCommand { get; set; }
-
-}
 
 
 

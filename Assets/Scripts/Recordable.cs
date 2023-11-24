@@ -1001,8 +1001,6 @@ public class Recordable : MonoBehaviour
         GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
         GetComponent<Rigidbody>().useGravity = false;
 
-        
-        //Recorder.Instance.RefreshAssetsTimeline();
     }
 
     //For assets

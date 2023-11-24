@@ -16,11 +16,7 @@ public class Recorder : MonoBehaviour
     public Hand leftHand;
     public Hand rightHand;
 
-    
-    //public bool isMainRecordingOn = false;
-    //public bool isMainPlaybackOn = false;
     public int recordStartFrame;
-    //public int recordedFramesTotal;
 
     public bool isAutomaticPlayback = false;
 
@@ -161,13 +157,8 @@ public class Recorder : MonoBehaviour
         DebugLogger.Instance.Log("StartRecording");
 
         currentActiveExample.ResetData();
-        //rightHand.ResetData();
-        //head.ResetData();
-        //AssetManager.Instance.ResetAssetRecordings();
-        //RefreshAssetsTimeline(); 
+        AssetManager.Instance.ShowMiscObjs();
 
-        //isMainRecordingOn = true;
-        //isMainPlaybackOn = false;
         recordStartFrame = 0;//Time.time;
         frameCount = 0;
         RefreshTimelineAndStates(); 
@@ -192,11 +183,11 @@ public class Recorder : MonoBehaviour
         //TODO: If sizes do no match raise an error
         
 
-        //isMainRecordingOn = false;
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
 
-        //AssetPoseRecorder.Instance.EnableGrabForAllAssets();
-        //AssetManager.Instance.InitializeRecordFramesForAssets();
+        AssetManager.Instance.ShowMiscObjs();
+
+ 
         AssetManager.Instance.DoRecordSizesMatch();
         RefreshTimelineAndStates();   
 
@@ -225,19 +216,13 @@ public class Recorder : MonoBehaviour
             leftHand.playbackObject.SetActive(true);
             rightHand.playbackObject.SetActive(true);
 
-            /*if (currentActiveExample.headData.Count > 0)
-            {
-                framesTotal = Mathf.Max(framesTotal, currentActiveExample.headData[currentActiveExample.headData.Count - 1].frameNumber);
-            }*/
-
             playButton.SetActive(true);
 
             // Set up the slider.
             playbackSlider.minValue = 0;
             playbackSlider.maxValue = GetSizeOfMainRecordedData(); //framesTotal;
             playbackSlider.value = 0;
-            //recordedFramesTotal = framesTotal;
-            //DebugLogger.Instance.Log("Duration of recording: " + recordedFramesTotal);
+
 
             //isMainPlaybackOn = true;
             isAutomaticPlayback = false;
@@ -319,10 +304,10 @@ public class Recorder : MonoBehaviour
 
     public void SetTestMode()
     {
-        //DebugLogger.Instance.Log("Start Testing");
+
         Manager.Instance.currAppState = Manager.AppState.TEST;
         rootPlaybackArea.SetActive(false);
-        //playbackUI.SetActive(false);
+
     }
 
     public void SetPlaybackObjectsVisibility(bool status)
@@ -598,19 +583,6 @@ public class Recorder : MonoBehaviour
         return sequences;
     }
 
-    /*public void GenerateVoiceCommandSequences(RectTransform timelinePanel)
-    {
-        DebugLogger.Instance.Log("Generating voice command sequences");
-        List<string> voiceCommands = currentActiveExample.headData.Select(x => x).ToList();
-        List<AssetAction> sequences = GetContinuousChangeSequences(voiceCommands);
-        foreach (AssetAction sequence in sequences)
-        {
-            //DebugLogger.Instance.Log("Sequence name: " + sequence.Action + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
-            //DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
-            TimelineUIElement.CreateTimelineElement(assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ActionStr);
-        }
-    }*/
-
     public List<AssetAction> GenerateCollisionSequences(RectTransform collisionTimelinePanelTransform, Recordable recordable) //Strong assumption that all sources of action come from collision
     {
         DebugLogger.Instance.Log("Generating collision sequences for " + recordable.name);
@@ -647,7 +619,7 @@ public class Recorder : MonoBehaviour
 
 
     //List of asset timelines
-    List<GameObject> assetTimelines = new List<GameObject>();
+    List<GameObject> assetTimelines = new();
 
     public void RefreshTimelineAndStates()
     {
