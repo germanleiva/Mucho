@@ -59,7 +59,7 @@ public class Manager : MonoBehaviour
         
     }
 
-    public async void ChangeToLiveMode()
+    public void ChangeToLiveMode()
     {
         if(currAppState == Manager.AppState.LIVE)
         {

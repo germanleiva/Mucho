@@ -944,7 +944,6 @@ public class Recordable : MonoBehaviour
         DebugLogger.Instance.Log("Notifying collision detected between " + base.gameObject.name + " and " + collision.collider.name);
         InputManager.Instance.NotifyCollision(base.gameObject, collision.collider.gameObject);
 
-
         //Return if asset is colliding with inputmanager's left or right pinch objects
         if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere")
         {
@@ -953,17 +952,9 @@ public class Recordable : MonoBehaviour
 
         if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
         {
-            //Delete all force arrows
-            /*foreach (GameObject obj in forceArrows)
-            {
-                Destroy(obj);
-            }*/ 
-
             Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
 
-            DebugLogger.Instance.Log("Collision detected between " + base.gameObject.name + " and " + collision.collider.name);
-
-            
+            DebugLogger.Instance.Log("Collision detected between " + base.gameObject.name + " and " + collision.collider.name);            
 
             ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionStr: "ResetPhysics()", 

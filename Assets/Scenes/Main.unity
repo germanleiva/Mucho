@@ -63634,7 +63634,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 928751482}
   m_Direction: 0
   m_Value: 1
-  m_Size: 1
+  m_Size: 0.99999994
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -108406,7 +108406,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   asset: {fileID: 0}
-  arrowHead: {fileID: 557518680}
+  arrowHeadGhost: {fileID: 557518680}
+  arrowHeadReal: {fileID: 730991258}
   arrowBody: {fileID: 1055653432}
   lineRenderer: {fileID: 1753841436}
   numberOfPoints: 10

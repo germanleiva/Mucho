@@ -217,9 +217,10 @@ public class AssetManager : MonoBehaviour
         recordable.forceArrows.Add(forceArrow);
         forceArrowScript.asset = recordable.gameObject.transform;
         //forceArrowScript.arrowHead should be positioned 1 unit above the arrowEnd in the y axis
-        forceArrowScript.arrowHead.position = recordable.gameObject.transform.position + new Vector3(0f,0.2f,0.2f);
-        forceArrowScript.ReOrientArrow();
-        forceArrowScript.DrawTrajectory();     
+        forceArrowScript.arrowHeadGhost.position = recordable.gameObject.transform.position + new Vector3(0f,0.2f,0.2f);
+        forceArrowScript.OrientForceArrow();
+        forceArrowScript.arrowHeadGhost.transform.position = forceArrowScript.arrowHeadReal.transform.position;
+        //forceArrowScript.DrawTrajectory();     
     }
    
 }
