@@ -1262,7 +1262,7 @@ public class Recorder : MonoBehaviour
             rightHand.Record(frameCount, "righthand");
 
         }
-        else if (Manager.Instance.currAppState == Manager.AppState.PLAYBACK)
+        else if (Manager.Instance.currAppState == Manager.AppState.PLAYBACK || Manager.Instance.currAppState == Manager.AppState.RECORDING_DURING_PLAYBACK)
         {
 
             if (isAutomaticPlayback)

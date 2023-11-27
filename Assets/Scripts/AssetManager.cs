@@ -13,7 +13,7 @@ public class AssetManager : MonoBehaviour
 
     //public List <Recordable> assets = new();
 
-    public Recorder mainRecorder;
+    //public Recorder Recorder.Instance.;
 
     // Start is called before the first frame update
 
@@ -48,7 +48,7 @@ public class AssetManager : MonoBehaviour
 
     public bool DoRecordSizesMatch()
     {
-        int size = mainRecorder.GetSizeOfMainRecordedData(); //Get size of head in main recorder
+        int size = Recorder.Instance.GetSizeOfMainRecordedData(); //Get size of head in main recorder
         foreach(Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
         {
             if(Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count != size)
@@ -118,12 +118,12 @@ public class AssetManager : MonoBehaviour
         obj.SetActive(true);
         Recorder.Instance.assetsInScene.Add(obj.GetComponentInChildren<Recordable>());
         Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
-        mainRecorder.RefreshTimelineAndStates();
-        if(mainRecorder.GetSizeOfMainRecordedData() > 0) //Recording already exists
+        Recorder.Instance.RefreshTimelineAndStates();
+        if(Recorder.Instance.GetSizeOfMainRecordedData() > 0) //Recording already exists
         {
-            //Manager.Instance.currAppState = Manager.AppState.RECORDING;
-            mainRecorder.playbackSlider.value = 0;
-            //InputManager.Instance.SetPlaybackContactSphereActive(true);
+            Manager.Instance.currAppState = Manager.AppState.RECORDING_DURING_PLAYBACK;
+            Recorder.Instance.playbackSlider.value = 0;
+            InputManager.Instance.SetPlaybackContactSphereActive(true);
    
             if (obj != null)
             {
@@ -147,16 +147,18 @@ public class AssetManager : MonoBehaviour
 
     IEnumerator AddAssetFrameToAssetDataDict(Recordable recordable)
     {
-        //Call recordable.RecordAssetFrame() every 0.1 seconds until the size of the assetDataDict is equal to the size of the main recording
-        while(Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count < mainRecorder.GetSizeOfMainRecordedData())
+        while(Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count < Recorder.Instance.GetSizeOfMainRecordedData())
         {
-            mainRecorder.playbackSlider.value = Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count;
+            Recorder.Instance.playbackSlider.value = Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count;
+            DebugLogger.Instance.Log("AddAssetFrameToAssetDataDict: Adding frame at index " + Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count);
             recordable.RecordAssetFrame();
             yield return new WaitForSeconds(0.01f);
         }
-        //Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
-        //InputManager.Instance.SetPlaybackContactSphereActive(false);
+        
+        Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
+        InputManager.Instance.SetPlaybackContactSphereActive(false);
         DebugLogger.Instance.Log("AddAssetFrameToAssetDataDict: DoRecordSizesMatch() - " + DoRecordSizesMatch());
+        Recorder.Instance.RefreshTimelineAndStates();
     }
 
 
@@ -165,7 +167,7 @@ public class AssetManager : MonoBehaviour
         DebugLogger.Instance.Log("Deleted " + obj.name);        
         Recorder.Instance.assetsInScene.Remove(obj.GetComponentInChildren<Recordable>());
         Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
-        mainRecorder.RefreshTimelineAndStates();
+        Recorder.Instance.RefreshTimelineAndStates();
         Destroy(obj);
     }
 

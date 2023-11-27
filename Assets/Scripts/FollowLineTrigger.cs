@@ -28,7 +28,7 @@ public class FollowLineTrigger : MonoBehaviour
     
     void OnTriggerEnter(Collider other)
     {
-        DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerEnter, collision with " + other.gameObject.name);
+        //DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerEnter, collision with " + other.gameObject.name);
         //Check if the parent of the other collider has the FollowLine component
         if(other.gameObject.name != "FollowGuideSphere")
         {
@@ -74,7 +74,7 @@ public class FollowLineTrigger : MonoBehaviour
 
     void OnTriggerExit(Collider other)
     {
-        DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerExit, collision with " + other.gameObject.name);
+        //DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerExit, collision with " + other.gameObject.name);
         //Check if the parent of the other collider has the FollowLine component
 
         if(other.gameObject.name != "FollowGuideSphere")

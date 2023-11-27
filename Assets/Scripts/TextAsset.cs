@@ -9,6 +9,8 @@ public class TextAsset : MonoBehaviour
     //textmesh pro text object
     public TMP_Text text;
     public TMP_InputField inputField;
+    public Keyboard keyboard;
+    public GameObject TextEditUI;
     //public InputField inputField;
 
     //public UnityEngine.UI.Image TextPanelBackground;
@@ -26,9 +28,26 @@ public class TextAsset : MonoBehaviour
         
     }
 
+    public void ConnectToKeyboard()
+    {    
+        text.text = "";
+        keyboard.ActivateKeyboard(inputField);
+        keyboard.submitCallback = SubmitText;        
+    }   
+
     public void SetTextVisibility(bool status)
     {
         text.gameObject.SetActive(status);
+    }
+
+    public void SubmitText()
+    {
+        DebugLogger.Instance.Log("Submitting text");
+        text.text = inputField.text;
+        inputField.text = "";
+        keyboard.gameObject.SetActive(false);
+        AssetMenu.SetActive(true);
+        TextEditUI.SetActive(false);
     }
 
     public void CopyTextFromInputField()

@@ -19,6 +19,7 @@ public class Manager : MonoBehaviour
     {
         INIT,
         RECORDING,
+        RECORDING_DURING_PLAYBACK,
         ASSETRECORDING,
         PLAYBACK,
         TEST,

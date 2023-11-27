@@ -1,4 +1,5 @@
 //Unity boilerplate
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,6 +14,8 @@ public class Keyboard : MonoBehaviour
     public Button key_space, key_backspace, key_enter;
 
     public Transform targetTransform;
+
+    public Action submitCallback;
 
 
     void Start()
@@ -56,8 +59,8 @@ public class Keyboard : MonoBehaviour
         key_9.onClick.AddListener(() => { inputField.text += "9"; });
 
         key_space.onClick.AddListener(() => { inputField.text += " "; });
-        key_backspace.onClick.AddListener(() => { inputField.text = inputField.text.Substring(0, inputField.text.Length - 1); });   
-        //key_enter.onClick.AddListener(() => { gameObject.SetActive(false); });        
+        key_backspace.onClick.AddListener(() => { if (inputField.text.Length > 0) inputField.text = inputField.text.Remove(inputField.text.Length - 1); });
+        key_enter.onClick.AddListener(() => Submit());      
         //ActivateKeyboard(inputField);
 
     }
@@ -70,9 +73,22 @@ public class Keyboard : MonoBehaviour
         gameObject.SetActive(true);
         //inputField.Select(); inputField.ActivateInputField();
         //Orient the keyboard towards the target transform and position it in front of the camera
-        transform.position = targetTransform.position + targetTransform.forward * 0.4f;
+        transform.position = targetTransform.position + targetTransform.forward * 0.3f - targetTransform.up * 0.2f;
+        //Set rotation so that the keyboard faces the target transform with an upward tilt of 45 degree along the x axis
+        //transform.rotation = Quaternion.LookRotation(targetTransform.position - transform.position, Vector3.up) * Quaternion.Euler(45, 0, 0);
         transform.LookAt(targetTransform);
 
+    }
+
+    public void Submit()
+    {   
+        //check if submitCallback is null
+        if (submitCallback != null)
+            submitCallback();
+        else
+            DebugLogger.Instance.Log("Submit callback is null");
+
+        gameObject.SetActive(false);
     }
 
     public void DeactivateKeyboard()
