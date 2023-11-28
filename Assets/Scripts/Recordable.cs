@@ -191,12 +191,12 @@ public class Recordable : MonoBehaviour
         //item.color = currentObjColor;
         //item.showStatusForThisFrame = item.showStatusForThisFrame;
 
-        if(currentAssetRecordedData[frameNumber].CollisionStr != "None")
+        /*if(currentAssetRecordedData[frameNumber].CollisionStr != "None")
         {
             DebugLogger.Instance.Log("InsertAssetRecordFrame() - Collision delegate at frame number " + frameNumber + " is not null. Adding to the existing delegate.");
             item.CollisionDelegate = currentAssetRecordedData[frameNumber].CollisionDelegate; //Copy existing collision delegate
             item.CollisionStr = "," + currentAssetRecordedData[frameNumber].CollisionStr; //Copy existing collision
-        }
+        }*/
 
 
         currentAssetRecordedData[frameNumber] = item;
@@ -1024,7 +1024,7 @@ public class Recordable : MonoBehaviour
     {
         if(Manager.Instance.currAppState != Manager.AppState.RECORDING && Manager.Instance.currAppState != Manager.AppState.RECORDING_DURING_PLAYBACK)
         {
-            DebugLogger.Instance.Log("Notifying collision detected between " + base.gameObject.name + " and " + collision.collider.name);
+            //DebugLogger.Instance.Log("Notifying collision detected between " + base.gameObject.name + " and " + collision.collider.name);
             if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere" || collision.collider.name == "HeadContactSphere")
             {                 
                 InputManager.Instance.NotifyCollision(base.gameObject, collision.collider.gameObject);
@@ -1043,7 +1043,7 @@ public class Recordable : MonoBehaviour
     {
         if(Manager.Instance.currAppState != Manager.AppState.RECORDING && Manager.Instance.currAppState != Manager.AppState.RECORDING_DURING_PLAYBACK)
         {
-            DebugLogger.Instance.Log("Notifying collision ended between " + gameObject.name + " and " + collision.collider.name);
+            //DebugLogger.Instance.Log("Notifying collision ended between " + gameObject.name + " and " + collision.collider.name);
             if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere" || collision.collider.name == "HeadContactSphere")
             {      
                 InputManager.Instance.NotifyCollision(null,null);

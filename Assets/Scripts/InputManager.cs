@@ -269,16 +269,16 @@ public class InputManager : MonoBehaviour
         playbackLeftHandPinchObj.SetActive(show);
         playbackRightHandPinchObj.SetActive(show);
         playbackHeadContactObj.SetActive(show);
-        playbackLeftFocus.SetActive(show);
-        playbackRightFocus.SetActive(show);
-        playbackGazeFocus.SetActive(show);
+        //playbackLeftFocus.SetActive(show);
+        //playbackRightFocus.SetActive(show);
+        //playbackGazeFocus.SetActive(show);
         
         leftHandPinchObj.SetActive(!show);
         rightHandPinchObj.SetActive(!show);
         headContactObj.SetActive(!show);
-        leftFocus.SetActive(!show);
-        rightFocus.SetActive(!show);
-        gazeFocus.SetActive(!show);
+        //leftFocus.SetActive(!show);
+        //rightFocus.SetActive(!show);
+        //gazeFocus.SetActive(!show);
     }
 
 

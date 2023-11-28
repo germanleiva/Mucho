@@ -93,7 +93,7 @@ public class Hand : MonoBehaviour
         //For hands as focus squares are parts of hands
         if(focusSquare != null)
         {
-            if(Manager.Instance.currAppState != Manager.AppState.PLAYBACK)
+            if(Manager.Instance.currAppState != Manager.AppState.PLAYBACK && Manager.Instance.currAppState != Manager.AppState.RECORDING_DURING_PLAYBACK) 
             {
                 focusSquare.SetActive(true);
                 Vector3 firstPoint = ray.transform.TransformPoint(ray.GetPosition(0));

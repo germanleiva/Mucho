@@ -144,7 +144,7 @@ public class State
 
     Color originalColor = Color.white;  
     public GestureSequence Gesture { get; set; }
-    public AssetAction Collision { get; set; }
+    public AssetActionSequence Collision { get; set; }
 
     public VoiceSequence VoiceSequence { get; set; }
 

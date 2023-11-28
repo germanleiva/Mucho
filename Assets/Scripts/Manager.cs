@@ -298,7 +298,7 @@ public class Example
 
 }
 
-public class AssetAction
+public class AssetActionSequence
 {
     public string ActionStr { get; set; } //None, Physics, Follow, Show, Hide
     public string CollisionStr { get; set; } 
