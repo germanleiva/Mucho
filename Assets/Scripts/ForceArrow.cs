@@ -89,7 +89,7 @@ public class ForceArrow : MonoBehaviour
             DebugLogger.Instance.Log("CalculateDirectionFromHand: Left hand is closer to asset");
             var leftHandData = Recorder.Instance.currentActiveExample.leftHandData;
             
-            if (currentIndex - 10 >= 0)
+            if (currentIndex - 2 >= 0)
             {
                 //Find average of leftHandData[].rootPosition for the last 10 frames
                 /*Vector3 averageRootPosition = Vector3.zero;
@@ -99,7 +99,7 @@ public class ForceArrow : MonoBehaviour
                 }
                 averageRootPosition /= 10;                
                 direction = leftHandData[currentIndex].rootPosition - averageRootPosition;*/
-                direction = leftHandData[currentIndex].rootPosition - leftHandData[currentIndex - 10].rootPosition;
+                direction = leftHandData[currentIndex].rootPosition - leftHandData[currentIndex - 2].rootPosition;
             }
             else
             {

@@ -23,49 +23,13 @@ public class Recorder : MonoBehaviour
     readonly List<float> handGuideTimePoints = new();
     [Header("Timeline UI")]
     [SerializeField]
-    RectTransform stateTimelinePanel;
+    public RectTransform examplePlaybackPanelPrefab;
+
     [SerializeField]
     RectTransform stateGraphPanel;
     [SerializeField]
-    RectTransform rightHandTimelinePanel;
-    [SerializeField]
-    RectTransform leftHandTimelinePanel;
-    [SerializeField]
-    RectTransform voiceTimelinePanel;
-    [SerializeField]
-    GameObject stateTimelineElementPrefab;
-    [SerializeField]
-    GameObject stateGraphElementPrefab;    
-    [SerializeField]
-    GameObject handTimelineElementPrefab;
-     [SerializeField]
-    GameObject voiceCommandTimelineElementPrefab;
-    [SerializeField]
-    GameObject assetTimelineElementPrefab;
-    [SerializeField]
-    GameObject collisionTimelineElementPrefab;
-    [SerializeField]
-    RectTransform playbackPanelTransform;
-    [SerializeField]
-    GameObject hideTimelinePanelPrefab;
-    [SerializeField]
-    GameObject showTimelinePanelPrefab;
-    public GameObject assetTimelinePanelPrefab;
-    public GameObject collisionTimelinePanel;
+    GameObject stateGraphElementPrefab;   
 
-    public GameObject statesTimelinePanel;
-
-    public GameObject mergesStatePanel;
-
-
-    public List<GestureSequence> LeftHandGestureSequences = new();
-    public List<GestureSequence> RightHandGestureSequences = new();
-
-    public List<VoiceSequence> VoiceCommandSequences = new();
-
-    public List<GestureSequence> AllGestureSequences = new();
-    public List<List<AssetActionSequence>> assetSequencesLists = new();
-    public List<List<AssetActionSequence>> collisionSequencesLists = new();
 
     public List<Recordable> assetsInScene = new();
 
@@ -91,11 +55,8 @@ public class Recorder : MonoBehaviour
     void Start()
     {
         SetPlaybackObjectsVisibility(false);
+        examplePlaybackPanelPrefab.gameObject.SetActive(false);
         AddExample();
-        /*Example example = new(firstExampleButton);
-        firstExampleButton.onClick.AddListener(() => SelectExample(example));
-        examples.Add(example);
-        currentActiveExample = example;*/
     }
 
     public void HighlightAllFollowTargets()
@@ -109,24 +70,31 @@ public class Recorder : MonoBehaviour
     }
 
 
-    public void SelectExample(Example example)
+    public void SelectExample(Example _currentActiveExample)
     {
-        DebugLogger.Instance.Log("Selecting example " + example.exampleId);
-        currentActiveExample = example;
+        DebugLogger.Instance.Log("Selecting example " + _currentActiveExample.exampleId);
+        currentActiveExample = _currentActiveExample;
         foreach (var ex in examples)
         {
             ex.button.GetComponent<Image>().color = Color.white;
+            ex.examplePlaybackPanel.gameObject.SetActive(false);
         }
+
+        currentActiveExample.examplePlaybackPanel.gameObject.SetActive(true);
         currentActiveExample.button.GetComponent<Image>().color = Color.green;
-        //PreparePlayback();
-        RefreshTimelineAndStates();
+        
+        //RefreshTimelineAndStates();
+        RefreshTimelineActions();
     }
 
     public void AddExample()
     {        
         var obj = Instantiate(firstExampleButtonObj, firstExampleButtonObj.transform.parent);
         obj.SetActive(true);
-        Example example = new(obj.GetComponent<Button>());
+        //clone _examplePlaybackPanel
+        RectTransform examplePlaybackPanel_clone = Instantiate(examplePlaybackPanelPrefab, examplePlaybackPanelPrefab.parent);
+        
+        Example example = new(obj.GetComponent<Button>(), examplePlaybackPanel_clone);
         examples.Add(example);
         //example.button.GetComponentInChildren<TMPro.TMP_Text>().text = (examples.Count + 1).ToString();
         //Place the button 20 units below the previous button
@@ -142,7 +110,8 @@ public class Recorder : MonoBehaviour
             //PreparePlayback();
         }
 
-        SelectExample(example);        
+        SelectExample(example);  
+        RefreshTimelineAndStates();      
     }
 
     // Start recording.
@@ -243,7 +212,7 @@ public class Recorder : MonoBehaviour
         int nearestRightHandGestureSequenceStartIndex = int.MaxValue;
         int nearestRightHandGestureSequenceEndIndex = int.MaxValue;
 
-        foreach (var sequence in RightHandGestureSequences)
+        foreach (var sequence in currentActiveExample.RightHandGestureSequences)
         {
             if (Mathf.Abs(currentFrameNum - sequence.StartIndex) < threshHold)
             {
@@ -258,7 +227,7 @@ public class Recorder : MonoBehaviour
         int nearestLeftHandGestureSequenceStartIndex = int.MaxValue;
         int nearestLeftHandGestureSequenceEndIndex = int.MaxValue;
 
-        foreach (var sequence in LeftHandGestureSequences)
+        foreach (var sequence in currentActiveExample.LeftHandGestureSequences)
         {
             if (Mathf.Abs(currentFrameNum - sequence.StartIndex) < threshHold)
             {
@@ -408,7 +377,7 @@ public class Recorder : MonoBehaviour
         {
             //DebugLogger.Instance.Log("Sequence name: " + InputManager.Instance.GestureToString(sequence.GestureType) + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
             //DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
-            TimelineUIElement.CreateTimelineElement(handTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), InputManager.Instance.GestureToString(sequence.GestureType));
+            TimelineUIElement.CreateTimelineElement(currentActiveExample.handTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), InputManager.Instance.GestureToString(sequence.GestureType));
         }
         return GestureSequences;
     }
@@ -421,7 +390,7 @@ public class Recorder : MonoBehaviour
         foreach (VoiceSequence sequence in voiceSequences)
         {
             DebugLogger.Instance.Log("Voice sequence name: " + sequence.VoiceCommand + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
-            TimelineUIElement.CreateTimelineElement(voiceCommandTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.VoiceCommand);
+            TimelineUIElement.CreateTimelineElement(currentActiveExample.voiceCommandTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.VoiceCommand);
         }
         return voiceSequences;
     }
@@ -564,20 +533,20 @@ public class Recorder : MonoBehaviour
 
             if (sequence.ActionStr.Contains("Hide"))
             {
-                GameObject hideElement = Instantiate(hideTimelinePanelPrefab, timelinePanel);
+                GameObject hideElement = Instantiate(currentActiveExample.hideTimelinePanelPrefab, timelinePanel);
                 hideElement.SetActive(true);
                 hideElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(TimelineUIElement.MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex, GetSizeOfMainRecordedData()), hideElement.GetComponent<RectTransform>().anchoredPosition.y);
             }
             else if (sequence.ActionStr.Contains("Show"))
             {
-                GameObject showElement = Instantiate(showTimelinePanelPrefab, timelinePanel);
+                GameObject showElement = Instantiate(currentActiveExample.showTimelinePanelPrefab, timelinePanel);
                 showElement.SetActive(true);
                 showElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(TimelineUIElement.MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex, GetSizeOfMainRecordedData()), showElement.GetComponent<RectTransform>().anchoredPosition.y);
             }
 
             if(sequence.ActionStr.Contains("Follow") || sequence.ActionStr.Contains("ApplyForce") || sequence.ActionStr.Contains("ChangeColor") || sequence.ActionStr.Contains("Pin")) //Other types of events - physics, attach etc
             {                
-                TimelineUIElement.CreateTimelineElement(assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ActionStr);
+                TimelineUIElement.CreateTimelineElement(currentActiveExample.assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ActionStr);
             }
         }
         return sequences;
@@ -606,7 +575,7 @@ public class Recorder : MonoBehaviour
                     sequence.CollisionStr = recordedData[sequence.StartIndex].CollisionStr;
                 }
 
-                TimelineUIElement.CreateTimelineElement(collisionTimelineElementPrefab, collisionTimelinePanelTransform, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ActionStr);
+                TimelineUIElement.CreateTimelineElement(currentActiveExample.collisionTimelineElementPrefab, collisionTimelinePanelTransform, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ActionStr);
             }
             return sequences;
         }
@@ -626,42 +595,42 @@ public class Recorder : MonoBehaviour
     {
         DebugLogger.Instance.Log("Refreshing input sequences");
         //Delete all existing left and right hand timeline elements
-        for (int i = 1; i < leftHandTimelinePanel.GetComponent<RectTransform>().childCount; i++)
+        for (int i = 1; i < currentActiveExample.leftHandTimelinePanel.GetComponent<RectTransform>().childCount; i++)
         {
-            Destroy(leftHandTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
+            Destroy(currentActiveExample.leftHandTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
         }
-        for (int i = 2; i < rightHandTimelinePanel.GetComponent<RectTransform>().childCount; i++)
+        for (int i = 2; i < currentActiveExample.rightHandTimelinePanel.GetComponent<RectTransform>().childCount; i++)
         {
-            Destroy(rightHandTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
+            Destroy(currentActiveExample.rightHandTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
         }
 
         //Delete all existing voice command timeline elements
-        for (int i = 4; i < voiceTimelinePanel.GetComponent<RectTransform>().childCount; i++)
+        for (int i = 4; i < currentActiveExample.voiceTimelinePanel.GetComponent<RectTransform>().childCount; i++)
         {
-            Destroy(voiceTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
+            Destroy(currentActiveExample.voiceTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
         }
 
         //Delete all existing collision timeline elements
-        for (int i = 2; i < collisionTimelinePanel.GetComponent<RectTransform>().childCount; i++)
+        for (int i = 2; i < currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>().childCount; i++)
         {
-            Destroy(collisionTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
+            Destroy(currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
         }
 
         //Generate gesture sequences for left and right hand
-        LeftHandGestureSequences = GenerateGestureSequences(leftHandTimelinePanel, "lefthand");
-        RightHandGestureSequences = GenerateGestureSequences(rightHandTimelinePanel, "righthand");
-        AllGestureSequences = LeftHandGestureSequences.Concat(RightHandGestureSequences).ToList();
+        currentActiveExample.LeftHandGestureSequences = GenerateGestureSequences(currentActiveExample.leftHandTimelinePanel, "lefthand");
+        currentActiveExample.RightHandGestureSequences = GenerateGestureSequences(currentActiveExample.rightHandTimelinePanel, "righthand");
+        currentActiveExample.AllGestureSequences = currentActiveExample.LeftHandGestureSequences.Concat(currentActiveExample.RightHandGestureSequences).ToList();
 
         //Generate voice command sequences
-        VoiceCommandSequences = GenerateVoiceCommandSequences(voiceTimelinePanel);
+        currentActiveExample.VoiceCommandSequences = GenerateVoiceCommandSequences(currentActiveExample.voiceTimelinePanel);
 
         //Generate collision sequences
-        collisionSequencesLists.Clear();
+        currentActiveExample.collisionSequencesLists.Clear();
         foreach (var recordable in currentActiveExample.assetDataDict.Keys)
         {
             if (currentActiveExample.assetDataDict[recordable].Count > 0)
             {
-                collisionSequencesLists.Add(GenerateCollisionSequences(collisionTimelinePanel.GetComponent<RectTransform>(), recordable));
+                currentActiveExample.collisionSequencesLists.Add(GenerateCollisionSequences(currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>(), recordable));
             }
         }
     }
@@ -676,11 +645,11 @@ public class Recorder : MonoBehaviour
         }
 
         int assetsCounter = 0;
-        assetSequencesLists.Clear();
+        currentActiveExample.assetSequencesLists.Clear();
         foreach (var recordable in currentActiveExample.assetDataDict.Keys)
         {
             ++assetsCounter;
-            GameObject timelinePanel = Instantiate(assetTimelinePanelPrefab, playbackPanelTransform);
+            GameObject timelinePanel = Instantiate(currentActiveExample.assetTimelinePanelPrefab, currentActiveExample.examplePlaybackPanel);
             assetTimelines.Add(timelinePanel);
             timelinePanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(timelinePanel.GetComponent<RectTransform>().anchoredPosition.x, timelinePanel.GetComponent<RectTransform>().anchoredPosition.y - assetsCounter * 100);
             timelinePanel.SetActive(true);
@@ -688,7 +657,7 @@ public class Recorder : MonoBehaviour
 
             if (currentActiveExample.assetDataDict[recordable].Count > 0)
             {
-                assetSequencesLists.Add(GenerateAssetActionSequences(timelinePanel.GetComponent<RectTransform>(), recordable));
+                currentActiveExample.assetSequencesLists.Add(GenerateAssetActionSequences(timelinePanel.GetComponent<RectTransform>(), recordable));
 
             }
         }
@@ -696,63 +665,7 @@ public class Recorder : MonoBehaviour
 
     public void RefreshTimelineAndStates()
     {
-        /*
-        DebugLogger.Instance.Log("Refreshing assets timeline for example " + currentActiveExample.exampleId);
-        //Delete all existing asset timelines
-        foreach (var timeline in assetTimelines)
-        {
-            Destroy(timeline);
-        }
-
-        //Delete all existing collision timeline elements
-        for (int i = 2; i < collisionTimelinePanel.GetComponent<RectTransform>().childCount; i++)
-        {
-            Destroy(collisionTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
-        }
-
-        //Delete all existing left and right hand timeline elements
-        for (int i = 1; i < leftHandTimelinePanel.GetComponent<RectTransform>().childCount; i++)
-        {
-            Destroy(leftHandTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
-        }
-        for (int i = 2; i < rightHandTimelinePanel.GetComponent<RectTransform>().childCount; i++)
-        {
-            Destroy(rightHandTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
-        }
-        for (int i = 4; i < voiceTimelinePanel.GetComponent<RectTransform>().childCount; i++)
-        {
-            Destroy(voiceTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
-        }
-
-        //Generate gesture sequences for left and right hand
-        LeftHandGestureSequences = GenerateGestureSequences(leftHandTimelinePanel, "lefthand");
-        RightHandGestureSequences = GenerateGestureSequences(rightHandTimelinePanel, "righthand");
-        AllGestureSequences = LeftHandGestureSequences.Concat(RightHandGestureSequences).ToList();
-
-        //Generate voice command sequences
-        VoiceCommandSequences = GenerateVoiceCommandSequences(voiceTimelinePanel);
-
-
-        //GenerateGestureSequences(timelinePanel, recordable);
-        int assetsCounter = 0;
-        assetSequencesLists.Clear();
-        collisionSequencesLists.Clear();
-        foreach (var recordable in currentActiveExample.assetDataDict.Keys)
-        {
-            ++assetsCounter;
-            GameObject timelinePanel = Instantiate(assetTimelinePanelPrefab, playbackPanelTransform);
-            assetTimelines.Add(timelinePanel);
-            timelinePanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(timelinePanel.GetComponent<RectTransform>().anchoredPosition.x, timelinePanel.GetComponent<RectTransform>().anchoredPosition.y - assetsCounter * 100);
-            timelinePanel.SetActive(true);
-            timelinePanel.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text = Manager.Instance.CleanAssetName(recordable.name); //Assign asset name
-
-            if (currentActiveExample.assetDataDict[recordable].Count > 0)
-            {
-                assetSequencesLists.Add(GenerateAssetActionSequences(timelinePanel.GetComponent<RectTransform>(), recordable));
-                collisionSequencesLists.Add(GenerateCollisionSequences(collisionTimelinePanel.GetComponent<RectTransform>(), recordable));
-            }
-        }
-        CreateStateMachine();*/
+ 
         RefreshTimelineInputSequences();
         RefreshTimelineActions();
         CreateStates();
@@ -766,9 +679,9 @@ public class Recorder : MonoBehaviour
 
         int recordedFramesTotal = GetSizeOfMainRecordedData();
 
-        var gestures = AllGestureSequences;
-        var collisions = collisionSequencesLists.SelectMany(x => x).ToList();
-        var voiceCommands = VoiceCommandSequences;
+        var gestures = currentActiveExample.AllGestureSequences;
+        var collisions = currentActiveExample.collisionSequencesLists.SelectMany(x => x).ToList();
+        var voiceCommands = currentActiveExample.VoiceCommandSequences;
 
         // Create a list of events (start or end of a sequence)
         var events = new List<(int Index, string Type, GestureSequence Gesture, AssetActionSequence Collision, VoiceSequence VoiceCommand)>();
@@ -866,7 +779,7 @@ public class Recorder : MonoBehaviour
             }
 
             //Iterate through collision sequences and check if the start index is within the first 5 frames of the state
-            foreach (var collisionSequences in collisionSequencesLists)
+            foreach (var collisionSequences in currentActiveExample.collisionSequencesLists)
             {
                 foreach (var collisionSequence in collisionSequences)
                 {
@@ -1102,7 +1015,7 @@ public class Recorder : MonoBehaviour
         };
         StateMachine.AddState(state.id, state);
 
-        var stateUI = StateTimelineUIElement.CreateStateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(),
+        var stateUI = StateTimelineUIElement.CreateStateTimelineElement(currentActiveExample.stateTimelineElementPrefab, currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>(),
                                                         startIndex, length, GetSizeOfMainRecordedData(), state);
         
         state.timelineElement = stateUI;
@@ -1163,7 +1076,7 @@ public class Recorder : MonoBehaviour
         }
         newState.id = stateID;
 
-        var stateUI = StateTimelineUIElement.CreateStateTimelineElement(stateTimelineElementPrefab, stateTimelinePanel.GetComponent<RectTransform>(),
+        var stateUI = StateTimelineUIElement.CreateStateTimelineElement(currentActiveExample.stateTimelineElementPrefab, currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>(),
                                                         state1UIElement.StartIndex, state1UIElement.Length + state2UIElement.Length, GetSizeOfMainRecordedData(), newState);
 
         state1UIElement = stateUI.GetComponent<StateTimelineUIElement>();
@@ -1212,15 +1125,15 @@ public class Recorder : MonoBehaviour
         CustomStateMachine.Instance.DeleteAllStates();
 
         //Delete all existing state timeline UI elements
-        for (int i = 2; i < stateTimelinePanel.GetComponent<RectTransform>().childCount; i++)
+        for (int i = 2; i < currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>().childCount; i++)
         {
-            Destroy(stateTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
+            Destroy(currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
         }
     }
 
     public void AddActionsToState(State stateInTimeline)
     {
-        var actions = assetSequencesLists;
+        var actions = currentActiveExample.assetSequencesLists;
         //var stateInTimeline = currentActiveExample.StatesDict.First().Key;
         foreach (var assetSequences in actions)
         {
@@ -1243,7 +1156,6 @@ public class Recorder : MonoBehaviour
                         stateInTimeline.OnExitActionsStr.Add(assetSequence.ActionStr);
                     }
                 }
-
             }
         }
     }

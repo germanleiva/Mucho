@@ -187,8 +187,33 @@ public class Example
     public List<HandFrame> rightHandData;
     public List<HeadFrame> headData;
 
-    public int numberOfRecordedFrames = 0;
+    public RectTransform examplePlaybackPanel;
+    public RectTransform rightHandTimelinePanel;    
+    public RectTransform leftHandTimelinePanel;    
+    public RectTransform voiceTimelinePanel;
+    public GameObject collisionTimelinePanel;
+    public GameObject assetTimelinePanelPrefab;
+    public GameObject statesTimelinePanel;
 
+    public GameObject stateTimelineElementPrefab;
+    public GameObject handTimelineElementPrefab;
+    public GameObject voiceCommandTimelineElementPrefab;
+    public GameObject assetTimelineElementPrefab;
+    public GameObject collisionTimelineElementPrefab;    
+    public GameObject hideTimelinePanelPrefab;   
+    public GameObject showTimelinePanelPrefab;
+
+    public List<GestureSequence> LeftHandGestureSequences = new();
+    public List<GestureSequence> RightHandGestureSequences = new();
+
+    public List<VoiceSequence> VoiceCommandSequences = new();
+
+    public List<GestureSequence> AllGestureSequences = new();
+    public List<List<AssetActionSequence>> assetSequencesLists = new();
+    public List<List<AssetActionSequence>> collisionSequencesLists = new();
+
+
+    public int numberOfRecordedFrames = 0;
     public Button button;
     //Create a dictionary matching assets to the list of their recordable frames
     public Dictionary<Recordable, List<AssetFrame>> assetDataDict;   
@@ -197,7 +222,7 @@ public class Example
 
     public Dictionary<State, StateTimelineUIElement> StatesDict;
 
-    public Example(Button _button)
+    public Example(Button _button, RectTransform _examplePlaybackPanel)
     {
         ++exampleCount;
         exampleId = exampleCount;
@@ -207,6 +232,33 @@ public class Example
         leftHandData = new List<HandFrame>();
         rightHandData = new List<HandFrame>();
         headData = new List<HeadFrame>();
+
+        examplePlaybackPanel = _examplePlaybackPanel;
+        //examplePlaybackPanel.gameObject.SetActive(true);
+        examplePlaybackPanel.SetAsFirstSibling();
+
+        rightHandTimelinePanel = examplePlaybackPanel.Find("RightHandEventsPanel").GetComponent<RectTransform>();
+        leftHandTimelinePanel = examplePlaybackPanel.Find("LeftHandEventsPanel").GetComponent<RectTransform>();
+        voiceTimelinePanel = examplePlaybackPanel.Find("VoiceInputPanel").GetComponent<RectTransform>();
+        collisionTimelinePanel = examplePlaybackPanel.Find("CollisionEventsPanel").gameObject;
+        assetTimelinePanelPrefab = examplePlaybackPanel.Find("AssetEventsPanel").gameObject;
+        assetTimelinePanelPrefab.SetActive(false);
+        statesTimelinePanel = examplePlaybackPanel.Find("StatesPanel").gameObject;
+
+        stateTimelineElementPrefab = statesTimelinePanel.transform.GetChild(0).gameObject;
+        handTimelineElementPrefab = rightHandTimelinePanel.transform.GetChild(0).gameObject;
+        voiceCommandTimelineElementPrefab = voiceTimelinePanel.transform.GetChild(0).gameObject;
+        assetTimelineElementPrefab = assetTimelinePanelPrefab.transform.GetChild(1).gameObject;
+        collisionTimelineElementPrefab = collisionTimelinePanel.transform.GetChild(0).gameObject;
+        hideTimelinePanelPrefab = assetTimelinePanelPrefab.transform.GetChild(2).gameObject;
+        showTimelinePanelPrefab = assetTimelinePanelPrefab.transform.GetChild(3).gameObject;
+
+        LeftHandGestureSequences = new();
+        RightHandGestureSequences = new();
+        VoiceCommandSequences = new();
+        AllGestureSequences = new();
+        assetSequencesLists = new();
+        collisionSequencesLists = new();
 
         assetDataDict = new Dictionary<Recordable, List<AssetFrame>>();
         StatesDict = new Dictionary<State, StateTimelineUIElement>();

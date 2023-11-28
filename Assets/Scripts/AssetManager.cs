@@ -150,14 +150,14 @@ public class AssetManager : MonoBehaviour
         while(Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count < Recorder.Instance.GetSizeOfMainRecordedData())
         {
             Recorder.Instance.playbackSlider.value = Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count;
-            DebugLogger.Instance.Log("AddAssetFrameToAssetDataDict: Adding frame at index " + Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count);
+            //DebugLogger.Instance.Log("AddAssetFrameToAssetDataDict: Adding frame at index " + Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count);
             recordable.RecordAssetFrame();
             yield return new WaitForSeconds(0.01f);
         }
         
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         InputManager.Instance.SetPlaybackObjectsActive(false);
-        DebugLogger.Instance.Log("AddAssetFrameToAssetDataDict: DoRecordSizesMatch() - " + DoRecordSizesMatch());
+        //DebugLogger.Instance.Log("AddAssetFrameToAssetDataDict: DoRecordSizesMatch() - " + DoRecordSizesMatch());
         Recorder.Instance.RefreshTimelineAndStates();
     }
 
@@ -219,9 +219,9 @@ public class AssetManager : MonoBehaviour
         recordable.forceArrows.Add(forceArrow);
         forceArrowScript.asset = recordable.gameObject.transform;
         //forceArrowScript.arrowHead should be positioned 1 unit above the arrowEnd in the y axis
-        forceArrowScript.arrowHeadGhost.position = recordable.gameObject.transform.position + new Vector3(0f,0.2f,0.2f);
+        forceArrowScript.arrowHeadGhost.position = forceArrowScript.arrowHeadReal.position; // recordable.gameObject.transform.position + new Vector3(0f,0.2f,0.2f);
         forceArrowScript.OrientForceArrow();
-        forceArrowScript.arrowHeadGhost.transform.position = forceArrowScript.arrowHeadReal.transform.position;
+        //forceArrowScript.arrowHeadGhost.transform.position = forceArrowScript.arrowHeadReal.transform.position;
         //forceArrowScript.DrawTrajectory();     
     }
    

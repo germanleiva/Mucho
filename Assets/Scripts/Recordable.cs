@@ -968,7 +968,9 @@ public class Recordable : MonoBehaviour
         InputManager.Instance.NotifyCollision(base.gameObject, collision.collider.gameObject);
 
         //Return if asset is colliding with inputmanager's left or right pinch objects
-        if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere")
+        if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere" || 
+            collision.collider.name == "HeadContactSphere" || collision.collider.name == "OVRRightHandVisual_Playback" || 
+            collision.collider.name == "OVRLeftHandVisual_Playback")
         {
             return;
         }
@@ -985,10 +987,8 @@ public class Recordable : MonoBehaviour
                                 actionDelegate: () => { GetComponent<Recordable>().ResetPhysicsPropertiesInLiveMode(); }, 
                                 collidedObject: collision.collider.gameObject);
 
-            ResetPhysicsProperties();                
-            
+            ResetPhysicsProperties();           
         }
-
     }
 
     //For assets
