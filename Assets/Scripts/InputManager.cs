@@ -20,7 +20,7 @@ public class InputManager : MonoBehaviour
 
     public GameObject leftHandPinchObj, rightHandPinchObj, headContactObj;
 
-    public GameObject playbackLeftHandPinchObj, playbackRightHandPinchObj, playbackHeadContactObj;
+    public GameObject playbackLeftHandPinchObj, playbackRightHandPinchObj, playbackHeadContactObj, playbackLeftFocus, playbackRightFocus, playbackGazeFocus;
 
     Vector3 lastLeftHandPos, lastRightHandPos, headLastPos;
 
@@ -264,14 +264,21 @@ public class InputManager : MonoBehaviour
         } 
     }
 
-    public void SetPlaybackContactSphereActive(bool active)
+    public void SetPlaybackObjectsActive(bool show)
     {
-        playbackLeftHandPinchObj.SetActive(active);
-        playbackRightHandPinchObj.SetActive(active);
-        playbackHeadContactObj.SetActive(active);
-        leftHandPinchObj.SetActive(!active);
-        rightHandPinchObj.SetActive(!active);
-        headContactObj.SetActive(!active);
+        playbackLeftHandPinchObj.SetActive(show);
+        playbackRightHandPinchObj.SetActive(show);
+        playbackHeadContactObj.SetActive(show);
+        playbackLeftFocus.SetActive(show);
+        playbackRightFocus.SetActive(show);
+        playbackGazeFocus.SetActive(show);
+        
+        leftHandPinchObj.SetActive(!show);
+        rightHandPinchObj.SetActive(!show);
+        headContactObj.SetActive(!show);
+        leftFocus.SetActive(!show);
+        rightFocus.SetActive(!show);
+        gazeFocus.SetActive(!show);
     }
 
 

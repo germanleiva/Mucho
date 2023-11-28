@@ -123,7 +123,7 @@ public class AssetManager : MonoBehaviour
         {
             Manager.Instance.currAppState = Manager.AppState.RECORDING_DURING_PLAYBACK;
             Recorder.Instance.playbackSlider.value = 0;
-            InputManager.Instance.SetPlaybackContactSphereActive(true);
+            InputManager.Instance.SetPlaybackObjectsActive(true);
    
             if (obj != null)
             {
@@ -156,7 +156,7 @@ public class AssetManager : MonoBehaviour
         }
         
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
-        InputManager.Instance.SetPlaybackContactSphereActive(false);
+        InputManager.Instance.SetPlaybackObjectsActive(false);
         DebugLogger.Instance.Log("AddAssetFrameToAssetDataDict: DoRecordSizesMatch() - " + DoRecordSizesMatch());
         Recorder.Instance.RefreshTimelineAndStates();
     }

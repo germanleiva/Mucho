@@ -26,17 +26,18 @@ public class FollowLineTrigger : MonoBehaviour
         
     }
     
-    void OnTriggerEnter(Collider other)
+    void OnCollisionEnter(Collision collision)
     {
         //DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerEnter, collision with " + other.gameObject.name);
         //Check if the parent of the other collider has the FollowLine component
-        if(other.gameObject.name != "FollowGuideSphere")
+        
+        if(collision.gameObject.name != "FollowGuideSphere")
         {
             //DebugLogger.Instance.Log("FollowGuideSphere not found");
             return;
         }
         
-        FollowLine followLine = other.gameObject.transform.parent.parent.GetComponentInChildren<FollowLine>();
+        FollowLine followLine = collision.gameObject.transform.parent.parent.GetComponentInChildren<FollowLine>();
 
         if(followLine != null)
         {
@@ -72,18 +73,18 @@ public class FollowLineTrigger : MonoBehaviour
         }
     }
 
-    void OnTriggerExit(Collider other)
+    void OnCollisionExit(Collision collision)
     {
         //DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerExit, collision with " + other.gameObject.name);
         //Check if the parent of the other collider has the FollowLine component
 
-        if(other.gameObject.name != "FollowGuideSphere")
+        if(collision.gameObject.name != "FollowGuideSphere")
         {
             //DebugLogger.Instance.Log("FollowGuideSphere not found");
             return;
         }
         
-        FollowLine followLine = other.gameObject.transform.parent.parent.GetComponentInChildren<FollowLine>();
+        FollowLine followLine = collision.gameObject.transform.parent.parent.GetComponentInChildren<FollowLine>();
 
         if(followLine != null)
         {

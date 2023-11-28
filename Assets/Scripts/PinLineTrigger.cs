@@ -26,17 +26,17 @@ public class PinLineTrigger : MonoBehaviour
         
     }
     
-    void OnTriggerEnter(Collider other)
+    void OnCollisionEnter(Collision collision)
     {
         //DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerEnter, collision with " + other.gameObject.name);
         //Check if the parent of the other collider has the FollowLine component
-        if(other.gameObject.name != "PinGuideSphere")
+        if(collision.gameObject.name != "PinGuideSphere")
         {
             //DebugLogger.Instance.Log("PinGuideSphere not found");
             return;
         }
         
-        PinLine pinLine = other.gameObject.transform.parent.parent.GetComponentInChildren<PinLine>();
+        PinLine pinLine = collision.gameObject.transform.parent.parent.GetComponentInChildren<PinLine>();
 
         if(pinLine != null)
         {
@@ -72,18 +72,18 @@ public class PinLineTrigger : MonoBehaviour
         }
     }
 
-    void OnTriggerExit(Collider other)
+    void OnCollisionExit(Collision collision)
     {
         //DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerExit, collision with " + other.gameObject.name);
         //Check if the parent of the other collider has the FollowLine component
 
-        if(other.gameObject.name != "PinGuideSphere")
+        if(collision.gameObject.name != "PinGuideSphere")
         {
            //DebugLogger.Instance.Log("PinGuideSphere not found");
             return;
         }
         
-        PinLine pinLine = other.gameObject.transform.parent.parent.GetComponentInChildren<PinLine>();
+        PinLine pinLine = collision.gameObject.transform.parent.parent.GetComponentInChildren<PinLine>();
 
         if(pinLine != null)
         {
