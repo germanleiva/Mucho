@@ -28,7 +28,7 @@ public class FollowLineTrigger : MonoBehaviour
     
     void OnCollisionEnter(Collision collision)
     {
-        DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerEnter, collision with " + collision.gameObject.name);
+        //DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerEnter, collision with " + collision.gameObject.name);
         //Check if the parent of the other collider has the FollowLine component
         
         if(collision.gameObject.name != "FollowGuideSphere")
@@ -41,7 +41,7 @@ public class FollowLineTrigger : MonoBehaviour
 
         if(followLine != null)
         {
-            DebugLogger.Instance.Log("FollowLineTrigger: FollowLine found in " + collision.gameObject.transform.parent.parent.name);
+            //DebugLogger.Instance.Log("FollowLineTrigger: FollowLine found in " + collision.gameObject.transform.parent.parent.name);
             //followLine.DeactivateFollowLine();
             renderer.material = highlightMaterial;  
             if(followTargetType == FollowTargetType.LEFTHAND)
@@ -76,7 +76,7 @@ public class FollowLineTrigger : MonoBehaviour
 
     void OnCollisionExit(Collision collision)
     {
-        DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerExit, collision with " + collision.gameObject.name);
+        //DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerExit, collision with " + collision.gameObject.name);
         //Check if the parent of the other collider has the FollowLine component
 
         if(collision.gameObject.name != "FollowGuideSphere")

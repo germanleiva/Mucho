@@ -46,7 +46,7 @@ public class TextAsset : MonoBehaviour
         text.text = inputField.text;
         inputField.text = "";
         keyboard.gameObject.SetActive(false);
-        AssetMenu.SetActive(true);
+        AssetMenu.SetActive(false);
         TextEditUI.SetActive(false);
     }
 

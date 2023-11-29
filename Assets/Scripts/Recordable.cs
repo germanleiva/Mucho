@@ -15,6 +15,8 @@ public class Recordable : MonoBehaviour
 
     int firstFrameOfManualRecording, lastFrameOfManualRecording;
 
+    public bool isThisObjThrown;
+
     public enum AssetRecordingType
     {
         None,
@@ -41,12 +43,13 @@ public class Recordable : MonoBehaviour
 
     void Start()
     {
+        isThisObjThrown = false;
         lastAssetPosition = transform.position;
         defaultMaterial = gameObject.GetComponent<MeshRenderer>().material;
         currentObjColor = gameObject.GetComponent<MeshRenderer>().material.color;
     }
 
-    void Update()
+    void FixedUpdate()
     {
         /*
         if(recordable.currentRecordingMode == Recordable.AssetRecordingType.ManualAnimation)
@@ -65,7 +68,7 @@ public class Recordable : MonoBehaviour
         }
         */
 
-        if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
+        if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING && isThisObjThrown)
         {
             //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "ApplyForce()", true);                
             //Increment the slider value by frame duration
@@ -350,8 +353,8 @@ public class Recordable : MonoBehaviour
 
         SetVisibility(false);
 
-        //Recorder.Instance.RefreshTimelineAndStates();
-        Recorder.Instance.RefreshTimelineActions();
+        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineActions();
     }
 
     //For assets
@@ -378,8 +381,8 @@ public class Recordable : MonoBehaviour
 
         SetVisibility(true);
 
-        //Recorder.Instance.RefreshTimelineAndStates();
-        Recorder.Instance.RefreshTimelineActions();
+        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineActions();
 
     }
 
@@ -404,8 +407,8 @@ public class Recordable : MonoBehaviour
 
         SetColor(color);
 
-        //Recorder.Instance.RefreshTimelineAndStates();
-        Recorder.Instance.RefreshTimelineActions();
+        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineActions();
     }
 
     public void ReplaceMesh(GameObject newMeshObj)
@@ -439,8 +442,8 @@ public class Recordable : MonoBehaviour
 
         //Pin(Recorder.Instance.leftHand.GetCurrentPosition());
 
-        //Recorder.Instance.RefreshTimelineAndStates();
-        Recorder.Instance.RefreshTimelineActions();
+        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineActions();
     }
 
     public void RecordPinToRightHand()
@@ -460,8 +463,8 @@ public class Recordable : MonoBehaviour
 
         //Pin(Recorder.Instance.rightHand.GetCurrentPosition());
 
-        //Recorder.Instance.RefreshTimelineAndStates();
-        Recorder.Instance.RefreshTimelineActions();
+        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineActions();
     }
 
     public void RecordPinToLeftFocus()
@@ -481,8 +484,8 @@ public class Recordable : MonoBehaviour
 
         //Pin(Recorder.Instance.leftFocus.transform.position);
 
-        //Recorder.Instance.RefreshTimelineAndStates();
-        Recorder.Instance.RefreshTimelineActions();
+        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineActions();
     }
 
     public void RecordPinToRightFocus()
@@ -502,8 +505,8 @@ public class Recordable : MonoBehaviour
 
         //Pin(Recorder.Instance.rightFocus.transform.position);
 
-        //Recorder.Instance.RefreshTimelineAndStates();
-        Recorder.Instance.RefreshTimelineActions();
+        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineActions();
     }
 
     public void RecordPinToGazeFocus()
@@ -523,8 +526,8 @@ public class Recordable : MonoBehaviour
 
         //Pin(Recorder.Instance.gazeFocus.transform.position);
 
-        //Recorder.Instance.RefreshTimelineAndStates();
-        Recorder.Instance.RefreshTimelineActions();
+        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineActions();
     }
 
 
@@ -541,7 +544,7 @@ public class Recordable : MonoBehaviour
         {
             if(Manager.Instance.currAppState == Manager.AppState.LIVE)
             {
-                
+                DebugLogger.Instance.Log("LIVE mode: Setting visibility to true for " + gameObject.name);
                 //Set mesh renderer for playbackObject 
                 gameObject.GetComponent<MeshRenderer>().enabled = true;
                 gameObject.GetComponent<MeshRenderer>().material = defaultMaterial;
@@ -560,6 +563,7 @@ public class Recordable : MonoBehaviour
         {
             if(Manager.Instance.currAppState == Manager.AppState.LIVE)
             {
+                DebugLogger.Instance.Log("LIVE mode: Setting visibility to false for " + gameObject.name);
                 //Set mesh renderer for playbackObject 
                 gameObject.GetComponent<MeshRenderer>().enabled = false;
                 if(gameObject.GetComponentInChildren<TextAsset>() != null)
@@ -575,9 +579,9 @@ public class Recordable : MonoBehaviour
         }
     }
 
-    int FindFollowEndIndex(int _frameStart) //TODO: Check if collision indices should be considered
+    int FindFollowEndIndex(int _frameStart) 
     {
-        //Iterate through Recoeder.Instance.currentActiveExample.StatesDict and find the StartIndex closest to _frameStart and greater than _frameStart
+        
         int followEndIndexFromStates = 0;
         List<State> orderedKeys = new(Recorder.Instance.currentActiveExample.StatesDict.Keys);
         for (int i = 0; i < orderedKeys.Count; i++)
@@ -861,7 +865,7 @@ public class Recordable : MonoBehaviour
     {
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
 
-        if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
+        if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING && isThisObjThrown)
         {
             AssetManager.Instance.HideMiscObjs();
 
@@ -937,7 +941,7 @@ public class Recordable : MonoBehaviour
     //For assets
     void OnCollisionEnter(Collision collision)
     {
-        DebugLogger.Instance.Log("Notifying collision detected between " + base.gameObject.name + " and " + collision.collider.name);
+        DebugLogger.Instance.Log("Recordable.OnCollisionEnter: Notifying collision detected between " + base.gameObject.name + " and " + collision.collider.name);
         InputManager.Instance.NotifyCollision(base.gameObject, collision.collider.gameObject);
 
         //Return if asset is colliding with inputmanager's left or right pinch objects
@@ -948,11 +952,11 @@ public class Recordable : MonoBehaviour
             return;
         }
 
-        if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING)
-        {
+        if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING && isThisObjThrown)
+        {            
             Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
 
-            DebugLogger.Instance.Log("Collision detected between " + base.gameObject.name + " and " + collision.collider.name);            
+            DebugLogger.Instance.Log("Recordable.OnCollisionEnter: Collision detected between " + base.gameObject.name + " and " + collision.collider.name);            
 
             ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionStr: "ResetPhysics()", 
@@ -967,11 +971,13 @@ public class Recordable : MonoBehaviour
     //For assets
     public void ResetPhysicsProperties()
     {
+        DebugLogger.Instance.Log("ResetPhysicsProperties called for " + gameObject.name);
         //Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
+        isThisObjThrown = false;
         //Recorder.Instance.isMainPlaybackOn = false;
         InputManager.Instance.leftHandPinchObj.SetActive(true);
         InputManager.Instance.rightHandPinchObj.SetActive(true);
-        DebugLogger.Instance.Log("Resetting physics properties"); 
+
         InputManager.Instance.NotifyCollision(null,null);       
         Recorder.Instance.playbackSlider.value = oldMainPlaybackSliderValue;
         transform.position = initPosBeforePhysicsSimulation;

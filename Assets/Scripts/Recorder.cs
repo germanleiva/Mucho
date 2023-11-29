@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -57,16 +58,6 @@ public class Recorder : MonoBehaviour
         SetPlaybackObjectsVisibility(false);
         examplePlaybackPanelPrefab.gameObject.SetActive(false);
         AddExample();
-    }
-
-    public void HighlightAllFollowTargets()
-    {
-
-    }
-
-    public void HighlightSelectedFollowTarget()
-    {
-
     }
 
 
@@ -126,7 +117,8 @@ public class Recorder : MonoBehaviour
         DebugLogger.Instance.Log("StartRecording");
 
         currentActiveExample.ResetData();
-        AssetManager.Instance.ShowMiscObjs();
+        //AssetManager.Instance.ShowMiscObjs();
+        AssetManager.Instance.SetAllAssetMenusPokeable(false);
 
         recordStartFrame = 0;//Time.time;
         frameCount = 0;
@@ -154,8 +146,8 @@ public class Recorder : MonoBehaviour
 
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
 
-        AssetManager.Instance.ShowMiscObjs();
-
+        //AssetManager.Instance.ShowMiscObjs();
+        AssetManager.Instance.SetAllAssetMenusPokeable(true);
  
         AssetManager.Instance.DoRecordSizesMatch();
         RefreshTimelineAndStates();   
@@ -269,14 +261,6 @@ public class Recorder : MonoBehaviour
     {
         //DebugLogger.Instance.Log("StopPlayback");
         //isMainPlaybackOn = false;
-    }
-
-    public void SetTestMode()
-    {
-
-        Manager.Instance.currAppState = Manager.AppState.TEST;
-        rootPlaybackArea.SetActive(false);
-
     }
 
     public void SetPlaybackObjectsVisibility(bool status)
@@ -940,14 +924,14 @@ public class Recorder : MonoBehaviour
                     if(distanceToStateStart < distanceToStateEnd)
                     {
                         DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionStr + " for state " + stateInTimeline.id + " in OnEnterActions");
-                        stateInTimeline.OnEnterActions += () => assetSequence.ActionDelegate();
-                        stateInTimeline.OnEnterActionsStr.Add(assetSequence.ActionStr);
+                        stateInTimeline.OnEnterActions = () => assetSequence.ActionDelegate();
+                        stateInTimeline.OnEnterActionsStr = assetSequence.ActionStr;
                     }
                     else
                     {
                         DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionStr + " for state " + stateInTimeline.id + " in OnExitActions");
-                        stateInTimeline.OnExitActions += () => assetSequence.ActionDelegate();
-                        stateInTimeline.OnExitActionsStr.Add(assetSequence.ActionStr);
+                        stateInTimeline.OnExitActions = () => assetSequence.ActionDelegate();
+                        stateInTimeline.OnExitActionsStr = assetSequence.ActionStr;
                     }
                 }
             }
@@ -1004,14 +988,15 @@ public class Recorder : MonoBehaviour
             return;
         }
 
-        DebugLogger.Instance.Log("CombineExamples: The last common state is " + commonStates.Last().id + " at index " + (lastCommonStateIndex-1));
+        DebugLogger.Instance.Log("CombineExamples: The last common state is " + commonStates.Last().id + " at index " + lastCommonStateIndex);
 
         if (lastCommonStateIndex < shortestListLength)
         { 
             //Printing the states at lastCommonStateIndex-1 for each List<State> in allStatesInExamples except the first
             DebugLogger.Instance.Log("CombineExamples: States at index " + (lastCommonStateIndex - 1) + " for each example except the first: ");
-            for (int i = 1; i < allStatesInExamples.Count; i++)
+            for (int i = 1; i < allStatesInExamples.Count; i++) //Except the first list. i.e. the shortest list which has already been added
             {
+                DebugLogger.Instance.Log("CombineExamples: Inside for loop");
                 commonStates.Add(shortestList[lastCommonStateIndex]); //Add the state after the last common state
                 //allStatesInExamples[i][lastCommonStateIndex].PrintDetailsOfState(VRConsoleEnabled : true);            
                 commonStates.Last().CopyTransitionFromState(allStatesInExamples[i][lastCommonStateIndex]);
@@ -1110,6 +1095,10 @@ public class Recorder : MonoBehaviour
         {
             nextState = currentActiveExample.StatesDict.Keys.ToList()[state1Index + 1];
             DebugLogger.Instance.Log("The state after state " + state2.id + " is state " + nextState.id);
+
+            newState.ClearTransitions();
+            newState.CopyTransitionFromState(state2);
+
             //Add a transition from the new state to the next state
             newState.ModifyTransitionTo(nextState);
             //newState.transitions.Clear();
@@ -1120,10 +1109,10 @@ public class Recorder : MonoBehaviour
         }
 
 
-        newState.OnEnterActions += state1.OnEnterActions;
-        newState.OnEnterActions += state2.OnEnterActions;
-        newState.OnExitActions += state1.OnExitActions; //We only have unfollow so this is fine for now TODO: Fix this for other use cases
-        newState.OnExitActions += state2.OnExitActions;
+        newState.OnEnterActions = state1.OnEnterActions;
+        newState.OnEnterActions = state2.OnEnterActions;
+        newState.OnExitActions = state1.OnExitActions; //We only have unfollow so this is fine for now TODO: Fix this for other use cases
+        newState.OnExitActions = state2.OnExitActions;
 
 
         //Assign state.id as "State" plus the digits present in state1.id and state2.id
@@ -1184,6 +1173,8 @@ public class Recorder : MonoBehaviour
 
         //StateMachine.SetInitialState(currentActiveExample.StatesDict.First().Key.id);
         AddActionsToAllStates();
+        CombineExamples();
+        StateMachine.SetInitialState(currentActiveExample.StatesDict.First().Key.id);
 
         return newState;
     }
@@ -1211,7 +1202,8 @@ public class Recorder : MonoBehaviour
     {
         //Find the id of the first state in the state machine
         
-        CustomStateMachine.Instance.SetInitialState("State 0");
+        //CustomStateMachine.Instance.SetInitialState("State 0");
+        CustomStateMachine.Instance.SetInitialState(currentActiveExample.StatesDict.First().Key.id);
     }
 
 

@@ -47,13 +47,13 @@ public class ForceArrow : MonoBehaviour
         //Call DrawTrajectory() when the current position of arrowHead is different from the previous position
         if ((arrowHeadGhost.position-previousArrowHeadPosition).magnitude > 0.0001f)
         {
-            OrientForceArrow();
-            DrawTrajectory();
+            float calculatedMagnitude = OrientForceArrow();
+            DrawTrajectory(calculatedMagnitude);
         }
         previousArrowHeadPosition = arrowHeadGhost.position;        
     }
 
-    public void OrientForceArrow()
+    public float OrientForceArrow()
     {
         //Ghost arrow head
         Vector3 direction = arrowHeadGhost.position - asset.position;
@@ -75,6 +75,8 @@ public class ForceArrow : MonoBehaviour
         arrowBody.localScale = new Vector3(arrowBody.localScale.x, distance / 2, arrowBody.localScale.z);
         Quaternion bodyRot = Quaternion.FromToRotation(Vector3.up, forceDir);
         arrowBody.rotation = bodyRot;
+
+        return magnitude;
         
     }
 
@@ -146,7 +148,7 @@ public class ForceArrow : MonoBehaviour
     }
     
 
-    public void DrawTrajectory()
+    public void DrawTrajectory(float magnitude)
     {
         lineRenderer.enabled = true;
         
@@ -157,7 +159,7 @@ public class ForceArrow : MonoBehaviour
         Vector3 direction = (position2 - position1);
 
         // Initial velocity is just the direction
-        initialVelocity = direction * 10f;
+        initialVelocity = direction * magnitude;
 
         forceMagnitudeUI.transform.position = (arrowHeadReal.position + arrowBody.position) / 2;    
         forceMagnitudeUI.transform.position += new Vector3(0, 0.2f, 0);
@@ -236,6 +238,7 @@ public class ForceArrow : MonoBehaviour
     {
         Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
         GameObject throwableAsset = asset.gameObject;
+        throwableAsset.GetComponent<Recordable>().isThisObjThrown = true;
         throwableAsset.GetComponent<Recordable>().PrepareForceSimulation(initialVelocity);
         arrowHeadGhost.transform.position = arrowHeadReal.transform.position;
     }

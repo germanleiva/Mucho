@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.OVR.Scripts;
+using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,7 +23,6 @@ public class Manager : MonoBehaviour
         RECORDING_DURING_PLAYBACK,
         ASSETRECORDING,
         PLAYBACK,
-        TEST,
         LIVE,
         EDITCOLLIDERS
     }
@@ -84,11 +84,6 @@ public class Manager : MonoBehaviour
         speechToTextEngine.StartListening();
     }
 
-    public void ChangeToTestMode()
-    {
-        currAppState = Manager.AppState.TEST;
-    }
-
     public void ChangeToAssetRecordingMode()
     {
         currAppState = Manager.AppState.RECORDING;
@@ -101,6 +96,7 @@ public class Manager : MonoBehaviour
         Recorder.Instance.SetPlaybackObjectsVisibility(true);
         //AssetManager.Instance.ShowMiscObjs();
         AssetManager.Instance.SetAllAssetMenusPokeable(true);
+        AssetManager.Instance.ResetPhysicsForAllAssets();
         Recorder.Instance.ResetStateMachine();
         speechToTextEngine.StopListening();
     }
