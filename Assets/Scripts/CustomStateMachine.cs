@@ -240,13 +240,13 @@ public class State
         }
     }
 
-    /*public void ModifyTransitionTo(State newState)
+    public void ModifyTransitionTo(State newState)
     {
         foreach (var transition in transitions)
         {
             transition.to = newState;
         }
-    }*/
+    }
 
     public void PrintDetailsOfState(bool VRConsoleEnabled = false)
     {

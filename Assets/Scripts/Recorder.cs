@@ -1091,12 +1091,32 @@ public class Recorder : MonoBehaviour
         int state1Index = currentActiveExample.StatesDict.Keys.ToList().IndexOf(state1);
         //Find the state before state1 in the StatesInTimeline dictionary if the index of state1 is not 0
         State previousState = null;
-        if (state1Index != 0)
+        if (state1Index > 0)
         {
             previousState = currentActiveExample.StatesDict.Keys.ToList()[state1Index - 1];
+            DebugLogger.Instance.Log("The state before state " + state1.id + " is state " + previousState.id);
             //Add a transition from the previous state to the new state
-            //previousState.ModifyTransitionTo(newState);
+            previousState.ModifyTransitionTo(newState);
             //previousState.transitions.Clear();  
+        }
+        else
+        {
+            DebugLogger.Instance.Log("State " + state1.id + " is the first state");
+        }
+
+        State nextState = null;
+        //Find the state after state2 in the StatesInTimeline dictionary if the index of state2 is not the last index
+        if (state1Index < currentActiveExample.StatesDict.Keys.Count - 1)
+        {
+            nextState = currentActiveExample.StatesDict.Keys.ToList()[state1Index + 1];
+            DebugLogger.Instance.Log("The state after state " + state2.id + " is state " + nextState.id);
+            //Add a transition from the new state to the next state
+            newState.ModifyTransitionTo(nextState);
+            //newState.transitions.Clear();
+        }
+        else
+        {
+            DebugLogger.Instance.Log("State " + state2.id + " is the last state");
         }
 
 
@@ -1129,10 +1149,11 @@ public class Recorder : MonoBehaviour
         var stateUI = StateTimelineUIElement.CreateStateTimelineElement(currentActiveExample.stateTimelineElementPrefab, currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>(),
                                                         state1UIElement.StartIndex, state1UIElement.Length + state2UIElement.Length, GetSizeOfMainRecordedData(), newState);
 
+        newState.timelineElement = stateUI;
         state1UIElement = stateUI.GetComponent<StateTimelineUIElement>();
 
-        DebugLogger.Instance.Log("Merging states " + state1.id + " and " + state2.id + " to create state " + newState.id);
-        DebugLogger.Instance.Log("Size of new state: " + state1UIElement.Length);
+        DebugLogger.Instance.Log("Merged states " + state1.id + " and " + state2.id + " to create state " + newState.id);
+        //DebugLogger.Instance.Log("Size of new state: " + state1UIElement.Length);
 
         //Remove state1 and state2 from the state machine
         StateMachine.DeleteState(state1.id);
@@ -1162,6 +1183,7 @@ public class Recorder : MonoBehaviour
         StateMachine.AddState(newState.id, newState);
 
         //StateMachine.SetInitialState(currentActiveExample.StatesDict.First().Key.id);
+        AddActionsToAllStates();
 
         return newState;
     }
@@ -1187,6 +1209,8 @@ public class Recorder : MonoBehaviour
 
     public void ResetStateMachine()
     {
+        //Find the id of the first state in the state machine
+        
         CustomStateMachine.Instance.SetInitialState("State 0");
     }
 
