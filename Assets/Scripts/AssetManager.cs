@@ -118,7 +118,8 @@ public class AssetManager : MonoBehaviour
         obj.SetActive(true);
         Recorder.Instance.assetsInScene.Add(obj.GetComponentInChildren<Recordable>());
         Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
-        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineAndStates();
+        Recorder.Instance.RefreshTimelineActions();
         if(Recorder.Instance.GetSizeOfMainRecordedData() > 0) //Recording already exists
         {
             Manager.Instance.currAppState = Manager.AppState.RECORDING_DURING_PLAYBACK;
@@ -167,7 +168,8 @@ public class AssetManager : MonoBehaviour
         DebugLogger.Instance.Log("Deleted " + obj.name);        
         Recorder.Instance.assetsInScene.Remove(obj.GetComponentInChildren<Recordable>());
         Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
-        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineAndStates();
+        Recorder.Instance.RefreshTimelineActions();
         Destroy(obj);
     }
 

@@ -245,7 +245,7 @@ public class Recordable : MonoBehaviour
         lastFrameOfManualRecording = (int)Recorder.Instance.playbackSlider.value;
         DebugLogger.Instance.Log("First frame: " + firstFrameOfManualRecording + " Last frame: " + lastFrameOfManualRecording);
         //CheckIfAssetIsFollowingAnything(recordable);
-        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineAndStates();
     }
 
     public void CheckIfAssetIsFollowingAnything(Recordable recordable)
@@ -317,7 +317,7 @@ public class Recordable : MonoBehaviour
         }
   
         //Finally, refresh the timeline
-        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineAndStates();
     }
 
     /*public void CreateFollowLine()
@@ -350,7 +350,8 @@ public class Recordable : MonoBehaviour
 
         SetVisibility(false);
 
-        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineAndStates();
+        Recorder.Instance.RefreshTimelineActions();
     }
 
     //For assets
@@ -377,7 +378,8 @@ public class Recordable : MonoBehaviour
 
         SetVisibility(true);
 
-        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineAndStates();
+        Recorder.Instance.RefreshTimelineActions();
 
     }
 
@@ -402,7 +404,8 @@ public class Recordable : MonoBehaviour
 
         SetColor(color);
 
-        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineAndStates();
+        Recorder.Instance.RefreshTimelineActions();
     }
 
     public void ReplaceMesh(GameObject newMeshObj)
@@ -436,7 +439,8 @@ public class Recordable : MonoBehaviour
 
         //Pin(Recorder.Instance.leftHand.GetCurrentPosition());
 
-        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineAndStates();
+        Recorder.Instance.RefreshTimelineActions();
     }
 
     public void RecordPinToRightHand()
@@ -456,7 +460,8 @@ public class Recordable : MonoBehaviour
 
         //Pin(Recorder.Instance.rightHand.GetCurrentPosition());
 
-        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineAndStates();
+        Recorder.Instance.RefreshTimelineActions();
     }
 
     public void RecordPinToLeftFocus()
@@ -476,7 +481,8 @@ public class Recordable : MonoBehaviour
 
         //Pin(Recorder.Instance.leftFocus.transform.position);
 
-        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineAndStates();
+        Recorder.Instance.RefreshTimelineActions();
     }
 
     public void RecordPinToRightFocus()
@@ -496,7 +502,8 @@ public class Recordable : MonoBehaviour
 
         //Pin(Recorder.Instance.rightFocus.transform.position);
 
-        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineAndStates();
+        Recorder.Instance.RefreshTimelineActions();
     }
 
     public void RecordPinToGazeFocus()
@@ -516,7 +523,8 @@ public class Recordable : MonoBehaviour
 
         //Pin(Recorder.Instance.gazeFocus.transform.position);
 
-        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineAndStates();
+        Recorder.Instance.RefreshTimelineActions();
     }
 
 
@@ -581,48 +589,7 @@ public class Recordable : MonoBehaviour
                 break;
             }
         }      
-
         return followEndIndexFromStates;  
-
-        /*
-        //Iterate through Recorder.Instance.LeftHandGestureSequences and Recorder.Instance.RightHandGestureSequences and find the StartIndex closest to _frameStart and greater than _frameStart
-        int followEndIndexFromLeftGestures = 0;
-        if(Recorder.Instance.LeftHandGestureSequences.Count > 0)
-        {
-            for (int i = 0; i < Recorder.Instance.LeftHandGestureSequences.Count; i++)
-            {
-                int gestureEndIndex = Recorder.Instance.LeftHandGestureSequences[i].StartIndex + Recorder.Instance.LeftHandGestureSequences[i].Length;
-                if(gestureEndIndex > _frameStart)
-                {
-                    followEndIndexFromLeftGestures = gestureEndIndex;
-                    break;
-                }
-            }
-        }
-
-        int followEndIndexFromRightGestures = 0;
-        if(Recorder.Instance.RightHandGestureSequences.Count > 0)
-        {
-            for (int i = 0; i < Recorder.Instance.RightHandGestureSequences.Count; i++)
-            {
-                int gestureEndIndex = Recorder.Instance.RightHandGestureSequences[i].StartIndex + Recorder.Instance.RightHandGestureSequences[i].Length;
-                if(gestureEndIndex > _frameStart)
-                {
-                    followEndIndexFromRightGestures = gestureEndIndex;
-                    break;
-                }
-            }
-        }
-
-        if(followEndIndexFromLeftGestures != 0 && followEndIndexFromRightGestures != 0)
-            return Mathf.Min(followEndIndexFromLeftGestures, followEndIndexFromRightGestures);
-        else if(followEndIndexFromLeftGestures == 0 && followEndIndexFromRightGestures != 0)
-            return followEndIndexFromRightGestures;
-        else if(followEndIndexFromLeftGestures != 0 && followEndIndexFromRightGestures == 0)
-            return followEndIndexFromLeftGestures;
-        else 
-            return 0;
-            */
     }
 
     //For assets
@@ -744,9 +711,11 @@ public class Recordable : MonoBehaviour
 
         DebugLogger.Instance.Log("Copying pose from left focus square at frame " + _frameStart + " to frame " + followEndIndex);
 
+        Vector3 startPosDiff = Recorder.Instance.currentActiveExample.leftHandData[_frameStart].focusSquarePosition - currentAssetRecordedData[_frameStart].rootPosition;
+
         for (int i = _frameStart + 1; i < followEndIndex; i++)
         {   
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandData[i].focusSquarePosition;
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandData[i].focusSquarePosition - startPosDiff;
             currentAssetRecordedData[i].ActionStr = "Follow(L-focus)";
             currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left focus)";
         }
@@ -757,7 +726,7 @@ public class Recordable : MonoBehaviour
                         actionStr: "Unfollow()",  
                         actionDelegate: () => { GetComponent<Recordable>().Unfollow(); });
 
-        currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.leftHandData[followEndIndex - 1].focusSquarePosition;
+        currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.leftHandData[followEndIndex - 1].focusSquarePosition - startPosDiff;
 
         for (int i = followEndIndex + 1; i < currentAssetRecordedData.Count; i++)
         {
@@ -790,9 +759,11 @@ public class Recordable : MonoBehaviour
 
         DebugLogger.Instance.Log("Copying pose from right focus square at frame " + _frameStart + " to frame " + followEndIndex);
 
+        Vector3 startPosDiff = Recorder.Instance.currentActiveExample.rightHandData[_frameStart].focusSquarePosition - currentAssetRecordedData[_frameStart].rootPosition;
+
         for (int i = _frameStart + 1; i < followEndIndex; i++)
         {   
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandData[i].focusSquarePosition;
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandData[i].focusSquarePosition - startPosDiff;
             currentAssetRecordedData[i].ActionStr = "Follow(R-focus)";
             currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right focus)";
         }
@@ -803,7 +774,7 @@ public class Recordable : MonoBehaviour
                         actionStr: "Unfollow()",  
                         actionDelegate: () => { GetComponent<Recordable>().Unfollow(); });
         
-        currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.rightHandData[followEndIndex - 1].focusSquarePosition;
+        currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.rightHandData[followEndIndex - 1].focusSquarePosition - startPosDiff;
 
         for (int i = followEndIndex + 1; i < currentAssetRecordedData.Count; i++)
         {
@@ -835,9 +806,11 @@ public class Recordable : MonoBehaviour
 
         DebugLogger.Instance.Log("Copying pose from head focus square at frame " + _frameStart + " to frame " + followEndIndex);
 
+        Vector3 startPosDiff = Recorder.Instance.currentActiveExample.headData[_frameStart].focusSquarePosition - currentAssetRecordedData[_frameStart].rootPosition;
+
         for (int i = _frameStart + 1; i < followEndIndex; i++)
         {   
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.headData[i].focusSquarePosition;
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.headData[i].focusSquarePosition - startPosDiff;
             currentAssetRecordedData[i].ActionStr = "Follow(G-focus)";
             currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Gaze focus)";
         }
@@ -848,7 +821,7 @@ public class Recordable : MonoBehaviour
                         actionStr: "Unfollow()",  
                         actionDelegate: () => { GetComponent<Recordable>().Unfollow(); });
 
-        currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.headData[followEndIndex - 1].focusSquarePosition;
+        currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.headData[followEndIndex - 1].focusSquarePosition - startPosDiff;
 
         for (int i = followEndIndex + 1; i < currentAssetRecordedData.Count; i++)
         {
