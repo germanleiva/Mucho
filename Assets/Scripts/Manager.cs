@@ -2,8 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Assets.OVR.Scripts;
-using UnityEditor.VersionControl;
+//using Assets.OVR.Scripts;
+//using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.UI;
 

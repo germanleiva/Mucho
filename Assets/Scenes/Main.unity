@@ -30366,11 +30366,11 @@ GameObject:
   - component: {fileID: 4135284671933341616}
   - component: {fileID: 4135284671933341618}
   - component: {fileID: 558477666}
+  - component: {fileID: 4135284671933341621}
   - component: {fileID: 4135284671933341586}
   - component: {fileID: 4135284671933341595}
   - component: {fileID: 4135284671933341596}
   - component: {fileID: 4135284671933341619}
-  - component: {fileID: 4135284671933341621}
   m_Layer: 7
   m_Name: Sphere-Asset
   m_TagString: Untagged

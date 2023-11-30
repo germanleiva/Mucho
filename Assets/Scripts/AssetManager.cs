@@ -111,27 +111,28 @@ public class AssetManager : MonoBehaviour
     public void CreateAsset(Transform target, GameObject prefab)
     {
         DebugLogger.Instance.Log("Spawned Asset");
-        GameObject obj = Instantiate(prefab, target.position, Quaternion.identity);
+        GameObject newAssetObject = Instantiate(prefab, target.position, Quaternion.identity);
 
         Destroy(target.gameObject);
 
-        obj.SetActive(true);
-        Recorder.Instance.assetsInScene.Add(obj.GetComponentInChildren<Recordable>());
+        newAssetObject.SetActive(true);
+        Recorder.Instance.assetsInScene.Add(newAssetObject.GetComponentInChildren<Recordable>());
         Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
         //RefreshAssetsInAllExamples();
         //Recorder.Instance.RefreshTimelineAndStates();
         //Recorder.Instance.RefreshTimelineActions();
-        if(Recorder.Instance.GetSizeOfMainRecordedData() > 0) //Recording already exists
+        if(Recorder.Instance.GetSizeOfMainRecordedData() > 0) //Recording already exists, the main purpose is to check for new collisions
         {
             Manager.Instance.currAppState = Manager.AppState.RECORDING_DURING_PLAYBACK;
             Recorder.Instance.playbackSlider.value = 0;
             InputManager.Instance.SetPlaybackObjectsActive(true);
    
-            if (obj != null)
+            if (newAssetObject != null)
             {
-                Recordable recordable = obj.GetComponentInChildren<Recordable>();
+                Recordable recordable = newAssetObject.GetComponentInChildren<Recordable>();
                 if (recordable != null)
                 {
+                    //This was added to fix a mysterious bug that made the asset not visible after adding it AFTER an input recording was done
                     recordable.SetColor(Color.gray);
                 }
                 {
@@ -140,9 +141,10 @@ public class AssetManager : MonoBehaviour
             }
             else
             {
+                //is this ever called?
                 DebugLogger.Instance.Log("SpawnAsset: obj is null");
             }
-            StartCoroutine(AddAssetFrameToAssetDataDict(obj.GetComponentInChildren<Recordable>()));
+            StartCoroutine(AddAssetFrameToAssetDataDict(newAssetObject.GetComponentInChildren<Recordable>()));
         }
     }
 
