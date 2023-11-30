@@ -5,6 +5,12 @@ using UnityEngine;
 
 public class MeshCopy : MonoBehaviour
 {
+    //Disable script at start
+    void Start()
+    {
+        enabled = false;
+    }
+    
     void OnCollisionEnter (Collision other)
     {
         if(other.gameObject.GetComponent<Recordable> () != null)

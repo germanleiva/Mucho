@@ -66,8 +66,10 @@ public class Head : MonoBehaviour
 
     public void StartVoiceRecord()
     {
-        speechToTextEngine.StartListening();
+        stopRecordingButton.SetActive(true);
         startRecordingButton.SetActive(false);
+        speechToTextEngine.StartListening();
+
         voiceRecordStarted = true;
         StartCoroutine(InsertVoiceCommandCoroutine());
     }
@@ -84,7 +86,7 @@ public class Head : MonoBehaviour
                 string cleanedVoiceCommand = currentRecognisedText;
                 InsertVoiceCommand(cleanedVoiceCommand);                
 
-                StopVoiceRecord();
+                
             }
             yield return new WaitForSeconds(0.1f);
         }
@@ -92,15 +94,15 @@ public class Head : MonoBehaviour
 
     public void StopVoiceRecord()
     {
-        speechToTextEngine.StopListening();
         voiceRecordStarted = false;
+        speechToTextEngine.StopListening();
+        
         //voiceCommandNotInserted = false;
-        stopRecordingButton.SetActive(false);
-        startRecordingButton.SetActive(true);
     }
 
     public void InsertVoiceCommand(string _voiceCommand)
     {
+        
         int frameNumber = (int)Recorder.Instance.playbackSlider.value;
         if(Recorder.Instance.currentActiveExample.headData.Count == 0 || frameNumber >= Recorder.Instance.currentActiveExample.headData.Count)
         {
@@ -111,6 +113,11 @@ public class Head : MonoBehaviour
         currentHeadRecordedData[frameNumber].voiceCommand = _voiceCommand;
 
         DebugLogger.Instance.Log("Voice command inserted: " + _voiceCommand);
+
+        stopRecordingButton.SetActive(false);
+        startRecordingButton.SetActive(true);
+
+        StopVoiceRecord();
 
         Recorder.Instance.RefreshTimelineAndStates();
     }

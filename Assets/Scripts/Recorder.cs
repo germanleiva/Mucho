@@ -438,7 +438,7 @@ public class Recorder : MonoBehaviour
         return sequences;
     }
     
-    public List<AssetActionSequence> GetContinuousChangeSequences(List<string> actions)
+    public List<AssetActionSequence> GetSequences(List<string> actions)
     {
         List<AssetActionSequence> sequences = new();
 
@@ -503,11 +503,11 @@ public class Recorder : MonoBehaviour
 
         var recordedData = currentActiveExample.assetDataDict[recordable]; 
 
-        List<string> changes = recordedData.Select(x => x.ActionStr).ToList();
-        List<AssetActionSequence> sequences = GetContinuousChangeSequences(changes);
+        List<string> actionStrList = recordedData.Select(x => x.ActionStr).ToList();
+        List<AssetActionSequence> sequences = GetSequences(actionStrList);
         foreach (AssetActionSequence sequence in sequences)
         {
-            //DebugLogger.Instance.Log("Sequence name: " + sequence.Action + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
+            DebugLogger.Instance.Log("Sequence name: " + sequence.ActionStr + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
             //DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
             if (recordedData[sequence.StartIndex].ActionDelegate != null)
             {
@@ -542,8 +542,8 @@ public class Recorder : MonoBehaviour
         var recordedData = currentActiveExample.assetDataDict[recordable]; 
         try
         {
-            List<string> sourcesOfChanges = recordedData.Select(x => x.CollisionStr).ToList();
-            List<AssetActionSequence> sequences = GetContinuousChangeSequences(sourcesOfChanges);
+            List<string> collisionStrList = recordedData.Select(x => x.CollisionStr).ToList();
+            List<AssetActionSequence> sequences = GetSequences(collisionStrList);
             foreach (AssetActionSequence sequence in sequences)
             {
                 //DebugLogger.Instance.Log("Collision sequence name: " + sequence.Action + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
@@ -899,6 +899,9 @@ public class Recorder : MonoBehaviour
             DebugLogger.Instance.Log("No states found");
             return;
         }
+
+        var firstState = currentActiveExample.StatesDict[orderedKeys[0]].state;
+        AddActionsToState(firstState);
 
         for (int i = 0; i < orderedKeys.Count - 1; i++)
         {   

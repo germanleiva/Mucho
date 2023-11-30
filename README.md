@@ -3,7 +3,7 @@ Experimental XR prototype to enable easy rapid prototyping of XR interaction sce
 
 
 ## Software Requirements
-Unity 2021.3.27f1
+Unity 2021.3.31f1
 Oculus Integration SDK ver 54.1
 
 
