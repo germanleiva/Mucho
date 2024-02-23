@@ -3,9 +3,7 @@ using UnityEngine;
 public class ForceArrow : MonoBehaviour
 {
     public Transform asset;
-    public Transform arrowHeadGhost;
-    public Transform arrowHeadReal;
-
+    public Transform arrowHead;
     public Transform arrowBody;
     public LineRenderer lineRenderer;
     public int numberOfPoints = 20;
@@ -26,11 +24,7 @@ public class ForceArrow : MonoBehaviour
     Vector3 previousArrowHeadPosition;
 
     //public Transform ArrowEnd;
-    void Start()
-    {
-        previousArrowHeadPosition = arrowHeadGhost.position;
-        
-    }
+
 
     //TODO: Make this event driven from grab
     void Update()
@@ -45,123 +39,65 @@ public class ForceArrow : MonoBehaviour
         }
 
         //Call DrawTrajectory() when the current position of arrowHead is different from the previous position
-        if ((arrowHeadGhost.position-previousArrowHeadPosition).magnitude > 0.0001f)
+        if ((arrowHead.position-previousArrowHeadPosition).magnitude > 0.0001f)
         {
-            float calculatedMagnitude = OrientForceArrow();
-            DrawTrajectory(calculatedMagnitude);
+            ReOrientArrow();
+            DrawTrajectory();
         }
-        previousArrowHeadPosition = arrowHeadGhost.position;        
+        previousArrowHeadPosition = arrowHead.position;        
     }
 
-    public float OrientForceArrow()
+    public void ReOrientArrow()
     {
-        //Ghost arrow head
-        Vector3 direction = arrowHeadGhost.position - asset.position;
-        Quaternion ghostArrowRot = Quaternion.FromToRotation(Vector3.up, direction);
-        arrowHeadGhost.rotation = ghostArrowRot;
+        // Position and Scale the cylinder
+        PositionAndScaleArrowBody();
 
-        //Calculate magnitude and direction of force
-        float magnitude = Vector3.Distance(arrowHeadGhost.position, asset.position) * 19;
-        Vector3 forceDir = CalculateDirectionFromHand();
-                
-        //Real arrow head
-        arrowHeadReal.position = asset.position + forceDir * magnitude;     
-        Quaternion realArrowRot = Quaternion.FromToRotation(Vector3.up, forceDir);
-        arrowHeadReal.rotation = realArrowRot;
+        // Rotate the arrow to point towards asset
+        ReOrientArrowHead();
+    }
 
-        //Arrow body
-        arrowBody.position = Vector3.Lerp(asset.position, arrowHeadReal.position, 0.5f);
-        float distance = Vector3.Distance(asset.position, arrowHeadReal.position);
+    private void PositionAndScaleArrowBody()
+    {
+        // Position the cylinder
+        arrowBody.position = Vector3.Lerp(asset.position, arrowHead.position, 0.5f);
+
+        // Scale the cylinder
+        float distance = Vector3.Distance(asset.position, arrowHead.position);
         arrowBody.localScale = new Vector3(arrowBody.localScale.x, distance / 2, arrowBody.localScale.z);
-        Quaternion bodyRot = Quaternion.FromToRotation(Vector3.up, forceDir);
-        arrowBody.rotation = bodyRot;
 
-        return magnitude;
-        
+        // Rotate the cylinder
+        Vector3 direction = arrowHead.position - asset.position;
+        Quaternion rotation = Quaternion.FromToRotation(Vector3.up, direction);
+        arrowBody.rotation = rotation;
     }
 
-    Vector3 CalculateDirectionFromHand()
+    private void ReOrientArrowHead()
     {
-        Vector3 direction = Vector3.zero;
-        float distanceToLeftHand = Vector3.Distance(asset.position, Recorder.Instance.leftHand.playbackObject.transform.position);
-        float distanceToRightHand = Vector3.Distance(asset.position, Recorder.Instance.rightHand.playbackObject.transform.position);
-        int currentIndex = (int) Recorder.Instance.playbackSlider.value;
-        if (distanceToLeftHand < distanceToRightHand)
-        {
-            DebugLogger.Instance.Log("CalculateDirectionFromHand: Left hand is closer to asset");
-            var leftHandData = Recorder.Instance.currentActiveExample.leftHandData;
-            
-            if (currentIndex - 2 >= 0)
-            {
-                //Find average of leftHandData[].rootPosition for the last 10 frames
-                /*Vector3 averageRootPosition = Vector3.zero;
-                for (int i = currentIndex - 10; i < currentIndex; i++)
-                {
-                    averageRootPosition += leftHandData[i].rootPosition;
-                }
-                averageRootPosition /= 10;                
-                direction = leftHandData[currentIndex].rootPosition - averageRootPosition;*/
-                direction = leftHandData[currentIndex].rootPosition - leftHandData[currentIndex - 2].rootPosition;
-            }
-            else
-            {
-                direction = Vector3.zero;
-            }
-        }
-        else
-        {
-            DebugLogger.Instance.Log("CalculateDirectionFromHand: Right hand is closer to asset");
-            var rightHandData = Recorder.Instance.currentActiveExample.rightHandData;
-            
-            if (currentIndex - 10 >= 0)
-            {
-                //Find average of rightHandData[].rootPosition for the last 10 frames
-                /*Vector3 averageRootPosition = Vector3.zero;
-                for (int i = currentIndex - 10; i < currentIndex; i++)
-                {
-                    averageRootPosition += rightHandData[i].rootPosition;
-                }
-                averageRootPosition /= 10;                
-                direction = rightHandData[currentIndex].rootPosition - averageRootPosition;*/
-                direction = rightHandData[currentIndex].rootPosition - rightHandData[currentIndex - 10].rootPosition;
-            }
-            else
-            {
-                direction = Vector3.zero;
-            }
+        // Calculate the direction from asset to the arrow (this)
+        Vector3 direction = arrowHead.position - asset.position;
 
+        // Calculate the rotation to align the arrow with this direction
+        Quaternion rotation = Quaternion.FromToRotation(Vector3.up, direction);
 
-        }
-
-        DebugLogger.Instance.Log("CalculateDirectionFromHand: Direction is " + direction);
-
-        //Find the 
-        return direction;
-
-    }
-
-    void PositionArrowHeadReal(Vector3 direction, float magnitude)
-    {
-        // Position the arrow head by a magnitude along the given direction with the asset as the origin
-        arrowHeadReal.position = asset.position + direction * magnitude;
-
+        // Apply the rotation to the arrow
+        arrowHead.rotation = rotation;
     }
     
 
-    public void DrawTrajectory(float magnitude)
+    public void DrawTrajectory()
     {
         lineRenderer.enabled = true;
         
         Vector3 position1 = asset.position;
         //DebugLogger.Instance.Log("Arrow end position: " + position1);
-        Vector3 position2 = arrowHeadReal.position;
+        Vector3 position2 = arrowHead.position;
         //DebugLogger.Instance.Log("Arrow head position: " + position2);
         Vector3 direction = (position2 - position1);
 
         // Initial velocity is just the direction
-        initialVelocity = direction * magnitude;
+        initialVelocity = direction * 10f;
 
-        forceMagnitudeUI.transform.position = (arrowHeadReal.position + arrowBody.position) / 2;    
+        forceMagnitudeUI.transform.position = (arrowHead.position + arrowBody.position) / 2;    
         forceMagnitudeUI.transform.position += new Vector3(0, 0.2f, 0);
         
         forceMagnitudeUI.transform.LookAt(Camera.main.transform.position);
@@ -205,8 +141,6 @@ public class ForceArrow : MonoBehaviour
                 previousPointPosition = pointPosition;
             }
         }
-
-        
     }
 
     private Vector3 CalculateTrajectoryPoint(Vector3 startPoint, Vector3 initialVelocity, float time)
@@ -219,8 +153,7 @@ public class ForceArrow : MonoBehaviour
     public void HideTrajectoryAndArrow()
     {
         lineRenderer.enabled = false;
-        arrowHeadGhost.gameObject.SetActive(false);
-        arrowHeadReal.gameObject.SetActive(false);
+        arrowHead.gameObject.SetActive(false);
         arrowBody.gameObject.SetActive(false);
         forceMagnitudeUI.SetActive(false);
     }
@@ -228,19 +161,17 @@ public class ForceArrow : MonoBehaviour
     public void ShowTrajectoryAndArrow()
     {
         lineRenderer.enabled = true;
-        arrowHeadGhost.gameObject.SetActive(true);
-        arrowHeadReal.gameObject.SetActive(true);
+        arrowHead.gameObject.SetActive(true);
         arrowBody.gameObject.SetActive(true);
         forceMagnitudeUI.SetActive(true);
     }
+
 
     public void ThrowAsset()
     {
         Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
         GameObject throwableAsset = asset.gameObject;
-        throwableAsset.GetComponent<Recordable>().isThisObjThrown = true;
         throwableAsset.GetComponent<Recordable>().PrepareForceSimulation(initialVelocity);
-        arrowHeadGhost.transform.position = arrowHeadReal.transform.position;
     }
 
 }
