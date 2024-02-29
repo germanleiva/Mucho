@@ -24,11 +24,14 @@ public class ForceArrow : MonoBehaviour
 
     readonly int layerMask = 1 << 6;
     Vector3 previousArrowHeadPosition;
+    Vector3 previousArrowGhostHeadPosition;
+
 
     //public Transform ArrowEnd;
     void Start()
     {
-        previousArrowHeadPosition = arrowHeadGhost.position;
+        previousArrowGhostHeadPosition = arrowHeadGhost.position;
+        previousArrowHeadPosition = arrowHeadReal.position;
         
     }
 
@@ -44,14 +47,61 @@ public class ForceArrow : MonoBehaviour
             HideTrajectoryAndArrow();
         }
 
+        if (!AssetManager.isForceArrowGhostActive) {
+            //Call DrawTrajectory() when the current position of arrowHead is different from the previous position
+            if ((arrowHeadReal.position-previousArrowHeadPosition).magnitude > 0.0001f) {
+                ReOrientArrow();
+                DrawTrajectory(10);
+            }
+            previousArrowHeadPosition = arrowHeadReal.position;        
+            return;
+        }
+
         //Call DrawTrajectory() when the current position of arrowHead is different from the previous position
-        if ((arrowHeadGhost.position-previousArrowHeadPosition).magnitude > 0.0001f)
+        if ((arrowHeadGhost.position-previousArrowGhostHeadPosition).magnitude > 0.0001f)
         {
             float calculatedMagnitude = OrientForceArrow();
             DrawTrajectory(calculatedMagnitude);
         }
-        previousArrowHeadPosition = arrowHeadGhost.position;        
+        previousArrowGhostHeadPosition = arrowHeadGhost.position;        
     }
+
+    public void ReOrientArrow()
+    {
+        // Position and Scale the cylinder
+        PositionAndScaleArrowBody();
+
+        // Rotate the arrow to point towards asset
+        ReOrientArrowHead();
+    }
+
+    private void PositionAndScaleArrowBody()
+    {
+        // Position the cylinder
+        arrowBody.position = Vector3.Lerp(asset.position, arrowHeadReal.position, 0.5f);
+
+        // Scale the cylinder
+        float distance = Vector3.Distance(asset.position, arrowHeadReal.position);
+        arrowBody.localScale = new Vector3(arrowBody.localScale.x, distance / 2, arrowBody.localScale.z);
+
+        // Rotate the cylinder
+        Vector3 direction = arrowHeadReal.position - asset.position;
+        Quaternion rotation = Quaternion.FromToRotation(Vector3.up, direction);
+        arrowBody.rotation = rotation;
+    }
+
+    private void ReOrientArrowHead()
+    {
+        // Calculate the direction from asset to the arrow (this)
+        Vector3 direction = arrowHeadReal.position - asset.position;
+
+        // Calculate the rotation to align the arrow with this direction
+        Quaternion rotation = Quaternion.FromToRotation(Vector3.up, direction);
+
+        // Apply the rotation to the arrow
+        arrowHeadReal.rotation = rotation;
+    }
+
 
     public float OrientForceArrow()
     {
@@ -228,7 +278,9 @@ public class ForceArrow : MonoBehaviour
     public void ShowTrajectoryAndArrow()
     {
         lineRenderer.enabled = true;
-        arrowHeadGhost.gameObject.SetActive(true);
+        if (AssetManager.isForceArrowGhostActive) {
+            arrowHeadGhost.gameObject.SetActive(true);
+        }
         arrowHeadReal.gameObject.SetActive(true);
         arrowBody.gameObject.SetActive(true);
         forceMagnitudeUI.SetActive(true);
@@ -240,7 +292,9 @@ public class ForceArrow : MonoBehaviour
         GameObject throwableAsset = asset.gameObject;
         throwableAsset.GetComponent<Recordable>().isThisObjThrown = true;
         throwableAsset.GetComponent<Recordable>().PrepareForceSimulation(initialVelocity);
-        arrowHeadGhost.transform.position = arrowHeadReal.transform.position;
+        if (AssetManager.isForceArrowGhostActive) {
+            arrowHeadGhost.transform.position = arrowHeadReal.transform.position;
+        }
     }
 
 }

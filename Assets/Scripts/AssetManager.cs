@@ -11,6 +11,9 @@ public class AssetManager : MonoBehaviour
 {   
     public static AssetManager Instance { get; private set; }
 
+    public static Boolean isForceArrowGhostActive = false;
+
+
     //public List <Recordable> assets = new();
 
     //public Recorder Recorder.Instance.;
@@ -241,8 +244,14 @@ public class AssetManager : MonoBehaviour
         recordable.forceArrows.Add(forceArrow);
         forceArrowScript.asset = recordable.gameObject.transform;
         //forceArrowScript.arrowHead should be positioned 1 unit above the arrowEnd in the y axis
-        forceArrowScript.arrowHeadGhost.position = forceArrowScript.arrowHeadReal.position; // recordable.gameObject.transform.position + new Vector3(0f,0.2f,0.2f);
-        forceArrowScript.OrientForceArrow();
+        if (!AssetManager.isForceArrowGhostActive) {
+            forceArrowScript.arrowHeadReal.position = recordable.gameObject.transform.position + new Vector3(0f,0.2f,0.2f);
+            forceArrowScript.ReOrientArrow();
+            forceArrowScript.DrawTrajectory(10);     
+        } else {
+            forceArrowScript.arrowHeadGhost.position = forceArrowScript.arrowHeadReal.position; // recordable.gameObject.transform.position + new Vector3(0f,0.2f,0.2f);
+            forceArrowScript.OrientForceArrow();
+        }
         //forceArrowScript.arrowHeadGhost.transform.position = forceArrowScript.arrowHeadReal.transform.position;
         //forceArrowScript.DrawTrajectory();     
     }
