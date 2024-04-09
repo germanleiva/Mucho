@@ -61329,6 +61329,7 @@ GameObject:
   - component: {fileID: 994522718}
   - component: {fileID: 994522720}
   - component: {fileID: 994522719}
+  - component: {fileID: 994522721}
   m_Layer: 8
   m_Name: PlaybackPanel
   m_TagString: Untagged
@@ -61399,6 +61400,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 994522717}
   m_CullTransparentMesh: 1
+--- !u!114 &994522721
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 994522717}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14014e3bd38662b4e8ea8c50d679de5e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startRecordingButton: {fileID: 487145766}
+  stopRecordingButton: {fileID: 1838045455}
 --- !u!1 &995210940
 GameObject:
   m_ObjectHideFlags: 0
@@ -139185,7 +139200,7 @@ MonoBehaviour:
     jump, throw
   stepSec: 1
   keepSec: 0.2
-  lengthSec: 10
+  lengthSec: 2
   updatePrompt: 0
   dropOldBuffer: 1
   useVad: 1

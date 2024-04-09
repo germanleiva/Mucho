@@ -66,12 +66,22 @@ public class Head : MonoBehaviour
 
     public void StartVoiceRecord()
     {
+        FindRecordButtonsCurrentPanel();
         stopRecordingButton.SetActive(true);
-        startRecordingButton.SetActive(false);
+        startRecordingButton.SetActive(false); 
         speechToTextEngine.StartListening();
 
         voiceRecordStarted = true;
         StartCoroutine(InsertVoiceCommandCoroutine());
+    }
+
+    private void FindRecordButtonsCurrentPanel()
+    {
+        GameObject currentExample = Recorder.Instance.currentActiveExample.examplePlaybackPanel.gameObject;
+        PanelButtonsReference panelButtonsReference = currentExample.GetComponent<PanelButtonsReference>();
+        startRecordingButton = panelButtonsReference.startRecordingButton;
+        stopRecordingButton = panelButtonsReference.stopRecordingButton;
+        
     }
 
     //bool voiceCommandNotInserted = true;
@@ -94,6 +104,8 @@ public class Head : MonoBehaviour
 
     public void StopVoiceRecord()
     {
+        stopRecordingButton.SetActive(false);
+        startRecordingButton.SetActive(true);
         voiceRecordStarted = false;
         speechToTextEngine.StopListening();
         
@@ -113,9 +125,6 @@ public class Head : MonoBehaviour
         currentHeadRecordedData[frameNumber].voiceCommand = _voiceCommand;
 
         DebugLogger.Instance.Log("Voice command inserted: " + _voiceCommand);
-
-        stopRecordingButton.SetActive(false);
-        startRecordingButton.SetActive(true);
 
         StopVoiceRecord();
 
