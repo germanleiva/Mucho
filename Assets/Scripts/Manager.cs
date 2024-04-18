@@ -174,10 +174,9 @@ public class Manager : MonoBehaviour
     }
 
     public void ToggleRightHandEventRow(Boolean rightHandEventsOn) {
-
         foreach (var eachRightHandData in Recorder.Instance.currentActiveExample.rightHandData)
         {
-            eachRightHandData.isActive = rightHandEventsOn;
+            eachRightHandData.isActive = !eachRightHandData.isActive;
         }
 
         Recorder.Instance.RefreshTimelineAndStates();
@@ -185,7 +184,7 @@ public class Manager : MonoBehaviour
     public void ToggleLeftHandEventRow(Boolean leftHandEventsOn) {
         foreach (var eachLeftHandData in Recorder.Instance.currentActiveExample.leftHandData)
         {
-            eachLeftHandData.isActive = leftHandEventsOn;
+            eachLeftHandData.isActive = !eachLeftHandData.isActive;
         }
 
         Recorder.Instance.RefreshTimelineAndStates();
@@ -213,7 +212,7 @@ public class Example
         get
         {
             // Filter the list based on the isActive property
-            return leftHandData.Where(handFrame => handFrame.isActive).ToList();
+            return rightHandData.Where(handFrame => handFrame.isActive).ToList();
         }
     }
     public List<HeadFrame> headData;
