@@ -173,6 +173,23 @@ public class Manager : MonoBehaviour
         leftHandMenu.SetActive(false);
     }
 
+    public void ToggleRightHandEventRow(Boolean rightHandEventsOn) {
+
+        foreach (var eachRightHandData in Recorder.Instance.currentActiveExample.rightHandData)
+        {
+            eachRightHandData.isActive = rightHandEventsOn;
+        }
+
+        Recorder.Instance.RefreshTimelineAndStates();
+    }
+    public void ToggleLeftHandEventRow(Boolean leftHandEventsOn) {
+        foreach (var eachLeftHandData in Recorder.Instance.currentActiveExample.leftHandData)
+        {
+            eachLeftHandData.isActive = leftHandEventsOn;
+        }
+
+        Recorder.Instance.RefreshTimelineAndStates();
+    }
 }
 
 public class Example
@@ -180,7 +197,25 @@ public class Example
     public static int exampleCount = 0;
     public int exampleId { get; private set; }
     public List<HandFrame> leftHandData;
+    // Define the read-only property to return filtered elements
+    public List<HandFrame> activeLeftHandData
+    {
+        get
+        {
+            // Filter the list based on the isActive property
+            return leftHandData.Where(handFrame => handFrame.isActive).ToList();
+        }
+    }
     public List<HandFrame> rightHandData;
+
+    public List<HandFrame> activeRightHandData
+    {
+        get
+        {
+            // Filter the list based on the isActive property
+            return leftHandData.Where(handFrame => handFrame.isActive).ToList();
+        }
+    }
     public List<HeadFrame> headData;
 
     public RectTransform examplePlaybackPanel;

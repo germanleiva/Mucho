@@ -168,6 +168,7 @@ public class Hand : MonoBehaviour
 //[System.Serializable]
 public class HandFrame
 {
+    public Boolean isActive = true;
     public Vector3 rootPosition;
     public Quaternion rootRotation;
 
