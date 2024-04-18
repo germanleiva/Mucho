@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -112,6 +113,17 @@ public class TimelineUIElement : MonoBehaviour
         timelineElement.GetComponent<TimelineUIElement>().SetEvent(id);
 
         //timelineElement.GetComponent<TimelineUIElement>().SetStartAndLength(startIndex, length);
+        
+        TextMeshProUGUI textComponent = timelineElement.GetComponentInChildren<TextMeshProUGUI>();
+        if (textComponent != null)
+        {
+            string text = textComponent.text;
+            // Get dimensions of the text in the TextMeshProUGUI
+            Vector2 textSize = textComponent.GetPreferredValues(text);
+
+            // Set width of recttransform based on the length of the text 
+            elementRect.sizeDelta = new Vector2(textSize.x, elementRect.sizeDelta.y);
+        }
         
         return timelineElement;
     }

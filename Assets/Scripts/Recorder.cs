@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -101,6 +102,8 @@ public class Recorder : MonoBehaviour
             //PreparePlayback();
         }
 
+       // examplePlaybackPanelPrefab = examplePlaybackPanel_clone;
+
         SelectExample(example);  
         RefreshTimelineAndStates();      
     }
@@ -145,6 +148,12 @@ public class Recorder : MonoBehaviour
         
 
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
+        
+        //Stop voice record if active
+        if (head.voiceRecordStarted)
+        {
+            head.StopVoiceRecord();
+        }
 
         //AssetManager.Instance.ShowMiscObjs();
         AssetManager.Instance.SetAllAssetMenusPokeable(true);

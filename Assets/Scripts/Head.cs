@@ -66,22 +66,12 @@ public class Head : MonoBehaviour
 
     public void StartVoiceRecord()
     {
-        FindRecordButtonsCurrentPanel();
         stopRecordingButton.SetActive(true);
         startRecordingButton.SetActive(false); 
         speechToTextEngine.StartListening();
 
         voiceRecordStarted = true;
         StartCoroutine(InsertVoiceCommandCoroutine());
-    }
-
-    private void FindRecordButtonsCurrentPanel()
-    {
-        GameObject currentExample = Recorder.Instance.currentActiveExample.examplePlaybackPanel.gameObject;
-        PanelButtonsReference panelButtonsReference = currentExample.GetComponent<PanelButtonsReference>();
-        startRecordingButton = panelButtonsReference.startRecordingButton;
-        stopRecordingButton = panelButtonsReference.stopRecordingButton;
-        
     }
 
     //bool voiceCommandNotInserted = true;

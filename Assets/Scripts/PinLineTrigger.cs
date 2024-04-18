@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class PinLineTrigger : MonoBehaviour
 {
-    public enum PinTargetType { LEFTHAND, RIGHTHAND, LEFTFOCUS, RIGHTFOCUS, GAZEFOCUS};
+    public enum PinTargetType { LEFTHAND, RIGHTHAND, LEFTFOCUS, RIGHTFOCUS, GAZEFOCUS, WALL};
 
     public PinTargetType pinTargetType;
 
@@ -64,6 +64,10 @@ public class PinLineTrigger : MonoBehaviour
             {
                 pinLine.PinAction = () => { pinLine.asset.GetComponent<Recordable>().RecordPinToGazeFocus(); renderer.material = defaultMaterial;};
             }
+            /*else if(pinTargetType == PinTargetType.WALL)
+            {
+                pinLine.PinAction = () => { pinLine.asset.GetComponent<Recordable>().RecordPinToWall(); renderer.material = defaultMaterial;};
+            }*/
             else
             {
                 DebugLogger.Instance.Log("PinLineTrigger: No PinTargetType found for " + pinTargetType);

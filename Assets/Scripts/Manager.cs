@@ -242,6 +242,8 @@ public class Example
     public List<GestureSequence> AllGestureSequences = new();
     public List<List<AssetActionSequence>> assetSequencesLists = new();
     public List<List<AssetActionSequence>> collisionSequencesLists = new();
+    
+    public GameObject startRecordingButton, stopRecordingButton;
 
 
     public int numberOfRecordedFrames = 0;
@@ -299,6 +301,21 @@ public class Example
             //Create a new list of recordable frames for each asset
             assetDataDict.Add(recordable, new List<AssetFrame>());            
         }
+        
+        //find in the children of the voicetimelinepanel a child called StartAudio
+        Transform  [] recordButtons= voiceTimelinePanel.transform.GetComponentsInChildren<Transform>();
+        foreach (Transform g in recordButtons)
+        {
+            if (g.gameObject.name.Equals("StartAudioRecord"))
+            {
+                startRecordingButton = g.gameObject;
+            }else if (g.gameObject.name.Equals("StopAudioRecord"))
+            {
+                stopRecordingButton = g.gameObject;
+            }
+        }
+        
+        //startRecordingButton = voiceTimelinePanel.transform.GetChild()
 
         DebugLogger.Instance.Log("Created example " + exampleId);
     }

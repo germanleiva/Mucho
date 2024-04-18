@@ -530,6 +530,27 @@ public class Recordable : MonoBehaviour
         //Recorder.Instance.RefreshTimelineActions();
     }
 
+    /*
+    public void RecordPinToWall()
+    {
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
+        DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
+        ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
+                                actionStr: "Pin()", 
+                                actionDelegate: () => { GetComponent<Recordable>().Pin(InputManager.Instance.wall.transform.position); });
+        
+        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
+        for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
+        {
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.wallData[_frameStart].focusSquarePosition;
+            //currentAssetRecordedData[i].ActionStr = "Pin()";
+        }
+
+        //Pin(Recorder.Instance.wall.transform.position);
+
+        Recorder.Instance.RefreshTimelineAndStates();
+        //Recorder.Instance.RefreshTimelineActions();
+    } */
 
     public void Pin(Vector3 location)
     {
