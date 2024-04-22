@@ -106,11 +106,11 @@ public class Head : MonoBehaviour
     {
         
         int frameNumber = (int)Recorder.Instance.playbackSlider.value;
-        if(Recorder.Instance.currentActiveExample.headData.Count == 0 || frameNumber >= Recorder.Instance.currentActiveExample.headData.Count)
+        if(Recorder.Instance.currentActiveExample.headFrames.Count == 0 || frameNumber >= Recorder.Instance.currentActiveExample.headFrames.Count)
         {
             return;
         }
-        var currentHeadRecordedData = Recorder.Instance.currentActiveExample.headData;
+        var currentHeadRecordedData = Recorder.Instance.currentActiveExample.headFrames;
 
         currentHeadRecordedData[frameNumber].voiceCommand = _voiceCommand;
 
@@ -123,15 +123,15 @@ public class Head : MonoBehaviour
 
     public void PrintAllVoiceCommands()
     {
-        //Iterate through all the headData in all the examples and print the voice commands
+        //Iterate through all the headFrames in all the examples and print the voice commands
         foreach(var example in Recorder.Instance.examples)
         {
             DebugLogger.Instance.Log("PrintAllVoiceCommands: Example name - " + example.exampleId);
-            foreach(var headData in example.headData)
+            foreach(var headFrame in example.headFrames)
             {
-                if(headData.voiceCommand != null)
+                if(headFrame.voiceCommand != null)
                 {
-                    DebugLogger.Instance.Log("PrintAllVoiceCommands: Voice command - " + headData.voiceCommand);
+                    DebugLogger.Instance.Log("PrintAllVoiceCommands: Voice command - " + headFrame.voiceCommand);
                 }
                 
             }
@@ -141,7 +141,7 @@ public class Head : MonoBehaviour
 
     public void Record(int frameNum)
     {
-        Recorder.Instance.currentActiveExample.headData.Add(new HeadFrame(transform.position, transform.rotation, focusSquare.transform.position, focusSquare.transform.rotation, null, frameNum));       
+        Recorder.Instance.currentActiveExample.headFrames.Add(new HeadFrame(transform.position, transform.rotation, focusSquare.transform.position, focusSquare.transform.rotation, null, frameNum));       
     }
 
 }

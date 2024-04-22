@@ -216,8 +216,9 @@ public class InputManager : MonoBehaviour
         {
             sm.ProcessFrame(frame);
         }
-        else if (Manager.Instance.currAppState != Manager.AppState.PLAYBACK && Manager.Instance.currAppState != Manager.AppState.ASSETRECORDING && Manager.Instance.currAppState != Manager.AppState.RECORDING && Manager.Instance.currAppState != Manager.AppState.EDITCOLLIDERS && Manager.Instance.currAppState != Manager.AppState.RECORDING_DURING_PLAYBACK)
+        else if (Manager.Instance.currAppState == Manager.AppState.INIT)
         {
+            DebugLogger.Instance.Log("Is this ever executed?");
             if(frame.collidingObjectThisFrame_1 != null && frame.collidingObjectThisFrame_2 != null)
             {
                 if (collidingObjectNotified_2.name == "LeftHandPinchContactSphere")    

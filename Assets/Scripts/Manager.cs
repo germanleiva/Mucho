@@ -174,7 +174,7 @@ public class Manager : MonoBehaviour
     }
 
     public void ToggleRightHandEventRow(Boolean rightHandEventsOn) {
-        foreach (var eachRightHandData in Recorder.Instance.currentActiveExample.rightHandData)
+        foreach (var eachRightHandData in Recorder.Instance.currentActiveExample.rightHandFrames)
         {
             eachRightHandData.isActive = !eachRightHandData.isActive;
         }
@@ -182,7 +182,7 @@ public class Manager : MonoBehaviour
         Recorder.Instance.RefreshTimelineAndStates();
     }
     public void ToggleLeftHandEventRow(Boolean leftHandEventsOn) {
-        foreach (var eachLeftHandData in Recorder.Instance.currentActiveExample.leftHandData)
+        foreach (var eachLeftHandData in Recorder.Instance.currentActiveExample.leftHandFrames)
         {
             eachLeftHandData.isActive = !eachLeftHandData.isActive;
         }
@@ -195,27 +195,27 @@ public class Example
 {
     public static int exampleCount = 0;
     public int exampleId { get; private set; }
-    public List<HandFrame> leftHandData;
+    public List<HandFrame> leftHandFrames;
     // Define the read-only property to return filtered elements
-    public List<HandFrame> activeLeftHandData
+    public List<HandFrame> activeLeftHandFrames
     {
         get
         {
             // Filter the list based on the isActive property
-            return leftHandData.Where(handFrame => handFrame.isActive).ToList();
+            return leftHandFrames.Where(handFrame => handFrame.isActive).ToList();
         }
     }
-    public List<HandFrame> rightHandData;
+    public List<HandFrame> rightHandFrames;
 
-    public List<HandFrame> activeRightHandData
+    public List<HandFrame> activeRightHandFrames
     {
         get
         {
             // Filter the list based on the isActive property
-            return rightHandData.Where(handFrame => handFrame.isActive).ToList();
+            return rightHandFrames.Where(handFrame => handFrame.isActive).ToList();
         }
     }
-    public List<HeadFrame> headData;
+    public List<HeadFrame> headFrames;
 
     public RectTransform examplePlaybackPanel;
     public RectTransform rightHandTimelinePanel;    
@@ -248,7 +248,7 @@ public class Example
     public int numberOfRecordedFrames = 0;
     public Button button;
     //Create a dictionary matching assets to the list of their recordable frames
-    public Dictionary<Recordable, List<AssetFrame>> assetDataDict;   
+    public Dictionary<Recordable, List<AssetFrame>> assetFramesDict;   
 
     //public List<Recordable> assets;
 
@@ -261,9 +261,9 @@ public class Example
         _button.GetComponentInChildren<TMPro.TMP_Text>().text = exampleId.ToString();
         button = _button;
 
-        leftHandData = new List<HandFrame>();
-        rightHandData = new List<HandFrame>();
-        headData = new List<HeadFrame>();
+        leftHandFrames = new List<HandFrame>();
+        rightHandFrames = new List<HandFrame>();
+        headFrames = new List<HeadFrame>();
 
         examplePlaybackPanel = _examplePlaybackPanel;
         //examplePlaybackPanel.gameObject.SetActive(true);
@@ -292,13 +292,13 @@ public class Example
         assetSequencesLists = new();
         collisionSequencesLists = new();
 
-        assetDataDict = new Dictionary<Recordable, List<AssetFrame>>();
+        assetFramesDict = new Dictionary<Recordable, List<AssetFrame>>();
         StatesDict = new Dictionary<State, StateTimelineUIElement>();
         //Copy assetsInScene to assets
         foreach (Recordable recordable in Recorder.Instance.assetsInScene)
         {            
             //Create a new list of recordable frames for each asset
-            assetDataDict.Add(recordable, new List<AssetFrame>());            
+            assetFramesDict.Add(recordable, new List<AssetFrame>());            
         }
         
         //find in the children of the voicetimelinepanel a child called StartAudio
@@ -322,18 +322,18 @@ public class Example
     public void CopyExampleDataFrom(Example example)
     {
         DebugLogger.Instance.Log("Copying data from example " + example.exampleId + " to example " + exampleId);
-        leftHandData = new List<HandFrame>(example.leftHandData.Select(item => (HandFrame)item.Clone()));
-        rightHandData = new List<HandFrame>(example.rightHandData.Select(item => (HandFrame)item.Clone()));
-        headData = new List<HeadFrame>(example.headData.Select(item => (HeadFrame)item.Clone()));
-        foreach (var data in headData) // Clear the voice commands
+        leftHandFrames = new List<HandFrame>(example.leftHandFrames.Select(item => (HandFrame)item.Clone()));
+        rightHandFrames = new List<HandFrame>(example.rightHandFrames.Select(item => (HandFrame)item.Clone()));
+        headFrames = new List<HeadFrame>(example.headFrames.Select(item => (HeadFrame)item.Clone()));
+        foreach (var data in headFrames) // Clear the voice commands
         {
             data.voiceCommand = null;
         }
 
-        assetDataDict = new Dictionary<Recordable, List<AssetFrame>>();
-        foreach (var entry in example.assetDataDict)
+        assetFramesDict = new Dictionary<Recordable, List<AssetFrame>>();
+        foreach (var entry in example.assetFramesDict)
         {
-            assetDataDict.Add(entry.Key, new List<AssetFrame>(entry.Value.Select(item => (AssetFrame)item.Clone())));
+            assetFramesDict.Add(entry.Key, new List<AssetFrame>(entry.Value.Select(item => (AssetFrame)item.Clone())));
         }
     }
 
@@ -343,15 +343,15 @@ public class Example
         foreach (Recordable recordable in Recorder.Instance.assetsInScene)
         {
             //Create a new list of recordable frames for each asset
-            if (!assetDataDict.ContainsKey(recordable))
+            if (!assetFramesDict.ContainsKey(recordable))
             {
-                assetDataDict.Add(recordable, new List<AssetFrame>());
+                assetFramesDict.Add(recordable, new List<AssetFrame>());
             }
         }
 
         //Remove assets that are no longer in the scene
         List<Recordable> assetsToRemove = new List<Recordable>();
-        foreach (Recordable recordable in assetDataDict.Keys)
+        foreach (Recordable recordable in assetFramesDict.Keys)
         {
             if (!Recorder.Instance.assetsInScene.Contains(recordable))
             {
@@ -360,7 +360,7 @@ public class Example
         }
         foreach (Recordable recordable in assetsToRemove)
         {
-            assetDataDict.Remove(recordable);
+            assetFramesDict.Remove(recordable);
         }
     }
 
@@ -376,13 +376,13 @@ public class Example
     public void ResetData()
     {
         DebugLogger.Instance.Log("Resetting data for example " + exampleId);
-        leftHandData.Clear();
-        rightHandData.Clear();
-        headData.Clear();
+        leftHandFrames.Clear();
+        rightHandFrames.Clear();
+        headFrames.Clear();
         //assets.Clear();
-        foreach(Recordable recordable in assetDataDict.Keys)
+        foreach(Recordable recordable in assetFramesDict.Keys)
         {
-            assetDataDict[recordable].Clear();
+            assetFramesDict[recordable].Clear();
             foreach (GameObject obj in recordable.forceArrows)
             {
                 UnityEngine.Object.Destroy(obj);

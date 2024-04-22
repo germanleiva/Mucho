@@ -139,7 +139,7 @@ public class ForceArrow : MonoBehaviour
         if (distanceToLeftHand < distanceToRightHand)
         {
             DebugLogger.Instance.Log("CalculateDirectionFromHand: Left hand is closer to asset");
-            var leftHandData = Recorder.Instance.currentActiveExample.leftHandData;
+            var leftHandData = Recorder.Instance.currentActiveExample.leftHandFrames;
             
             if (currentIndex - 2 >= 0)
             {
@@ -161,7 +161,7 @@ public class ForceArrow : MonoBehaviour
         else
         {
             DebugLogger.Instance.Log("CalculateDirectionFromHand: Right hand is closer to asset");
-            var rightHandData = Recorder.Instance.currentActiveExample.rightHandData;
+            var rightHandData = Recorder.Instance.currentActiveExample.rightHandFrames;
             
             if (currentIndex - 10 >= 0)
             {

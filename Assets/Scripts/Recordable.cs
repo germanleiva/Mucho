@@ -82,7 +82,7 @@ public class Recordable : MonoBehaviour
 
     public void RecordAssetFrame()
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         //DebugLogger.Instance.Log("Recording frame for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
         if(collidedObjectDuringRecording != null)
         {            
@@ -135,7 +135,7 @@ public class Recordable : MonoBehaviour
     public void PlaybackAssetFrame()
     {
         int currentFrameNum = (int)Recorder.Instance.playbackSlider.value;
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         
         //foreach (var recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
         //{
@@ -172,7 +172,7 @@ public class Recordable : MonoBehaviour
         //AssetFrame item = new(transform.position, transform.rotation, showStatus, actionStr, collisionStr, actionDelegate, collisionDelegate, collidedObject, frameNumber);
         //DebugLogger.Instance.Log("Inserting asset record frame at index " + frameNumber);
 
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
 
         /*if(currentAssetRecordedData[frameNumber].ActionDelegate != null)
         {
@@ -264,10 +264,10 @@ public class Recordable : MonoBehaviour
         for (int i = firstFrameOfManualRecording; i <= lastFrameOfManualRecording; i++)
         {
             // Get the RecordFrameData for the current frame
-            var assetFrameData = Recorder.Instance.currentActiveExample.assetDataDict[recordable][i];
-            var headFrameData = Recorder.Instance.currentActiveExample.headData[i];//mainRecorder.objectsToRecord[0].recordedData[i];
-            var leftHandFrameData = Recorder.Instance.currentActiveExample.leftHandData[i];
-            var rightHandFrameData = Recorder.Instance.currentActiveExample.rightHandData[i];
+            var assetFrameData = Recorder.Instance.currentActiveExample.assetFramesDict[recordable][i];
+            var headFrameData = Recorder.Instance.currentActiveExample.headFrames[i];//mainRecorder.objectsToRecord[0].recordedData[i];
+            var leftHandFrameData = Recorder.Instance.currentActiveExample.leftHandFrames[i];
+            var rightHandFrameData = Recorder.Instance.currentActiveExample.rightHandFrames[i];
 
             // Calculate the distances to the left hand, right hand, left focus square, and right focus square
             // Note: We need to replace the placeholders below with the actual way to access the positions of these objects
@@ -332,7 +332,7 @@ public class Recordable : MonoBehaviour
     //For assets
     public void RecordHide()
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         //Turn the material in recordable.playbackObject to 0.5 alpha
         gameObject.GetComponent<MeshRenderer>().material = AssetManager.Instance.translucentMaterial;
         //showStatus = false;
@@ -360,7 +360,7 @@ public class Recordable : MonoBehaviour
     //For assets
     public void RecordShow()
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         //Turn the material in recordable.playbackObject to 1 alpha
         gameObject.GetComponent<MeshRenderer>().material = defaultMaterial;
         //showStatus = true;
@@ -389,7 +389,7 @@ public class Recordable : MonoBehaviour
     public void RecordColorChange(UnityEngine.UI.Image buttonImage)
     {
         Color color = buttonImage.color;
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         if(Recorder.Instance.GetSizeOfMainRecordedData() > 0)
         {
             DebugLogger.Instance.Log("Recorded color change for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
@@ -426,7 +426,7 @@ public class Recordable : MonoBehaviour
 
     public void RecordPinToLeftHand()
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionStr: "Pin()", 
@@ -435,7 +435,7 @@ public class Recordable : MonoBehaviour
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
         {
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandData[_frameStart].pinchPosition;
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandFrames[_frameStart].pinchPosition;
             //currentAssetRecordedData[i].ActionStr = "Pin()";
         }
 
@@ -448,7 +448,7 @@ public class Recordable : MonoBehaviour
 
     public void RecordPinToRightHand()
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionStr: "Pin()", 
@@ -457,7 +457,7 @@ public class Recordable : MonoBehaviour
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
         {
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandData[_frameStart].pinchPosition;
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandFrames[_frameStart].pinchPosition;
             //currentAssetRecordedData[i].ActionStr = "Pin()";
         }
 
@@ -469,7 +469,7 @@ public class Recordable : MonoBehaviour
 
     public void RecordPinToLeftFocus()
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionStr: "Pin()", 
@@ -478,7 +478,7 @@ public class Recordable : MonoBehaviour
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
         {
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandData[_frameStart].focusSquarePosition;
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandFrames[_frameStart].focusSquarePosition;
             //currentAssetRecordedData[i].ActionStr = "Pin()";
         }
 
@@ -490,7 +490,7 @@ public class Recordable : MonoBehaviour
 
     public void RecordPinToRightFocus()
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionStr: "Pin()", 
@@ -499,7 +499,7 @@ public class Recordable : MonoBehaviour
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
         {
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandData[_frameStart].focusSquarePosition;
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandFrames[_frameStart].focusSquarePosition;
             //currentAssetRecordedData[i].ActionStr = "Pin()";
         }
 
@@ -511,7 +511,7 @@ public class Recordable : MonoBehaviour
 
     public void RecordPinToGazeFocus()
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionStr: "Pin()", 
@@ -520,7 +520,7 @@ public class Recordable : MonoBehaviour
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
         {
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.headData[_frameStart].focusSquarePosition;
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.headFrames[_frameStart].focusSquarePosition;
             //currentAssetRecordedData[i].ActionStr = "Pin()";
         }
 
@@ -620,7 +620,7 @@ public class Recordable : MonoBehaviour
     //For assets
     public void AttachToLeftHand()
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         DebugLogger.Instance.Log("Attach called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
 
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
@@ -640,7 +640,7 @@ public class Recordable : MonoBehaviour
         for (int i = _frameStart + 1; i < followEndIndex; i++)
         {
             
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandData[i].pinchPosition; //Copy the position of the left hand at frame _frameStart
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandFrames[i].pinchPosition; //Copy the position of the left hand at frame _frameStart
             currentAssetRecordedData[i].ActionStr = "Follow(Left hand)";
             currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left hand)";
         }
@@ -666,7 +666,7 @@ public class Recordable : MonoBehaviour
     //For assets
     public void AttachToRightHand()
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];        
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];        
         DebugLogger.Instance.Log("Attach called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
 
 
@@ -688,7 +688,7 @@ public class Recordable : MonoBehaviour
         for (int i = _frameStart + 1; i < followEndIndex; i++)
         {
             
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandData[i].pinchPosition; //Copy the position of the right hand at frame _frameStart
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandFrames[i].pinchPosition; //Copy the position of the right hand at frame _frameStart
             currentAssetRecordedData[i].ActionStr = "Follow(Right hand)";
             currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right hand)";
         }
@@ -718,7 +718,7 @@ public class Recordable : MonoBehaviour
     //For assets
     public void AttachToLeftHandFocusSquare()
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];  
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];  
         DebugLogger.Instance.Log("Follow left focus called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
 
 
@@ -736,11 +736,11 @@ public class Recordable : MonoBehaviour
 
         DebugLogger.Instance.Log("Copying pose from left focus square at frame " + _frameStart + " to frame " + followEndIndex);
 
-        Vector3 startPosDiff = Recorder.Instance.currentActiveExample.leftHandData[_frameStart].focusSquarePosition - currentAssetRecordedData[_frameStart].rootPosition;
+        Vector3 startPosDiff = Recorder.Instance.currentActiveExample.leftHandFrames[_frameStart].focusSquarePosition - currentAssetRecordedData[_frameStart].rootPosition;
 
         for (int i = _frameStart + 1; i < followEndIndex; i++)
         {   
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandData[i].focusSquarePosition - startPosDiff;
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandFrames[i].focusSquarePosition - startPosDiff;
             currentAssetRecordedData[i].ActionStr = "Follow(L-focus)";
             currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left focus)";
         }
@@ -751,7 +751,7 @@ public class Recordable : MonoBehaviour
                         actionStr: "Unfollow()",  
                         actionDelegate: () => { GetComponent<Recordable>().Unfollow(); });
 
-        currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.leftHandData[followEndIndex - 1].focusSquarePosition - startPosDiff;
+        currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.leftHandFrames[followEndIndex - 1].focusSquarePosition - startPosDiff;
 
         for (int i = followEndIndex + 1; i < currentAssetRecordedData.Count; i++)
         {
@@ -766,7 +766,7 @@ public class Recordable : MonoBehaviour
     //For assets
     public void AttachToRightHandFocusSquare()
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];  
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];  
         DebugLogger.Instance.Log("AttachToRightHandFocusSquare: Follow right focus called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
 
 
@@ -784,11 +784,11 @@ public class Recordable : MonoBehaviour
 
         DebugLogger.Instance.Log("Copying pose from right focus square at frame " + _frameStart + " to frame " + followEndIndex);
 
-        Vector3 startPosDiff = Recorder.Instance.currentActiveExample.rightHandData[_frameStart].focusSquarePosition - currentAssetRecordedData[_frameStart].rootPosition;
+        Vector3 startPosDiff = Recorder.Instance.currentActiveExample.rightHandFrames[_frameStart].focusSquarePosition - currentAssetRecordedData[_frameStart].rootPosition;
 
         for (int i = _frameStart + 1; i < followEndIndex; i++)
         {   
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandData[i].focusSquarePosition - startPosDiff;
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandFrames[i].focusSquarePosition - startPosDiff;
             currentAssetRecordedData[i].ActionStr = "Follow(R-focus)";
             currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right focus)";
         }
@@ -799,7 +799,7 @@ public class Recordable : MonoBehaviour
                         actionStr: "Unfollow()",  
                         actionDelegate: () => { GetComponent<Recordable>().Unfollow(); });
         
-        currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.rightHandData[followEndIndex - 1].focusSquarePosition - startPosDiff;
+        currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.rightHandFrames[followEndIndex - 1].focusSquarePosition - startPosDiff;
 
         for (int i = followEndIndex + 1; i < currentAssetRecordedData.Count; i++)
         {
@@ -814,7 +814,7 @@ public class Recordable : MonoBehaviour
     //For assets
     public void AttachToGazeFocusSquare()
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];  
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];  
         DebugLogger.Instance.Log("AttachToGazeFocusSquare: Follow gaze focus called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
 
 
@@ -831,11 +831,11 @@ public class Recordable : MonoBehaviour
 
         DebugLogger.Instance.Log("Copying pose from head focus square at frame " + _frameStart + " to frame " + followEndIndex);
 
-        Vector3 startPosDiff = Recorder.Instance.currentActiveExample.headData[_frameStart].focusSquarePosition - currentAssetRecordedData[_frameStart].rootPosition;
+        Vector3 startPosDiff = Recorder.Instance.currentActiveExample.headFrames[_frameStart].focusSquarePosition - currentAssetRecordedData[_frameStart].rootPosition;
 
         for (int i = _frameStart + 1; i < followEndIndex; i++)
         {   
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.headData[i].focusSquarePosition - startPosDiff;
+            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.headFrames[i].focusSquarePosition - startPosDiff;
             currentAssetRecordedData[i].ActionStr = "Follow(G-focus)";
             currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Gaze focus)";
         }
@@ -846,7 +846,7 @@ public class Recordable : MonoBehaviour
                         actionStr: "Unfollow()",  
                         actionDelegate: () => { GetComponent<Recordable>().Unfollow(); });
 
-        currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.headData[followEndIndex - 1].focusSquarePosition - startPosDiff;
+        currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.headFrames[followEndIndex - 1].focusSquarePosition - startPosDiff;
 
         for (int i = followEndIndex + 1; i < currentAssetRecordedData.Count; i++)
         {
@@ -861,7 +861,7 @@ public class Recordable : MonoBehaviour
     //For assets
     public void Detach()
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         DebugLogger.Instance.Log("Unfollow called for " + gameObject.name);
 
         //Unfollow();
@@ -884,7 +884,7 @@ public class Recordable : MonoBehaviour
     //For assets
     public void PrepareForceSimulation(Vector3 initialVelocity)
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
 
         if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING && isThisObjThrown)
         {

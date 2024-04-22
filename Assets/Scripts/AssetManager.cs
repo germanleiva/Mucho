@@ -52,9 +52,9 @@ public class AssetManager : MonoBehaviour
     public bool DoRecordSizesMatch()
     {
         int size = Recorder.Instance.GetSizeOfMainRecordedData(); //Get size of head in main recorder
-        foreach(Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
+        foreach(Recordable recordable in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
         {
-            if(Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count != size)
+            if(Recorder.Instance.currentActiveExample.assetFramesDict[recordable].Count != size)
             {
                 DebugLogger.Instance.Log("Asset recording sizes are different from main recording size");
                 return false;
@@ -96,7 +96,7 @@ public class AssetManager : MonoBehaviour
 
         if(Manager.Instance.currAppState == Manager.AppState.RECORDING)
         {
-            foreach(Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
+            foreach(Recordable recordable in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
             {
                 recordable.RecordAssetFrame();
                 
@@ -104,7 +104,7 @@ public class AssetManager : MonoBehaviour
         }
         else if (Manager.Instance.currAppState == Manager.AppState.PLAYBACK)
         {
-            foreach(Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
+            foreach(Recordable recordable in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
             {
                 recordable.PlaybackAssetFrame();
             }
@@ -147,24 +147,24 @@ public class AssetManager : MonoBehaviour
                 //is this ever called?
                 DebugLogger.Instance.Log("SpawnAsset: obj is null");
             }
-            StartCoroutine(AddAssetFrameToAssetDataDict(newAssetObject.GetComponentInChildren<Recordable>()));
+            StartCoroutine(AddAssetFrameToAssetFramesDict(newAssetObject.GetComponentInChildren<Recordable>()));
         }
     }
 
 
-    IEnumerator AddAssetFrameToAssetDataDict(Recordable recordable)
+    IEnumerator AddAssetFrameToAssetFramesDict(Recordable recordable)
     {
-        while(Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count < Recorder.Instance.GetSizeOfMainRecordedData())
+        while(Recorder.Instance.currentActiveExample.assetFramesDict[recordable].Count < Recorder.Instance.GetSizeOfMainRecordedData())
         {
-            Recorder.Instance.playbackSlider.value = Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count;
-            //DebugLogger.Instance.Log("AddAssetFrameToAssetDataDict: Adding frame at index " + Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count);
+            Recorder.Instance.playbackSlider.value = Recorder.Instance.currentActiveExample.assetFramesDict[recordable].Count;
+            //DebugLogger.Instance.Log("AddAssetFrameToAssetFramesDict: Adding frame at index " + Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count);
             recordable.RecordAssetFrame();
             yield return new WaitForSeconds(0.01f);
         }
         
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         InputManager.Instance.SetPlaybackObjectsActive(false);
-        //DebugLogger.Instance.Log("AddAssetFrameToAssetDataDict: DoRecordSizesMatch() - " + DoRecordSizesMatch());
+        //DebugLogger.Instance.Log("AddAssetFrameToAssetFramesDict: DoRecordSizesMatch() - " + DoRecordSizesMatch());
         Recorder.Instance.RefreshTimelineAndStates();
     }
 
@@ -190,7 +190,7 @@ public class AssetManager : MonoBehaviour
 
     public void HideMiscObjs()
     {
-        foreach (Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
+        foreach (Recordable recordable in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
         {
             recordable.assetMenu.SetActive(false);
         }
@@ -198,7 +198,7 @@ public class AssetManager : MonoBehaviour
 
     public void ShowMiscObjs()
     {
-        foreach (Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
+        foreach (Recordable recordable in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
         {
             recordable.assetMenu.SetActive(true);
         }
@@ -206,7 +206,7 @@ public class AssetManager : MonoBehaviour
 
     public void ResetMeshRendererForAllAssets()
     {
-        foreach (Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
+        foreach (Recordable recordable in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
         {
             recordable.GetComponent<MeshRenderer>().enabled = true;
         }
@@ -214,7 +214,7 @@ public class AssetManager : MonoBehaviour
 
     public void SetAllAssetMenusPokeable(bool status)
     {
-        foreach (Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
+        foreach (Recordable recordable in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
         {
             recordable.GetComponent<PokeInteractable>().enabled = status;
         }
@@ -222,7 +222,7 @@ public class AssetManager : MonoBehaviour
 
     public void ResetPhysicsForAllAssets()
     {
-        foreach (Recordable recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
+        foreach (Recordable recordable in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
         {
             recordable.ResetPhysicsPropertiesInLiveMode();
         }

@@ -128,7 +128,7 @@ public class Hand : MonoBehaviour
 
     public void Record(int frameNum, string handStr)
     {
-        var hand = handStr.Equals("lefthand") ? Recorder.Instance.currentActiveExample.leftHandData : Recorder.Instance.currentActiveExample.rightHandData;
+        var hand = handStr.Equals("lefthand") ? Recorder.Instance.currentActiveExample.leftHandFrames : Recorder.Instance.currentActiveExample.rightHandFrames;
 
     
         hand.Add(new HandFrame(transform.localPosition, transform.localRotation,
