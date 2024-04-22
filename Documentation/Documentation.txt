@@ -1,4 +1,3 @@
-
 [Object]^[HandFrame]
 [Object]^[FingerJoint]
 [Object]^[State]
@@ -28,6 +27,7 @@
 [MonoBehaviour]^[ForceArrow]
 [MonoBehaviour]^[HandPlaybackObjectScript]
 [MonoBehaviour]^[Head]
+[MonoBehaviour]^[Hand]
 [MonoBehaviour]^[InputManager]
 [MonoBehaviour]^[Keyboard]
 [MonoBehaviour]^[LineRendererSmoother]
@@ -57,7 +57,7 @@
 
 [HandFrame]CollisionDelegate-.->[Frame]
 
-[HandPlaybackObjectScript]SetPoseForAllFingerJoints-.->[Frame]
+[HandPlaybackObjectScript]SetPoseForAllFingerJoints-.->[HandFrame]
 
 [PinLineTrigger]-.->[Collision]
 
@@ -75,20 +75,19 @@
 
 [ForceArrow]associatedExample->[Example]
 [HandFrame]->*[FingerJoint]
-[Transition]from->[State]
-[Transition]to->[State]
+[Transition]from/to->[State]
 [State]transitions->*[Transition]
 [Recorder]assetsInScene->*[Recordable]
-[Example] headData->*[HeadFrame]
-[Example]leftHandData->*[HandFrame]
-[Example]rightHandData->*[HandFrame]
-[Example]statesTimelinePanel->*[State]
+[Recorder]head->[Head]
+[Recorder]left/rightHand->[Hand]
+[Recorder]head->[Head]
+[Example]headData->*[HeadFrame]
+[Example]left/rightHandData->*[HandFrame]
 [Example]assetDataDict->*[Recordable]
 [Example]assetDataDict->*[AssetFrame]
 [Example]StatesDict->*[State]
 [Example]StatesDict->*[StateTimelineUIElement]
-[Example]RightHandGestureSequences->*[GestureSequence]
-[Example]LeftHandGestureSequences->*[GestureSequence]
+[Example]Left/RightHandGestureSequences->*[GestureSequence]
 [Example]AllGestureSequences->*[GestureSequence]
 [Example]VoiceCommandSequences->*[VoiceSequence]
 [Example]assetSequencesLists->*[AssetActionSequence]
@@ -100,16 +99,13 @@
 [State]Gesture->[GestureSequence]
 [State]Collision->[AssetActionSequence]
 [State]VoiceSequence->[VoiceSequence]
-[CustomStateMachine]currentState->[State]
 [CustomStateMachine]states->*[State]
-[CustomStateMachine]initialState->[State]
+[CustomStateMachine]current/initialState->[State]
 [AssetManager]Instance->[AssetManager]
 [AssetManager]hmd->[GameObject]
 [AssetManager]states->*[State]
-[InputManager]leftHand->[Hand]
-[InputManager]rightHand->[Hand]
-[InputManager]assetInContactWithLeftHand->[Recordable]
-[InputManager]assetInContactWithRightHand->[Recordable]
+[InputManager]left/rightHand->[Hand]
+[InputManager]assetInContactWithLeft/RightHand->[Recordable]
 [Head]speechToTextEngine->[SpeechToText]
 [Recorder]currentActiveExample->[Example]
 [Recorder]examples->*[Example]
@@ -124,7 +120,7 @@
 [AssetUIPose|+ target: Transform;+ lineEnd: Transform;+ lineStart: Transform;+ lineRenderer: LineRenderer;+ isGrabbed: bool|+ Update(): void;+ UIGrabbed(_isGrabbed: bool): void;]
 
 [CustomStateMachine|+ Instance: CustomStateMachine;+ currentState: State;+ states: Dictionary⟨string, State⟩;+ currentActiveStateText: TMPro.TMP_Text;+ initialState: State|+ Awake(): void;+ AddState(name: string, state: State): void;+ SetInitialState(name: string): void;+ InvokeOnEnterActionsOfInitialState(): void;+ GetSize(): int;+ DeleteState(name: string): void;+ DeleteAllStates(): void;+ PrintDetailsOfStateMachine(VRConsoleEnabled: bool = false): void;+ CreateStateGraph(stateElementPrefab: GameObject, parentTransform: RectTransform): void;+ ProcessFrame(lastFrameObject: Frame): void;+ ApplyTransition(transition: Transition): void;]
-[State|+ id: string;+ OnEnterActions: Action;+ OnUpdateActions: Action;+ OnExitActions: Action;+ OnEnterActionsStr: string;+ OnUpdateActionsStr: string;+ OnExitActionsStr: string;+ transitions: List⟨Transition⟩;+ timelineElement: GameObject;+ stateGraphElement: GameObject;+ originalColor: Color;+ Gesture: GestureSequence;+ Collision: AssetActionSequence;+ VoiceSequence: VoiceSequence|+ ResetStateUIColor(): void;+ OnEnter(): void;+ OnUpdate(): void;+ IsStateEqualTo(state: State): bool;+ OnExit(): void;+ ToString(): string;+ AddTransitionTo(targetState: State, condition: Func⟨Frame, bool⟩, textDescription: string = "empty description"): void;+ ClearTransitions(): void;+ CopyTransitionFromState(sourceState: State): void;+ ModifyTransitionTo(newState: State): void;+ PrintDetailsOfState(VRConsoleEnabled: bool = false): void;]
+[State|+ id: string;+ OnEnterActions: Action;+ OnUpdateActions: Action;+ OnExitActions: Action;+ OnEnterActionsStr: string;+ OnUpdateActionsStr: string;+ OnExitActionsStr: string;+ transitions: List⟨Transition⟩;+ timelineElement: GameObject;+ stateGraphElement: GameObject;+ originalColor: Color;+ Gesture: GestureSequence;+ Collision: AssetActionSequence;+ VoiceSequence: VoiceSequence|+ ResetStateUIColor(): void;+ OnEnter(): void;+ OnUpdate(): void;+ IsStateEqualTo(state: State): bool;+ OnExit(): void;+ ToString(): string;+ AddTransitionTo(targetState: State, condition: Func⟨Frame, bool⟩, textDescription: string): void;+ ClearTransitions(): void;+ CopyTransitionFromState(sourceState: State): void;+ ModifyTransitionTo(newState: State): void;+ PrintDetailsOfState(VRConsoleEnabled: bool = false): void;]
 [Transition|+ from: State;+ to: State;+ condition: Func⟨Frame, bool⟩;+ textDescription: string|+ ShouldApply(frame: Frame): bool;]
 [Frame|+ leftHandGesture: InputManager.Gesture;+ rightHandGesture: InputManager.Gesture;+ voiceCommand: string;+ collidingObjectThisFrame_1: GameObject;+ collidingObjectThisFrame_2: GameObject|+ IsColliding(object1: GameObject, object2: GameObject): bool;]
 
@@ -136,16 +132,16 @@
 
 [ForceArrow|+ asset: Transform;+ arrowHeadGhost: Transform;+ arrowHeadReal: Transform;+ arrowBody: Transform;+ lineRenderer: LineRenderer;+ numberOfPoints: int;+ timeInterval: float;+ isConnectedToAsset: bool;+ initialVelocity: Vector3;+ connectedAsset: GameObject;+ arrowTranslucentMaterial: Material;+ indexWhereArrowIsVisible: int;+ associatedExample: Example;+ forceMagnitudeText: TMPro.TextMeshProUGUI;+ forceMagnitudeUI: GameObject;+ layerMask: int;+ previousArrowHeadPosition: Vector3;+ previousArrowGhostHeadPosition: Vector3|+ Start(): void;+ Update(): void;+ ReOrientArrow(): void;+ PositionAndScaleArrowBody(): void;+ ReOrientArrowHead(): void;+ OrientForceArrow(): float;+ CalculateDirectionFromHand(): Vector3;+ PositionArrowHeadReal(direction: Vector3, magnitude: float): void;+ DrawTrajectory(magnitude: float): void;+ CalculateTrajectoryPoint(startPoint: Vector3, initialVelocity: Vector3, time: float): Vector3;+ HideTrajectoryAndArrow(): void;+ ShowTrajectoryAndArrow(): void;+ ThrowAsset(): void;]
 
-[Hand|+ playbackObject: GameObject;+ rotationCorrection: Vector3;+ positionCorrection: Vector3;+ initPosBeforePhysicsSimulation: Vector3;+ initRotBeforePhysicsSimulation: Quaternion;+ pinchObj: GameObject;+ indexJoint1: GameObject;+ indexJoint2: GameObject;+ indexJoint3: GameObject;+ middleJoint1: GameObject;+ middleJoint2: GameObject;+ middleJoint3: GameObject;+ ringJoint1: GameObject;+ ringJoint2: GameObject;+ ringJoint3: GameObject;+ pinkyJoint0: GameObject;+ pinkyJoint1: GameObject;+ pinkyJoint2: GameObject;+ pinkyJoint3: GameObject;+ thumbJoint0: GameObject;+ thumbJoint1: GameObject;+ thumbJoint2: GameObject;+ thumbJoint3: GameObject;+ ray: LineRenderer;+ focusSquare: GameObject;+ playbackFocusSquare: GameObject;+ showStatus: bool;+ playbackGestureText: TMPro.TMP_Text;+ currentGesture: InputManager.Gesture;+ gestureText: TMPro.TMP_Text|+ Awake(): void;+ SetOpacity(renderer: SkinnedMeshRenderer
+[Hand|+ playbackObject: GameObject;+ rotationCorrection: Vector3;+ positionCorrection: Vector3;+ initPosBeforePhysicsSimulation: Vector3;+ initRotBeforePhysicsSimulation: Quaternion;+ pinchObj: GameObject;+ indexJoint123: GameObject;+ middleJoint123: GameObject;+ ringJoint123: GameObject;+ pinkyJoint0123: GameObject;+ thumbJoint0123: GameObject;+ ray: LineRenderer;+ focusSquare: GameObject;+ playbackFocusSquare: GameObject;+ showStatus: bool;+ playbackGestureText: TMPro.TMP_Text;+ currentGesture: InputManager.Gesture;+ gestureText: TMPro.TMP_Text|+ Awake(): void;+ SetOpacity(renderer: SkinnedMeshRenderer
 opacity: float): void;+ GetCurrentPosition(): Vector3;+ Update(): void;+ Record(frameNum: int
 handStr: string): void;+ SetGesture(gestureStr: string): void;+ SetGestureText(gestureStr: string): void;]
 
-[HandFrame|+rootPosition: Vector3;+ rootRotation: Quaternion;+ frameNumber: int;+ pinchPosition: Vector3;+ focusSquarePosition: Vector3;+ focusSquareRotation: Quaternion;+ showStatusForThisFrame: bool;+ gesture: InputManager.Gesture;+ Action: string;+ ActionDelegate: Action;+ CollisionDelegate: Action⟨Frame⟩;+ CollidedObject: GameObject;+ Collision: string| + HandFrame(_position: Vector3,_rotation: Quaternion,_indexJoint012:FingerJoint,_middleJoint012: FingerJoint,_ringJoint012: FingerJoint,_pinkyJoint0123: FingerJoint,_thumbJoint0123: FingerJoint,_focusSquarePosition: Vector3,_focusSquareRotation: Quaternion,_gesture: InputManager.Gesture,_pinchPosition: Vector3,_frameNumber: int):void;+ Clone(): object;]
+[HandFrame|+rootPosition: Vector3;+ rootRotation: Quaternion;+ frameNumber: int;+ pinchPosition: Vector3;+ focusSquarePosition: Vector3;+ focusSquareRotation: Quaternion;+ showStatusForThisFrame: bool;+ gesture: InputManager.Gesture;+ Action: string;+ ActionDelegate: Action;+ CollisionDelegate: Action⟨Frame⟩;+ CollidedObject: GameObject;+ Collision: string| + HandFrame(_position/rotation: Vector3,_indexJoint012:FingerJoint,_middleJoint012: FingerJoint,_ringJoint012: FingerJoint,_pinkyJoint0123: FingerJoint,_thumbJoint0123: FingerJoint,_focusSquarePosition/Rotation: Vector3,_gesture: InputManager.Gesture,_pinchPosition: Vector3,_frameNumber: int):void;+ Clone(): object;]
 
 [FingerJoint|+ position: Vector3;+ rotation: Quaternion|+ FingerJoint(_position: Vector3
 _rotation: Quaternion): void;+ FingerJoint(_joint: GameObject): void;+ Clone(): object;]
 
-[HandPlaybackObjectScript|+ indexFinger: GameObject;+ middleFinger: GameObject;+ ringFinger: GameObject;+ pinkyFinger: GameObject;+ thumbFinger: GameObject;+ indexJoint1: GameObject;+ indexJoint2: GameObject;+ indexJoint3: GameObject;+ middleJoint1: GameObject;+ middleJoint2: GameObject;+ middleJoint3: GameObject;+ ringJoint1: GameObject;+ ringJoint2: GameObject;+ ringJoint3: GameObject;+ pinkyJoint0: GameObject;+ pinkyJoint1: GameObject;+ pinkyJoint2: GameObject;+ pinkyJoint3: GameObject;+ thumbJoint0: GameObject;+ thumbJoint1: GameObject;+ thumbJoint2: GameObject;+ thumbJoint3: GameObject;+ pinchObj: GameObject|+ SetPoseForAllFingerJoints(frame: HandFrame): void;]
+[HandPlaybackObjectScript|+ indexFinger: GameObject;+ middleFinger: GameObject;+ ringFinger: GameObject;+ pinkyFinger: GameObject;+ thumbFinger: GameObject;+ indexJoint123: GameObject;+ middleJoint123: GameObject;+ ringJoint123: GameObject;+ pinkyJoint0123: GameObject;+ thumbJoint0123: GameObject;+ pinchObj: GameObject|+ SetPoseForAllFingerJoints(frame: HandFrame): void;]
 
 [Head|+ playbackObject: GameObject;+ rotationCorrection: Vector3;+ positionCorrection: Vector3;+ initPosBeforePhysicsSimulation: Vector3;+ initRotBeforePhysicsSimulation: Quaternion;+ speechToTextEngine: SpeechToText;+ startRecordingButton: GameObject;+ stopRecordingButton: GameObject;+ ray: LineRenderer;+ focusSquare: GameObject;+ playbackFocusSquare: GameObject;+ voiceRecordStarted: bool|+ Update(): void;+ StartVoiceRecord(): void;+ InsertVoiceCommandCoroutine(): IEnumerator⟨WaitForSeconds⟩;+ StopVoiceRecord(): void;+ InsertVoiceCommand(_voiceCommand: string): void;+ PrintAllVoiceCommands(): void;+ Record(frameNum: int): void;]
 
@@ -153,7 +149,7 @@ _rotation: Quaternion): void;+ FingerJoint(_joint: GameObject): void;+ Clone(): 
 
 [InputManager|+ leftHand: Hand;+ rightHand: Hand;+ leftFocus: GameObject;+ rightFocus: GameObject;+ gazeFocus: GameObject;+ testBall: GameObject;+ testTarget: GameObject;+ floor: GameObject;+ testHitMessage: GameObject;+ testMissMessage: GameObject;+ collidingObjectNotified_1: GameObject;+ collidingObjectNotified_2: GameObject;+ currentVoiceCommand: string;+ leftHandPinchObj: GameObject;+ rightHandPinchObj: GameObject;+ headContactObj: GameObject;+ playbackLeftHandPinchObj: GameObject;+ playbackRightHandPinchObj: GameObject;+ playbackHeadContactObj: GameObject;+ playbackLeftFocus: GameObject;+ playbackRightFocus: GameObject;+ playbackGazeFocus: GameObject;+ leftHandVelocity: Vector3;+ rightHandVelocity: Vector3;+ headVelocity: Vector3;+ velocityScalingFactor: float;+ assetInContactWithLeftHand: Recordable;+ assetInContactWithRightHand: Recordable|+ Awake(): void;+ Start(): void;+ Update(): void;+ CreateTestStates(): void;+ SetLeftHandGesture(gestureStr: string): void;+ SetRightHandGesture(gestureStr: string): void;+ NotifyVoiceCommand(command: string): void;+ NotifyCollision(object1: GameObject, object2: GameObject): void;+ ProcessEvents(): void;+ SetPlaybackObjectsActive(show: bool): void;+ GestureToString(gesture: Gesture): string;]
 
-[Keyboard|+ inputField: TMPro.TMP_InputField;+ key_a: Button;+ key_b: Button;+ key_c: Button;+ key_d: Button;+ key_e: Button;+ key_f: Button;+ key_g: Button;+ key_h: Button;+ key_i: Button;+ key_j: Button;+ key_k: Button;+ key_l: Button;+ key_m: Button;+ key_n: Button;+ key_o: Button;+ key_p: Button;+ key_q: Button;+ key_r: Button;+ key_s: Button;+ key_t: Button;+ key_u: Button;+ key_v: Button;+ key_w: Button;+ key_x: Button;+ key_y: Button;+ key_z: Button;+ key_0: Button;+ key_1: Button;+ key_2: Button;+ key_3: Button;+ key_4: Button;+ key_5: Button;+ key_6: Button;+ key_7: Button;+ key_8: Button;+ key_9: Button;+ key_space: Button;+ key_backspace: Button;+ key_enter: Button;+ targetTransform: Transform;+ submitCallback: Action|+ Start(): void;+ ActivateKeyboard(_inputField: TMPro.TMP_InputField): void;+ Submit(): void;+ DeactivateKeyboard(): void;]
+[Keyboard|+ inputField: TMPro.TMP_InputField;+ key_abcdefg(etc): Button;+ key_0123456789: Button;+ key_space: Button;+ key_backspace: Button;+ key_enter: Button;+ targetTransform: Transform;+ submitCallback: Action|+ Start(): void;+ ActivateKeyboard(_inputField: TMPro.TMP_InputField): void;+ Submit(): void;+ DeactivateKeyboard(): void;]
 
 [LineRendererSmoother|+ Line: LineRenderer;+ SmoothingLength: float;+ SmoothingSections: int|+ SimplifyAndSmooth(): void;]
 

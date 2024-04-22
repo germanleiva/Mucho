@@ -40,7 +40,7 @@ public class StateGraphUI : MonoBehaviour
         
         elementRect.anchoredPosition = new Vector2(positionX, elementRect.anchoredPosition.y);   
         
-        timelineElement.GetComponentInChildren<TMPro.TMP_Text>().text = _state.id;
+        timelineElement.GetComponentInChildren<TMPro.TMP_Text>().text = _state.name;
         
         return timelineElement;
     }

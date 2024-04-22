@@ -30,7 +30,7 @@ public class CustomStateMachine : MonoBehaviour
 
     public void AddState(string name, State state)
     {
-        state.id = name;
+        state.name = name;
         states.Add(name, state);
     }
 
@@ -46,7 +46,7 @@ public class CustomStateMachine : MonoBehaviour
 
     public void InvokeOnEnterActionsOfInitialState()
     {
-        DebugLogger.Instance.Log("Invoking OnEnter actions of initial state " + currentState.id,true);
+        DebugLogger.Instance.Log("Invoking OnEnter actions of initial state " + currentState.name,true);
         currentState.OnEnter();
     }
 
@@ -94,7 +94,7 @@ public class CustomStateMachine : MonoBehaviour
     public void ProcessFrame(Frame lastFrameObject)
     {                
         //DebugLogger.Instance.Log("ProcessFrame in the StateMachine");
-        currentActiveStateText.text = "Current state: " + currentState.id;
+        currentActiveStateText.text = "Current state: " + currentState.name;
 
         foreach (var transition in currentState.transitions)
         {
@@ -127,7 +127,7 @@ public class CustomStateMachine : MonoBehaviour
 [System.Serializable]
 public class State
 {
-    public string id;
+    public string name;
     public Action OnEnterActions { get; set; }
     public Action OnUpdateActions { get; set; }
     public Action OnExitActions { get; set; }
@@ -156,7 +156,7 @@ public class State
 
     public void OnEnter()
     {
-        DebugLogger.Instance.Log("OnEnter: " + id + ", OnEnterActions: " + String.Join(", ", OnEnterActionsStr));
+        DebugLogger.Instance.Log("OnEnter: " + name + ", OnEnterActions: " + String.Join(", ", OnEnterActionsStr));
 
         OnEnterActions?.Invoke();
 
@@ -189,7 +189,7 @@ public class State
 
     public void OnExit()
     {
-        DebugLogger.Instance.Log("OnExit: " + id + ", OnExitActions: " + String.Join(", ", OnExitActionsStr));
+        DebugLogger.Instance.Log("OnExit: " + name + ", OnExitActions: " + String.Join(", ", OnExitActionsStr));
         
         OnExitActions?.Invoke();
 
@@ -201,7 +201,7 @@ public class State
 
     override public string ToString()
     {
-        return id;
+        return name;
     }
 
     public void AddTransitionTo(State targetState, Func<Frame, bool> condition, string textDescription = "empty description")
@@ -225,7 +225,7 @@ public class State
         //DebugLogger.Instance.Log("Copying transition from state " + sourceState.id + " to state " + id);
         foreach (var transition in sourceState.transitions)
         {
-            DebugLogger.Instance.Log("Copying transition from state " + sourceState.id + " to state " + id + " with text description " + transition.textDescription);
+            DebugLogger.Instance.Log("Copying transition from state " + sourceState.name + " to state " + name + " with text description " + transition.textDescription);
             transitions.Add(new Transition
             {   
                 from = this,
@@ -246,7 +246,7 @@ public class State
 
     public void PrintDetailsOfState(bool VRConsoleEnabled = false)
     {
-        DebugLogger.Instance.Log("State: " + id, VRConsoleEnabled);
+        DebugLogger.Instance.Log("State: " + name, VRConsoleEnabled);
         //Iterate and print OnEnter actions
         if(OnEnterActions != null)
         {    

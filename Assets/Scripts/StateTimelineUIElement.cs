@@ -36,7 +36,7 @@ public class StateTimelineUIElement : TimelineUIElement
         elementRect.anchoredPosition = new Vector2(positionX, elementRect.anchoredPosition.y);
         elementRect.sizeDelta = new Vector2(sizeDeltaX, elementRect.sizeDelta.y);
         
-        timelineElement.GetComponent<StateTimelineUIElement>().SetEvent(_state.id);
+        timelineElement.GetComponent<StateTimelineUIElement>().SetEvent(_state.name);
         timelineElement.GetComponent<StateTimelineUIElement>().state = _state;
         //timelineElement.GetComponent<StateTimelineUIElement>().stateIndexOnTimeline = _stateIndexOnTimeline;
 
