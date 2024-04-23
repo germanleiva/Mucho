@@ -75,8 +75,7 @@ public class Recorder : MonoBehaviour
         currentActiveExample.examplePlaybackPanel.gameObject.SetActive(true);
         currentActiveExample.button.GetComponent<Image>().color = Color.green;
         
-        //RefreshTimelineAndStates();
-        RefreshTimelineActions();
+        CreateTimelineAndStatePlaceholders(); 
     }
 
     public void AddExample()
@@ -101,11 +100,8 @@ public class Recorder : MonoBehaviour
             example.CopyExampleDataFrom(examples[examples.Count - 2]);
             //PreparePlayback();
         }
-
-       // examplePlaybackPanelPrefab = examplePlaybackPanel_clone;
-
+        
         SelectExample(example);  
-        RefreshTimelineAndStates();      
     }
 
     // Start recording.
@@ -159,7 +155,7 @@ public class Recorder : MonoBehaviour
         AssetManager.Instance.SetAllAssetMenusPokeable(true);
  
         AssetManager.Instance.DoRecordSizesMatch();
-        RefreshTimelineAndStates();   
+        CreateTimelineAndStatePlaceholders();   
 
         PreparePlayback();
     }
@@ -586,30 +582,9 @@ public class Recorder : MonoBehaviour
     List<GameObject> assetTimelines = new();
 
 
-    public void RefreshTimelineInputSequences()
+    public void CreateTimelineInputSequences()
     {
-        DebugLogger.Instance.Log("Refreshing input sequences");
-        //Delete all existing left and right hand timeline elements
-        for (int i = 1; i < currentActiveExample.leftHandTimelinePanel.GetComponent<RectTransform>().childCount; i++)
-        {
-            Destroy(currentActiveExample.leftHandTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
-        }
-        for (int i = 2; i < currentActiveExample.rightHandTimelinePanel.GetComponent<RectTransform>().childCount; i++)
-        {
-            Destroy(currentActiveExample.rightHandTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
-        }
-
-        //Delete all existing voice command timeline elements
-        for (int i = 4; i < currentActiveExample.voiceTimelinePanel.GetComponent<RectTransform>().childCount; i++)
-        {
-            Destroy(currentActiveExample.voiceTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
-        }
-
-        //Delete all existing collision timeline elements
-        for (int i = 2; i < currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>().childCount; i++)
-        {
-            Destroy(currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
-        }
+        DebugLogger.Instance.Log("Creating input sequences");
 
         //Generate gesture sequences for left and right hand
         currentActiveExample.LeftHandGestureSequences = GenerateGestureSequences(currentActiveExample.leftHandTimelinePanel, "lefthand");
@@ -630,14 +605,9 @@ public class Recorder : MonoBehaviour
         }
     }
 
-    public void RefreshTimelineActions()
+    public void CreateTimelineActions()
     {
-        DebugLogger.Instance.Log("Refreshing assets timeline for example " + currentActiveExample.exampleId);
-        //Delete all existing asset timelines
-        foreach (var timeline in assetTimelines)
-        {
-            Destroy(timeline);
-        }
+        DebugLogger.Instance.Log("Creating assets timeline for example " + currentActiveExample.exampleId);
 
         int assetsCounter = 0;
         currentActiveExample.assetSequencesLists.Clear();
@@ -658,19 +628,94 @@ public class Recorder : MonoBehaviour
         }
     }
 
+    public void CreateTimelineAndStatePlaceholders()
+    {
+        CreateTimelineInputSequences();
+        CreateTimelineActions();
+        //TODO: break the relatioship with the state machine
+        CreateStates();
+    }
+
+    public void RefreshTimelineVoiceSequences()
+    {
+        // refresh voice command sequences
+        //TODO: not creating them all over again but just add the new one
+        currentActiveExample.VoiceCommandSequences = GenerateVoiceCommandSequences(currentActiveExample.voiceTimelinePanel);
+        
+        //refresh state placeholders 
+        //TODO: German is going to refactor this and we will have a new method called CreateStatePlaceholders
+        CreateStates();
+    }
+
+    public void RefreshTimelineActions(AssetFrame assetFrame)
+    {
+        //Refresh action events in the timeline
+        DebugLogger.Instance.Log("Refresh assets timeline for example " + currentActiveExample.exampleId);
+
+        int assetsCounter = 0;
+        currentActiveExample.assetSequencesLists.Clear();
+        foreach (var recordable in currentActiveExample.assetFramesDict.Keys)
+        {
+            ++assetsCounter;
+            GameObject timelinePanel = Instantiate(currentActiveExample.assetTimelinePanelPrefab, currentActiveExample.examplePlaybackPanel);
+            assetTimelines.Add(timelinePanel);
+            timelinePanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(timelinePanel.GetComponent<RectTransform>().anchoredPosition.x, timelinePanel.GetComponent<RectTransform>().anchoredPosition.y - assetsCounter * 100);
+            timelinePanel.SetActive(true);
+            timelinePanel.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text = Manager.Instance.CleanAssetName(recordable.name); //Assign asset name
+
+            if (currentActiveExample.assetFramesDict[recordable].Count > 0)
+            {
+                currentActiveExample.assetSequencesLists.Add(GenerateAssetActionSequences(timelinePanel.GetComponent<RectTransform>(), recordable));
+
+            }
+        }
+        
+        //if the action is a follow, pin or addforce, then regenerate also collisions and regenerate state placeholders
+        string assetFrameStr = assetFrame.ActionStr;
+        if(assetFrameStr.Equals("Follow") || assetFrameStr.Equals("Pin") || assetFrameStr.Equals("ApplyForce"))
+        {
+            RefreshTimelineCollisions();
+            //Refresh state placeholders
+            CreateStates();
+        }
+    }
+
+    public void RefreshTimelineCollisions()
+    {
+        //Generate collision sequences
+        currentActiveExample.collisionSequencesLists.Clear();
+        foreach (var recordable in currentActiveExample.assetFramesDict.Keys)
+        {
+            if (currentActiveExample.assetFramesDict[recordable].Count > 0)
+            {
+                currentActiveExample.collisionSequencesLists.Add(GenerateCollisionSequences(currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>(), recordable));
+            }
+        }
+    }
+
+    public void RefreshTimelineGestures()
+    {
+        //Generate gesture sequences for left and right hand
+        currentActiveExample.LeftHandGestureSequences = GenerateGestureSequences(currentActiveExample.leftHandTimelinePanel, "lefthand");
+        currentActiveExample.RightHandGestureSequences = GenerateGestureSequences(currentActiveExample.rightHandTimelinePanel, "righthand");
+        currentActiveExample.AllGestureSequences = currentActiveExample.LeftHandGestureSequences.Concat(currentActiveExample.RightHandGestureSequences).ToList();
+
+    }
+
+    /*
     public void RefreshTimelineAndStates()
     { 
         RefreshTimelineInputSequences();
         RefreshTimelineActions();
         CreateStates();
+        
+        //TODO: call them only in live mode
         AddActionsToAllStates();
         CombineExamples();       
-    }
+    } */
 
     public void CreateStates()
     {
-        ResetExampleStateMachine();
-
         int recordedFramesTotal = GetSizeOfMainRecordedData();
 
         var gestures = currentActiveExample.AllGestureSequences;
@@ -1053,6 +1098,59 @@ public class Recorder : MonoBehaviour
         //CustomStateMachine.Instance.SetInitialState(commonStates.First().id);
 
     }
+    
+    public void CreateStatePlaceholders() {
+        DeleteStatePlaceholders();
+        int recordedFramesTotal = GetSizeOfMainRecordedData();
+        var gestures = currentActiveExample.AllGestureSequences;
+        var collisions = currentActiveExample.collisionSequencesLists.SelectMany(x => x).ToList();
+        var voiceCommands = currentActiveExample.VoiceCommandSequences;
+        // Create a list of events (start or end of a sequence)
+        var eventsThatStartStates = new List<(int Index, string Type, GestureSequence Gesture, AssetActionSequence Collision, VoiceSequence VoiceCommand)>();
+        foreach (var gesture in gestures)
+        {
+            eventsThatStartStates.Add((gesture.StartIndex, "start", gesture, null, null));
+        }
+        foreach (var collision in collisions)
+        {
+            eventsThatStartStates.Add((collision.StartIndex, "start", null, collision, null));
+        }
+        foreach (var voiceCommand in voiceCommands)
+        {
+            eventsThatStartStates.Add((voiceCommand.StartIndex, "start", null, null, voiceCommand));
+        }
+        // Sort the events by their index
+        eventsThatStartStates = eventsThatStartStates.OrderBy(e => e.Index).ToList();
+        int lastIndex = 0;
+        // Iterate over events to create states
+        for (int i = 0; i < eventsThatStartStates.Count; i++) {
+            var currentEvent = eventsThatStartStates[i];
+            if (lastIndex != currentEvent.Index) {
+                var startIndex = lastIndex;
+                var length = recordedFramesTotal - lastIndex;
+                StateTimelineUIElement.CreateStateTimelineElement(
+                    currentActiveExample.stateTimelineElementPrefab,
+                    currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>(),
+                    startIndex,
+                    length,
+                    GetSizeOfMainRecordedData(),
+                    "State");
+            }
+            lastIndex = currentEvent.Index;
+        }
+        // Last state
+        if (lastIndex < recordedFramesTotal) {
+            var startIndex = lastIndex;
+            var length = recordedFramesTotal - lastIndex;
+            StateTimelineUIElement.CreateStateTimelineElement(
+                currentActiveExample.stateTimelineElementPrefab,
+                currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>(),
+                startIndex,
+                length,
+                GetSizeOfMainRecordedData(),
+                "State");
+        }
+    }        
 
     //Dictionary<State, StateTimelineUIElement> StatesDict = new();
     State CreateState(int startIndex, int length)
@@ -1202,6 +1300,11 @@ public class Recorder : MonoBehaviour
         CustomStateMachine.Instance.DeleteAllStates();
 
         //Delete all existing state timeline UI elements
+        DeleteStatePlaceholders();
+    }
+
+    public void DeleteStatePlaceholders()
+    {
         for (int i = 2; i < currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>().childCount; i++)
         {
             Destroy(currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);

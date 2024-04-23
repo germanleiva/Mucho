@@ -179,7 +179,7 @@ public class Manager : MonoBehaviour
             eachRightHandData.isActive = !eachRightHandData.isActive;
         }
 
-        Recorder.Instance.RefreshTimelineAndStates();
+        Recorder.Instance.RefreshTimelineGestures();
     }
     public void ToggleLeftHandEventRow(Boolean leftHandEventsOn) {
         foreach (var eachLeftHandData in Recorder.Instance.currentActiveExample.leftHandFrames)
@@ -187,7 +187,7 @@ public class Manager : MonoBehaviour
             eachLeftHandData.isActive = !eachLeftHandData.isActive;
         }
 
-        Recorder.Instance.RefreshTimelineAndStates();
+        Recorder.Instance.RefreshTimelineGestures();
     }
 }
 

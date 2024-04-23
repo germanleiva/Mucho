@@ -46,12 +46,12 @@ public class FollowLineTrigger : MonoBehaviour
             renderer.material = highlightMaterial;  
             if(followTargetType == FollowTargetType.LEFTHAND)
             {                
-                followLine.FollowLineAction = () => { followLine.asset.GetComponent<Asset>().AttachToLeftHand(); renderer.material = defaultMaterial;};             
+                followLine.FollowLineAction = () => { followLine.asset.GetComponent<Asset>().FollowLeftHand(); renderer.material = defaultMaterial;};             
                 //followLine.asset.GetComponent<Recordable>().AttachToLeftHand();
             }
             else if(followTargetType == FollowTargetType.RIGHTHAND)
             {                
-                followLine.FollowLineAction = () => { followLine.asset.GetComponent<Asset>().AttachToRightHand(); renderer.material = defaultMaterial;};
+                followLine.FollowLineAction = () => { followLine.asset.GetComponent<Asset>().FollowRightHand(); renderer.material = defaultMaterial;};
                 //followLine.asset.GetComponent<Recordable>().AttachToRightHand();
             }
             else if(followTargetType == FollowTargetType.LEFTFOCUS)

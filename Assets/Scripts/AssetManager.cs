@@ -165,7 +165,8 @@ public class AssetManager : MonoBehaviour
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         InputManager.Instance.SetPlaybackObjectsActive(false);
         //DebugLogger.Instance.Log("AddAssetFrameToAssetFramesDict: DoRecordSizesMatch() - " + DoRecordSizesMatch());
-        Recorder.Instance.RefreshTimelineAndStates();
+        //TODO check when this is called and if it should refresh only collisions
+        Recorder.Instance.RefreshTimelineCollisions();
     }
 
 
@@ -175,8 +176,9 @@ public class AssetManager : MonoBehaviour
         Recorder.Instance.assetsInScene.Remove(obj.GetComponentInChildren<Asset>());
         Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
         //RefreshAssetsInAllExamples();
-        //Recorder.Instance.RefreshTimelineAndStates();
-        Recorder.Instance.RefreshTimelineActions();
+        
+        //TODO: check if that is enough to refresh
+        Recorder.Instance.RefreshTimelineCollisions();
         Destroy(obj);
     }
 

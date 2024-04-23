@@ -37895,7 +37895,7 @@ MonoBehaviour:
   virtualGreenScreenApplyDepthCulling: 0
   virtualGreenScreenDepthTolerance: 0.2
   mrcActivationMode: 0
-  isInsightPassthroughEnabled: 1
+  isInsightPassthroughEnabled: 0
   requestBodyTrackingPermissionOnStartup: 0
   requestFaceTrackingPermissionOnStartup: 0
   requestEyeTrackingPermissionOnStartup: 0
@@ -46643,7 +46643,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 595010858}
         m_TargetAssemblyTypeName: Recordable, Assembly-CSharp
-        m_MethodName: AttachToLeftHand
+        m_MethodName: FollowLeftHand
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -49726,7 +49726,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 2427953}
         m_TargetAssemblyTypeName: Recordable, Assembly-CSharp
-        m_MethodName: AttachToLeftHand
+        m_MethodName: FollowLeftHand
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -57650,7 +57650,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 595010858}
         m_TargetAssemblyTypeName: Recordable, Assembly-CSharp
-        m_MethodName: AttachToRightHand
+        m_MethodName: FollowRightHand
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -77971,7 +77971,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 2427953}
         m_TargetAssemblyTypeName: Recordable, Assembly-CSharp
-        m_MethodName: AttachToRightHand
+        m_MethodName: FollowRightHand
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -129802,7 +129802,7 @@ Transform:
   m_GameObject: {fileID: 2059295645}
   serializedVersion: 2
   m_LocalRotation: {x: -0.40921134, y: -0.40206808, z: 0.581673, w: 0.5766661}
-  m_LocalPosition: {x: 1.124, y: 0.892, z: 0.821}
+  m_LocalPosition: {x: 0.984, y: 0.887, z: 0.437}
   m_LocalScale: {x: 1.9469, y: 0.028230373, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -129827,8 +129827,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 0.999999, y: 1.8536144, z: 1}
+  m_Center: {x: 1.3168649e-11, y: 0.42680696, z: -4.4072804e-10}
 --- !u!23 &2059295648
 MeshRenderer:
   m_ObjectHideFlags: 0
