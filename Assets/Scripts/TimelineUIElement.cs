@@ -114,6 +114,12 @@ public class TimelineUIElement : MonoBehaviour
 
         //timelineElement.GetComponent<TimelineUIElement>().SetStartAndLength(startIndex, length);
         
+        return timelineElement;
+    }
+
+    public static void SetTimeLineElementWidthAccordingToText(GameObject timelineElement)
+    {
+        RectTransform elementRect = timelineElement.GetComponent<RectTransform>();
         TextMeshProUGUI textComponent = timelineElement.GetComponentInChildren<TextMeshProUGUI>();
         if (textComponent != null)
         {
@@ -124,8 +130,6 @@ public class TimelineUIElement : MonoBehaviour
             // Set width of recttransform based on the length of the text 
             elementRect.sizeDelta = new Vector2(textSize.x, elementRect.sizeDelta.y);
         }
-        
-        return timelineElement;
     }
 
     public void SetEvent(string text)

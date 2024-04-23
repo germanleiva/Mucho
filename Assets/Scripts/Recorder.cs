@@ -384,7 +384,8 @@ public class Recorder : MonoBehaviour
         foreach (VoiceSequence sequence in voiceSequences)
         {
             DebugLogger.Instance.Log("Voice sequence name: " + sequence.VoiceCommand + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
-            TimelineUIElement.CreateTimelineElement(currentActiveExample.voiceCommandTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.VoiceCommand);
+            GameObject timelineElement = TimelineUIElement.CreateTimelineElement(currentActiveExample.voiceCommandTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.VoiceCommand);
+            TimelineUIElement.SetTimeLineElementWidthAccordingToText(timelineElement);
         }
         return voiceSequences;
     }
