@@ -362,9 +362,10 @@ public class Recorder : MonoBehaviour
 
     public List<GestureSequence> GenerateGestureSequences(RectTransform timelinePanel, string handStr)
     {
-        var hand = handStr.Equals("lefthand") ? Recorder.Instance.currentActiveExample.activeLeftHandFrames : Recorder.Instance.currentActiveExample.activeRightHandFrames;
+        var handFrames = handStr.Equals("lefthand") ? Recorder.Instance.currentActiveExample.activeLeftHandFrames 
+            : Recorder.Instance.currentActiveExample.activeRightHandFrames;
         //DebugLogger.Instance.Log("Generating gesture sequences for " + handStr);
-        List<InputManager.Gesture> gestures = hand.Select(x => x.gesture).ToList();
+        List<InputManager.Gesture> gestures = handFrames.Select(x => x.gesture).ToList();
         List<GestureSequence> GestureSequences = GetContinuousGestureSequences(gestures);
         foreach (GestureSequence sequence in GestureSequences)
         {
