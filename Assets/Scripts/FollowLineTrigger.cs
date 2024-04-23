@@ -46,25 +46,25 @@ public class FollowLineTrigger : MonoBehaviour
             renderer.material = highlightMaterial;  
             if(followTargetType == FollowTargetType.LEFTHAND)
             {                
-                followLine.FollowLineAction = () => { followLine.asset.GetComponent<Recordable>().AttachToLeftHand(); renderer.material = defaultMaterial;};             
+                followLine.FollowLineAction = () => { followLine.asset.GetComponent<Asset>().AttachToLeftHand(); renderer.material = defaultMaterial;};             
                 //followLine.asset.GetComponent<Recordable>().AttachToLeftHand();
             }
             else if(followTargetType == FollowTargetType.RIGHTHAND)
             {                
-                followLine.FollowLineAction = () => { followLine.asset.GetComponent<Recordable>().AttachToRightHand(); renderer.material = defaultMaterial;};
+                followLine.FollowLineAction = () => { followLine.asset.GetComponent<Asset>().AttachToRightHand(); renderer.material = defaultMaterial;};
                 //followLine.asset.GetComponent<Recordable>().AttachToRightHand();
             }
             else if(followTargetType == FollowTargetType.LEFTFOCUS)
             {
-                followLine.FollowLineAction = () => { followLine.asset.GetComponent<Recordable>().AttachToLeftHandFocusSquare(); renderer.material = defaultMaterial;};
+                followLine.FollowLineAction = () => { followLine.asset.GetComponent<Asset>().AttachToLeftHandFocusSquare(); renderer.material = defaultMaterial;};
             }
             else if(followTargetType == FollowTargetType.RIGHTFOCUS)
             {
-               followLine.FollowLineAction = () => { followLine.asset.GetComponent<Recordable>().AttachToRightHandFocusSquare(); renderer.material = defaultMaterial;};
+               followLine.FollowLineAction = () => { followLine.asset.GetComponent<Asset>().AttachToRightHandFocusSquare(); renderer.material = defaultMaterial;};
             }
             else if(followTargetType == FollowTargetType.GAZEFOCUS)
             {
-                followLine.FollowLineAction = () => { followLine.asset.GetComponent<Recordable>().AttachToGazeFocusSquare(); renderer.material = defaultMaterial;};
+                followLine.FollowLineAction = () => { followLine.asset.GetComponent<Asset>().AttachToGazeFocusSquare(); renderer.material = defaultMaterial;};
             }
             else
             {

@@ -33,7 +33,7 @@ public class Recorder : MonoBehaviour
     GameObject stateGraphElementPrefab;   
 
 
-    public List<Recordable> assetsInScene = new();
+    public List<Asset> assetsInScene = new();
 
     public GameObject firstExampleButtonObj;
     public Button addExampleButton;
@@ -506,7 +506,7 @@ public class Recorder : MonoBehaviour
         return sequences;
     }
 
-    public List<AssetActionSequence> GenerateAssetActionSequences(RectTransform timelinePanel, Recordable recordable)
+    public List<AssetActionSequence> GenerateAssetActionSequences(RectTransform timelinePanel, Asset recordable)
     {
         DebugLogger.Instance.Log("Generating asset action sequences for " + recordable.name);
 
@@ -545,7 +545,7 @@ public class Recorder : MonoBehaviour
         return sequences;
     }
 
-    public List<AssetActionSequence> GenerateCollisionSequences(RectTransform collisionTimelinePanelTransform, Recordable recordable) //Strong assumption that all sources of action come from collision
+    public List<AssetActionSequence> GenerateCollisionSequences(RectTransform collisionTimelinePanelTransform, Asset recordable) //Strong assumption that all sources of action come from collision
     {
         DebugLogger.Instance.Log("Generating collision sequences for " + recordable.name);
         var recordedData = currentActiveExample.assetFramesDict[recordable]; 

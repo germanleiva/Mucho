@@ -290,8 +290,8 @@ public class ForceArrow : MonoBehaviour
     {
         Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
         GameObject throwableAsset = asset.gameObject;
-        throwableAsset.GetComponent<Recordable>().isThisObjThrown = true;
-        throwableAsset.GetComponent<Recordable>().PrepareForceSimulation(initialVelocity);
+        throwableAsset.GetComponent<Asset>().isThisObjThrown = true;
+        throwableAsset.GetComponent<Asset>().PrepareForceSimulation(initialVelocity);
         if (AssetManager.isForceArrowGhostActive) {
             arrowHeadGhost.transform.position = arrowHeadReal.transform.position;
         }

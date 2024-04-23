@@ -44,25 +44,25 @@ public class PinLineTrigger : MonoBehaviour
             renderer.material = highlightMaterial;  
             if(pinTargetType == PinTargetType.LEFTHAND)
             {                
-                pinLine.PinAction = () => { pinLine.asset.GetComponent<Recordable>().RecordPinToLeftHand(); renderer.material = defaultMaterial;};             
+                pinLine.PinAction = () => { pinLine.asset.GetComponent<Asset>().RecordPinToLeftHand(); renderer.material = defaultMaterial;};             
                 //followLine.asset.GetComponent<Recordable>().AttachToLeftHand();
             }
             else if(pinTargetType == PinTargetType.RIGHTHAND)
             {                
-                pinLine.PinAction = () => { pinLine.asset.GetComponent<Recordable>().RecordPinToRightHand(); renderer.material = defaultMaterial;};
+                pinLine.PinAction = () => { pinLine.asset.GetComponent<Asset>().RecordPinToRightHand(); renderer.material = defaultMaterial;};
                 //followLine.asset.GetComponent<Recordable>().AttachToRightHand();
             }
             else if(pinTargetType == PinTargetType.LEFTFOCUS)
             {
-                pinLine.PinAction = () => { pinLine.asset.GetComponent<Recordable>().RecordPinToLeftFocus(); renderer.material = defaultMaterial;}; 
+                pinLine.PinAction = () => { pinLine.asset.GetComponent<Asset>().RecordPinToLeftFocus(); renderer.material = defaultMaterial;}; 
             }
             else if(pinTargetType == PinTargetType.RIGHTFOCUS)
             {
-                pinLine.PinAction = () => { pinLine.asset.GetComponent<Recordable>().RecordPinToRightFocus(); renderer.material = defaultMaterial;};
+                pinLine.PinAction = () => { pinLine.asset.GetComponent<Asset>().RecordPinToRightFocus(); renderer.material = defaultMaterial;};
             }
             else if(pinTargetType == PinTargetType.GAZEFOCUS)
             {
-                pinLine.PinAction = () => { pinLine.asset.GetComponent<Recordable>().RecordPinToGazeFocus(); renderer.material = defaultMaterial;};
+                pinLine.PinAction = () => { pinLine.asset.GetComponent<Asset>().RecordPinToGazeFocus(); renderer.material = defaultMaterial;};
             }
             /*else if(pinTargetType == PinTargetType.WALL)
             {

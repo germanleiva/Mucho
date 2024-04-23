@@ -248,7 +248,7 @@ public class Example
     public int numberOfRecordedFrames = 0;
     public Button button;
     //Create a dictionary matching assets to the list of their recordable frames
-    public Dictionary<Recordable, List<AssetFrame>> assetFramesDict;   
+    public Dictionary<Asset, List<AssetFrame>> assetFramesDict;   
 
     //public List<Recordable> assets;
 
@@ -292,10 +292,10 @@ public class Example
         assetSequencesLists = new();
         collisionSequencesLists = new();
 
-        assetFramesDict = new Dictionary<Recordable, List<AssetFrame>>();
+        assetFramesDict = new Dictionary<Asset, List<AssetFrame>>();
         StatesDict = new Dictionary<State, StateTimelineUIElement>();
         //Copy assetsInScene to assets
-        foreach (Recordable recordable in Recorder.Instance.assetsInScene)
+        foreach (Asset recordable in Recorder.Instance.assetsInScene)
         {            
             //Create a new list of recordable frames for each asset
             assetFramesDict.Add(recordable, new List<AssetFrame>());            
@@ -330,7 +330,7 @@ public class Example
             data.voiceCommand = null;
         }
 
-        assetFramesDict = new Dictionary<Recordable, List<AssetFrame>>();
+        assetFramesDict = new Dictionary<Asset, List<AssetFrame>>();
         foreach (var entry in example.assetFramesDict)
         {
             assetFramesDict.Add(entry.Key, new List<AssetFrame>(entry.Value.Select(item => (AssetFrame)item.Clone())));
@@ -340,7 +340,7 @@ public class Example
     public void RefreshAssetsInExample()
     {
         //Copy assetsInScene to assets
-        foreach (Recordable recordable in Recorder.Instance.assetsInScene)
+        foreach (Asset recordable in Recorder.Instance.assetsInScene)
         {
             //Create a new list of recordable frames for each asset
             if (!assetFramesDict.ContainsKey(recordable))
@@ -350,15 +350,15 @@ public class Example
         }
 
         //Remove assets that are no longer in the scene
-        List<Recordable> assetsToRemove = new List<Recordable>();
-        foreach (Recordable recordable in assetFramesDict.Keys)
+        List<Asset> assetsToRemove = new List<Asset>();
+        foreach (Asset recordable in assetFramesDict.Keys)
         {
             if (!Recorder.Instance.assetsInScene.Contains(recordable))
             {
                 assetsToRemove.Add(recordable);
             }
         }
-        foreach (Recordable recordable in assetsToRemove)
+        foreach (Asset recordable in assetsToRemove)
         {
             assetFramesDict.Remove(recordable);
         }
@@ -380,7 +380,7 @@ public class Example
         rightHandFrames.Clear();
         headFrames.Clear();
         //assets.Clear();
-        foreach(Recordable recordable in assetFramesDict.Keys)
+        foreach(Asset recordable in assetFramesDict.Keys)
         {
             assetFramesDict[recordable].Clear();
             foreach (GameObject obj in recordable.forceArrows)

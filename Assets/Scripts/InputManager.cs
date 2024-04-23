@@ -31,7 +31,7 @@ public class InputManager : MonoBehaviour
 
     //public 
 
-    public Recordable assetInContactWithLeftHand, assetInContactWithRightHand;
+    public Asset assetInContactWithLeftHand, assetInContactWithRightHand;
 
     void Awake()
     {
@@ -108,14 +108,14 @@ public class InputManager : MonoBehaviour
 
         State grabState = new()
         {
-            OnEnterActions = () => { DebugLogger.Instance.Log("Grab OnEnter"); testBall.GetComponent<Recordable>().Follow(rightHand.transform); },
+            OnEnterActions = () => { DebugLogger.Instance.Log("Grab OnEnter"); testBall.GetComponent<Asset>().Follow(rightHand.transform); },
             //OnUpdateActions = () => { DebugLogger.Instance.Log("Grab OnUpdate"); },
-            OnExitActions = () => { DebugLogger.Instance.Log("State 2 OnExit"); testBall.GetComponent<Recordable>().Unfollow(); }
+            OnExitActions = () => { DebugLogger.Instance.Log("State 2 OnExit"); testBall.GetComponent<Asset>().Unfollow(); }
         };
 
         State throwState = new()
         {
-            OnEnterActions = () => { DebugLogger.Instance.Log("Throw OnEnter"); testBall.GetComponent<Recordable>().ApplyForce(rightHand.transform.forward * 1); },
+            OnEnterActions = () => { DebugLogger.Instance.Log("Throw OnEnter"); testBall.GetComponent<Asset>().ApplyForce(rightHand.transform.forward * 1); },
             //OnUpdateActions = () => { DebugLogger.Instance.Log("Throw OnUpdate"); },
             //OnExitActions = () => { DebugLogger.Instance.Log("Throw OnExit"); }
         };
@@ -223,7 +223,7 @@ public class InputManager : MonoBehaviour
             {
                 if (collidingObjectNotified_2.name == "LeftHandPinchContactSphere")    
                 {
-                    assetInContactWithLeftHand = collidingObjectNotified_1.GetComponent<Recordable>();
+                    assetInContactWithLeftHand = collidingObjectNotified_1.GetComponent<Asset>();
                     if(leftHand.currentGesture == Gesture.LEFTHANDPINCH)
                     {
                         assetInContactWithLeftHand.Follow(leftHand.transform);
@@ -240,7 +240,7 @@ public class InputManager : MonoBehaviour
 
                 if (collidingObjectNotified_2.name == "RightHandPinchContactSphere")
                 {
-                    assetInContactWithRightHand = collidingObjectNotified_1.GetComponent<Recordable>();
+                    assetInContactWithRightHand = collidingObjectNotified_1.GetComponent<Asset>();
                     if (rightHand.currentGesture == Gesture.RIGHTHANDPINCH)
                     {
                         assetInContactWithRightHand.Follow(rightHand.transform);

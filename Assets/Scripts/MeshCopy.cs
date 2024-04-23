@@ -13,7 +13,7 @@ public class MeshCopy : MonoBehaviour
     
     void OnCollisionEnter (Collision other)
     {
-        if(other.gameObject.GetComponent<Recordable> () != null)
+        if(other.gameObject.GetComponent<Asset> () != null)
         {
             DebugLogger.Instance.Log("MeshCopy: Collision with " + other.gameObject.name);
             //Copy the mesh from this object to the other object
@@ -45,9 +45,9 @@ public class MeshCopy : MonoBehaviour
             MeshRenderer thisMeshRenderer = gameObject.GetComponent<MeshRenderer>();
             otherMeshRenderer.material = thisMeshRenderer.material;
 
-            if(other.gameObject.GetComponent<Recordable>() != null)
+            if(other.gameObject.GetComponent<Asset>() != null)
             {
-                other.gameObject.GetComponent<Recordable>().defaultMaterial = thisMeshRenderer.material;
+                other.gameObject.GetComponent<Asset>().defaultMaterial = thisMeshRenderer.material;
             }
 
             

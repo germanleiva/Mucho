@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 //[RequireComponent(typeof(LineRenderer))]
-public class Recordable : MonoBehaviour
+public class Asset : MonoBehaviour
 {
     //public List<RecordableFrame> recordedData = new();
     public Collider grabCollider;
@@ -125,7 +125,7 @@ public class Recordable : MonoBehaviour
                 DebugLogger.Instance.Log("Setting visibility to true for " + gameObject.name + " at index 0");
                 ModifyAssetFrame(0, 
                         actionStr: "Show()", 
-                        actionDelegate: () => { GetComponent<Recordable>().SetVisibility(true); });
+                        actionDelegate: () => { GetComponent<Asset>().SetVisibility(true); });
                 //ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, actionStr: "None", collisionStr: "None", propagateValueToSubsequentFrames: true);
             }
         }
@@ -251,7 +251,7 @@ public class Recordable : MonoBehaviour
         //Recorder.Instance.RefreshTimelineAndStates();
     }
 
-    public void CheckIfAssetIsFollowingAnything(Recordable recordable)
+    public void CheckIfAssetIsFollowingAnything(Asset recordable)
     {
         // Initialize variables to keep track of the count of the closest objects
         int leftHandCount = 0;
@@ -341,7 +341,7 @@ public class Recordable : MonoBehaviour
             DebugLogger.Instance.Log("Recorded hide for  " + base.gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
             ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionStr: "Hide()", 
-                                    actionDelegate: () => { GetComponent<Recordable>().SetVisibility(false); });
+                                    actionDelegate: () => { GetComponent<Asset>().SetVisibility(false); });
             
 
             int _frameStart = (int)Recorder.Instance.playbackSlider.value;
@@ -369,7 +369,7 @@ public class Recordable : MonoBehaviour
             DebugLogger.Instance.Log("Recorded show for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
             ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionStr: "Show()", 
-                                    actionDelegate: () => { GetComponent<Recordable>().SetVisibility(true); });
+                                    actionDelegate: () => { GetComponent<Asset>().SetVisibility(true); });
             
                     
             int _frameStart = (int)Recorder.Instance.playbackSlider.value;
@@ -395,7 +395,7 @@ public class Recordable : MonoBehaviour
             DebugLogger.Instance.Log("Recorded color change for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
             ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                         actionStr: "ChangeColor()", 
-                                        actionDelegate: () => { GetComponent<Recordable>().SetColor(color); });
+                                        actionDelegate: () => { GetComponent<Asset>().SetColor(color); });
             
 
             int _frameStart = (int)Recorder.Instance.playbackSlider.value;
@@ -430,7 +430,7 @@ public class Recordable : MonoBehaviour
         DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionStr: "Pin()", 
-                                actionDelegate: () => { GetComponent<Recordable>().Pin(InputManager.Instance.leftHandPinchObj.transform.position); }); 
+                                actionDelegate: () => { GetComponent<Asset>().Pin(InputManager.Instance.leftHandPinchObj.transform.position); }); 
         
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
@@ -452,7 +452,7 @@ public class Recordable : MonoBehaviour
         DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionStr: "Pin()", 
-                                actionDelegate: () => { GetComponent<Recordable>().Pin(InputManager.Instance.rightHandPinchObj.transform.position); });
+                                actionDelegate: () => { GetComponent<Asset>().Pin(InputManager.Instance.rightHandPinchObj.transform.position); });
         
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
@@ -473,7 +473,7 @@ public class Recordable : MonoBehaviour
         DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionStr: "Pin()", 
-                                actionDelegate: () => { GetComponent<Recordable>().Pin(InputManager.Instance.leftFocus.transform.position); });
+                                actionDelegate: () => { GetComponent<Asset>().Pin(InputManager.Instance.leftFocus.transform.position); });
         
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
@@ -494,7 +494,7 @@ public class Recordable : MonoBehaviour
         DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionStr: "Pin()", 
-                                actionDelegate: () => { GetComponent<Recordable>().Pin(InputManager.Instance.rightFocus.transform.position); });
+                                actionDelegate: () => { GetComponent<Asset>().Pin(InputManager.Instance.rightFocus.transform.position); });
         
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
@@ -515,7 +515,7 @@ public class Recordable : MonoBehaviour
         DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionStr: "Pin()", 
-                                actionDelegate: () => { GetComponent<Recordable>().Pin(InputManager.Instance.gazeFocus.transform.position); });
+                                actionDelegate: () => { GetComponent<Asset>().Pin(InputManager.Instance.gazeFocus.transform.position); });
         
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
@@ -625,7 +625,7 @@ public class Recordable : MonoBehaviour
 
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionStr: "Follow(Left hand)", 
-                                    actionDelegate: () => { GetComponent<Recordable>().Follow(Recorder.Instance.leftHand.transform);}, 
+                                    actionDelegate: () => { GetComponent<Asset>().Follow(Recorder.Instance.leftHand.transform);}, 
                                     collisionDelegate: (Frame frame) => { frame.IsColliding(base.gameObject, InputManager.Instance.leftHandPinchObj); }, 
                                     collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left hand)", 
                                     collidedObject: InputManager.Instance.leftHandPinchObj);   
@@ -649,7 +649,7 @@ public class Recordable : MonoBehaviour
 
         ModifyAssetFrame(followEndIndex, 
                         actionStr: "Unfollow()",  
-                        actionDelegate: () => { GetComponent<Recordable>().Unfollow(); });
+                        actionDelegate: () => { GetComponent<Asset>().Unfollow(); });
 
         currentAssetRecordedData[followEndIndex].rootPosition = currentAssetRecordedData[followEndIndex - 1].rootPosition;                          
 
@@ -672,7 +672,7 @@ public class Recordable : MonoBehaviour
 
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionStr: "Follow(Right hand)", 
-                                    actionDelegate: () => { GetComponent<Recordable>().Follow(Recorder.Instance.rightHand.transform);}, 
+                                    actionDelegate: () => { GetComponent<Asset>().Follow(Recorder.Instance.rightHand.transform);}, 
                                     collisionDelegate: (Frame frame) => { frame.IsColliding(base.gameObject, InputManager.Instance.rightHandPinchObj); }, 
                                     collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right hand)", 
                                     collidedObject: InputManager.Instance.rightHandPinchObj);
@@ -697,7 +697,7 @@ public class Recordable : MonoBehaviour
 
         ModifyAssetFrame(followEndIndex, 
                         actionStr: "Unfollow()",  
-                        actionDelegate: () => { GetComponent<Recordable>().Unfollow(); });
+                        actionDelegate: () => { GetComponent<Asset>().Unfollow(); });
 
         //TODO:Change ModifyAssetFrame to also accept modifications to position!
         currentAssetRecordedData[followEndIndex].rootPosition = currentAssetRecordedData[followEndIndex - 1].rootPosition;                        
@@ -724,7 +724,7 @@ public class Recordable : MonoBehaviour
 
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionStr: "Follow(L-focus)", 
-                                    actionDelegate: () => { GetComponent<Recordable>().Follow(InputManager.Instance.leftFocus.transform);}, 
+                                    actionDelegate: () => { GetComponent<Asset>().Follow(InputManager.Instance.leftFocus.transform);}, 
                                     collisionDelegate: (Frame frame) => { frame.IsColliding(base.gameObject, InputManager.Instance.leftFocus); }, 
                                     collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left focus)", 
                                     collidedObject: InputManager.Instance.leftFocus);
@@ -749,7 +749,7 @@ public class Recordable : MonoBehaviour
 
         ModifyAssetFrame(followEndIndex, 
                         actionStr: "Unfollow()",  
-                        actionDelegate: () => { GetComponent<Recordable>().Unfollow(); });
+                        actionDelegate: () => { GetComponent<Asset>().Unfollow(); });
 
         currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.leftHandFrames[followEndIndex - 1].focusSquarePosition - startPosDiff;
 
@@ -772,7 +772,7 @@ public class Recordable : MonoBehaviour
 
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionStr: "Follow(R-focus)", 
-                                    actionDelegate: () => { GetComponent<Recordable>().Follow(InputManager.Instance.rightFocus.transform);}, 
+                                    actionDelegate: () => { GetComponent<Asset>().Follow(InputManager.Instance.rightFocus.transform);}, 
                                     collisionDelegate: (Frame frame) => { frame.IsColliding(base.gameObject, InputManager.Instance.rightFocus); }, 
                                     collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right focus)", 
                                     collidedObject: InputManager.Instance.rightFocus);
@@ -797,7 +797,7 @@ public class Recordable : MonoBehaviour
 
         ModifyAssetFrame(followEndIndex, 
                         actionStr: "Unfollow()",  
-                        actionDelegate: () => { GetComponent<Recordable>().Unfollow(); });
+                        actionDelegate: () => { GetComponent<Asset>().Unfollow(); });
         
         currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.rightHandFrames[followEndIndex - 1].focusSquarePosition - startPosDiff;
 
@@ -820,7 +820,7 @@ public class Recordable : MonoBehaviour
 
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionStr: "Follow(G-focus)", 
-                                    actionDelegate: () => { GetComponent<Recordable>().Follow(InputManager.Instance.gazeFocus.transform);}, 
+                                    actionDelegate: () => { GetComponent<Asset>().Follow(InputManager.Instance.gazeFocus.transform);}, 
                                     collisionDelegate: (Frame frame) => { frame.IsColliding(base.gameObject, InputManager.Instance.gazeFocus); }, 
                                     collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Gaze focus)", 
                                     collidedObject: InputManager.Instance.gazeFocus);
@@ -844,7 +844,7 @@ public class Recordable : MonoBehaviour
 
         ModifyAssetFrame(followEndIndex, 
                         actionStr: "Unfollow()",  
-                        actionDelegate: () => { GetComponent<Recordable>().Unfollow(); });
+                        actionDelegate: () => { GetComponent<Asset>().Unfollow(); });
 
         currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.headFrames[followEndIndex - 1].focusSquarePosition - startPosDiff;
 
@@ -867,7 +867,7 @@ public class Recordable : MonoBehaviour
         //Unfollow();
         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionStr: "Unfollow()",  
-                                actionDelegate: () => { GetComponent<Recordable>().Unfollow(); });
+                                actionDelegate: () => { GetComponent<Asset>().Unfollow(); });
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
         {
@@ -910,7 +910,7 @@ public class Recordable : MonoBehaviour
 
             ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionStr: "ApplyForce()", 
-                                    actionDelegate: () => { GetComponent<Recordable>().ApplyForceInLiveMode(initialVelocity); });
+                                    actionDelegate: () => { GetComponent<Asset>().ApplyForceInLiveMode(initialVelocity); });
                                     //actionDelegate: () => { GetComponent<Recordable>().ApplyForce(initialVelocity); });
 
 
@@ -982,7 +982,7 @@ public class Recordable : MonoBehaviour
             ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionStr: "ResetPhysics()", 
                                 collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + "," + Manager.Instance.CleanAssetName(collision.collider.name) + ")", 
-                                actionDelegate: () => { GetComponent<Recordable>().ResetPhysicsPropertiesInLiveMode(); }, 
+                                actionDelegate: () => { GetComponent<Asset>().ResetPhysicsPropertiesInLiveMode(); }, 
                                 collidedObject: collision.collider.gameObject);
 
             ResetPhysicsProperties();           
