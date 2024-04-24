@@ -99,7 +99,6 @@ public class AssetManager : MonoBehaviour
             foreach(Asset recordable in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
             {
                 recordable.RecordAssetFrame();
-                
             }
         }
         else if (Manager.Instance.currAppState == Manager.AppState.PLAYBACK)
@@ -137,7 +136,7 @@ public class AssetManager : MonoBehaviour
                 {
                     //This was added to fix a mysterious bug that made the asset not visible after adding it AFTER an input recording was done
                     recordable.SetColor(Color.gray);
-                    Recorder.Instance.RefreshTimelineAssets(null);
+                    
                 }
                 {
                     DebugLogger.Instance.Log("SpawnAsset: No Recordable component attached to obj");
@@ -168,6 +167,7 @@ public class AssetManager : MonoBehaviour
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         InputManager.Instance.SetPlaybackObjectsActive(false);
         //DebugLogger.Instance.Log("AddAssetFrameToAssetFramesDict: DoRecordSizesMatch() - " + DoRecordSizesMatch());
+        Recorder.Instance.RefreshTimelineAssets(null);
         Recorder.Instance.RefreshTimelineCollisions();
         
     }

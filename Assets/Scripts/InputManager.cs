@@ -218,7 +218,6 @@ public class InputManager : MonoBehaviour
         }
         else if (Manager.Instance.currAppState == Manager.AppState.INIT)
         {
-            DebugLogger.Instance.Log("Is this ever executed?");
             if(frame.collidingObjectThisFrame_1 != null && frame.collidingObjectThisFrame_2 != null)
             {
                 if (collidingObjectNotified_2.name == "LeftHandPinchContactSphere")    
