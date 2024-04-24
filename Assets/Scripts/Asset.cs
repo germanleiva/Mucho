@@ -608,10 +608,10 @@ public class Asset : MonoBehaviour
     {
         
         int followEndIndexFromStates = 0;
-        List<State> orderedKeys = new(Recorder.Instance.currentActiveExample.StatesDict.Keys);
-        for (int i = 0; i < orderedKeys.Count; i++)
+        var statePlaceholders = Recorder.Instance.currentActiveExample.StatePlaceholders;
+        foreach (var statePlaceholder in statePlaceholders)
         {
-            int stateEndIndex = Recorder.Instance.currentActiveExample.StatesDict[orderedKeys[i]].StartIndex + Recorder.Instance.currentActiveExample.StatesDict[orderedKeys[i]].Length;
+            int stateEndIndex = statePlaceholder.StartIndex + statePlaceholder.Length;
             if(stateEndIndex > _frameStart)
             {
                 followEndIndexFromStates = stateEndIndex;
@@ -627,7 +627,7 @@ public class Asset : MonoBehaviour
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         DebugLogger.Instance.Log("Attach called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
 
-        ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
+        var assetFrame = ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionStr: "Follow(Left hand)", 
                                     actionDelegate: () => { GetComponent<Asset>().Follow(Recorder.Instance.leftHand.transform);}, 
                                     collisionDelegate: (Frame frame) => { frame.IsColliding(base.gameObject, InputManager.Instance.leftHandPinchObj); }, 
@@ -663,8 +663,8 @@ public class Asset : MonoBehaviour
             currentAssetRecordedData[i].ActionStr = "None";
             currentAssetRecordedData[i].CollisionStr = "None";
         }
-
-        Recorder.Instance.RefreshTimelineCollisions();
+        
+        Recorder.Instance.RefreshTimelineActions(assetFrame);
     }
 
     //For assets
@@ -674,7 +674,7 @@ public class Asset : MonoBehaviour
         DebugLogger.Instance.Log("Attach called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
 
 
-        ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
+        var assetFrame = ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionStr: "Follow(Right hand)", 
                                     actionDelegate: () => { GetComponent<Asset>().Follow(Recorder.Instance.rightHand.transform);}, 
                                     collisionDelegate: (Frame frame) => { frame.IsColliding(base.gameObject, InputManager.Instance.rightHandPinchObj); }, 
@@ -713,7 +713,8 @@ public class Asset : MonoBehaviour
             currentAssetRecordedData[i].CollisionStr = "None";
         }                        
         
-        Recorder.Instance.RefreshTimelineCollisions();
+        Recorder.Instance.RefreshTimelineActions(assetFrame);
+
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[2].playbackObject.transform);
     }
 
@@ -1010,8 +1011,9 @@ public class Asset : MonoBehaviour
         GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
         GetComponent<Rigidbody>().useGravity = false;
         
-        //TODO: check if refreshing collisions is enough
-        Recorder.Instance.RefreshTimelineCollisions();
+        
+        Recorder.Instance.RefreshTimelineActions(null);
+       
     }
 
     public void ResetPhysicsPropertiesInLiveMode()

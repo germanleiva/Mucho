@@ -256,6 +256,8 @@ public class AssetManager : MonoBehaviour
         }
         //forceArrowScript.arrowHeadGhost.transform.position = forceArrowScript.arrowHeadReal.transform.position;
         //forceArrowScript.DrawTrajectory();     
+        
+        Recorder.Instance.RefreshTimelineActions(null);
     }
    
 }

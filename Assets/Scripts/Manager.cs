@@ -251,7 +251,7 @@ public class Example
     public Dictionary<Asset, List<AssetFrame>> assetFramesDict;   
 
     //public List<Recordable> assets;
-
+    public List<StateTimelineUIElement> StatePlaceholders;
     public Dictionary<State, StateTimelineUIElement> StatesDict;
 
     public Example(Button _button, RectTransform _examplePlaybackPanel)
@@ -293,6 +293,7 @@ public class Example
         collisionSequencesLists = new();
 
         assetFramesDict = new Dictionary<Asset, List<AssetFrame>>();
+        StatePlaceholders = new();
         StatesDict = new Dictionary<State, StateTimelineUIElement>();
         //Copy assetsInScene to assets
         foreach (Asset recordable in Recorder.Instance.assetsInScene)

@@ -632,25 +632,35 @@ public class Recorder : MonoBehaviour
     {
         CreateTimelineInputSequences();
         CreateTimelineActions();
-        //TODO: break the relatioship with the state machine
-        CreateStates();
+        
+        CreateStatePlaceholders();
     }
 
     public void RefreshTimelineVoiceSequences()
     {
         // refresh voice command sequences
         //TODO: not creating them all over again but just add the new one
+        //Delete all existing voice command timeline elements
+        for (int i = 4; i < currentActiveExample.voiceTimelinePanel.GetComponent<RectTransform>().childCount; i++)
+        {
+            Destroy(currentActiveExample.voiceTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
+        }
+        
         currentActiveExample.VoiceCommandSequences = GenerateVoiceCommandSequences(currentActiveExample.voiceTimelinePanel);
         
         //refresh state placeholders 
-        //TODO: German is going to refactor this and we will have a new method called CreateStatePlaceholders
-        CreateStates();
+        RefreshStatePlaceholders();
     }
 
     public void RefreshTimelineActions(AssetFrame assetFrame)
     {
         //Refresh action events in the timeline
         DebugLogger.Instance.Log("Refresh assets timeline for example " + currentActiveExample.exampleId);
+
+        foreach (var timeline in assetTimelines)
+        {
+            Destroy(timeline);
+        }
 
         int assetsCounter = 0;
         currentActiveExample.assetSequencesLists.Clear();
@@ -669,19 +679,33 @@ public class Recorder : MonoBehaviour
 
             }
         }
-        
+
+        if (assetFrame == null)
+        {
+            RefreshTimelineCollisions();
+            //Refresh state placeholders
+            RefreshStatePlaceholders();
+            return;
+            
+        }
         //if the action is a follow, pin or addforce, then regenerate also collisions and regenerate state placeholders
         string assetFrameStr = assetFrame.ActionStr;
         if(assetFrameStr.Equals("Follow") || assetFrameStr.Equals("Pin") || assetFrameStr.Equals("ApplyForce"))
         {
             RefreshTimelineCollisions();
             //Refresh state placeholders
-            CreateStates();
+            RefreshStatePlaceholders();
         }
     }
 
     public void RefreshTimelineCollisions()
     {
+        //Delete all existing collision timeline elements
+        for (int i = 2; i < currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>().childCount; i++)
+        {
+            Destroy(currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
+        }
+        
         //Generate collision sequences
         currentActiveExample.collisionSequencesLists.Clear();
         foreach (var recordable in currentActiveExample.assetFramesDict.Keys)
@@ -695,11 +719,20 @@ public class Recorder : MonoBehaviour
 
     public void RefreshTimelineGestures()
     {
+        for (int i = 1; i < currentActiveExample.leftHandTimelinePanel.GetComponent<RectTransform>().childCount; i++)
+        {
+            Destroy(currentActiveExample.leftHandTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
+        }
+        for (int i = 2; i < currentActiveExample.rightHandTimelinePanel.GetComponent<RectTransform>().childCount; i++)
+        {
+            Destroy(currentActiveExample.rightHandTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
+        }
         //Generate gesture sequences for left and right hand
         currentActiveExample.LeftHandGestureSequences = GenerateGestureSequences(currentActiveExample.leftHandTimelinePanel, "lefthand");
         currentActiveExample.RightHandGestureSequences = GenerateGestureSequences(currentActiveExample.rightHandTimelinePanel, "righthand");
         currentActiveExample.AllGestureSequences = currentActiveExample.LeftHandGestureSequences.Concat(currentActiveExample.RightHandGestureSequences).ToList();
 
+        
     }
 
     /*
@@ -1098,6 +1131,13 @@ public class Recorder : MonoBehaviour
         //CustomStateMachine.Instance.SetInitialState(commonStates.First().id);
 
     }
+
+    public void RefreshStatePlaceholders()
+    {
+        //TODO
+        CreateStatePlaceholders();
+    }
+    
     
     public void CreateStatePlaceholders() {
         DeleteStatePlaceholders();
@@ -1127,14 +1167,15 @@ public class Recorder : MonoBehaviour
             var currentEvent = eventsThatStartStates[i];
             if (lastIndex != currentEvent.Index) {
                 var startIndex = lastIndex;
-                var length = recordedFramesTotal - lastIndex;
-                StateTimelineUIElement.CreateStateTimelineElement(
+                var length = currentEvent.Index - lastIndex;
+                var stateTimelineElement = StateTimelineUIElement.CreateStateTimelineElement(
                     currentActiveExample.stateTimelineElementPrefab,
                     currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>(),
                     startIndex,
                     length,
                     GetSizeOfMainRecordedData(),
                     "State");
+                this.currentActiveExample.StatePlaceholders.Add(stateTimelineElement.GetComponent<StateTimelineUIElement>());
             }
             lastIndex = currentEvent.Index;
         }
@@ -1142,13 +1183,14 @@ public class Recorder : MonoBehaviour
         if (lastIndex < recordedFramesTotal) {
             var startIndex = lastIndex;
             var length = recordedFramesTotal - lastIndex;
-            StateTimelineUIElement.CreateStateTimelineElement(
+            var stateTimelineElement = StateTimelineUIElement.CreateStateTimelineElement(
                 currentActiveExample.stateTimelineElementPrefab,
                 currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>(),
                 startIndex,
                 length,
                 GetSizeOfMainRecordedData(),
                 "State");
+            this.currentActiveExample.StatePlaceholders.Add(stateTimelineElement.GetComponent<StateTimelineUIElement>());
         }
     }        
 
