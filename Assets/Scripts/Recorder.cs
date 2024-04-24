@@ -579,8 +579,8 @@ public class Recorder : MonoBehaviour
 
 
     //List of asset timelines
-    List<GameObject> assetTimelines = new();
-
+    Dictionary<Asset,GameObject> timelineAssetRows = new();
+    
 
     public void CreateTimelineInputSequences()
     {
@@ -615,7 +615,7 @@ public class Recorder : MonoBehaviour
         {
             ++assetsCounter;
             GameObject timelinePanel = Instantiate(currentActiveExample.assetTimelinePanelPrefab, currentActiveExample.examplePlaybackPanel);
-            assetTimelines.Add(timelinePanel);
+            timelineAssetRows.Add(recordable,timelinePanel);
             timelinePanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(timelinePanel.GetComponent<RectTransform>().anchoredPosition.x, timelinePanel.GetComponent<RectTransform>().anchoredPosition.y - assetsCounter * 100);
             timelinePanel.SetActive(true);
             timelinePanel.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text = Manager.Instance.CleanAssetName(recordable.name); //Assign asset name
@@ -652,50 +652,45 @@ public class Recorder : MonoBehaviour
         RefreshStatePlaceholders();
     }
 
-    public void RefreshTimelineActions(AssetFrame assetFrame)
+    public void RefreshTimelineAssets(AssetFrame assetFrame)
     {
         //Refresh action events in the timeline
         DebugLogger.Instance.Log("Refresh assets timeline for example " + currentActiveExample.exampleId);
 
-        foreach (var timeline in assetTimelines)
+        foreach (var timelineAssetRow in timelineAssetRows.Values)
         {
-            Destroy(timeline);
+            Destroy(timelineAssetRow);
         }
+        timelineAssetRows.Clear();
 
         int assetsCounter = 0;
         currentActiveExample.assetSequencesLists.Clear();
-        foreach (var recordable in currentActiveExample.assetFramesDict.Keys)
+        foreach (var asset in currentActiveExample.assetFramesDict.Keys)
         {
             ++assetsCounter;
-            GameObject timelinePanel = Instantiate(currentActiveExample.assetTimelinePanelPrefab, currentActiveExample.examplePlaybackPanel);
-            assetTimelines.Add(timelinePanel);
-            timelinePanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(timelinePanel.GetComponent<RectTransform>().anchoredPosition.x, timelinePanel.GetComponent<RectTransform>().anchoredPosition.y - assetsCounter * 100);
-            timelinePanel.SetActive(true);
-            timelinePanel.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text = Manager.Instance.CleanAssetName(recordable.name); //Assign asset name
-
-            if (currentActiveExample.assetFramesDict[recordable].Count > 0)
-            {
-                currentActiveExample.assetSequencesLists.Add(GenerateAssetActionSequences(timelinePanel.GetComponent<RectTransform>(), recordable));
-
-            }
+            CreateTimelineAssetRow(asset, assetsCounter);
         }
+    }
 
-        if (assetFrame == null)
+    public void CreateTimelineAssetRow(Asset asset, int assetsCounter)
+    {
+        GameObject assetRow = Instantiate(currentActiveExample.assetTimelinePanelPrefab, currentActiveExample.examplePlaybackPanel);
+        timelineAssetRows.Add(asset,assetRow);
+        assetRow.GetComponent<RectTransform>().anchoredPosition = new Vector2(assetRow.GetComponent<RectTransform>().anchoredPosition.x, assetRow.GetComponent<RectTransform>().anchoredPosition.y - assetsCounter * 100);
+        assetRow.SetActive(true);
+        assetRow.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text = Manager.Instance.CleanAssetName(asset.name); //Assign asset name
+
+        CreateTimelineActionsForAsset(asset);
+    }
+
+    public void CreateTimelineActionsForAsset(Asset asset)
+    {
+        if (currentActiveExample.assetFramesDict[asset].Count > 0)
         {
-            RefreshTimelineCollisions();
-            //Refresh state placeholders
-            RefreshStatePlaceholders();
-            return;
-            
+            var assetRow = timelineAssetRows[asset];
+            currentActiveExample.assetSequencesLists.Add(GenerateAssetActionSequences(assetRow.GetComponent<RectTransform>(), asset));
         }
-        //if the action is a follow, pin or addforce, then regenerate also collisions and regenerate state placeholders
-        string assetFrameStr = assetFrame.ActionStr;
-        if(assetFrameStr.Equals("Follow") || assetFrameStr.Equals("Pin") || assetFrameStr.Equals("ApplyForce"))
-        {
-            RefreshTimelineCollisions();
-            //Refresh state placeholders
-            RefreshStatePlaceholders();
-        }
+        RefreshTimelineCollisions();
     }
 
     public void RefreshTimelineCollisions()
@@ -739,7 +734,7 @@ public class Recorder : MonoBehaviour
     public void RefreshTimelineAndStates()
     { 
         RefreshTimelineInputSequences();
-        RefreshTimelineActions();
+        RefreshTimelineAssets();
         CreateStates();
         
         //TODO: call them only in live mode

@@ -123,7 +123,7 @@ public class AssetManager : MonoBehaviour
         Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
         //RefreshAssetsInAllExamples();
         //Recorder.Instance.RefreshTimelineAndStates();
-        //Recorder.Instance.RefreshTimelineActions();
+        //Recorder.Instance.RefreshTimelineAssets();
         if(Recorder.Instance.GetSizeOfMainRecordedData() > 0) //Recording already exists, the main purpose is to check for new collisions
         {
             Manager.Instance.currAppState = Manager.AppState.RECORDING_DURING_PLAYBACK;
@@ -137,6 +137,7 @@ public class AssetManager : MonoBehaviour
                 {
                     //This was added to fix a mysterious bug that made the asset not visible after adding it AFTER an input recording was done
                     recordable.SetColor(Color.gray);
+                    Recorder.Instance.RefreshTimelineAssets(null);
                 }
                 {
                     DebugLogger.Instance.Log("SpawnAsset: No Recordable component attached to obj");
@@ -147,7 +148,9 @@ public class AssetManager : MonoBehaviour
                 //is this ever called?
                 DebugLogger.Instance.Log("SpawnAsset: obj is null");
             }
-            StartCoroutine(AddAssetFrameToAssetFramesDict(newAssetObject.GetComponentInChildren<Asset>()));
+            
+            StartCoroutine(AddAssetFrameToAssetFramesDict(
+                newAssetObject.GetComponentInChildren<Asset>()));
         }
     }
 
@@ -165,8 +168,8 @@ public class AssetManager : MonoBehaviour
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         InputManager.Instance.SetPlaybackObjectsActive(false);
         //DebugLogger.Instance.Log("AddAssetFrameToAssetFramesDict: DoRecordSizesMatch() - " + DoRecordSizesMatch());
-        //TODO check when this is called and if it should refresh only collisions
         Recorder.Instance.RefreshTimelineCollisions();
+        
     }
 
 
@@ -256,8 +259,9 @@ public class AssetManager : MonoBehaviour
         }
         //forceArrowScript.arrowHeadGhost.transform.position = forceArrowScript.arrowHeadReal.transform.position;
         //forceArrowScript.DrawTrajectory();     
+        //TODO check if it is not really needed (as german said....) I don't think he has right though
+        //Recorder.Instance.RefreshTimelineAssets(null);
         
-        Recorder.Instance.RefreshTimelineActions(null);
     }
    
 }

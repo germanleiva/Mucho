@@ -129,6 +129,7 @@ public class Manager : MonoBehaviour
             return;
         }
 
+        //TODO: only one prefab and change the parameter (for god sake)
         if (obj.name.StartsWith("Sphere"))
         {
             AssetManager.Instance.CreateAsset(obj.transform, spherePrefab);

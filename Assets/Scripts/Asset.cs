@@ -356,7 +356,8 @@ public class Asset : MonoBehaviour
 
         SetVisibility(false);
 
-        Recorder.Instance.RefreshTimelineActions(assetFrame);
+        Recorder.Instance.CreateTimelineActionsForAsset(this);
+        
     }
 
     //For assets
@@ -384,7 +385,7 @@ public class Asset : MonoBehaviour
 
         SetVisibility(true);
 
-        Recorder.Instance.RefreshTimelineActions(assetFrame);
+        Recorder.Instance.CreateTimelineActionsForAsset(this);
 
     }
 
@@ -410,7 +411,7 @@ public class Asset : MonoBehaviour
 
         SetColor(color);
 
-        Recorder.Instance.RefreshTimelineActions(assetFrame);
+        Recorder.Instance.CreateTimelineActionsForAsset(this);
     }
 
     public void ReplaceMesh(GameObject newMeshObj)
@@ -445,7 +446,7 @@ public class Asset : MonoBehaviour
 
         //Pin(Recorder.Instance.leftHand.GetCurrentPosition());
 
-        Recorder.Instance.RefreshTimelineActions(assetFrame);
+        Recorder.Instance.CreateTimelineActionsForAsset(this);
     }
 
     public void RecordPinToRightHand()
@@ -466,7 +467,7 @@ public class Asset : MonoBehaviour
 
         //Pin(Recorder.Instance.rightHand.GetCurrentPosition());
 
-        Recorder.Instance.RefreshTimelineActions(assetFrame);
+        Recorder.Instance.CreateTimelineActionsForAsset(this);
     }
 
     public void RecordPinToLeftFocus()
@@ -487,7 +488,7 @@ public class Asset : MonoBehaviour
 
         //Pin(Recorder.Instance.leftFocus.transform.position);
 
-        Recorder.Instance.RefreshTimelineActions(assetFrame);
+        Recorder.Instance.CreateTimelineActionsForAsset(this);
     }
 
     public void RecordPinToRightFocus()
@@ -507,9 +508,8 @@ public class Asset : MonoBehaviour
         }
 
         //Pin(Recorder.Instance.rightFocus.transform.position);
-
-        Recorder.Instance.RefreshTimelineActions(assetFrame);
-
+        
+        Recorder.Instance.CreateTimelineActionsForAsset(this);
     }
 
     public void RecordPinToGazeFocus()
@@ -530,7 +530,7 @@ public class Asset : MonoBehaviour
 
         //Pin(Recorder.Instance.gazeFocus.transform.position);
 
-        Recorder.Instance.RefreshTimelineActions(assetFrame);
+        Recorder.Instance.CreateTimelineActionsForAsset(this);
 
     }
 
@@ -553,7 +553,7 @@ public class Asset : MonoBehaviour
         //Pin(Recorder.Instance.wall.transform.position);
 
         Recorder.Instance.RefreshTimelineAndStates();
-        //Recorder.Instance.RefreshTimelineActions();
+        //Recorder.Instance.RefreshTimelineAssets();
     } */
 
     public void Pin(Vector3 location)
@@ -664,7 +664,7 @@ public class Asset : MonoBehaviour
             currentAssetRecordedData[i].CollisionStr = "None";
         }
         
-        Recorder.Instance.RefreshTimelineActions(assetFrame);
+        Recorder.Instance.RefreshTimelineAssets(assetFrame);
     }
 
     //For assets
@@ -713,7 +713,7 @@ public class Asset : MonoBehaviour
             currentAssetRecordedData[i].CollisionStr = "None";
         }                        
         
-        Recorder.Instance.RefreshTimelineActions(assetFrame);
+        Recorder.Instance.RefreshTimelineAssets(assetFrame);
 
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[2].playbackObject.transform);
     }
@@ -881,7 +881,7 @@ public class Asset : MonoBehaviour
             currentAssetRecordedData[i].CollisionStr = "None";
         }
         //CopyPoseFromRecordable(this, (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:true, copyRotation:false);
-        Recorder.Instance.RefreshTimelineActions(assetFrame);
+        Recorder.Instance.RefreshTimelineAssets(assetFrame);
         //recordable.playbackObject.transform.SetParent(null);
     }
 
@@ -1012,7 +1012,7 @@ public class Asset : MonoBehaviour
         GetComponent<Rigidbody>().useGravity = false;
         
         
-        Recorder.Instance.RefreshTimelineActions(null);
+        Recorder.Instance.RefreshTimelineAssets(null);
        
     }
 
