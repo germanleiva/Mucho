@@ -103,7 +103,7 @@
 [CustomStateMachine]current/initialState->[State]
 [AssetManager]Instance->[AssetManager]
 [AssetManager]hmd->[GameObject]
-[AssetManager]states->*[State]
+[AssetManager]forceArrowPrefab->[GameObject]
 [InputManager]left/rightHand->[Hand]
 [InputManager]assetInContactWithLeft/RightHand->[Recordable]
 [Head]speechToTextEngine->[SpeechToText]
