@@ -2,6 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting.Dependencies.NCalc;
+using System.ComponentModel;
+
 //using Assets.OVR.Scripts;
 //using UnityEditor.VersionControl;
 using UnityEngine;
@@ -64,6 +67,7 @@ public class Manager : MonoBehaviour
     {
         if(currAppState == Manager.AppState.LIVE)
         {
+            DebugLogger.Instance.Log("I am already in Live Mode");
             return;
         }
 
@@ -78,7 +82,8 @@ public class Manager : MonoBehaviour
         Recorder.Instance.SetPlaybackObjectsVisibility(false);
         //AssetManager.Instance.HideMiscObjs();
         AssetManager.Instance.SetAllAssetMenusPokeable(false);
-        Recorder.Instance.ResetStateMachine();
+        Recorder.Instance.CreateStateMachine();
+        // Recorder.Instance.ResetStateMachine();
         InputManager.Instance.NotifyCollision(null,null);
         CustomStateMachine.Instance.InvokeOnEnterActionsOfInitialState();
         speechToTextEngine.StartListening();
@@ -190,6 +195,10 @@ public class Manager : MonoBehaviour
 
         Recorder.Instance.RefreshTimelineGestures();
     }
+
+    public void PressedRecreateStatePlaceholders() {
+       Recorder.Instance.CreateStatePlaceholders();
+    }
 }
 
 public class Example
@@ -241,7 +250,7 @@ public class Example
 
     public List<GestureSequence> AllGestureSequences = new();
     public List<List<AssetActionSequence>> assetSequencesLists = new();
-    public List<List<AssetActionSequence>> collisionSequencesLists = new();
+    public List<List<CollisionSequence>> collisionSequencesLists = new();
     
     public GameObject startRecordingButton, stopRecordingButton;
 
@@ -253,7 +262,7 @@ public class Example
 
     //public List<Recordable> assets;
     public List<StateTimelineUIElement> StatePlaceholders;
-    public Dictionary<State, StateTimelineUIElement> StatesDict;
+    // public Dictionary<State, StateTimelineUIElement> StatesDict;
 
     public Example(Button _button, RectTransform _examplePlaybackPanel)
     {
@@ -295,7 +304,7 @@ public class Example
 
         assetFramesDict = new Dictionary<Asset, List<AssetFrame>>();
         StatePlaceholders = new();
-        StatesDict = new Dictionary<State, StateTimelineUIElement>();
+        // StatesDict = new Dictionary<State, StateTimelineUIElement>();
         //Copy assetsInScene to assets
         foreach (Asset recordable in Recorder.Instance.assetsInScene)
         {            
@@ -369,10 +378,10 @@ public class Example
     public void Render()
     {
         //Render the states
-        foreach (State state in StatesDict.Keys)
-        {
+        // foreach (State state in StatesDict.Keys)
+        // {
             //StatesDict[state].Render();
-        }
+        // }
     }
 
     public void ResetData()
@@ -399,35 +408,136 @@ public class Example
 
 }
 
-public class AssetActionSequence
-{
-    public string ActionStr { get; set; } //None, Physics, Follow, Show, Hide
-    public string CollisionStr { get; set; } 
-
-    public Action ActionDelegate { get; set; }
-
+public abstract class Sequence {
     public int StartIndex { get; set; }
     public int Length { get; set; }
-    //public GestureManager.Gesture GestureType { get; set; }
+
+    abstract public Boolean CanTriggerAt(int stateStartIndex);
+    abstract public Func<Frame,bool> AddConditionToFunction(Func<Frame,bool> conditionFunction);
+
+}
+
+public enum COLLISION_ENUM { NONE, COLLIDE, UNDEFINED};
+
+public class CollisionSequence : Sequence {
+    public COLLISION_ENUM CollisionStr { get; set; } 
 
     public GameObject CollidingObject1 { get; set; }
     public GameObject CollidingObject2 { get; set; }
+
+    public override Func<Frame, bool> AddConditionToFunction(Func<Frame, bool> conditionFunction)
+    {
+        return (Frame frame) => { return conditionFunction(frame) && frame.IsColliding(CollidingObject1,CollidingObject2);};
+    }
+
+    public override bool CanTriggerAt(int stateStartIndex)
+    {
+        return StartIndex < stateStartIndex && stateStartIndex < (StartIndex + Length);
+    }
+
+    public override string ToString() {
+        return $"isColliding({CollidingObject1},{CollidingObject2})";
+    }
+}
+public enum ACTION_ENUM { 
+    [Description("None")]
+    NONE, 
+    [Description("Follow(Left hand)")]
+    FOLLOW_LEFT_HAND,
+    [Description("Follow(Right hand)")]
+    FOLLOW_RIGHT_HAND,
+    [Description("Follow(L-focus)")]
+    FOLLOW_L_FOCUS,
+    [Description("Follow(R-focus)")]
+    FOLLOW_R_FOCUS,
+    [Description("Follow(G-focus)")]
+    FOLLOW_G_FOCUS,
+    [Description("ApplyForce()")]
+    APPLY_FORCE,
+    [Description("Show()")]
+    SHOW, 
+    [Description("Hide()")]
+    HIDE, 
+    [Description("ChangeColor()")]
+    CHANGE_COLOR,
+    [Description("Pin()")]
+    PIN,
+    [Description("Unfollow()")]
+    UNFOLLOW,
+    [Description("ResetPhysics()")]
+    RESET_PHYSICS,
+    PHYSICS, 
+    FOLLOW,
+    UNDEFINED,
+    };
+
+public class AssetActionSequence : Sequence
+{
+
+    public ACTION_ENUM ActionStr { get; set; } //None, Physics, Follow, Show, Hide
+
+    public Action ActionDelegate { get; set; }
+
+    public override Func<Frame, bool> AddConditionToFunction(Func<Frame, bool> conditionFunction)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override bool CanTriggerAt(int stateStartIndex)
+    {
+        throw new NotImplementedException();
+    }
+
+
+    //public GestureManager.Gesture GestureType { get; set; }
+
+
 }
 
-public class GestureSequence
+public class GestureSequence : Sequence
 {
-    public int StartIndex { get; set; }
-    public int Length { get; set; }
     public InputManager.Gesture GestureType { get; set; }
- 
+    override public Boolean CanTriggerAt(int stateStartIndex) {
+        return StartIndex == stateStartIndex;
+    }
+
+    public override Func<Frame, bool> AddConditionToFunction(Func<Frame, bool> conditionFunction) {
+        switch (GestureType) {
+            case InputManager.Gesture.LEFTHANDGRAB:
+            case InputManager.Gesture.LEFTHANDPINCH:
+            case InputManager.Gesture.LEFTHANDOPEN:
+                return (Frame frame) => { return conditionFunction(frame) && frame.leftHandGesture == GestureType;};
+            case InputManager.Gesture.RIGHTHANDGRAB:
+            case InputManager.Gesture.RIGHTHANDPINCH:
+            case InputManager.Gesture.RIGHTHANDOPEN:
+                return (Frame frame) => { return conditionFunction(frame) && frame.rightHandGesture == GestureType;};
+            case InputManager.Gesture.LEFTHANDNONE:
+            case InputManager.Gesture.RIGHTHANDNONE:
+            case InputManager.Gesture.LEFTHANDMENUOPEN: 
+            default:
+                DebugLogger.Instance.Log("Ignoring GestureType in GestureSequence >> addConditionToFunction for " + GestureType);
+                return conditionFunction;
+        }
+    }
+    public override string ToString() {
+        return $"GestureSequence {GestureType.ToString()}";
+    }
 }
 
-public class VoiceSequence
+public class VoiceSequence : Sequence
 {
-    public int StartIndex { get; set; }
-    public int Length { get; set; }
     public string VoiceCommand { get; set; }
+    override public Boolean CanTriggerAt(int stateStartIndex) {
+        return StartIndex == stateStartIndex;
+    }
 
+    public override Func<Frame, bool> AddConditionToFunction(Func<Frame, bool> conditionFunction) {
+        return (Frame frame) => { return conditionFunction(frame) && frame.voiceCommand.Contains(VoiceCommand);};
+    }
+
+    public override string ToString() {
+        return $"VoiceSequence {VoiceCommand}";
+    }
 }
 
 

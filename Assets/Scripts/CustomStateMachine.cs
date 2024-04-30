@@ -14,8 +14,6 @@ public class CustomStateMachine : MonoBehaviour
 
     public TMPro.TMP_Text currentActiveStateText;
 
-    private State initialState;
-
     void Awake()
     {
         if (Instance == null)
@@ -34,14 +32,14 @@ public class CustomStateMachine : MonoBehaviour
         states.Add(name, state);
     }
 
-    public void SetInitialState(string name)
+    public void SetInitialState(State state)
     {
-        DebugLogger.Instance.Log("Setting initial state to " + name,true);
-        currentState = states[name];
-        foreach (var state in states)
-        {
-            state.Value.ResetStateUIColor();
-        }        
+        DebugLogger.Instance.Log("Setting initial state to " + state.name,true);
+        currentState = state;
+        // foreach (var state in states)
+        // {
+        //     state.Value.ResetStateUIColor();
+        // }        
     }
 
     public void InvokeOnEnterActionsOfInitialState()

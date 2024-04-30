@@ -126,12 +126,9 @@ public class Hand : MonoBehaviour
         }
     }
 
-    public void Record(int frameNum, string handStr)
+    public void Record(int frameNum, List<HandFrame> handFrames)
     {
-        var hand = handStr.Equals("lefthand") ? Recorder.Instance.currentActiveExample.leftHandFrames : Recorder.Instance.currentActiveExample.rightHandFrames;
-
-    
-        hand.Add(new HandFrame(transform.localPosition, transform.localRotation,
+        handFrames.Add(new HandFrame(transform.localPosition, transform.localRotation,
             new FingerJoint(indexJoint1.transform.localPosition, indexJoint1.transform.localRotation), new FingerJoint(indexJoint2.transform.localPosition, indexJoint2.transform.localRotation), new FingerJoint(indexJoint3.transform.localPosition, indexJoint3.transform.localRotation),
             new FingerJoint(middleJoint1.transform.localPosition, middleJoint1.transform.localRotation), new FingerJoint(middleJoint2.transform.localPosition, middleJoint2.transform.localRotation), new FingerJoint(middleJoint3.transform.localPosition, middleJoint3.transform.localRotation),
             new FingerJoint(ringJoint1.transform.localPosition, ringJoint1.transform.localRotation), new FingerJoint(ringJoint2.transform.localPosition, ringJoint2.transform.localRotation), new FingerJoint(ringJoint3.transform.localPosition, ringJoint3.transform.localRotation),

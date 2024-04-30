@@ -6,7 +6,17 @@ using UnityEngine;
 public class InputManager : MonoBehaviour
 {
     public static InputManager Instance { get; private set; }
-    public enum Gesture { LEFTHANDNONE, LEFTHANDMENUOPEN, LEFTHANDGRAB, LEFTHANDPINCH, LEFTHANDOPEN, RIGHTHANDNONE, RIGHTHANDGRAB, RIGHTHANDOPEN, RIGHTHANDPINCH};
+    public enum Gesture { 
+        LEFTHANDNONE, 
+        LEFTHANDMENUOPEN, 
+        LEFTHANDGRAB, 
+        LEFTHANDPINCH, 
+        LEFTHANDOPEN, 
+        RIGHTHANDNONE, 
+        RIGHTHANDGRAB, 
+        RIGHTHANDOPEN, 
+        RIGHTHANDPINCH
+        };
 
     public Hand leftHand, rightHand;
 
@@ -146,7 +156,7 @@ public class InputManager : MonoBehaviour
         //sm.AddState("Hit", hitState);
         //sm.AddState("Miss", missState);
 
-        sm.SetInitialState("Idle");
+        sm.SetInitialState(idleState);
 
         //Print contents of state machine
         DebugLogger.Instance.Log("Test State Machine Contents:", true);

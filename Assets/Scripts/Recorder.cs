@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEditor;
 //using UnityEditor.VersionControl;
 using UnityEngine;
@@ -356,10 +357,8 @@ public class Recorder : MonoBehaviour
 
 
 
-    public List<GestureSequence> GenerateGestureSequences(RectTransform timelinePanel, string handStr)
+    public List<GestureSequence> GenerateGestureSequences(RectTransform timelinePanel, List<HandFrame> handFrames)
     {
-        var handFrames = handStr.Equals("lefthand") ? Recorder.Instance.currentActiveExample.activeLeftHandFrames 
-            : Recorder.Instance.currentActiveExample.activeRightHandFrames;
         //DebugLogger.Instance.Log("Generating gesture sequences for " + handStr);
         List<InputManager.Gesture> gestures = handFrames.Select(x => x.gesture).ToList();
         List<GestureSequence> GestureSequences = GetContinuousGestureSequences(gestures);
@@ -445,20 +444,20 @@ public class Recorder : MonoBehaviour
         return sequences;
     }
     
-    public List<AssetActionSequence> GetSequences(List<string> actions)
+    public List<AssetActionSequence> GetSequences(List<ACTION_ENUM> actions)
     {
         List<AssetActionSequence> sequences = new();
 
         int startIndex = -1;
-        string currentAction = null;
+        ACTION_ENUM currentAction = ACTION_ENUM.UNDEFINED;
 
         for (int i = 0; i < actions.Count; i++)
         {
-            if (actions[i] != "None")
+            if (actions[i] != ACTION_ENUM.NONE)
             {
-                if (currentAction == null || currentAction == actions[i])
+                if (currentAction == ACTION_ENUM.UNDEFINED || currentAction == actions[i])
                 {
-                    if (currentAction == null)
+                    if (currentAction == ACTION_ENUM.UNDEFINED)
                     {
                         currentAction = actions[i];
                         startIndex = i;
@@ -477,7 +476,7 @@ public class Recorder : MonoBehaviour
                     currentAction = actions[i];
                 }
             }
-            else if (currentAction != null)
+            else if (currentAction != ACTION_ENUM.UNDEFINED)
             {
                 sequences.Add(new AssetActionSequence
                 {
@@ -487,11 +486,11 @@ public class Recorder : MonoBehaviour
                 });
 
                 startIndex = -1;
-                currentAction = null;
+                currentAction = ACTION_ENUM.UNDEFINED;
             }
         }
 
-        if (currentAction != null)
+        if (currentAction != ACTION_ENUM.UNDEFINED)
         {
             sequences.Add(new AssetActionSequence
             {
@@ -504,13 +503,82 @@ public class Recorder : MonoBehaviour
         return sequences;
     }
 
+    public List<CollisionSequence> GetSequences(List<COLLISION_ENUM> actions)
+    {
+        List<CollisionSequence> sequences = new();
+
+        int startIndex = -1;
+        COLLISION_ENUM currentAction = COLLISION_ENUM.UNDEFINED;
+
+        for (int i = 0; i < actions.Count; i++)
+        {
+            if (actions[i] != COLLISION_ENUM.NONE)
+            {
+                if (currentAction == COLLISION_ENUM.UNDEFINED || currentAction == actions[i])
+                {
+                    if (currentAction == COLLISION_ENUM.UNDEFINED)
+                    {
+                        currentAction = actions[i];
+                        startIndex = i;
+                    }
+                }
+                else
+                {
+                    sequences.Add(new CollisionSequence
+                    {
+                        StartIndex = startIndex,
+                        Length = i - startIndex,
+                        CollisionStr = currentAction,
+                    });
+
+                    startIndex = i;
+                    currentAction = actions[i];
+                }
+            }
+            else if (currentAction != COLLISION_ENUM.UNDEFINED)
+            {
+                sequences.Add(new CollisionSequence
+                {
+                    StartIndex = startIndex,
+                    Length = i - startIndex,
+                    CollisionStr = currentAction
+                });
+
+                startIndex = -1;
+                currentAction = COLLISION_ENUM.UNDEFINED;
+            }
+        }
+
+        if (currentAction != COLLISION_ENUM.UNDEFINED)
+        {
+            sequences.Add(new CollisionSequence
+            {
+                StartIndex = startIndex,
+                Length = actions.Count - startIndex,
+                CollisionStr = currentAction,
+            });
+        }
+
+        return sequences;
+    }
+
     public List<AssetActionSequence> GenerateAssetActionSequences(RectTransform timelinePanel, Asset recordable)
     {
+
+        List<ACTION_ENUM> followActions = new()
+            {
+                ACTION_ENUM.FOLLOW_RIGHT_HAND,
+                ACTION_ENUM.FOLLOW_LEFT_HAND,
+                ACTION_ENUM.FOLLOW_L_FOCUS,
+                ACTION_ENUM.FOLLOW_R_FOCUS,
+                ACTION_ENUM.FOLLOW_G_FOCUS
+        };
+            
         DebugLogger.Instance.Log("Generating asset action sequences for " + recordable.name);
 
         var recordedData = currentActiveExample.assetFramesDict[recordable]; 
 
-        List<string> actionStrList = recordedData.Select(x => x.ActionStr).ToList();
+        List<ACTION_ENUM> actionStrList = recordedData.Select(x => x.ActionStr).ToList();
         List<AssetActionSequence> sequences = GetSequences(actionStrList);
         foreach (AssetActionSequence sequence in sequences)
         {
@@ -522,36 +590,36 @@ public class Recorder : MonoBehaviour
                 DebugLogger.Instance.Log("Action delegate found: " + recordedData[sequence.StartIndex].ActionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordedData[sequence.StartIndex].ActionDelegate.Method.GetParameters().Select(x => x.Name)));
             }
 
-            if (sequence.ActionStr.Contains("Hide"))
+            if (sequence.ActionStr == ACTION_ENUM.HIDE)
             {
                 GameObject hideElement = Instantiate(currentActiveExample.hideTimelinePanelPrefab, timelinePanel);
                 hideElement.SetActive(true);
                 hideElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(TimelineUIElement.MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex, GetSizeOfMainRecordedData()), hideElement.GetComponent<RectTransform>().anchoredPosition.y);
             }
-            else if (sequence.ActionStr.Contains("Show"))
+            else if (sequence.ActionStr == ACTION_ENUM.SHOW)
             {
                 GameObject showElement = Instantiate(currentActiveExample.showTimelinePanelPrefab, timelinePanel);
                 showElement.SetActive(true);
                 showElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(TimelineUIElement.MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex, GetSizeOfMainRecordedData()), showElement.GetComponent<RectTransform>().anchoredPosition.y);
             }
-
-            if(sequence.ActionStr.Contains("Follow") || sequence.ActionStr.Contains("ApplyForce") || sequence.ActionStr.Contains("ChangeColor") || sequence.ActionStr.Contains("Pin")) //Other types of events - physics, attach etc
+            
+            if(followActions.Contains(sequence.ActionStr) || sequence.ActionStr == ACTION_ENUM.APPLY_FORCE || sequence.ActionStr == ACTION_ENUM.CHANGE_COLOR || sequence.ActionStr == ACTION_ENUM.PIN) //Other types of events - physics, attach etc
             {                
-                TimelineUIElement.CreateTimelineElement(currentActiveExample.assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ActionStr);
+                TimelineUIElement.CreateTimelineElement(currentActiveExample.assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ActionStr.ToString());
             }
         }
         return sequences;
     }
 
-    public List<AssetActionSequence> GenerateCollisionSequences(RectTransform collisionTimelinePanelTransform, Asset recordable) //Strong assumption that all sources of action come from collision
+    public List<CollisionSequence> GenerateCollisionSequences(RectTransform collisionTimelinePanelTransform, Asset recordable) //Strong assumption that all sources of action come from collision
     {
         DebugLogger.Instance.Log("Generating collision sequences for " + recordable.name);
         var recordedData = currentActiveExample.assetFramesDict[recordable]; 
         try
         {
-            List<string> collisionStrList = recordedData.Select(x => x.CollisionStr).ToList();
-            List<AssetActionSequence> sequences = GetSequences(collisionStrList);
-            foreach (AssetActionSequence sequence in sequences)
+            List<COLLISION_ENUM> collisionStrList = recordedData.Select(x => x.CollisionStr).ToList();
+            List<CollisionSequence> sequences = GetSequences(collisionStrList);
+            foreach (CollisionSequence sequence in sequences)
             {
                 //DebugLogger.Instance.Log("Collision sequence name: " + sequence.Action + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
                 //DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex + sequence.Length));
@@ -566,7 +634,7 @@ public class Recorder : MonoBehaviour
                     sequence.CollisionStr = recordedData[sequence.StartIndex].CollisionStr;
                 }
 
-                TimelineUIElement.CreateTimelineElement(currentActiveExample.collisionTimelineElementPrefab, collisionTimelinePanelTransform, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ActionStr);
+                TimelineUIElement.CreateTimelineElement(currentActiveExample.collisionTimelineElementPrefab, collisionTimelinePanelTransform, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.CollisionStr.ToString());
             }
             return sequences;
         }
@@ -587,8 +655,8 @@ public class Recorder : MonoBehaviour
         DebugLogger.Instance.Log("Creating input sequences");
 
         //Generate gesture sequences for left and right hand
-        currentActiveExample.LeftHandGestureSequences = GenerateGestureSequences(currentActiveExample.leftHandTimelinePanel, "lefthand");
-        currentActiveExample.RightHandGestureSequences = GenerateGestureSequences(currentActiveExample.rightHandTimelinePanel, "righthand");
+        currentActiveExample.LeftHandGestureSequences = GenerateGestureSequences(currentActiveExample.leftHandTimelinePanel, currentActiveExample.activeLeftHandFrames);
+        currentActiveExample.RightHandGestureSequences = GenerateGestureSequences(currentActiveExample.rightHandTimelinePanel, currentActiveExample.activeRightHandFrames);
         currentActiveExample.AllGestureSequences = currentActiveExample.LeftHandGestureSequences.Concat(currentActiveExample.RightHandGestureSequences).ToList();
 
         //Generate voice command sequences
@@ -723,8 +791,8 @@ public class Recorder : MonoBehaviour
             Destroy(currentActiveExample.rightHandTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
         }
         //Generate gesture sequences for left and right hand
-        currentActiveExample.LeftHandGestureSequences = GenerateGestureSequences(currentActiveExample.leftHandTimelinePanel, "lefthand");
-        currentActiveExample.RightHandGestureSequences = GenerateGestureSequences(currentActiveExample.rightHandTimelinePanel, "righthand");
+        currentActiveExample.LeftHandGestureSequences = GenerateGestureSequences(currentActiveExample.leftHandTimelinePanel, currentActiveExample.activeLeftHandFrames);
+        currentActiveExample.RightHandGestureSequences = GenerateGestureSequences(currentActiveExample.rightHandTimelinePanel, currentActiveExample.activeRightHandFrames);
         currentActiveExample.AllGestureSequences = currentActiveExample.LeftHandGestureSequences.Concat(currentActiveExample.RightHandGestureSequences).ToList();
 
         
@@ -742,388 +810,251 @@ public class Recorder : MonoBehaviour
         CombineExamples();       
     } */
 
-    public void CreateStates()
+    public void CreateStateMachine()
     {
         int recordedFramesTotal = GetSizeOfMainRecordedData();
+
+        var StateMachine = CustomStateMachine.Instance;
+        StateMachine.DeleteAllStates();
+        
+        var localStatesDict = new Dictionary<StateTimelineUIElement,State>();
+
+        foreach (var statePlaceholder in currentActiveExample.StatePlaceholders) {
+            var newState = new State {
+                name = "State " + StateMachine.GetSize()
+            };
+            StateMachine.AddState(newState.name, newState);
+
+            localStatesDict.Add(statePlaceholder, newState);
+        }
 
         var gestures = currentActiveExample.AllGestureSequences;
         var collisions = currentActiveExample.collisionSequencesLists.SelectMany(x => x).ToList();
         var voiceCommands = currentActiveExample.VoiceCommandSequences;
 
-        // Create a list of events (start or end of a sequence)
-        var events = new List<(int Index, string Type, GestureSequence Gesture, AssetActionSequence Collision, VoiceSequence VoiceCommand)>();
+        List<Sequence> allPotentialTriggers = gestures.Cast<Sequence>()
+                                  .Concat(collisions.Cast<Sequence>())
+                                  .Concat(voiceCommands.Cast<Sequence>())
+                                  .ToList();
 
-        foreach (var gesture in gestures)
-        {
-            events.Add((gesture.StartIndex, "start", gesture, null, null));
-        }
+        var allActions = currentActiveExample.assetSequencesLists;
 
-        foreach (var collision in collisions)
-        {
-            events.Add((collision.StartIndex, "start", null, collision, null));
-        }
+        State firstState = null;
 
-        foreach (var voiceCommand in voiceCommands)
-        {
-            events.Add((voiceCommand.StartIndex, "start", null, null, voiceCommand));
-        }
+        for (int i = 0; i < currentActiveExample.StatePlaceholders.Count; i++) {
+            var currentStatePlaceholder = currentActiveExample.StatePlaceholders[i];
+            var nexStatePlaceholder = i < currentActiveExample.StatePlaceholders.Count - 1 ? currentActiveExample.StatePlaceholders[i + 1] : null;
 
-        // Sort the events by their index
-        events = events.OrderBy(e => e.Index).ToList();
-
-        int lastIndex = 0;
-
-        // Iterate over events to create states
-        for (int i = 0; i < events.Count; i++)
-        {
-            var currentEvent = events[i];
-
-            if (lastIndex != currentEvent.Index)
-            {
-                var state = CreateState(lastIndex, currentEvent.Index - lastIndex);
-
-                if (i > 0)
-                {
-                    var prevEvent = events[i - 1];
-                    state.Gesture = prevEvent.Gesture;
-                    state.Collision = prevEvent.Collision;
-                    state.VoiceSequence = prevEvent.VoiceCommand;
-                }
+            var currentState = localStatesDict[currentStatePlaceholder];
+            if (i == 0) {
+                firstState = currentState;
             }
 
-            lastIndex = currentEvent.Index;
-        }
+            if (nexStatePlaceholder != null) {
+                var nextState = localStatesDict[nexStatePlaceholder];
 
-        // Last state
-        if (lastIndex < recordedFramesTotal)
-        {
-            var state = CreateState(lastIndex, recordedFramesTotal - lastIndex);
-
-            if (events.Count > 0)
-            {
-                var lastEvent = events.Last();
-                state.Gesture = lastEvent.Gesture;
-                state.Collision = lastEvent.Collision;
-                state.VoiceSequence = lastEvent.VoiceCommand;
-            }
-        }
-
-
-        DebugLogger.Instance.Log("Adding transitions to states");
-        //var firstState = StatesInTimeline.First().Key;
-        //Add events to states
-        //
-        List<State> orderedKeys = new(currentActiveExample.StatesDict.Keys);
-
-        if (orderedKeys.Count == 0)
-        {
-            DebugLogger.Instance.Log("No states found");
-            return;
-        }
-        //Add actions to the first state
-        //var firstState = currentActiveExample.StatesDict[orderedKeys[0]].state;
-        //AddActionsToState(firstState);
-
-
-        for (int i = 0; i < orderedKeys.Count - 1; i++)
-        {
-            State prevState = currentActiveExample.StatesDict[orderedKeys[i]].state;
-            State currStateProcessed = currentActiveExample.StatesDict[orderedKeys[i + 1]].state;
-
-            DebugLogger.Instance.Log("Adding transition from " + prevState.name + " to " + currStateProcessed.name);
-            //prevState.AddTransitionTo(state, (frame) => { return true; });
-
-
-            //Iterate through gesture sequences and check if GestureType is equal to InputManager.Gesture.RIGHTHANDPINCH or InputManager.Gesture.LEFTHANDPINCH
-            foreach (var gesture in gestures)
-            {
-                if (gesture.StartIndex == currentActiveExample.StatesDict[currStateProcessed].StartIndex)
-                {
-                    //Add the gesture to the state
-                    currStateProcessed.Gesture = gesture;
-                    DebugLogger.Instance.Log("Found gesture " + InputManager.Instance.GestureToString(gesture.GestureType) + " at the beginning of state " + currStateProcessed.name);
-                }
-            }
-
-            //Iterate through collision sequences and check if the start index is within the first 5 frames of the state
-            foreach (var collisionSequences in currentActiveExample.collisionSequencesLists)
-            {
-                foreach (var collisionSequence in collisionSequences)
-                {
-                    if (collisionSequence.StartIndex == currentActiveExample.StatesDict[currStateProcessed].StartIndex)
-                    {
-                        //Add the collision to the state
-                        currStateProcessed.Collision = collisionSequence;
-                        DebugLogger.Instance.Log("Added collision " + collisionSequence.ActionStr + " to state " + currStateProcessed.name);
+                //Find transitions between currentStatePlaceholder to nexStatePlaceholder
+                var actualTriggers = allPotentialTriggers.FindAll(x => x.CanTriggerAt(nexStatePlaceholder.StartIndex));
+                if (actualTriggers.Count > 0) {
+                    //Let's build the transition
+                    Func<Frame, bool> transitionConditionFunction = (Frame frame) => {return true;};
+                    string transitionDescription = "" + currentState.name + "->" + nextState.name + ":";
+                    foreach (var trigger in actualTriggers) {
+                        transitionConditionFunction = trigger.AddConditionToFunction(transitionConditionFunction);
+                        transitionDescription = transitionDescription + " && " + trigger.ToString();
                     }
+                    //Let's add a transition between currentState and nextState
+                    currentState.AddTransitionTo(nextState, transitionConditionFunction, transitionDescription);
                 }
+            } else {
+                //currentStatePlaceholder is the last statePlaceholder
             }
 
-            //Iterate through voice command sequences
-            foreach (var voiceCommand in voiceCommands)
+            DebugLogger.Instance.Log("Adding OnEnter and OnExit actions to state " + currentState.name);
+
+            //var stateInTimeline = currentActiveExample.StatesDict.First().Key;
+            foreach (var assetSequences in allActions)
             {
-                if (voiceCommand.StartIndex == currentActiveExample.StatesDict[currStateProcessed].StartIndex)
+                foreach (var assetSequence in assetSequences)
                 {
-                    //Add the voice command to the state
-                    currStateProcessed.VoiceSequence = voiceCommand;
-                    DebugLogger.Instance.Log("Found voice command " + voiceCommand.VoiceCommand + " at the beginning of state " + currStateProcessed.name);
-                }
-            }
-
-            string transitionDescription = "";
-
-            if (currStateProcessed.Gesture == null && currStateProcessed.Collision == null && currStateProcessed.VoiceSequence == null)//No gesture, collision or voice command
-            {
-                DebugLogger.Instance.Log("State " + currStateProcessed.name + " does not have any gesture, collision or voice command");
-            }
-            else if (currStateProcessed.Gesture != null && currStateProcessed.Collision == null && currStateProcessed.VoiceSequence == null) //Gesture only
-            {
-                //DebugLogger.Instance.Log("State " + state.id + " has gesture " + InputManager.Instance.GestureToString(state.Gesture.GestureType));
-                if (currStateProcessed.Gesture.GestureType == InputManager.Gesture.RIGHTHANDPINCH || currStateProcessed.Gesture.GestureType == InputManager.Gesture.RIGHTHANDOPEN)
-                {                    
-                    transitionDescription = "" + prevState.name + "->" + currStateProcessed.name + ": frame.rightHandGesture == " + InputManager.Instance.GestureToString(currStateProcessed.Gesture.GestureType) + "; ";
-                    DebugLogger.Instance.Log("Adding transition from " + transitionDescription);
-                    prevState.AddTransitionTo(currStateProcessed, (frame) => { return frame.rightHandGesture == currStateProcessed.Gesture.GestureType; }, transitionDescription);
-                }
-                else if (currStateProcessed.Gesture.GestureType == InputManager.Gesture.LEFTHANDPINCH || currStateProcessed.Gesture.GestureType == InputManager.Gesture.LEFTHANDOPEN)
-                {
-                    transitionDescription = "" + prevState.name + "->" + currStateProcessed.name + ": frame.lefthandgesture == " + InputManager.Instance.GestureToString(currStateProcessed.Gesture.GestureType) + "; ";
-                    DebugLogger.Instance.Log("Adding transition from " + transitionDescription);
-                    prevState.AddTransitionTo(currStateProcessed, (frame) => { return frame.leftHandGesture == currStateProcessed.Gesture.GestureType; }, transitionDescription);
-                }
-
-            }
-            else if (currStateProcessed.Gesture == null && currStateProcessed.Collision != null && currStateProcessed.VoiceSequence == null)//Collision only
-            {
-                transitionDescription = "" + prevState.name + "->" + currStateProcessed.name + ": frame.IsColliding(" + currStateProcessed.Collision.CollidingObject1.name + ", " + currStateProcessed.Collision.CollidingObject2.name + "); ";
-                DebugLogger.Instance.Log("Adding transition from " + transitionDescription);
-                prevState.AddTransitionTo(currStateProcessed, (frame) => { return frame.IsColliding(currStateProcessed.Collision.CollidingObject1, currStateProcessed.Collision.CollidingObject2); }, transitionDescription);
-            }
-            else if (currStateProcessed.Gesture == null && currStateProcessed.Collision == null && currStateProcessed.VoiceSequence != null)//Voice command only
-            {
-                transitionDescription = "" + prevState.name + "->" + currStateProcessed.name + ": frame.voiceCommand.Contains(" + currStateProcessed.VoiceSequence.VoiceCommand + "); ";
-                DebugLogger.Instance.Log("Adding transition from " + transitionDescription);
-                prevState.AddTransitionTo(currStateProcessed, (frame) => { return frame.voiceCommand.Contains(currStateProcessed.VoiceSequence.VoiceCommand); }, transitionDescription);
-            }
-            else if (currStateProcessed.Gesture != null && currStateProcessed.Collision != null && currStateProcessed.VoiceSequence == null)//Gesture and collision
-            {
-                //DebugLogger.Instance.Log("State " + state.id + " has gesture " + InputManager.Instance.GestureToString(state.Gesture.GestureType) + " and collision " + state.Collision.Action);
-                if (currStateProcessed.Gesture.GestureType == InputManager.Gesture.RIGHTHANDPINCH || currStateProcessed.Gesture.GestureType == InputManager.Gesture.RIGHTHANDOPEN)
-                {
-                    transitionDescription = "" + prevState.name + "->" + currStateProcessed.name + ": frame.rightHandGesture == " + InputManager.Instance.GestureToString(currStateProcessed.Gesture.GestureType) + " && frame.IsColliding(" + currStateProcessed.Collision.CollidingObject1.name + ", " + currStateProcessed.Collision.CollidingObject2.name + "); ";
-                    DebugLogger.Instance.Log("Adding transition from " + transitionDescription);
-                    prevState.AddTransitionTo(currStateProcessed, (frame) => { return frame.rightHandGesture == currStateProcessed.Gesture.GestureType && frame.IsColliding(currStateProcessed.Collision.CollidingObject1, currStateProcessed.Collision.CollidingObject2); }, transitionDescription);
-                }
-                else if (currStateProcessed.Gesture.GestureType == InputManager.Gesture.LEFTHANDPINCH || currStateProcessed.Gesture.GestureType == InputManager.Gesture.LEFTHANDOPEN)
-                {
-                    transitionDescription = "" + prevState.name + "->" + currStateProcessed.name + ": frame.lefthandgesture == " + InputManager.Instance.GestureToString(currStateProcessed.Gesture.GestureType) + " && frame.IsColliding(" + currStateProcessed.Collision.CollidingObject1.name + ", " + currStateProcessed.Collision.CollidingObject2.name + "); ";
-                    prevState.AddTransitionTo(currStateProcessed, (frame) => { return frame.leftHandGesture == currStateProcessed.Gesture.GestureType && frame.IsColliding(currStateProcessed.Collision.CollidingObject1, currStateProcessed.Collision.CollidingObject2); }, transitionDescription);
-                }
-            }
-            else if (currStateProcessed.Gesture != null && currStateProcessed.Collision == null && currStateProcessed.VoiceSequence != null)//Gesture and voice command
-            {
-                //DebugLogger.Instance.Log("State " + state.id + " has gesture " + InputManager.Instance.GestureToString(state.Gesture.GestureType) + " and collision " + state.Collision.Action);
-                if (currStateProcessed.Gesture.GestureType == InputManager.Gesture.RIGHTHANDPINCH || currStateProcessed.Gesture.GestureType == InputManager.Gesture.RIGHTHANDOPEN)
-                {
-                    transitionDescription = "" + prevState.name + "->" + currStateProcessed.name + ": frame.rightHandGesture == " + InputManager.Instance.GestureToString(currStateProcessed.Gesture.GestureType) + " && frame.voiceCommand.Contains(" + currStateProcessed.VoiceSequence.VoiceCommand + "); ";
-                    DebugLogger.Instance.Log("Adding transition from " + transitionDescription);
-                    prevState.AddTransitionTo(currStateProcessed, (frame) => { return frame.rightHandGesture == currStateProcessed.Gesture.GestureType && frame.voiceCommand.Contains(currStateProcessed.VoiceSequence.VoiceCommand); }, transitionDescription);
-                }
-                else if (currStateProcessed.Gesture.GestureType == InputManager.Gesture.LEFTHANDPINCH || currStateProcessed.Gesture.GestureType == InputManager.Gesture.LEFTHANDOPEN)
-                {
-                    transitionDescription = "" + prevState.name + "->" + currStateProcessed.name + ": frame.lefthandgesture == " + InputManager.Instance.GestureToString(currStateProcessed.Gesture.GestureType) + " && frame.voiceCommand.Contains(" + currStateProcessed.VoiceSequence.VoiceCommand + "); ";
-                    DebugLogger.Instance.Log("Adding transition from " + transitionDescription);
-                    prevState.AddTransitionTo(currStateProcessed, (frame) => { return frame.leftHandGesture == currStateProcessed.Gesture.GestureType && frame.voiceCommand.Contains(currStateProcessed.VoiceSequence.VoiceCommand); }, transitionDescription);
-                }
-            }
-            else if (currStateProcessed.Gesture == null && currStateProcessed.Collision != null && currStateProcessed.VoiceSequence != null)//Collision and voice command
-            {
-                transitionDescription = "" + prevState.name + "->" + currStateProcessed.name + ": frame.IsColliding(" + currStateProcessed.Collision.CollidingObject1.name + ", " + currStateProcessed.Collision.CollidingObject2.name + ") && frame.voiceCommand.Contains(" + currStateProcessed.VoiceSequence.VoiceCommand + "); ";
-                DebugLogger.Instance.Log("Adding transition from " + transitionDescription);                
-                prevState.AddTransitionTo(currStateProcessed, (frame) => { return frame.voiceCommand.Contains(currStateProcessed.VoiceSequence.VoiceCommand) && frame.IsColliding(currStateProcessed.Collision.CollidingObject1, currStateProcessed.Collision.CollidingObject2); }, transitionDescription);
-            }
-            else if (currStateProcessed.Gesture != null && currStateProcessed.Collision != null && currStateProcessed.VoiceSequence != null)//Gesture, collision and voice command
-            {
-                //DebugLogger.Instance.Log("State " + state.id + " has gesture " + InputManager.Instance.GestureToString(state.Gesture.GestureType) + " and collision " + state.Collision.Action);
-                if (currStateProcessed.Gesture.GestureType == InputManager.Gesture.RIGHTHANDPINCH || currStateProcessed.Gesture.GestureType == InputManager.Gesture.RIGHTHANDOPEN)
-                {
-                    transitionDescription = "" + prevState.name + "->" + currStateProcessed.name + ": frame.rightHandGesture == " + InputManager.Instance.GestureToString(currStateProcessed.Gesture.GestureType) + " && frame.IsColliding(" + currStateProcessed.Collision.CollidingObject1.name + ", " + currStateProcessed.Collision.CollidingObject2.name + ") && frame.voiceCommand.Contains(" + currStateProcessed.VoiceSequence.VoiceCommand + "); ";
-                    DebugLogger.Instance.Log("Adding transition from " + transitionDescription);
-                    prevState.AddTransitionTo(currStateProcessed, (frame) => { return frame.rightHandGesture == currStateProcessed.Gesture.GestureType && frame.IsColliding(currStateProcessed.Collision.CollidingObject1, currStateProcessed.Collision.CollidingObject2) && frame.voiceCommand.Contains(currStateProcessed.VoiceSequence.VoiceCommand); }, transitionDescription);
-                }
-                else if (currStateProcessed.Gesture.GestureType == InputManager.Gesture.LEFTHANDPINCH || currStateProcessed.Gesture.GestureType == InputManager.Gesture.LEFTHANDOPEN)
-                {
-                    transitionDescription = "" + prevState.name + "->" + currStateProcessed.name + ": frame.lefthandgesture == " + InputManager.Instance.GestureToString(currStateProcessed.Gesture.GestureType) + " && frame.IsColliding(" + currStateProcessed.Collision.CollidingObject1.name + ", " + currStateProcessed.Collision.CollidingObject2.name + ") && frame.voiceCommand.Contains(" + currStateProcessed.VoiceSequence.VoiceCommand + "); ";
-                    DebugLogger.Instance.Log("Adding transition from " + transitionDescription);
-                    prevState.AddTransitionTo(currStateProcessed, (frame) => { return frame.leftHandGesture == currStateProcessed.Gesture.GestureType && frame.IsColliding(currStateProcessed.Collision.CollidingObject1, currStateProcessed.Collision.CollidingObject2) && frame.voiceCommand.Contains(currStateProcessed.VoiceSequence.VoiceCommand); }, transitionDescription);
-                }
-            }
-            else
-            {
-                DebugLogger.Instance.Log("No transition added for state " + currStateProcessed.name);
-            }
-
-            //Add actions to states
-            //AddActionsToState(currStateProcessed);
-        }
-
-        //Set the initial state of the state machine to be the first state in the StatesInTimeline dictionary
-        //CustomStateMachine.Instance.SetInitialState(currentActiveExample.StatesDict.First().Key.id);
-     
-    }
-
-    public void AddActionsToAllStates()
-    {
-        DebugLogger.Instance.Log("Adding OnEnter and OnExit actions to states");
-
-        List<State> orderedKeys = new(currentActiveExample.StatesDict.Keys);
-
-        if (orderedKeys.Count == 0)
-        {
-            DebugLogger.Instance.Log("No states found");
-            return;
-        }
-
-        var firstState = currentActiveExample.StatesDict[orderedKeys[0]].state;
-        AddActionsToState(firstState);
-
-        for (int i = 0; i < orderedKeys.Count - 1; i++)
-        {   
-            State currStateProcessed = currentActiveExample.StatesDict[orderedKeys[i + 1]].state;
-
-            AddActionsToState(currStateProcessed);
-        }
-
-    }
-
-    public void AddActionsToState(State stateInTimeline)
-    {
-        var actions = currentActiveExample.assetSequencesLists;
-        //var stateInTimeline = currentActiveExample.StatesDict.First().Key;
-        foreach (var assetSequences in actions)
-        {
-            foreach (var assetSequence in assetSequences)
-            {
-                int distanceToStateStart = assetSequence.StartIndex - currentActiveExample.StatesDict[stateInTimeline].StartIndex;
-                int distanceToStateEnd = currentActiveExample.StatesDict[stateInTimeline].StartIndex + currentActiveExample.StatesDict[stateInTimeline].Length - assetSequence.StartIndex - 1;
-                if (distanceToStateStart >= 0 && distanceToStateEnd >= 0)
-                {
-                    if(distanceToStateStart < distanceToStateEnd)
+                    int distanceToStateStart = assetSequence.StartIndex - currentStatePlaceholder.StartIndex;
+                    int distanceToStateEnd = currentStatePlaceholder.Length - assetSequence.StartIndex - 1;
+                    if (distanceToStateStart >= 0 && distanceToStateEnd >= 0)
                     {
-                        DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionStr + " for state " + stateInTimeline.name + " in OnEnterActions");
-                        stateInTimeline.OnEnterActions = () => assetSequence.ActionDelegate();
-                        stateInTimeline.OnEnterActionsStr = assetSequence.ActionStr;
-                    }
-                    else
-                    {
-                        DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionStr + " for state " + stateInTimeline.name + " in OnExitActions");
-                        stateInTimeline.OnExitActions = () => assetSequence.ActionDelegate();
-                        stateInTimeline.OnExitActionsStr = assetSequence.ActionStr;
+                        if(distanceToStateStart < distanceToStateEnd)
+                        {
+                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionStr + " for state " + currentState.name + " in OnEnterActions");
+                            currentState.OnEnterActions = () => assetSequence.ActionDelegate();
+                            currentState.OnEnterActionsStr = assetSequence.ActionStr.ToString();
+                        }
+                        else
+                        {
+                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionStr + " for state " + currentState.name + " in OnExitActions");
+                            currentState.OnExitActions = () => assetSequence.ActionDelegate();
+                            currentState.OnExitActionsStr = assetSequence.ActionStr.ToString();
+                        }
                     }
                 }
             }
         }
+
+        CustomStateMachine.Instance.SetInitialState(firstState);
+
+        PrintDetailsOfStateMachine(localStatesDict.Values.ToList());    
     }
+
+    // public void AddActionsToAllStates()
+    // {
+    //     DebugLogger.Instance.Log("Adding OnEnter and OnExit actions to states");
+
+    //     List<State> orderedKeys = new(currentActiveExample.StatesDict.Keys);
+
+    //     if (orderedKeys.Count == 0)
+    //     {
+    //         DebugLogger.Instance.Log("No states found");
+    //         return;
+    //     }
+
+    //     var firstState = currentActiveExample.StatesDict[orderedKeys[0]].state;
+    //     AddActionsToState(firstState);
+
+    //     for (int i = 0; i < orderedKeys.Count - 1; i++)
+    //     {   
+    //         State currStateProcessed = currentActiveExample.StatesDict[orderedKeys[i + 1]].state;
+
+    //         AddActionsToState(currStateProcessed);
+    //     }
+
+    // }
+
+    // public void AddActionsToState(State stateInTimeline)
+    // {
+    //     var actions = currentActiveExample.assetSequencesLists;
+    //     //var stateInTimeline = currentActiveExample.StatesDict.First().Key;
+    //     foreach (var assetSequences in actions)
+    //     {
+    //         foreach (var assetSequence in assetSequences)
+    //         {
+    //             int distanceToStateStart = assetSequence.StartIndex - currentActiveExample.StatesDict[stateInTimeline].StartIndex;
+    //             int distanceToStateEnd = currentActiveExample.StatesDict[stateInTimeline].StartIndex + currentActiveExample.StatesDict[stateInTimeline].Length - assetSequence.StartIndex - 1;
+    //             if (distanceToStateStart >= 0 && distanceToStateEnd >= 0)
+    //             {
+    //                 if(distanceToStateStart < distanceToStateEnd)
+    //                 {
+    //                     DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionStr + " for state " + stateInTimeline.name + " in OnEnterActions");
+    //                     stateInTimeline.OnEnterActions = () => assetSequence.ActionDelegate();
+    //                     stateInTimeline.OnEnterActionsStr = assetSequence.ActionStr.ToString();
+    //                 }
+    //                 else
+    //                 {
+    //                     DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionStr + " for state " + stateInTimeline.name + " in OnExitActions");
+    //                     stateInTimeline.OnExitActions = () => assetSequence.ActionDelegate();
+    //                     stateInTimeline.OnExitActionsStr = assetSequence.ActionStr.ToString();
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
 
 
     public void CombineExamples()
     {
-        DebugLogger.Instance.ClearVRDebugText();
+        // DebugLogger.Instance.ClearVRDebugText();
 
-        //DebugLogger.Instance.Log("Combining examples");
-        List<List<State>> allStatesInExamples = new();
-        foreach (var example in examples)
-        {
-            allStatesInExamples.Add(example.StatesDict.Keys.ToList());
-        }
+        // //DebugLogger.Instance.Log("Combining examples");
+        // List<List<State>> allStatesInExamples = new();
+        // foreach (var example in examples)
+        // {
+        //     allStatesInExamples.Add(example.StatesDict.Keys.ToList());
+        // }
        
-        allStatesInExamples = allStatesInExamples.OrderBy(x => x.Count).ToList();
+        // allStatesInExamples = allStatesInExamples.OrderBy(x => x.Count).ToList();
 
-        var shortestList = allStatesInExamples.First();
-        int shortestListLength = shortestList.Count;
-        DebugLogger.Instance.Log("CombineExamples: The shortest list of states has " + shortestList.Count + " states");
+        // var shortestList = allStatesInExamples.First();
+        // int shortestListLength = shortestList.Count;
+        // DebugLogger.Instance.Log("CombineExamples: The shortest list of states has " + shortestList.Count + " states");
 
-        List<State> commonStates = new List<State>();
-        int lastCommonStateIndex = 0;
-        for (int i = 0; i < shortestListLength; i++)
-        {
-            lastCommonStateIndex = i;
-            bool allStatesEqual = true;
-            for (int j = 0; j < allStatesInExamples.Count; j++)
-            {
-                if (!shortestList[i].IsStateEqualTo(allStatesInExamples[j][i]))
-                {
-                    allStatesEqual = false;
-                    break;
-                }
-            }
+        // List<State> commonStates = new List<State>();
+        // int lastCommonStateIndex = 0;
+        // for (int i = 0; i < shortestListLength; i++)
+        // {
+        //     lastCommonStateIndex = i;
+        //     bool allStatesEqual = true;
+        //     for (int j = 0; j < allStatesInExamples.Count; j++)
+        //     {
+        //         if (!shortestList[i].IsStateEqualTo(allStatesInExamples[j][i]))
+        //         {
+        //             allStatesEqual = false;
+        //             break;
+        //         }
+        //     }
             
-            if (allStatesEqual)
-            {
-                commonStates.Add(shortestList[i]);
-            }
-            else
-            {
-                break;
-            }
-        }
+        //     if (allStatesEqual)
+        //     {
+        //         commonStates.Add(shortestList[i]);
+        //     }
+        //     else
+        //     {
+        //         break;
+        //     }
+        // }
 
-        if(lastCommonStateIndex == 0)
-        {
-            DebugLogger.Instance.Log("CombineExamples: No common states found");
-            return;
-        }
+        // if(lastCommonStateIndex == 0)
+        // {
+        //     DebugLogger.Instance.Log("CombineExamples: No common states found");
+        //     return;
+        // }
 
-        DebugLogger.Instance.Log("CombineExamples: The last common state is " + commonStates.Last().name + " at index " + lastCommonStateIndex);
+        // DebugLogger.Instance.Log("CombineExamples: The last common state is " + commonStates.Last().name + " at index " + lastCommonStateIndex);
 
-        if (lastCommonStateIndex < shortestListLength)
-        { 
-            //Printing the states at lastCommonStateIndex-1 for each List<State> in allStatesInExamples except the first
-            DebugLogger.Instance.Log("CombineExamples: States at index " + (lastCommonStateIndex - 1) + " for each example except the first: ");
-            for (int i = 1; i < allStatesInExamples.Count; i++) //Except the first list. i.e. the shortest list which has already been added
-            {
-                DebugLogger.Instance.Log("CombineExamples: Inside for loop");
-                commonStates.Add(shortestList[lastCommonStateIndex]); //Add the state after the last common state
-                //allStatesInExamples[i][lastCommonStateIndex].PrintDetailsOfState(VRConsoleEnabled : true);            
-                commonStates.Last().CopyTransitionFromState(allStatesInExamples[i][lastCommonStateIndex]);
-                //DebugLogger.Instance.Log("Transition copied from " + allStatesInExamples[i][lastCommonStateIndex].id + " to " + commonStates.Last().id);
-                //DebugLogger.Instance.Log("Details of allStatesInExamples[" + i + "][" + lastCommonStateIndex + "]: ");
-                //allStatesInExamples[i][lastCommonStateIndex].PrintDetailsOfState(VRConsoleEnabled : true);
-                //DebugLogger.Instance.Log("Details of commonStates.Last(): ", VRConsoleEnabled : true);
-                //commonStates.Last().PrintDetailsOfState(VRConsoleEnabled : true);
+        // if (lastCommonStateIndex < shortestListLength)
+        // { 
+        //     //Printing the states at lastCommonStateIndex-1 for each List<State> in allStatesInExamples except the first
+        //     DebugLogger.Instance.Log("CombineExamples: States at index " + (lastCommonStateIndex - 1) + " for each example except the first: ");
+        //     for (int i = 1; i < allStatesInExamples.Count; i++) //Except the first list. i.e. the shortest list which has already been added
+        //     {
+        //         DebugLogger.Instance.Log("CombineExamples: Inside for loop");
+        //         commonStates.Add(shortestList[lastCommonStateIndex]); //Add the state after the last common state
+        //         //allStatesInExamples[i][lastCommonStateIndex].PrintDetailsOfState(VRConsoleEnabled : true);            
+        //         commonStates.Last().CopyTransitionFromState(allStatesInExamples[i][lastCommonStateIndex]);
+        //         //DebugLogger.Instance.Log("Transition copied from " + allStatesInExamples[i][lastCommonStateIndex].id + " to " + commonStates.Last().id);
+        //         //DebugLogger.Instance.Log("Details of allStatesInExamples[" + i + "][" + lastCommonStateIndex + "]: ");
+        //         //allStatesInExamples[i][lastCommonStateIndex].PrintDetailsOfState(VRConsoleEnabled : true);
+        //         //DebugLogger.Instance.Log("Details of commonStates.Last(): ", VRConsoleEnabled : true);
+        //         //commonStates.Last().PrintDetailsOfState(VRConsoleEnabled : true);
 
-            }
+        //     }
 
-            CustomStateMachine.Instance.DeleteAllStates();
-            int newId = 0;
-            foreach (var state in commonStates)
-            {
-                CustomStateMachine.Instance.AddState("State " + newId.ToString(), state);
-                newId++;
-            }
+        //     CustomStateMachine.Instance.DeleteAllStates();
+        //     int newId = 0;
+        //     foreach (var state in commonStates)
+        //     {
+        //         CustomStateMachine.Instance.AddState("State " + newId.ToString(), state);
+        //         newId++;
+        //     }
 
-            for (int i = 0; i < allStatesInExamples.Count; i++)
-            {
-                //Copy all states from lastCommonStateIndex to the end of each list
-                for (int j = lastCommonStateIndex + 1; j < allStatesInExamples[i].Count; j++)
-                {
-                    CustomStateMachine.Instance.AddState("State " + newId.ToString(), allStatesInExamples[i][j]);
-                    newId++;
-                }
-            }
+        //     for (int i = 0; i < allStatesInExamples.Count; i++)
+        //     {
+        //         //Copy all states from lastCommonStateIndex to the end of each list
+        //         for (int j = lastCommonStateIndex + 1; j < allStatesInExamples[i].Count; j++)
+        //         {
+        //             CustomStateMachine.Instance.AddState("State " + newId.ToString(), allStatesInExamples[i][j]);
+        //             newId++;
+        //         }
+        //     }
 
 
-            //Print the common states          
+        //     //Print the common states          
             
 
-            CustomStateMachine.Instance.CreateStateGraph(stateGraphElementPrefab, stateGraphPanel.GetComponent<RectTransform>());
+        //     CustomStateMachine.Instance.CreateStateGraph(stateGraphElementPrefab, stateGraphPanel.GetComponent<RectTransform>());
 
-        }
+        // }
         
-        CustomStateMachine.Instance.PrintDetailsOfStateMachine(VRConsoleEnabled : true);
+        // CustomStateMachine.Instance.PrintDetailsOfStateMachine(VRConsoleEnabled : true);
 
-        //CustomStateMachine.Instance.SetInitialState(commonStates.First().id);
+        // //CustomStateMachine.Instance.SetInitialState(commonStates.First().id);
 
     }
 
@@ -1133,7 +1064,6 @@ public class Recorder : MonoBehaviour
         CreateStatePlaceholders();
     }
     
-    
     public void CreateStatePlaceholders() {
         DeleteStatePlaceholders();
         int recordedFramesTotal = GetSizeOfMainRecordedData();
@@ -1141,7 +1071,7 @@ public class Recorder : MonoBehaviour
         var collisions = currentActiveExample.collisionSequencesLists.SelectMany(x => x).ToList();
         var voiceCommands = currentActiveExample.VoiceCommandSequences;
         // Create a list of events (start or end of a sequence)
-        var eventsThatStartStates = new List<(int Index, string Type, GestureSequence Gesture, AssetActionSequence Collision, VoiceSequence VoiceCommand)>();
+        var eventsThatStartStates = new List<(int Index, string Type, GestureSequence Gesture, CollisionSequence Collision, VoiceSequence VoiceCommand)>();
         foreach (var gesture in gestures)
         {
             eventsThatStartStates.Add((gesture.StartIndex, "start", gesture, null, null));
@@ -1169,7 +1099,7 @@ public class Recorder : MonoBehaviour
                     startIndex,
                     length,
                     GetSizeOfMainRecordedData(),
-                    "State");
+                    "State " + lastIndex);
                 this.currentActiveExample.StatePlaceholders.Add(stateTimelineElement.GetComponent<StateTimelineUIElement>());
             }
             lastIndex = currentEvent.Index;
@@ -1184,154 +1114,155 @@ public class Recorder : MonoBehaviour
                 startIndex,
                 length,
                 GetSizeOfMainRecordedData(),
-                "State");
+                "State " + lastIndex);
             this.currentActiveExample.StatePlaceholders.Add(stateTimelineElement.GetComponent<StateTimelineUIElement>());
         }
     }        
 
     //Dictionary<State, StateTimelineUIElement> StatesDict = new();
-    State CreateState(int startIndex, int length)
-    {
-        var StateMachine = CustomStateMachine.Instance;
-        var state = new State
-        {
-            name = "State " + StateMachine.GetSize()
-        };
-        StateMachine.AddState(state.name, state);
+    // State CreateState(int startIndex, int length)
+    // {
+    //     var StateMachine = CustomStateMachine.Instance;
+    //     var state = new State
+    //     {
+    //         name = "State " + StateMachine.GetSize()
+    //     };
+    //     StateMachine.AddState(state.name, state);
 
-        var stateUI = StateTimelineUIElement.CreateStateTimelineElement(currentActiveExample.stateTimelineElementPrefab, currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>(),
-                                                        startIndex, length, GetSizeOfMainRecordedData(), state);
+    //     var stateUI = StateTimelineUIElement.CreateStateTimelineElement(currentActiveExample.stateTimelineElementPrefab, currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>(),
+    //                                                     startIndex, length, GetSizeOfMainRecordedData(), state);
         
-        state.timelineElement = stateUI;
+    //     state.timelineElement = stateUI;
 
-        currentActiveExample.StatesDict.Add(state, stateUI.GetComponent<StateTimelineUIElement>());
+    //     currentActiveExample.StatesDict.Add(state, stateUI.GetComponent<StateTimelineUIElement>());
 
-        return state;
-    }
+    //     return state;
+    // }
 
     State MergeStates(State state1, State state2)
     {
-        var state1UIElement = currentActiveExample.StatesDict[state1];
-        var state2UIElement = currentActiveExample.StatesDict[state2];
+        return null;
+    //     var state1UIElement = currentActiveExample.StatesDict[state1];
+    //     var state2UIElement = currentActiveExample.StatesDict[state2];
 
 
-        var StateMachine = CustomStateMachine.Instance;
-        var newState = new State
-        {
-            name = "tempState" + StateMachine.GetSize()
-        };
+    //     var StateMachine = CustomStateMachine.Instance;
+    //     var newState = new State
+    //     {
+    //         name = "tempState" + StateMachine.GetSize()
+    //     };
 
-        //Get the index of state1 in the StatesInTimeline dictionary
-        int state1Index = currentActiveExample.StatesDict.Keys.ToList().IndexOf(state1);
-        //Find the state before state1 in the StatesInTimeline dictionary if the index of state1 is not 0
-        State previousState = null;
-        if (state1Index > 0)
-        {
-            previousState = currentActiveExample.StatesDict.Keys.ToList()[state1Index - 1];
-            DebugLogger.Instance.Log("The state before state " + state1.name + " is state " + previousState.name);
-            //Add a transition from the previous state to the new state
-            previousState.ModifyTransitionTo(newState);
-            //previousState.transitions.Clear();  
-        }
-        else
-        {
-            DebugLogger.Instance.Log("State " + state1.name + " is the first state");
-        }
+    //     //Get the index of state1 in the StatesInTimeline dictionary
+    //     int state1Index = currentActiveExample.StatesDict.Keys.ToList().IndexOf(state1);
+    //     //Find the state before state1 in the StatesInTimeline dictionary if the index of state1 is not 0
+    //     State previousState = null;
+    //     if (state1Index > 0)
+    //     {
+    //         previousState = currentActiveExample.StatesDict.Keys.ToList()[state1Index - 1];
+    //         DebugLogger.Instance.Log("The state before state " + state1.name + " is state " + previousState.name);
+    //         //Add a transition from the previous state to the new state
+    //         previousState.ModifyTransitionTo(newState);
+    //         //previousState.transitions.Clear();  
+    //     }
+    //     else
+    //     {
+    //         DebugLogger.Instance.Log("State " + state1.name + " is the first state");
+    //     }
 
-        State nextState = null;
-        //Find the state after state2 in the StatesInTimeline dictionary if the index of state2 is not the last index
-        if (state1Index < currentActiveExample.StatesDict.Keys.Count - 1)
-        {
-            nextState = currentActiveExample.StatesDict.Keys.ToList()[state1Index + 1];
-            DebugLogger.Instance.Log("The state after state " + state2.name + " is state " + nextState.name);
+    //     State nextState = null;
+    //     //Find the state after state2 in the StatesInTimeline dictionary if the index of state2 is not the last index
+    //     if (state1Index < currentActiveExample.StatesDict.Keys.Count - 1)
+    //     {
+    //         nextState = currentActiveExample.StatesDict.Keys.ToList()[state1Index + 1];
+    //         DebugLogger.Instance.Log("The state after state " + state2.name + " is state " + nextState.name);
 
-            newState.ClearTransitions();
-            newState.CopyTransitionFromState(state2);
+    //         newState.ClearTransitions();
+    //         newState.CopyTransitionFromState(state2);
 
-            //Add a transition from the new state to the next state
-            newState.ModifyTransitionTo(nextState);
-            //newState.transitions.Clear();
-        }
-        else
-        {
-            DebugLogger.Instance.Log("State " + state2.name + " is the last state");
-        }
-
-
-        newState.OnEnterActions = state1.OnEnterActions;
-        newState.OnEnterActions = state2.OnEnterActions;
-        newState.OnExitActions = state1.OnExitActions; //We only have unfollow so this is fine for now TODO: Fix this for other use cases
-        newState.OnExitActions = state2.OnExitActions;
+    //         //Add a transition from the new state to the next state
+    //         newState.ModifyTransitionTo(nextState);
+    //         //newState.transitions.Clear();
+    //     }
+    //     else
+    //     {
+    //         DebugLogger.Instance.Log("State " + state2.name + " is the last state");
+    //     }
 
 
-        //Assign state.id as "State" plus the digits present in state1.id and state2.id
-        string state1ID = state1.name;
-        string state2ID = state2.name;
-        string stateID = "State";
-        foreach (char c in state1ID)
-        {
-            if (char.IsDigit(c))
-            {
-                stateID += c;
-            }
-        }
-        foreach (char c in state2ID)
-        {
-            if (char.IsDigit(c))
-            {
-                stateID += c;
-            }
-        }
-        newState.name = stateID;
+    //     newState.OnEnterActions = state1.OnEnterActions;
+    //     newState.OnEnterActions = state2.OnEnterActions;
+    //     newState.OnExitActions = state1.OnExitActions; //We only have unfollow so this is fine for now TODO: Fix this for other use cases
+    //     newState.OnExitActions = state2.OnExitActions;
 
-        var stateUI = StateTimelineUIElement.CreateStateTimelineElement(currentActiveExample.stateTimelineElementPrefab, currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>(),
-                                                        state1UIElement.StartIndex, state1UIElement.Length + state2UIElement.Length, GetSizeOfMainRecordedData(), newState);
 
-        newState.timelineElement = stateUI;
-        state1UIElement = stateUI.GetComponent<StateTimelineUIElement>();
+    //     //Assign state.id as "State" plus the digits present in state1.id and state2.id
+    //     string state1ID = state1.name;
+    //     string state2ID = state2.name;
+    //     string stateID = "State";
+    //     foreach (char c in state1ID)
+    //     {
+    //         if (char.IsDigit(c))
+    //         {
+    //             stateID += c;
+    //         }
+    //     }
+    //     foreach (char c in state2ID)
+    //     {
+    //         if (char.IsDigit(c))
+    //         {
+    //             stateID += c;
+    //         }
+    //     }
+    //     newState.name = stateID;
 
-        DebugLogger.Instance.Log("Merged states " + state1.name + " and " + state2.name + " to create state " + newState.name);
-        //DebugLogger.Instance.Log("Size of new state: " + state1UIElement.Length);
+    //     var stateUI = StateTimelineUIElement.CreateStateTimelineElement(currentActiveExample.stateTimelineElementPrefab, currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>(),
+    //                                                     state1UIElement.StartIndex, state1UIElement.Length + state2UIElement.Length, GetSizeOfMainRecordedData(), newState);
 
-        //Remove state1 and state2 from the state machine
-        StateMachine.DeleteState(state1.name);
-        StateMachine.DeleteState(state2.name);
-        //Remove state1 and state2 from the state timeline
-        Destroy(currentActiveExample.StatesDict[state1].gameObject);
-        Destroy(currentActiveExample.StatesDict[state2].gameObject);
-        currentActiveExample.StatesDict.Remove(state1);
-        currentActiveExample.StatesDict.Remove(state2);
+    //     newState.timelineElement = stateUI;
+    //     state1UIElement = stateUI.GetComponent<StateTimelineUIElement>();
 
-        //Insert the new state into the location of state1
+    //     DebugLogger.Instance.Log("Merged states " + state1.name + " and " + state2.name + " to create state " + newState.name);
+    //     //DebugLogger.Instance.Log("Size of new state: " + state1UIElement.Length);
 
-        //StatesInTimeline.Add(state, stateUI.GetComponent<StateTimelineUIElement>());
+    //     //Remove state1 and state2 from the state machine
+    //     StateMachine.DeleteState(state1.name);
+    //     StateMachine.DeleteState(state2.name);
+    //     //Remove state1 and state2 from the state timeline
+    //     Destroy(currentActiveExample.StatesDict[state1].gameObject);
+    //     Destroy(currentActiveExample.StatesDict[state2].gameObject);
+    //     currentActiveExample.StatesDict.Remove(state1);
+    //     currentActiveExample.StatesDict.Remove(state2);
 
-        //Iterate through the StatesInTimeline dictionary keys and change the key to be "State" + index of the key
-        /*Dictionary<State, StateTimelineUIElement> newStatesInTimeline = new Dictionary<State, StateTimelineUIElement>();
-        foreach (var stateInTimeline in StatesInTimeline)
-        {
-            State newState = new State();
-            newState.id = "State" + newStatesInTimeline.Count;
-            newStatesInTimeline.Add(newState, stateInTimeline.Value);
-        }
-        StatesInTimeline = newStatesInTimeline;*/
+    //     //Insert the new state into the location of state1
 
-        //state.id = "State" + StatesInTimeline.Count;
-        currentActiveExample.StatesDict.Add(newState, stateUI.GetComponent<StateTimelineUIElement>());
-        StateMachine.AddState(newState.name, newState);
+    //     //StatesInTimeline.Add(state, stateUI.GetComponent<StateTimelineUIElement>());
 
-        //StateMachine.SetInitialState(currentActiveExample.StatesDict.First().Key.id);
-        AddActionsToAllStates();
-        CombineExamples();
-        StateMachine.SetInitialState(currentActiveExample.StatesDict.First().Key.name);
+    //     //Iterate through the StatesInTimeline dictionary keys and change the key to be "State" + index of the key
+    //     /*Dictionary<State, StateTimelineUIElement> newStatesInTimeline = new Dictionary<State, StateTimelineUIElement>();
+    //     foreach (var stateInTimeline in StatesInTimeline)
+    //     {
+    //         State newState = new State();
+    //         newState.id = "State" + newStatesInTimeline.Count;
+    //         newStatesInTimeline.Add(newState, stateInTimeline.Value);
+    //     }
+    //     StatesInTimeline = newStatesInTimeline;*/
 
-        return newState;
+    //     //state.id = "State" + StatesInTimeline.Count;
+    //     currentActiveExample.StatesDict.Add(newState, stateUI.GetComponent<StateTimelineUIElement>());
+    //     StateMachine.AddState(newState.name, newState);
+
+    //     //StateMachine.SetInitialState(currentActiveExample.StatesDict.First().Key.id);
+    //     AddActionsToAllStates();
+    //     CombineExamples();
+    //     StateMachine.SetInitialState(currentActiveExample.StatesDict.First().Key.name);
+
+    //     return newState;
     }
 
 
     public void ResetExampleStateMachine()
     {
-        currentActiveExample.StatesDict.Clear();
+        // currentActiveExample.StatesDict.Clear();
 
         //Delete all existing states
         CustomStateMachine.Instance.DeleteAllStates();
@@ -1346,6 +1277,7 @@ public class Recorder : MonoBehaviour
         {
             Destroy(currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
         }
+        currentActiveExample.StatePlaceholders.Clear();
     }
 
 
@@ -1357,68 +1289,56 @@ public class Recorder : MonoBehaviour
         //Find the id of the first state in the state machine
         
         //CustomStateMachine.Instance.SetInitialState("State 0");
-        CustomStateMachine.Instance.SetInitialState(currentActiveExample.StatesDict.First().Key.name);
+        // CustomStateMachine.Instance.SetInitialState(currentActiveExample.StatesDict.First().Key.name);
     }
 
 
-    public void PrintDetailsOfStateMachine()
+    public void PrintDetailsOfStateMachine(List<State> states)
     {
         DebugLogger.Instance.ClearVRDebugText();
 
         CustomStateMachine.Instance.PrintDetailsOfStateMachine(VRConsoleEnabled : true);
 
-        /*
         DebugLogger.Instance.Log("Printing details of state machine");
 
-        foreach(var example in examples)
-        {
-            DebugLogger.Instance.Log("Example " + example.exampleId);
-            foreach (var state in example.StatesDict.Keys)
-            {
-                state.PrintDetailsOfState(VRConsoleEnabled: true);
-            }
-        }
-        /*foreach (var state in currentActiveExample.StatesDict.Keys)
+        // foreach(var example in examples)
+        // {
+        //     DebugLogger.Instance.Log("Example " + example.exampleId);
+        //     foreach (var state in states)
+        //     {
+        //         state.PrintDetailsOfState(VRConsoleEnabled: true);
+        //     }
+        // }
+        foreach (var state in states)
         {
             state.PrintDetailsOfState(VRConsoleEnabled: true);
-        }*/
+        }
     }
 
     public void MergeToLeftState(StateTimelineUIElement selectedStateUIElement)
     {
-        var selectedState = currentActiveExample.StatesDict.FirstOrDefault(x => x.Value == selectedStateUIElement).Key;
-        //Find the state to the left of the selected state
-        if (currentActiveExample.StatesDict.Keys.ToList().IndexOf(selectedState) > 0)
-        {
-            var precedingState = currentActiveExample.StatesDict.ElementAt(currentActiveExample.StatesDict.Keys.ToList().IndexOf(selectedState) - 1).Key;
-            var precedingStateUIElement = currentActiveExample.StatesDict.ElementAt(currentActiveExample.StatesDict.Keys.ToList().IndexOf(selectedState) - 1).Value;
-            DebugLogger.Instance.Log("Merging state " + selectedState.name + " with state " + precedingState.name);
-            MergeStates(precedingState, selectedState);
-            //precedingStateUIElement.MergeWithStateUIElement(selectedStateUIElement);
-        }
-        else
-        {
-            DebugLogger.Instance.Log("Cannot merge state " + selectedState.name + " with state to the left because it is the first state");
-        }
+        var previousIndex = currentActiveExample.StatePlaceholders.IndexOf(selectedStateUIElement) - 1;
 
-        //var precedingKey = StatesInTimeline.ElementAt(StatesInTimeline.Keys.ToList().IndexOf(selectedState) - 1);
+        if (previousIndex > 0 && previousIndex < currentActiveExample.StatePlaceholders.Count) {
+            var previousStateUIElement = currentActiveExample.StatePlaceholders[previousIndex];
+            DebugLogger.Instance.Log("Merging state " + selectedStateUIElement.name + " with state " + previousStateUIElement.name);
+            previousStateUIElement.MergeWithStateUIElement(selectedStateUIElement);
+        } else {
+            DebugLogger.Instance.Log("Cannot merge state " + selectedStateUIElement.name + " with state to the left because it is the first state");
+        }
     }
-
+ 
     public void MergeToRightState(StateTimelineUIElement selectedStateUIElement)
     {
-        var selectedState = currentActiveExample.StatesDict.FirstOrDefault(x => x.Value == selectedStateUIElement).Key;
-        //Find the state to the right of the selected state
-        if (currentActiveExample.StatesDict.Keys.ToList().IndexOf(selectedState) < currentActiveExample.StatesDict.Count - 1)
-        {
-            var succeedingState = currentActiveExample.StatesDict.ElementAt(currentActiveExample.StatesDict.Keys.ToList().IndexOf(selectedState) + 1).Key;
-            var succeedingStateUIElement = currentActiveExample.StatesDict.ElementAt(currentActiveExample.StatesDict.Keys.ToList().IndexOf(selectedState) + 1).Value;
-            DebugLogger.Instance.Log("Merging state " + selectedState.name + " with state " + succeedingState.name);
-            MergeStates(selectedState, succeedingState);
-            //selectedStateUIElement.MergeWithStateUIElement(succeedingStateUIElement);
-        }
-        else
-        {
-            DebugLogger.Instance.Log("Cannot merge state " + selectedState.name + " with state to the right because it is the last state");
+        var nextIndex = currentActiveExample.StatePlaceholders.IndexOf(selectedStateUIElement) + 1;
+
+        if (nextIndex > 0 && nextIndex < currentActiveExample.StatePlaceholders.Count) {
+            var nextStateUIElement = currentActiveExample.StatePlaceholders[nextIndex];
+            DebugLogger.Instance.Log("Merging state " + selectedStateUIElement.name + " with state " + nextStateUIElement.name);
+            selectedStateUIElement.MergeWithStateUIElement(nextStateUIElement);
+
+        } else {
+            DebugLogger.Instance.Log("Cannot merge state " + selectedStateUIElement.name + " with state to the left because it is the first state");
         }
     }
 
@@ -1432,8 +1352,8 @@ public class Recorder : MonoBehaviour
             ++frameCount;
 
             head.Record(frameCount);
-            leftHand.Record(frameCount, "lefthand");
-            rightHand.Record(frameCount, "righthand");
+            leftHand.Record(frameCount, currentActiveExample.leftHandFrames);
+            rightHand.Record(frameCount, currentActiveExample.rightHandFrames);
 
         }
         else if (Manager.Instance.currAppState == Manager.AppState.PLAYBACK || Manager.Instance.currAppState == Manager.AppState.RECORDING_DURING_PLAYBACK)
