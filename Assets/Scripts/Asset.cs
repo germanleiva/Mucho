@@ -74,7 +74,8 @@ public class Asset : MonoBehaviour
             //Increment the slider value by frame duration
             if( Recorder.Instance.playbackSlider.value < Recorder.Instance.playbackSlider.maxValue)
                 Recorder.Instance.playbackSlider.value += 1;
-            ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, actionStr: ACTION_ENUM.APPLY_FORCE, collisionStr: COLLISION_ENUM.NONE, propagateValueToSubsequentFrames: true);
+            ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, actionStr: ACTION_ENUM.APPLY_FORCE,
+                collisionStr: COLLISION_ENUM.NONE, propagateValueToSubsequentFrames: true);
         }
 
 
@@ -178,7 +179,7 @@ public class Asset : MonoBehaviour
         {
             DebugLogger.Instance.Log("InsertAssetRecordFrame() - Action delegate at frame number " + frameNumber + " is not null. Adding to the existing delegate.");
             item.ActionDelegate += currentAssetRecordedData[frameNumber].ActionDelegate; //Copy existing action delegate
-            item.ActionStr += "," + currentAssetRecordedData[frameNumber].ActionStr; //Copy existing action
+            item.ActionType += "," + currentAssetRecordedData[frameNumber].ActionType; //Copy existing action
         }*/
 
 
@@ -194,18 +195,18 @@ public class Asset : MonoBehaviour
         //item.color = currentObjColor;
         //item.showStatusForThisFrame = item.showStatusForThisFrame;
 
-        /*if(currentAssetRecordedData[frameNumber].CollisionStr != "None")
+        /*if(currentAssetRecordedData[frameNumber].CollisionType != "None")
         {
             DebugLogger.Instance.Log("InsertAssetRecordFrame() - Collision delegate at frame number " + frameNumber + " is not null. Adding to the existing delegate.");
             item.CollisionDelegate = currentAssetRecordedData[frameNumber].CollisionDelegate; //Copy existing collision delegate
-            item.CollisionStr = "," + currentAssetRecordedData[frameNumber].CollisionStr; //Copy existing collision
+            item.CollisionType = "," + currentAssetRecordedData[frameNumber].CollisionType; //Copy existing collision
         }*/
 
 
         currentAssetRecordedData[frameNumber] = item;
         //currentAssetRecordedData[frameNumber] = item;
 
-        if (propagateValueToSubsequentFrames) // Propagate the value to subsequent frames
+        if (false) // Propagate the value to subsequent frames
         {
             //DebugLogger.Instance.Log("InsertAssetRecordFrame() - Propagating value to subsequent frames, starting from index " + frameNumber + " to " + currentAssetRecordedData.Count);
             for (int i = frameNumber + 1; i < currentAssetRecordedData.Count; i++)
@@ -440,7 +441,7 @@ public class Asset : MonoBehaviour
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
         {
             currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandFrames[_frameStart].pinchPosition;
-            //currentAssetRecordedData[i].ActionStr = "Pin()";
+            //currentAssetRecordedData[i].ActionType = "Pin()";
         }
 
 
@@ -462,7 +463,7 @@ public class Asset : MonoBehaviour
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
         {
             currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandFrames[_frameStart].pinchPosition;
-            //currentAssetRecordedData[i].ActionStr = "Pin()";
+            //currentAssetRecordedData[i].ActionType = "Pin()";
         }
 
         //Pin(Recorder.Instance.rightHand.GetCurrentPosition());
@@ -483,7 +484,7 @@ public class Asset : MonoBehaviour
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
         {
             currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandFrames[_frameStart].focusSquarePosition;
-            //currentAssetRecordedData[i].ActionStr = "Pin()";
+            //currentAssetRecordedData[i].ActionType = "Pin()";
         }
 
         //Pin(Recorder.Instance.leftFocus.transform.position);
@@ -504,7 +505,7 @@ public class Asset : MonoBehaviour
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
         {
             currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandFrames[_frameStart].focusSquarePosition;
-            //currentAssetRecordedData[i].ActionStr = "Pin()";
+            //currentAssetRecordedData[i].ActionType = "Pin()";
         }
 
         //Pin(Recorder.Instance.rightFocus.transform.position);
@@ -525,7 +526,7 @@ public class Asset : MonoBehaviour
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
         {
             currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.headFrames[_frameStart].focusSquarePosition;
-            //currentAssetRecordedData[i].ActionStr = "Pin()";
+            //currentAssetRecordedData[i].ActionType = "Pin()";
         }
 
         //Pin(Recorder.Instance.gazeFocus.transform.position);
@@ -547,7 +548,7 @@ public class Asset : MonoBehaviour
         for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
         {
             currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.wallData[_frameStart].focusSquarePosition;
-            //currentAssetRecordedData[i].ActionStr = "Pin()";
+            //currentAssetRecordedData[i].ActionType = "Pin()";
         }
 
         //Pin(Recorder.Instance.wall.transform.position);
@@ -647,7 +648,7 @@ public class Asset : MonoBehaviour
             
             currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandFrames[i].pinchPosition; //Copy the position of the left hand at frame _frameStart
             currentAssetRecordedData[i].ActionStr = ACTION_ENUM.FOLLOW_LEFT_HAND;
-            // currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left hand)";
+            // currentAssetRecordedData[i].CollisionType = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left hand)";
             currentAssetRecordedData[i].CollisionStr = COLLISION_ENUM.COLLIDE;
 
         }
@@ -698,7 +699,7 @@ public class Asset : MonoBehaviour
             
             currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandFrames[i].pinchPosition; //Copy the position of the right hand at frame _frameStart
             currentAssetRecordedData[i].ActionStr = ACTION_ENUM.FOLLOW_RIGHT_HAND;
-            // currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right hand)";
+            // currentAssetRecordedData[i].CollisionType = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right hand)";
             currentAssetRecordedData[i].CollisionStr = COLLISION_ENUM.COLLIDE;
         }
 
@@ -753,7 +754,7 @@ public class Asset : MonoBehaviour
         {   
             currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandFrames[i].focusSquarePosition - startPosDiff;
             currentAssetRecordedData[i].ActionStr = ACTION_ENUM.FOLLOW_L_FOCUS;
-            // currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left focus)";
+            // currentAssetRecordedData[i].CollisionType = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left focus)";
             currentAssetRecordedData[i].CollisionStr = COLLISION_ENUM.COLLIDE;
         }
        
@@ -804,7 +805,7 @@ public class Asset : MonoBehaviour
         {   
             currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandFrames[i].focusSquarePosition - startPosDiff;
             currentAssetRecordedData[i].ActionStr = ACTION_ENUM.FOLLOW_R_FOCUS;
-            // currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right focus)";
+            // currentAssetRecordedData[i].CollisionType = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right focus)";
             currentAssetRecordedData[i].CollisionStr = COLLISION_ENUM.COLLIDE;
         }
 
@@ -853,7 +854,7 @@ public class Asset : MonoBehaviour
         {   
             currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.headFrames[i].focusSquarePosition - startPosDiff;
             currentAssetRecordedData[i].ActionStr = ACTION_ENUM.FOLLOW_G_FOCUS;
-            // currentAssetRecordedData[i].CollisionStr = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Gaze focus)";
+            // currentAssetRecordedData[i].CollisionType = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Gaze focus)";
             currentAssetRecordedData[i].CollisionStr = COLLISION_ENUM.COLLIDE;
         }
 

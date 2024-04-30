@@ -469,7 +469,7 @@ public class Recorder : MonoBehaviour
                     {
                         StartIndex = startIndex,
                         Length = i - startIndex,
-                        ActionStr = currentAction,
+                        ActionType = currentAction,
                     });
 
                     startIndex = i;
@@ -482,7 +482,7 @@ public class Recorder : MonoBehaviour
                 {
                     StartIndex = startIndex,
                     Length = i - startIndex,
-                    ActionStr = currentAction
+                    ActionType = currentAction
                 });
 
                 startIndex = -1;
@@ -496,7 +496,7 @@ public class Recorder : MonoBehaviour
             {
                 StartIndex = startIndex,
                 Length = actions.Count - startIndex,
-                ActionStr = currentAction,
+                ActionType = currentAction,
             });
         }
 
@@ -528,7 +528,7 @@ public class Recorder : MonoBehaviour
                     {
                         StartIndex = startIndex,
                         Length = i - startIndex,
-                        CollisionStr = currentAction,
+                        CollisionType = currentAction,
                     });
 
                     startIndex = i;
@@ -541,7 +541,7 @@ public class Recorder : MonoBehaviour
                 {
                     StartIndex = startIndex,
                     Length = i - startIndex,
-                    CollisionStr = currentAction
+                    CollisionType = currentAction
                 });
 
                 startIndex = -1;
@@ -555,7 +555,7 @@ public class Recorder : MonoBehaviour
             {
                 StartIndex = startIndex,
                 Length = actions.Count - startIndex,
-                CollisionStr = currentAction,
+                CollisionType = currentAction,
             });
         }
 
@@ -582,7 +582,7 @@ public class Recorder : MonoBehaviour
         List<AssetActionSequence> sequences = GetSequences(actionStrList);
         foreach (AssetActionSequence sequence in sequences)
         {
-            DebugLogger.Instance.Log("Sequence name: " + sequence.ActionStr + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
+            DebugLogger.Instance.Log("Sequence name: " + sequence.ActionType + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
             //DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
             if (recordedData[sequence.StartIndex].ActionDelegate != null)
             {
@@ -590,22 +590,22 @@ public class Recorder : MonoBehaviour
                 DebugLogger.Instance.Log("Action delegate found: " + recordedData[sequence.StartIndex].ActionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordedData[sequence.StartIndex].ActionDelegate.Method.GetParameters().Select(x => x.Name)));
             }
 
-            if (sequence.ActionStr == ACTION_ENUM.HIDE)
+            if (sequence.ActionType == ACTION_ENUM.HIDE)
             {
                 GameObject hideElement = Instantiate(currentActiveExample.hideTimelinePanelPrefab, timelinePanel);
                 hideElement.SetActive(true);
                 hideElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(TimelineUIElement.MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex, GetSizeOfMainRecordedData()), hideElement.GetComponent<RectTransform>().anchoredPosition.y);
             }
-            else if (sequence.ActionStr == ACTION_ENUM.SHOW)
+            else if (sequence.ActionType == ACTION_ENUM.SHOW)
             {
                 GameObject showElement = Instantiate(currentActiveExample.showTimelinePanelPrefab, timelinePanel);
                 showElement.SetActive(true);
                 showElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(TimelineUIElement.MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex, GetSizeOfMainRecordedData()), showElement.GetComponent<RectTransform>().anchoredPosition.y);
             }
             
-            if(followActions.Contains(sequence.ActionStr) || sequence.ActionStr == ACTION_ENUM.APPLY_FORCE || sequence.ActionStr == ACTION_ENUM.CHANGE_COLOR || sequence.ActionStr == ACTION_ENUM.PIN) //Other types of events - physics, attach etc
+            if(followActions.Contains(sequence.ActionType) || sequence.ActionType == ACTION_ENUM.APPLY_FORCE || sequence.ActionType == ACTION_ENUM.CHANGE_COLOR || sequence.ActionType == ACTION_ENUM.PIN) //Other types of events - physics, attach etc
             {                
-                TimelineUIElement.CreateTimelineElement(currentActiveExample.assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ActionStr.ToString());
+                TimelineUIElement.CreateTimelineElement(currentActiveExample.assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ToString());
             }
         }
         return sequences;
@@ -631,10 +631,10 @@ public class Recorder : MonoBehaviour
                     DebugLogger.Instance.Log("Collided object: " + recordedData[sequence.StartIndex].CollidedObject.name);
                     sequence.CollidingObject1 = recordable.gameObject;
                     sequence.CollidingObject2 = recordedData[sequence.StartIndex].CollidedObject;
-                    sequence.CollisionStr = recordedData[sequence.StartIndex].CollisionStr;
+                    sequence.CollisionType = recordedData[sequence.StartIndex].CollisionStr;
                 }
 
-                TimelineUIElement.CreateTimelineElement(currentActiveExample.collisionTimelineElementPrefab, collisionTimelinePanelTransform, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.CollisionStr.ToString());
+                TimelineUIElement.CreateTimelineElement(currentActiveExample.collisionTimelineElementPrefab, collisionTimelinePanelTransform, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ToString());
             }
             return sequences;
         }
@@ -877,21 +877,24 @@ public class Recorder : MonoBehaviour
             {
                 foreach (var assetSequence in assetSequences)
                 {
-                    int distanceToStateStart = assetSequence.StartIndex - currentStatePlaceholder.StartIndex;
-                    int distanceToStateEnd = currentStatePlaceholder.Length - assetSequence.StartIndex - 1;
-                    if (distanceToStateStart >= 0 && distanceToStateEnd >= 0)
+                    if (assetSequence.ActionType == ACTION_ENUM.RESET_PHYSICS) break;
+                    if (assetSequence.StartIndex >= currentStatePlaceholder.StartIndex && 
+                        assetSequence.StartIndex < currentStatePlaceholder.StartIndex+currentStatePlaceholder.Length)
                     {
+                        int distanceToStateStart = Math.Abs(assetSequence.StartIndex - currentStatePlaceholder.StartIndex);
+                        int distanceToStateEnd = Math.Abs(currentStatePlaceholder.StartIndex + currentStatePlaceholder.Length - assetSequence.StartIndex - 1);
+
                         if(distanceToStateStart < distanceToStateEnd)
                         {
-                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionStr + " for state " + currentState.name + " in OnEnterActions");
-                            currentState.OnEnterActions = () => assetSequence.ActionDelegate();
-                            currentState.OnEnterActionsStr = assetSequence.ActionStr.ToString();
+                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionType + " for state " + currentState.name + " in OnEnterActions");
+                            currentState.OnEnterActions += () => assetSequence.ActionDelegate();
+                            currentState.OnEnterActionsStr += assetSequence.ActionType.ToString()+ " ";
                         }
                         else
                         {
-                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionStr + " for state " + currentState.name + " in OnExitActions");
-                            currentState.OnExitActions = () => assetSequence.ActionDelegate();
-                            currentState.OnExitActionsStr = assetSequence.ActionStr.ToString();
+                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionType + " for state " + currentState.name + " in OnExitActions");
+                            currentState.OnExitActions += () => assetSequence.ActionDelegate();
+                            currentState.OnExitActionsStr += assetSequence.ActionType.ToString() + " ";
                         }
                     }
                 }
@@ -941,15 +944,15 @@ public class Recorder : MonoBehaviour
     //             {
     //                 if(distanceToStateStart < distanceToStateEnd)
     //                 {
-    //                     DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionStr + " for state " + stateInTimeline.name + " in OnEnterActions");
+    //                     DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionType + " for state " + stateInTimeline.name + " in OnEnterActions");
     //                     stateInTimeline.OnEnterActions = () => assetSequence.ActionDelegate();
-    //                     stateInTimeline.OnEnterActionsStr = assetSequence.ActionStr.ToString();
+    //                     stateInTimeline.OnEnterActionsStr = assetSequence.ActionType.ToString();
     //                 }
     //                 else
     //                 {
-    //                     DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionStr + " for state " + stateInTimeline.name + " in OnExitActions");
+    //                     DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionType + " for state " + stateInTimeline.name + " in OnExitActions");
     //                     stateInTimeline.OnExitActions = () => assetSequence.ActionDelegate();
-    //                     stateInTimeline.OnExitActionsStr = assetSequence.ActionStr.ToString();
+    //                     stateInTimeline.OnExitActionsStr = assetSequence.ActionType.ToString();
     //                 }
     //             }
     //         }
@@ -1099,7 +1102,7 @@ public class Recorder : MonoBehaviour
                     startIndex,
                     length,
                     GetSizeOfMainRecordedData(),
-                    "State " + lastIndex);
+                    "State " + currentActiveExample.StatePlaceholders.Count);
                 this.currentActiveExample.StatePlaceholders.Add(stateTimelineElement.GetComponent<StateTimelineUIElement>());
             }
             lastIndex = currentEvent.Index;
@@ -1114,7 +1117,7 @@ public class Recorder : MonoBehaviour
                 startIndex,
                 length,
                 GetSizeOfMainRecordedData(),
-                "State " + lastIndex);
+                "State " + currentActiveExample.StatePlaceholders.Count);
             this.currentActiveExample.StatePlaceholders.Add(stateTimelineElement.GetComponent<StateTimelineUIElement>());
         }
     }        

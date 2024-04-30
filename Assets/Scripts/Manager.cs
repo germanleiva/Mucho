@@ -414,13 +414,12 @@ public abstract class Sequence {
 
     abstract public Boolean CanTriggerAt(int stateStartIndex);
     abstract public Func<Frame,bool> AddConditionToFunction(Func<Frame,bool> conditionFunction);
-
 }
 
 public enum COLLISION_ENUM { NONE, COLLIDE, UNDEFINED};
 
 public class CollisionSequence : Sequence {
-    public COLLISION_ENUM CollisionStr { get; set; } 
+    public COLLISION_ENUM CollisionType { get; set; } 
 
     public GameObject CollidingObject1 { get; set; }
     public GameObject CollidingObject2 { get; set; }
@@ -436,7 +435,7 @@ public class CollisionSequence : Sequence {
     }
 
     public override string ToString() {
-        return $"isColliding({CollidingObject1},{CollidingObject2})";
+        return $"{CollidingObject1.tag},{CollidingObject2.tag}";
     }
 }
 public enum ACTION_ENUM { 
@@ -474,7 +473,7 @@ public enum ACTION_ENUM {
 public class AssetActionSequence : Sequence
 {
 
-    public ACTION_ENUM ActionStr { get; set; } //None, Physics, Follow, Show, Hide
+    public ACTION_ENUM ActionType { get; set; } //None, Physics, Follow, Show, Hide
 
     public Action ActionDelegate { get; set; }
 
@@ -486,6 +485,10 @@ public class AssetActionSequence : Sequence
     public override bool CanTriggerAt(int stateStartIndex)
     {
         throw new NotImplementedException();
+    }
+    
+    public override string ToString() {
+        return $"{ActionType}";
     }
 
 

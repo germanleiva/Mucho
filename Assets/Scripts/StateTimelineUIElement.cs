@@ -39,6 +39,8 @@ public class StateTimelineUIElement : TimelineUIElement
     public void MergeWithStateUIElement(StateTimelineUIElement stateToTheRight)
     {
         var currentExample = Recorder.Instance.currentActiveExample;
+        var insertionIndex = currentExample.StatePlaceholders.IndexOf(this);
+
 
         var stateTimelineElement = StateTimelineUIElement.CreateStateTimelineElement(
                     currentExample.stateTimelineElementPrefab,
@@ -46,9 +48,10 @@ public class StateTimelineUIElement : TimelineUIElement
                     StartIndex,
                     Length + stateToTheRight.Length,
                     Recorder.Instance.GetSizeOfMainRecordedData(),
-                    "Merged");
+                    "State " + (insertionIndex +1));
+        
+        //TODO modify consecutive names of next states
 
-        var insertionIndex = currentExample.StatePlaceholders.IndexOf(this);
         currentExample.StatePlaceholders.Insert(insertionIndex, stateTimelineElement.GetComponent<StateTimelineUIElement>());
         currentExample.StatePlaceholders.Remove(stateToTheRight);
         currentExample.StatePlaceholders.Remove(this);
