@@ -211,9 +211,9 @@ public class AssetManager : MonoBehaviour
 
     public void ResetMeshRendererForAllAssets()
     {
-        foreach (Asset recordable in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
+        foreach (Asset asset in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
         {
-            recordable.GetComponent<MeshRenderer>().enabled = true;
+            asset.GetComponent<MeshRenderer>().enabled = true;
         }
     }
 
@@ -227,9 +227,9 @@ public class AssetManager : MonoBehaviour
 
     public void ResetPhysicsForAllAssets()
     {
-        foreach (Asset recordable in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
+        foreach (Asset asset in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
         {
-            recordable.ResetPhysicsPropertiesInLiveMode();
+            asset.ResetPhysicsPropertiesInLiveMode();
         }
     }
 

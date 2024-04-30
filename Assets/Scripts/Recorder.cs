@@ -562,7 +562,7 @@ public class Recorder : MonoBehaviour
         return sequences;
     }
 
-    public List<AssetActionSequence> GenerateAssetActionSequences(RectTransform timelinePanel, Asset recordable)
+    public List<AssetActionSequence> GenerateAssetActionSequences(RectTransform timelinePanel, Asset asset)
     {
 
         List<ACTION_ENUM> followActions = new()
@@ -574,20 +574,20 @@ public class Recorder : MonoBehaviour
                 ACTION_ENUM.FOLLOW_G_FOCUS
         };
             
-        DebugLogger.Instance.Log("Generating asset action sequences for " + recordable.name);
+        DebugLogger.Instance.Log("Generating asset action sequences for " + asset.name);
 
-        var recordedData = currentActiveExample.assetFramesDict[recordable]; 
+        var recordedAssetFrames = currentActiveExample.assetFramesDict[asset]; 
 
-        List<ACTION_ENUM> actionStrList = recordedData.Select(x => x.ActionStr).ToList();
-        List<AssetActionSequence> sequences = GetSequences(actionStrList);
+        List<ACTION_ENUM> actionTypes = recordedAssetFrames.Select(x => x.ActionType).ToList();
+        List<AssetActionSequence> sequences = GetSequences(actionTypes);
         foreach (AssetActionSequence sequence in sequences)
         {
             DebugLogger.Instance.Log("Sequence name: " + sequence.ActionType + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
             //DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
-            if (recordedData[sequence.StartIndex].ActionDelegate != null)
+            if (recordedAssetFrames[sequence.StartIndex].ActionDelegate != null)
             {
-                sequence.ActionDelegate = recordedData[sequence.StartIndex].ActionDelegate;
-                DebugLogger.Instance.Log("Action delegate found: " + recordedData[sequence.StartIndex].ActionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordedData[sequence.StartIndex].ActionDelegate.Method.GetParameters().Select(x => x.Name)));
+                sequence.ActionDelegate = recordedAssetFrames[sequence.StartIndex].ActionDelegate;
+                DebugLogger.Instance.Log("Action delegate found: " + recordedAssetFrames[sequence.StartIndex].ActionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordedAssetFrames[sequence.StartIndex].ActionDelegate.Method.GetParameters().Select(x => x.Name)));
             }
 
             if (sequence.ActionType == ACTION_ENUM.HIDE)
@@ -611,27 +611,27 @@ public class Recorder : MonoBehaviour
         return sequences;
     }
 
-    public List<CollisionSequence> GenerateCollisionSequences(RectTransform collisionTimelinePanelTransform, Asset recordable) //Strong assumption that all sources of action come from collision
+    public List<CollisionSequence> GenerateCollisionSequences(RectTransform collisionTimelinePanelTransform, Asset asset) //Strong assumption that all sources of action come from collision
     {
-        DebugLogger.Instance.Log("Generating collision sequences for " + recordable.name);
-        var recordedData = currentActiveExample.assetFramesDict[recordable]; 
+        DebugLogger.Instance.Log("Generating collision sequences for " + asset.name);
+        var recordedAssetFrames = currentActiveExample.assetFramesDict[asset]; 
         try
         {
-            List<COLLISION_ENUM> collisionStrList = recordedData.Select(x => x.CollisionStr).ToList();
-            List<CollisionSequence> sequences = GetSequences(collisionStrList);
+            List<COLLISION_ENUM> collisionTypes = recordedAssetFrames.Select(x => x.CollisionType).ToList();
+            List<CollisionSequence> sequences = GetSequences(collisionTypes);
             foreach (CollisionSequence sequence in sequences)
             {
                 //DebugLogger.Instance.Log("Collision sequence name: " + sequence.Action + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
                 //DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex + sequence.Length));
 
-                if (recordedData[sequence.StartIndex].CollisionDelegate != null)
-                    DebugLogger.Instance.Log("Collision delegate found: " + recordedData[sequence.StartIndex].CollisionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordedData[sequence.StartIndex].CollisionDelegate.Method.GetParameters().Select(x => x.Name)));
-                if (recordedData[sequence.StartIndex].CollidedObject != null)
+                if (recordedAssetFrames[sequence.StartIndex].CollisionDelegate != null)
+                    DebugLogger.Instance.Log("Collision delegate found: " + recordedAssetFrames[sequence.StartIndex].CollisionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordedAssetFrames[sequence.StartIndex].CollisionDelegate.Method.GetParameters().Select(x => x.Name)));
+                if (recordedAssetFrames[sequence.StartIndex].CollidedObject != null)
                 {
-                    DebugLogger.Instance.Log("Collided object: " + recordedData[sequence.StartIndex].CollidedObject.name);
-                    sequence.CollidingObject1 = recordable.gameObject;
-                    sequence.CollidingObject2 = recordedData[sequence.StartIndex].CollidedObject;
-                    sequence.CollisionType = recordedData[sequence.StartIndex].CollisionStr;
+                    DebugLogger.Instance.Log("Collided object: " + recordedAssetFrames[sequence.StartIndex].CollidedObject.name);
+                    sequence.CollidingObject1 = asset.gameObject;
+                    sequence.CollidingObject2 = recordedAssetFrames[sequence.StartIndex].CollidedObject;
+                    sequence.CollisionType = recordedAssetFrames[sequence.StartIndex].CollisionType;
                 }
 
                 TimelineUIElement.CreateTimelineElement(currentActiveExample.collisionTimelineElementPrefab, collisionTimelinePanelTransform, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ToString());
@@ -877,7 +877,6 @@ public class Recorder : MonoBehaviour
             {
                 foreach (var assetSequence in assetSequences)
                 {
-                    if (assetSequence.ActionType == ACTION_ENUM.RESET_PHYSICS) break;
                     if (assetSequence.StartIndex >= currentStatePlaceholder.StartIndex && 
                         assetSequence.StartIndex < currentStatePlaceholder.StartIndex+currentStatePlaceholder.Length)
                     {

@@ -76,3 +76,4 @@ crashlytics-build.properties
 
 # Ignoring ProjectSettings of Unity
 ProjectSettings/ProjectSettings.asset
+ProjectSettings/*

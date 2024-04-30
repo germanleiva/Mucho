@@ -465,8 +465,6 @@ public enum ACTION_ENUM {
     UNFOLLOW,
     [Description("ResetPhysics()")]
     RESET_PHYSICS,
-    PHYSICS, 
-    FOLLOW,
     UNDEFINED,
     };
 

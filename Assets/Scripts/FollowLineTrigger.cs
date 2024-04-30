@@ -43,34 +43,33 @@ public class FollowLineTrigger : MonoBehaviour
         {
             //DebugLogger.Instance.Log("FollowLineTrigger: FollowLine found in " + collision.gameObject.transform.parent.parent.name);
             //followLine.DeactivateFollowLine();
-            renderer.material = highlightMaterial;  
-            if(followTargetType == FollowTargetType.LEFTHAND)
-            {                
-                followLine.FollowLineAction = () => { followLine.asset.GetComponent<Asset>().FollowLeftHand(); renderer.material = defaultMaterial;};             
-                //followLine.asset.GetComponent<Recordable>().AttachToLeftHand();
-            }
-            else if(followTargetType == FollowTargetType.RIGHTHAND)
-            {                
-                followLine.FollowLineAction = () => { followLine.asset.GetComponent<Asset>().FollowRightHand(); renderer.material = defaultMaterial;};
-                //followLine.asset.GetComponent<Recordable>().AttachToRightHand();
-            }
-            else if(followTargetType == FollowTargetType.LEFTFOCUS)
-            {
-                followLine.FollowLineAction = () => { followLine.asset.GetComponent<Asset>().AttachToLeftHandFocusSquare(); renderer.material = defaultMaterial;};
-            }
-            else if(followTargetType == FollowTargetType.RIGHTFOCUS)
-            {
-               followLine.FollowLineAction = () => { followLine.asset.GetComponent<Asset>().AttachToRightHandFocusSquare(); renderer.material = defaultMaterial;};
-            }
-            else if(followTargetType == FollowTargetType.GAZEFOCUS)
-            {
-                followLine.FollowLineAction = () => { followLine.asset.GetComponent<Asset>().AttachToGazeFocusSquare(); renderer.material = defaultMaterial;};
-            }
-            else
-            {
-                DebugLogger.Instance.Log("FollowLineTrigger: No follow target type specified");
+            renderer.material = highlightMaterial;
+            var asset = followLine.asset.GetComponent<Asset>();
+            
+            Action anAction = asset.FollowLeftHand;
+
+            switch (followTargetType) {
+                case FollowTargetType.LEFTHAND:
+                    anAction = asset.FollowLeftHand;
+                    break;
+                case FollowTargetType.RIGHTHAND:
+                    anAction = asset.FollowRightHand;
+                    break;
+                case FollowTargetType.LEFTFOCUS:
+                    anAction = asset.FollowLeftHandFocusSquare;
+                    break;
+                case FollowTargetType.RIGHTFOCUS:
+                    anAction = asset.FollowRightHandFocusSquare;
+                    break;
+                case FollowTargetType.GAZEFOCUS:
+                    anAction = asset.FollowGazeFocusSquare;
+                    break;
+                default:
+                    DebugLogger.Instance.Log("FollowLineTrigger: No follow target type specified");
+                    return;
             }
             
+            followLine.FollowLineAction = () => { anAction(); renderer.material = defaultMaterial;};
         }
     }
 
