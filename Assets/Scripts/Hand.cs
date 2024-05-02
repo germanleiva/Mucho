@@ -134,7 +134,10 @@ public class Hand : MonoBehaviour
             new FingerJoint(ringJoint1.transform.localPosition, ringJoint1.transform.localRotation), new FingerJoint(ringJoint2.transform.localPosition, ringJoint2.transform.localRotation), new FingerJoint(ringJoint3.transform.localPosition, ringJoint3.transform.localRotation),
             new FingerJoint(pinkyJoint0.transform.localPosition, pinkyJoint0.transform.localRotation), new FingerJoint(pinkyJoint1.transform.localPosition, pinkyJoint1.transform.localRotation), new FingerJoint(pinkyJoint2.transform.localPosition, pinkyJoint2.transform.localRotation), new FingerJoint(pinkyJoint3.transform.localPosition, pinkyJoint3.transform.localRotation),
             new FingerJoint(thumbJoint0.transform.localPosition, thumbJoint0.transform.localRotation), new FingerJoint(thumbJoint1.transform.localPosition, thumbJoint1.transform.localRotation), new FingerJoint(thumbJoint2.transform.localPosition, thumbJoint2.transform.localRotation), new FingerJoint(thumbJoint3.transform.localPosition, thumbJoint3.transform.localRotation),            
-            focusSquare.transform.position, focusSquare.transform.rotation, currentGesture, pinchObj.transform.position, frameNum));
+            focusSquare.transform.position, focusSquare.transform.rotation, 
+            currentGesture, 
+            pinchObj.transform.position,
+            frameNum));
     
     }
 
@@ -146,12 +149,12 @@ public class Hand : MonoBehaviour
 
 
     //For hands
-    public void SetGesture(string gestureStr)
-    {
-        DebugLogger.Instance.Log("Gesture: " + gestureStr);
-        currentGesture = (InputManager.Gesture)System.Enum.Parse(typeof(InputManager.Gesture), gestureStr);
-        gestureText.text = gestureStr;
-    }
+    // public void SetGesture(string gestureStr)
+    // {
+    //     DebugLogger.Instance.Log("Gesture: " + gestureStr);
+    //     currentGesture = (InputManager.Gesture)System.Enum.Parse(typeof(InputManager.Gesture), gestureStr);
+    //     gestureText.text = gestureStr;
+    // }
 
     //For hands
     public void SetGestureText(string gestureStr)
@@ -199,12 +202,16 @@ public class HandFrame
 
 
     //Hands
-    public HandFrame(Vector3 _position, Quaternion _rotation, FingerJoint _indexJoint0, FingerJoint _indexJoint1, FingerJoint _indexJoint2, 
+    public HandFrame(Vector3 _position, Quaternion _rotation, 
+                    FingerJoint _indexJoint0, FingerJoint _indexJoint1, FingerJoint _indexJoint2, 
                     FingerJoint _middleJoint0, FingerJoint _middleJoint1, FingerJoint _middleJoint2, 
                     FingerJoint _ringJoint0, FingerJoint _ringJoint1, FingerJoint _ringJoint2, 
                     FingerJoint _pinkyJoint0, FingerJoint _pinkyJoint1, FingerJoint _pinkyJoint2, FingerJoint _pinkyJoint3, 
                     FingerJoint _thumbJoint0, FingerJoint _thumbJoint1, FingerJoint _thumbJoint2, FingerJoint _thumbJoint3, 
-                    Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, InputManager.Gesture  _gesture, Vector3 _pinchPosition, int _frameNumber)
+                    Vector3 _focusSquarePosition, Quaternion _focusSquareRotation, 
+                    InputManager.Gesture _gesture, 
+                    Vector3 _pinchPosition,
+                    int _frameNumber)
     {
         rootPosition = _position;
         rootRotation = _rotation;

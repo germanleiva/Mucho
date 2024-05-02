@@ -195,7 +195,7 @@ MonoBehaviour:
   grabCollider: {fileID: 2427954}
   assetMenu: {fileID: 1503750824}
   forceArrows: []
-  isThisObjThrown: 0
+  isThisAssetThrown: 0
   initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
   initRotBeforePhysicsSimulation: {x: 0, y: 0, z: 0, w: 0}
   followLineObj: {fileID: 0}
@@ -12728,6 +12728,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 207408426}
   m_CullTransparentMesh: 1
+--- !u!1 &208646567
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 208646568}
+  - component: {fileID: 208646569}
+  m_Layer: 0
+  m_Name: GestureBehaviourLeftGrab
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &208646568
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 208646567}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1561943866}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &208646569
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 208646567}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c27c758320a045abab3ed0e4ca82f68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gestureType: 2
 --- !u!1 &209527992
 GameObject:
   m_ObjectHideFlags: 0
@@ -13999,6 +14044,51 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 226459992}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &231306266
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 231306267}
+  - component: {fileID: 231306268}
+  m_Layer: 0
+  m_Name: GestureBehaviourRightGrab
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &231306267
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 231306266}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1561943866}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &231306268
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 231306266}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c27c758320a045abab3ed0e4ca82f68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gestureType: 6
 --- !u!1 &233712302
 GameObject:
   m_ObjectHideFlags: 0
@@ -21152,6 +21242,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 381703212}
   m_CullTransparentMesh: 1
+--- !u!1 &382499479
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 382499480}
+  - component: {fileID: 382499481}
+  m_Layer: 0
+  m_Name: GestureBehaviourRightOpen
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &382499480
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 382499479}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1561943866}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &382499481
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 382499479}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c27c758320a045abab3ed0e4ca82f68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gestureType: 7
 --- !u!1 &384089480
 GameObject:
   m_ObjectHideFlags: 0
@@ -30763,7 +30898,7 @@ MonoBehaviour:
   grabCollider: {fileID: 4135284671933341618}
   assetMenu: {fileID: 1159954569}
   forceArrows: []
-  isThisObjThrown: 0
+  isThisAssetThrown: 0
   initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
   initRotBeforePhysicsSimulation: {x: 0, y: 0, z: 0, w: 0}
   followLineObj: {fileID: 1723312799}
@@ -32578,7 +32713,7 @@ MonoBehaviour:
   grabCollider: {fileID: 595010859}
   assetMenu: {fileID: 95445047}
   forceArrows: []
-  isThisObjThrown: 0
+  isThisAssetThrown: 0
   initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
   initRotBeforePhysicsSimulation: {x: 0, y: 0, z: 0, w: 0}
   followLineObj: {fileID: 0}
@@ -39277,10 +39412,10 @@ MonoBehaviour:
       - m_Target: {fileID: 916638715}
         m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
         m_MethodName: SetRightHandGesture
-        m_Mode: 5
+        m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgument: {fileID: 382499481}
+          m_ObjectArgumentAssemblyTypeName: GestureBehaviour, Assembly-CSharp
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: RIGHTHANDOPEN
@@ -39292,10 +39427,10 @@ MonoBehaviour:
       - m_Target: {fileID: 916638715}
         m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
         m_MethodName: SetRightHandGesture
-        m_Mode: 5
+        m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgument: {fileID: 1923911890}
+          m_ObjectArgumentAssemblyTypeName: GestureBehaviour, Assembly-CSharp
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: RIGHTHANDNONE
@@ -45332,7 +45467,7 @@ MonoBehaviour:
   grabCollider: {fileID: 781693685}
   assetMenu: {fileID: 2001158092}
   forceArrows: []
-  isThisObjThrown: 0
+  isThisAssetThrown: 0
   initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
   initRotBeforePhysicsSimulation: {x: 0, y: 0, z: 0, w: 0}
   followLineObj: {fileID: 0}
@@ -48851,7 +48986,7 @@ MonoBehaviour:
   grabCollider: {fileID: 0}
   assetMenu: {fileID: 624260986}
   forceArrows: []
-  isThisObjThrown: 0
+  isThisAssetThrown: 0
   initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
   initRotBeforePhysicsSimulation: {x: 0, y: 0, z: 0, w: 0}
   followLineObj: {fileID: 0}
@@ -59306,7 +59441,7 @@ MonoBehaviour:
   grabCollider: {fileID: 954484073}
   assetMenu: {fileID: 1872402034}
   forceArrows: []
-  isThisObjThrown: 0
+  isThisAssetThrown: 0
   initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
   initRotBeforePhysicsSimulation: {x: 0, y: 0, z: 0, w: 0}
   followLineObj: {fileID: 0}
@@ -64890,7 +65025,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 928751482}
   m_Direction: 0
   m_Value: 1
-  m_Size: 1
+  m_Size: 0.99999994
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -76887,7 +77022,7 @@ MonoBehaviour:
   grabCollider: {fileID: 1216932257}
   assetMenu: {fileID: 785056905}
   forceArrows: []
-  isThisObjThrown: 0
+  isThisAssetThrown: 0
   initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
   initRotBeforePhysicsSimulation: {x: 0, y: 0, z: 0, w: 0}
   followLineObj: {fileID: 1912736170}
@@ -81147,10 +81282,10 @@ MonoBehaviour:
       - m_Target: {fileID: 916638715}
         m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
         m_MethodName: SetLeftHandGesture
-        m_Mode: 5
+        m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgument: {fileID: 208646569}
+          m_ObjectArgumentAssemblyTypeName: GestureBehaviour, Assembly-CSharp
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: LEFTHANDGRAB
@@ -81162,10 +81297,10 @@ MonoBehaviour:
       - m_Target: {fileID: 916638715}
         m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
         m_MethodName: SetLeftHandGesture
-        m_Mode: 5
+        m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgument: {fileID: 1520462363}
+          m_ObjectArgumentAssemblyTypeName: GestureBehaviour, Assembly-CSharp
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: LEFTHANDNONE
@@ -94978,6 +95113,51 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3605440780528223759, guid: c8990564ea6256f4ea8dae5a245ae6a3, type: 3}
   m_PrefabInstance: {fileID: 1746237295}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1520462361
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1520462362}
+  - component: {fileID: 1520462363}
+  m_Layer: 0
+  m_Name: GestureBehaviourLeftNone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &1520462362
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1520462361}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1561943866}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1520462363
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1520462361}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c27c758320a045abab3ed0e4ca82f68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gestureType: 0
 --- !u!1 &1522000455
 GameObject:
   m_ObjectHideFlags: 0
@@ -97844,6 +98024,12 @@ Transform:
   - {fileID: 1673506875}
   - {fileID: 1291824186}
   - {fileID: 1294992552}
+  - {fileID: 1520462362}
+  - {fileID: 208646568}
+  - {fileID: 1868369895}
+  - {fileID: 231306267}
+  - {fileID: 1923911889}
+  - {fileID: 382499480}
   m_Father: {fileID: 1970992213}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1562675225
@@ -100814,10 +101000,10 @@ MonoBehaviour:
       - m_Target: {fileID: 916638715}
         m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
         m_MethodName: SetRightHandGesture
-        m_Mode: 5
+        m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgument: {fileID: 231306268}
+          m_ObjectArgumentAssemblyTypeName: GestureBehaviour, Assembly-CSharp
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: RIGHTHANDGRAB
@@ -100829,10 +101015,10 @@ MonoBehaviour:
       - m_Target: {fileID: 916638715}
         m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
         m_MethodName: SetRightHandGesture
-        m_Mode: 5
+        m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgument: {fileID: 1923911890}
+          m_ObjectArgumentAssemblyTypeName: GestureBehaviour, Assembly-CSharp
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: RIGHTHANDNONE
@@ -104654,10 +104840,10 @@ MonoBehaviour:
       - m_Target: {fileID: 916638715}
         m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
         m_MethodName: SetLeftHandGesture
-        m_Mode: 5
+        m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgument: {fileID: 1868369896}
+          m_ObjectArgumentAssemblyTypeName: GestureBehaviour, Assembly-CSharp
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: LEFTHANDOPEN
@@ -104669,10 +104855,10 @@ MonoBehaviour:
       - m_Target: {fileID: 916638715}
         m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
         m_MethodName: SetLeftHandGesture
-        m_Mode: 5
+        m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgument: {fileID: 1520462363}
+          m_ObjectArgumentAssemblyTypeName: GestureBehaviour, Assembly-CSharp
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: LEFTHANDNONE
@@ -117418,6 +117604,51 @@ Transform:
   m_Children: []
   m_Father: {fileID: 244665804}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1868369894
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1868369895}
+  - component: {fileID: 1868369896}
+  m_Layer: 0
+  m_Name: GestureBehaviourLeftOpen
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &1868369895
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1868369894}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1561943866}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1868369896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1868369894}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c27c758320a045abab3ed0e4ca82f68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gestureType: 4
 --- !u!1 &1870073731
 GameObject:
   m_ObjectHideFlags: 0
@@ -118095,7 +118326,7 @@ MonoBehaviour:
   grabCollider: {fileID: 0}
   assetMenu: {fileID: 1748900839}
   forceArrows: []
-  isThisObjThrown: 0
+  isThisAssetThrown: 0
   initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
   initRotBeforePhysicsSimulation: {x: 0, y: 0, z: 0, w: 0}
   followLineObj: {fileID: 0}
@@ -121302,6 +121533,51 @@ Transform:
   m_Children: []
   m_Father: {fileID: 821464120}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1923911888
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1923911889}
+  - component: {fileID: 1923911890}
+  m_Layer: 0
+  m_Name: GestureBehaviourRightNone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &1923911889
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1923911888}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1561943866}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1923911890
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1923911888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c27c758320a045abab3ed0e4ca82f68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gestureType: 5
 --- !u!1 &1924691804
 GameObject:
   m_ObjectHideFlags: 0
@@ -130005,7 +130281,7 @@ MonoBehaviour:
   grabCollider: {fileID: 2059295647}
   assetMenu: {fileID: 0}
   forceArrows: []
-  isThisObjThrown: 0
+  isThisAssetThrown: 0
   initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
   initRotBeforePhysicsSimulation: {x: 0, y: 0, z: 0, w: 0}
   followLineObj: {fileID: 0}

@@ -22,7 +22,7 @@ public class PinchGestureDetector : MonoBehaviour
         if(rightHand.GetFingerIsPinching(OVRHand.HandFinger.Index))
         {
             //DebugLogger.Instance.LogInVR("Pinch detected on right hand with pinch strength: " + rightHand.GetFingerPinchStrength(OVRHand.HandFinger.Index));
-            InputManager.Instance.SetRightHandGesture("RIGHTHANDPINCH");
+            InputManager.Instance.SetRightHandGesture(InputManager.Gesture.RIGHTHANDPINCH);
             setRightHandNone = true;
         }
         else
@@ -31,7 +31,7 @@ public class PinchGestureDetector : MonoBehaviour
             if(setRightHandNone)
             {
                 //Set the gesture to NONE
-                InputManager.Instance.SetRightHandGesture("RIGHTHANDNONE");
+                InputManager.Instance.SetRightHandGesture(InputManager.Gesture.RIGHTHANDNONE);
                 //Reset the flag
                 setRightHandNone = false;
             }
@@ -40,7 +40,7 @@ public class PinchGestureDetector : MonoBehaviour
         if(leftHand.GetFingerIsPinching(OVRHand.HandFinger.Index))
         {
             //DebugLogger.Instance.LogInVR("Pinch detected on left hand with pinch strength: " + rightHand.GetFingerPinchStrength(OVRHand.HandFinger.Index));
-            InputManager.Instance.SetLeftHandGesture("LEFTHANDPINCH");
+            InputManager.Instance.SetLeftHandGesture(InputManager.Gesture.LEFTHANDPINCH);
             setLeftHandNone = true;
         }
         else
@@ -49,7 +49,7 @@ public class PinchGestureDetector : MonoBehaviour
             if(setLeftHandNone)
             {
                 //Set the gesture to NONE
-                InputManager.Instance.SetLeftHandGesture("LEFTHANDNONE");
+                InputManager.Instance.SetLeftHandGesture(InputManager.Gesture.LEFTHANDNONE);
                 //Reset the flag
                 setLeftHandNone = false;
             }

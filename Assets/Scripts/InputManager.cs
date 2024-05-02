@@ -6,6 +6,8 @@ using UnityEngine;
 public class InputManager : MonoBehaviour
 {
     public static InputManager Instance { get; private set; }
+
+    [Serializable]
     public enum Gesture { 
         LEFTHANDNONE, 
         LEFTHANDMENUOPEN, 
@@ -169,15 +171,23 @@ public class InputManager : MonoBehaviour
 
     }
 
-    public void SetLeftHandGesture(string gestureStr)
+    public void SetLeftHandGesture(GestureBehaviour obj) {
+        SetLeftHandGesture(obj.gestureType);
+    }
+
+    public void SetLeftHandGesture(Gesture gestureType)
     {
-        leftHand.currentGesture = (Gesture)System.Enum.Parse(typeof(Gesture), gestureStr);
+        leftHand.currentGesture = gestureType;
         leftHand.SetGestureText(GestureToString(leftHand.currentGesture));
     }
 
-    public void SetRightHandGesture(string gestureStr)
+    public void SetRightHandGesture(GestureBehaviour obj) {
+        SetRightHandGesture(obj.gestureType);
+    }
+
+    public void SetRightHandGesture(Gesture gestureType)
     {
-        rightHand.currentGesture = (Gesture)System.Enum.Parse(typeof(Gesture), gestureStr);
+        rightHand.currentGesture = gestureType;
         rightHand.SetGestureText(GestureToString(rightHand.currentGesture));
     }
 
