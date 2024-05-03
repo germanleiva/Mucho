@@ -197,7 +197,7 @@ public class InputManager : MonoBehaviour
         currentVoiceCommand = command;
     }
 
-    public void NotifyCollision(GameObject object1, GameObject object2)
+    public void SaveCurrentCollision(GameObject object1, GameObject object2)
     {
         if (object1 != null && object2 != null)
         {

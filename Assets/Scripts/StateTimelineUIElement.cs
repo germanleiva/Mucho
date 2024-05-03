@@ -30,8 +30,7 @@ public class StateTimelineUIElement : TimelineUIElement
         //timelineElement.GetComponent<StateTimelineUIElement>().state = _state;
         //timelineElement.GetComponent<StateTimelineUIElement>().stateIndexOnTimeline = _stateIndexOnTimeline;
 
-        timelineElement.GetComponent<StateTimelineUIElement>().StartIndex = startIndex;
-        timelineElement.GetComponent<StateTimelineUIElement>().Length = length;
+        timelineElement.GetComponent<StateTimelineUIElement>().sequence = new Sequence(startIndex,length);
         
         return timelineElement;
     }
@@ -45,8 +44,8 @@ public class StateTimelineUIElement : TimelineUIElement
         var stateTimelineElement = StateTimelineUIElement.CreateStateTimelineElement(
                     currentExample.stateTimelineElementPrefab,
                     currentExample.statesTimelinePanel.GetComponent<RectTransform>(),
-                    StartIndex,
-                    Length + stateToTheRight.Length,
+                    sequence.StartIndex,
+                    sequence.Length + stateToTheRight.sequence.Length,
                     Recorder.Instance.GetSizeOfMainRecordedData(),
                     "State " + (insertionIndex +1));
         

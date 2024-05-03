@@ -18,9 +18,10 @@ public class TimelineUIElement : MonoBehaviour
     TMPro.TMP_Text eventText;
 
     //Store startindex and length
-    public int StartIndex;
-    public int Length;
-
+    //public int StartIndex;
+    //public int Length;
+    public Sequence sequence;
+    
     public void Start()
     {
         rectTransform = GetComponent<RectTransform>();

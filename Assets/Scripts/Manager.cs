@@ -84,7 +84,7 @@ public class Manager : MonoBehaviour
         AssetManager.Instance.SetAllAssetMenusPokeable(false);
         Recorder.Instance.CreateStateMachine();
         // Recorder.Instance.ResetStateMachine();
-        InputManager.Instance.NotifyCollision(null,null);
+        InputManager.Instance.SaveCurrentCollision(null,null);
         CustomStateMachine.Instance.InvokeOnEnterActionsOfInitialState();
         speechToTextEngine.StartListening();
     }
@@ -408,12 +408,72 @@ public class Example
 
 }
 
-public abstract class Sequence {
+public class Sequence {
     public int StartIndex { get; set; }
     public int Length { get; set; }
 
-    abstract public Boolean CanTriggerAt(int stateStartIndex);
-    abstract public Func<Frame,bool> AddConditionToFunction(Func<Frame,bool> conditionFunction);
+    public Sequence(int _StartIndexFrame,int _Length)
+    {
+        StartIndex = _StartIndexFrame;
+        Length = _Length;
+    }
+
+    protected Sequence()
+    {
+        throw new NotImplementedException();
+    }
+
+    public int EndIndexFrame
+    {
+        get
+        {
+            return StartIndex + Length;
+        }
+        set
+        {
+            if (value < StartIndex)
+            {
+                throw new Exception(
+                    "You cannot set the EndIndexFrame of a sequence at a point before the StartIndexFrame");
+            }
+            Length = value - StartIndex;
+        }
+    } 
+
+    public new bool CanTriggerAt(int stateStartIndex) {
+        return StartIndex == stateStartIndex;
+    }
+    
+    public Func<Frame, bool> AddConditionToFunction(Func<Frame, bool> conditionFunction)
+    {
+        return conditionFunction;
+    }
+    
+    public override bool Equals(object obj) {
+        // Check for null and compare run-time types.
+        if (obj == null || GetType() != obj.GetType()) {
+            return false;
+        }
+
+        Sequence other = (Sequence)obj;
+        return (StartIndex == other.StartIndex) && (Length == other.Length);
+    }
+
+    public override int GetHashCode() {
+        unchecked { // Overflow is fine, just wrap
+            int hash = 17;
+            // Suitable nullity checks etc, of course :)
+            hash = hash * 23 + StartIndex.GetHashCode();
+            hash = hash * 23 + Length.GetHashCode();
+            return hash;
+        }
+    }
+
+    public bool IsInside(Sequence anotherSequence)
+    {
+        return (anotherSequence.StartIndex >= StartIndex && anotherSequence.StartIndex <= EndIndexFrame) &&
+               (anotherSequence.EndIndexFrame >= StartIndex && anotherSequence.EndIndexFrame <= EndIndexFrame);
+    }
 }
 
 public enum COLLISION_ENUM { NONE, COLLIDE, UNDEFINED};
@@ -424,18 +484,38 @@ public class CollisionSequence : Sequence {
     public GameObject CollidingObject1 { get; set; }
     public GameObject CollidingObject2 { get; set; }
 
-    public override Func<Frame, bool> AddConditionToFunction(Func<Frame, bool> conditionFunction)
+    public new Func<Frame, bool> AddConditionToFunction(Func<Frame, bool> conditionFunction)
     {
         return (Frame frame) => { return conditionFunction(frame) && frame.IsColliding(CollidingObject1,CollidingObject2);};
     }
-
-    public override bool CanTriggerAt(int stateStartIndex)
+    
+    public new bool CanTriggerAt(int stateStartIndex)
     {
         return StartIndex < stateStartIndex && stateStartIndex < (StartIndex + Length);
     }
 
     public override string ToString() {
         return $"{CollidingObject1.tag},{CollidingObject2.tag}";
+    }
+    
+    public override bool Equals(object obj) {
+        if (!base.Equals(obj)) return false;
+
+        CollisionSequence other = obj as CollisionSequence;
+        return other != null &&
+               CollisionType == other.CollisionType &&
+               Equals(CollidingObject1, other.CollidingObject1) &&
+               Equals(CollidingObject2, other.CollidingObject2);
+    }
+
+    public override int GetHashCode() {
+        unchecked {
+            int hash = base.GetHashCode();
+            hash = hash * 23 + CollisionType.GetHashCode();
+            hash = hash * 23 + (CollidingObject1 != null ? CollidingObject1.GetHashCode() : 0);
+            hash = hash * 23 + (CollidingObject2 != null ? CollidingObject2.GetHashCode() : 0);
+            return hash;
+        }
     }
 }
 public enum ACTION_ENUM { 
@@ -475,12 +555,12 @@ public class AssetActionSequence : Sequence
 
     public Action ActionDelegate { get; set; }
 
-    public override Func<Frame, bool> AddConditionToFunction(Func<Frame, bool> conditionFunction)
+    public new Func<Frame, bool> AddConditionToFunction(Func<Frame, bool> conditionFunction)
     {
         throw new NotImplementedException();
     }
 
-    public override bool CanTriggerAt(int stateStartIndex)
+    public new bool CanTriggerAt(int stateStartIndex)
     {
         throw new NotImplementedException();
     }
@@ -498,11 +578,8 @@ public class AssetActionSequence : Sequence
 public class GestureSequence : Sequence
 {
     public InputManager.Gesture GestureType { get; set; }
-    override public Boolean CanTriggerAt(int stateStartIndex) {
-        return StartIndex == stateStartIndex;
-    }
 
-    public override Func<Frame, bool> AddConditionToFunction(Func<Frame, bool> conditionFunction) {
+    public new Func<Frame, bool> AddConditionToFunction(Func<Frame, bool> conditionFunction) {
         switch (GestureType) {
             case InputManager.Gesture.LEFTHANDGRAB:
             case InputManager.Gesture.LEFTHANDPINCH:
@@ -528,11 +605,8 @@ public class GestureSequence : Sequence
 public class VoiceSequence : Sequence
 {
     public string VoiceCommand { get; set; }
-    override public Boolean CanTriggerAt(int stateStartIndex) {
-        return StartIndex == stateStartIndex;
-    }
 
-    public override Func<Frame, bool> AddConditionToFunction(Func<Frame, bool> conditionFunction) {
+    public new Func<Frame, bool> AddConditionToFunction(Func<Frame, bool> conditionFunction) {
         return (Frame frame) => { return conditionFunction(frame) && frame.voiceCommand.Contains(VoiceCommand);};
     }
 

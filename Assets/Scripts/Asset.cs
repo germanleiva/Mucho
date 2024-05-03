@@ -87,36 +87,39 @@ public class Asset : MonoBehaviour
     {
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         //DebugLogger.Instance.Log("Recording frame for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
-        if(collidedObjectDuringRecording != null)
+        if(_collidedObjectDuringRecording != null)
         {            
             //DebugLogger.Instance.Log("RecordAssetFrame: Collision between " + gameObject.name + " and " + collidedObject.name + "during recording");
-            if(collidedObjectDuringRecording == InputManager.Instance.leftHandPinchObj)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.leftHandPinchObj); }, InputManager.Instance.leftHandPinchObj, currentObjColor, currentAssetRecordedData.Count));
-            else if(collidedObjectDuringRecording == InputManager.Instance.rightHandPinchObj)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.rightHandPinchObj); }, InputManager.Instance.rightHandPinchObj, currentObjColor, currentAssetRecordedData.Count));
-            else if(collidedObjectDuringRecording == InputManager.Instance.headContactObj)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.headContactObj); }, InputManager.Instance.headContactObj, currentObjColor, currentAssetRecordedData.Count));
-            else if(collidedObjectDuringRecording == InputManager.Instance.leftFocus)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.leftFocus); }, InputManager.Instance.leftFocus, currentObjColor, currentAssetRecordedData.Count));
-            else if(collidedObjectDuringRecording == InputManager.Instance.rightFocus)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.rightFocus); }, InputManager.Instance.rightFocus, currentObjColor, currentAssetRecordedData.Count));
-            else if(collidedObjectDuringRecording == InputManager.Instance.gazeFocus)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.gazeFocus); }, InputManager.Instance.gazeFocus, currentObjColor, currentAssetRecordedData.Count));
-            else if(collidedObjectDuringRecording == InputManager.Instance.playbackLeftHandPinchObj)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.leftHandPinchObj); }, InputManager.Instance.leftHandPinchObj, currentObjColor, currentAssetRecordedData.Count));
-            else if(collidedObjectDuringRecording == InputManager.Instance.playbackRightHandPinchObj)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.rightHandPinchObj); }, InputManager.Instance.rightHandPinchObj, currentObjColor, currentAssetRecordedData.Count));
-            else if(collidedObjectDuringRecording == InputManager.Instance.playbackHeadContactObj)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.headContactObj); }, InputManager.Instance.headContactObj, currentObjColor, currentAssetRecordedData.Count));                
-            else if(collidedObjectDuringRecording == InputManager.Instance.playbackLeftFocus)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.leftFocus); }, InputManager.Instance.leftFocus, currentObjColor, currentAssetRecordedData.Count));
-            else if(collidedObjectDuringRecording == InputManager.Instance.playbackRightFocus)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.rightFocus); }, InputManager.Instance.rightFocus, currentObjColor, currentAssetRecordedData.Count));
-            else if(collidedObjectDuringRecording == InputManager.Instance.playbackGazeFocus)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.gazeFocus); }, InputManager.Instance.gazeFocus, currentObjColor, currentAssetRecordedData.Count));   
+            if(_collidedObjectDuringRecording == InputManager.Instance.leftHandPinchObj)
+                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (frame) => { frame.IsColliding(gameObject, InputManager.Instance.leftHandPinchObj); }, InputManager.Instance.leftHandPinchObj, currentObjColor, currentAssetRecordedData.Count));
+            else if(_collidedObjectDuringRecording == InputManager.Instance.rightHandPinchObj)
+                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE,
+                    COLLISION_ENUM.COLLIDE, null,
+                    (frame) => { frame.IsColliding(gameObject, InputManager.Instance.rightHandPinchObj); },
+                    InputManager.Instance.rightHandPinchObj, currentObjColor, currentAssetRecordedData.Count));
+            else if(_collidedObjectDuringRecording == InputManager.Instance.headContactObj)
+                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (frame) => { frame.IsColliding(gameObject, InputManager.Instance.headContactObj); }, InputManager.Instance.headContactObj, currentObjColor, currentAssetRecordedData.Count));
+            else if(_collidedObjectDuringRecording == InputManager.Instance.leftFocus)
+                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (frame) => { frame.IsColliding(gameObject, InputManager.Instance.leftFocus); }, InputManager.Instance.leftFocus, currentObjColor, currentAssetRecordedData.Count));
+            else if(_collidedObjectDuringRecording == InputManager.Instance.rightFocus)
+                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (frame) => { frame.IsColliding(gameObject, InputManager.Instance.rightFocus); }, InputManager.Instance.rightFocus, currentObjColor, currentAssetRecordedData.Count));
+            else if(_collidedObjectDuringRecording == InputManager.Instance.gazeFocus)
+                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (frame) => { frame.IsColliding(gameObject, InputManager.Instance.gazeFocus); }, InputManager.Instance.gazeFocus, currentObjColor, currentAssetRecordedData.Count));
+            else if(_collidedObjectDuringRecording == InputManager.Instance.playbackLeftHandPinchObj)
+                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (frame) => { frame.IsColliding(gameObject, InputManager.Instance.leftHandPinchObj); }, InputManager.Instance.leftHandPinchObj, currentObjColor, currentAssetRecordedData.Count));
+            else if(_collidedObjectDuringRecording == InputManager.Instance.playbackRightHandPinchObj)
+                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (frame) => { frame.IsColliding(gameObject, InputManager.Instance.rightHandPinchObj); }, InputManager.Instance.rightHandPinchObj, currentObjColor, currentAssetRecordedData.Count));
+            else if(_collidedObjectDuringRecording == InputManager.Instance.playbackHeadContactObj)
+                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (frame) => { frame.IsColliding(gameObject, InputManager.Instance.headContactObj); }, InputManager.Instance.headContactObj, currentObjColor, currentAssetRecordedData.Count));                
+            else if(_collidedObjectDuringRecording == InputManager.Instance.playbackLeftFocus)
+                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (frame) => { frame.IsColliding(gameObject, InputManager.Instance.leftFocus); }, InputManager.Instance.leftFocus, currentObjColor, currentAssetRecordedData.Count));
+            else if(_collidedObjectDuringRecording == InputManager.Instance.playbackRightFocus)
+                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (frame) => { frame.IsColliding(gameObject, InputManager.Instance.rightFocus); }, InputManager.Instance.rightFocus, currentObjColor, currentAssetRecordedData.Count));
+            else if(_collidedObjectDuringRecording == InputManager.Instance.playbackGazeFocus)
+                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (frame) => { frame.IsColliding(gameObject, InputManager.Instance.gazeFocus); }, InputManager.Instance.gazeFocus, currentObjColor, currentAssetRecordedData.Count));   
             else
             {
-                DebugLogger.Instance.Log("RecordAssetFrame: unaccounted collision between " + gameObject.name + " and " + collidedObjectDuringRecording.name + "during recording");
+                DebugLogger.Instance.Log("RecordAssetFrame: unaccounted collision between " + gameObject.name + " and " + _collidedObjectDuringRecording.name + "during recording");
                 currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.NONE, null, null, null, currentObjColor, currentAssetRecordedData.Count));    
             }
         }
@@ -618,7 +621,7 @@ public class Asset : MonoBehaviour
         var statePlaceholders = Recorder.Instance.currentActiveExample.StatePlaceholders;
         foreach (var statePlaceholder in statePlaceholders)
         {
-            int stateEndIndex = statePlaceholder.StartIndex + statePlaceholder.Length;
+            int stateEndIndex = statePlaceholder.sequence.EndIndexFrame;
             if(stateEndIndex > _frameStart)
             {
                 return stateEndIndex;
@@ -906,36 +909,45 @@ public class Asset : MonoBehaviour
     //For assets
     public void PrepareForceSimulation(Vector3 initialVelocity)
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
+        //access the recorded data for the current asset from the recorder
+        var recordedAssetFrames = Recorder.Instance.currentActiveExample.assetFramesDict[this];
 
         if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING && isThisAssetThrown)
         {
+            //hide miscellaneous objects related to recording
             AssetManager.Instance.HideMiscObjs();
 
+            //deactivate pinch spheres related to input
             InputManager.Instance.leftHandPinchObj.SetActive(false);
             InputManager.Instance.rightHandPinchObj.SetActive(false);
             
+            //store cyrrebt value of the playback slider for later reference
             oldMainPlaybackSliderValue = Recorder.Instance.playbackSlider.value; //This is so awkward, but it works
 
+            //record initial position and rotation of the asset before physics simulation
             initPosBeforePhysicsSimulation = transform.position;
             initRotBeforePhysicsSimulation = transform.rotation;
 
+            //modify recorded asset frames starting from the current playback slider value
             int _frameStart = (int)Recorder.Instance.playbackSlider.value;
-            for (int i = _frameStart; i < currentAssetRecordedData.Count; i++)
+            for (int i = _frameStart; i < recordedAssetFrames.Count; i++)
             {
-                currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[_frameStart].rootPosition;
-                currentAssetRecordedData[i].ActionType = ACTION_ENUM.NONE;
-                currentAssetRecordedData[i].ActionDelegate = null;
-                currentAssetRecordedData[i].CollisionType = COLLISION_ENUM.NONE;
-                currentAssetRecordedData[i].CollisionDelegate = null;
+                //set rootposition to match the starting fraome's root position
+                recordedAssetFrames[i].rootPosition = recordedAssetFrames[_frameStart].rootPosition;
+                //Clear or reset other fields of the class
+                recordedAssetFrames[i].ActionType = ACTION_ENUM.NONE;
+                recordedAssetFrames[i].ActionDelegate = null;
+                recordedAssetFrames[i].CollisionType = COLLISION_ENUM.NONE;
+                recordedAssetFrames[i].CollisionDelegate = null;
             }
 
+            //modify the asset frame at the current playback slider to apply a force
             ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionType: ACTION_ENUM.APPLY_FORCE, 
                                     // actionDelegate: () => { GetComponent<Asset>().ApplyForceInLiveMode(initialVelocity); });
                                     actionDelegate: () => { GetComponent<Asset>().ApplyForce(initialVelocity); });
 
-
+            //Apply the initial force to the asset
             ApplyForce(initialVelocity);
             DebugLogger.Instance.Log("Intial velocity magnitude is " + initialVelocity.magnitude);
         }
@@ -974,18 +986,13 @@ public class Asset : MonoBehaviour
 
     }
 
-    GameObject collidedObjectDuringRecording;
-
-    public void NotifyAsset(GameObject other)
-    {
-        collidedObjectDuringRecording = other;
-    }
+    GameObject _collidedObjectDuringRecording;
 
     //For assets
     void OnCollisionEnter(Collision collision)
     {
         DebugLogger.Instance.Log("Recordable.OnCollisionEnter: Notifying collision detected between " + base.gameObject.name + " and " + collision.collider.name);
-        InputManager.Instance.NotifyCollision(base.gameObject, collision.collider.gameObject);
+        InputManager.Instance.SaveCurrentCollision(base.gameObject, collision.collider.gameObject);
 
         //Return if asset is colliding with inputmanager's left or right pinch objects
         if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere" || 
@@ -1022,15 +1029,15 @@ public class Asset : MonoBehaviour
         InputManager.Instance.leftHandPinchObj.SetActive(true);
         InputManager.Instance.rightHandPinchObj.SetActive(true);
 
-        InputManager.Instance.NotifyCollision(null,null);       
+        InputManager.Instance.SaveCurrentCollision(null,null);       
         Recorder.Instance.playbackSlider.value = oldMainPlaybackSliderValue;
         transform.position = initPosBeforePhysicsSimulation;
         transform.rotation = initRotBeforePhysicsSimulation;
         GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
         GetComponent<Rigidbody>().useGravity = false;
-        
-        
-        Recorder.Instance.RefreshTimelineAssets(null);
+
+        var isPhysicsRefresh = true;
+        Recorder.Instance.RefreshTimelineAssets(null, isPhysicsRefresh);
        
     }
 
@@ -1053,14 +1060,14 @@ public class Asset : MonoBehaviour
             //DebugLogger.Instance.Log("Notifying collision detected between " + base.gameObject.name + " and " + collision.collider.name);
             if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere" || collision.collider.name == "HeadContactSphere")
             {                 
-                InputManager.Instance.NotifyCollision(base.gameObject, collision.collider.gameObject);
+                InputManager.Instance.SaveCurrentCollision(base.gameObject, collision.collider.gameObject);
             }
                       
         }
         else //Recording
         {
             //NotifyAsset(collision.collider.gameObject); //Notify the asset that it has collided with another object during recording
-            collidedObjectDuringRecording = collision.collider.gameObject;
+            _collidedObjectDuringRecording = collision.collider.gameObject;
         }
     }
 
@@ -1072,13 +1079,13 @@ public class Asset : MonoBehaviour
             //DebugLogger.Instance.Log("Notifying collision ended between " + gameObject.name + " and " + collision.collider.name);
             if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere" || collision.collider.name == "HeadContactSphere")
             {      
-                InputManager.Instance.NotifyCollision(null,null);
+                InputManager.Instance.SaveCurrentCollision(null,null);
             }          
         }
         else //Recording
         {
             //NotifyAsset(null); //Notify the asset that it has stopped colliding with another object during recording
-            collidedObjectDuringRecording = null;
+            _collidedObjectDuringRecording = null;
         }
     }
 

@@ -720,7 +720,7 @@ public class Recorder : MonoBehaviour
         RefreshStatePlaceholders();
     }
 
-    public void RefreshTimelineAssets(AssetFrame assetFrame)
+    public void RefreshTimelineAssets(AssetFrame assetFrame, bool isPhysicsRefresh = false)
     {
         //Refresh action events in the timeline
         DebugLogger.Instance.Log("Refresh assets timeline for example " + currentActiveExample.exampleId);
@@ -736,11 +736,11 @@ public class Recorder : MonoBehaviour
         foreach (var asset in currentActiveExample.assetFramesDict.Keys)
         {
             ++assetsCounter;
-            CreateTimelineAssetRow(asset, assetsCounter);
+            CreateTimelineAssetRow(asset, assetsCounter, isPhysicsRefresh);
         }
     }
 
-    public void CreateTimelineAssetRow(Asset asset, int assetsCounter)
+    public void CreateTimelineAssetRow(Asset asset, int assetsCounter, bool isPhysicsRefresh= false)
     {
         GameObject assetRow = Instantiate(currentActiveExample.assetTimelinePanelPrefab, currentActiveExample.examplePlaybackPanel);
         timelineAssetRows.Add(asset,assetRow);
@@ -748,21 +748,52 @@ public class Recorder : MonoBehaviour
         assetRow.SetActive(true);
         assetRow.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text = Manager.Instance.CleanAssetName(asset.name); //Assign asset name
 
-        CreateTimelineActionsForAsset(asset);
+        CreateTimelineActionsForAsset(asset, isPhysicsRefresh);
     }
 
-    public void CreateTimelineActionsForAsset(Asset asset)
+    public void CreateTimelineActionsForAsset(Asset asset,bool isPhysicsRefresh=false)
     {
         if (currentActiveExample.assetFramesDict[asset].Count > 0)
         {
             var assetRow = timelineAssetRows[asset];
             currentActiveExample.assetSequencesLists.Add(GenerateAssetActionSequences(assetRow.GetComponent<RectTransform>(), asset));
         }
-        RefreshTimelineCollisions();
+        RefreshTimelineCollisions(isPhysicsRefresh);
     }
 
-    public void RefreshTimelineCollisions()
+    public void RefreshTimelineCollisions(bool isPhysicsRefresh = false)
     {
+        List<CollisionSequence> findSequencesNotIncludedInTheBigList(List<CollisionSequence> listOfNewSquences, List<List<CollisionSequence>> bigList)
+        {
+            return listOfNewSquences
+                .Where(newSequence => !bigList.Any(existingSequenceList => 
+                    existingSequenceList.Any(existingSequence => existingSequence.Equals(newSequence))))
+                .ToList();
+            
+            var sequencesNotIncludedInTheBigList = new List<CollisionSequence>();
+
+            foreach (var newSequence in listOfNewSquences)
+            {
+                var isThere = false;
+                foreach (var existingSequenceList in bigList)
+                {
+                    foreach (var existingSequence in existingSequenceList)
+                    {
+                        if (existingSequence.Equals(newSequence))
+                        {
+                            isThere = true;
+                        }
+                    }
+                }
+
+                if (!isThere)
+                {
+                    sequencesNotIncludedInTheBigList.Add(newSequence);
+                }
+            }
+
+            return sequencesNotIncludedInTheBigList;
+        }
         //Delete all existing collision timeline elements
         for (int i = 2; i < currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>().childCount; i++)
         {
@@ -770,12 +801,71 @@ public class Recorder : MonoBehaviour
         }
         
         //Generate collision sequences
+        var previousCollisionSequences = new List<List<CollisionSequence>>(currentActiveExample.collisionSequencesLists);
+        var newCollisionSequences = new List<CollisionSequence>();
+
         currentActiveExample.collisionSequencesLists.Clear();
-        foreach (var recordable in currentActiveExample.assetFramesDict.Keys)
+        foreach (var asset in currentActiveExample.assetFramesDict.Keys)
         {
-            if (currentActiveExample.assetFramesDict[recordable].Count > 0)
+            if (currentActiveExample.assetFramesDict[asset].Count > 0)
             {
-                currentActiveExample.collisionSequencesLists.Add(GenerateCollisionSequences(currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>(), recordable));
+                var generatedCollisionSequences =
+                    GenerateCollisionSequences(
+                        currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>(), asset);
+                //Which generatedCollisionSequence are actually new?
+                newCollisionSequences.AddRange(findSequencesNotIncludedInTheBigList(generatedCollisionSequences,
+                    previousCollisionSequences));
+                
+                currentActiveExample.collisionSequencesLists.Add(generatedCollisionSequences);
+            }
+        }
+
+        if (isPhysicsRefresh)
+        {
+            //Only the newCollisionSequences should trigger the creation of a new StatePlaceholder
+            foreach (var newCollisionSequence in newCollisionSequences)
+            {
+                //Find the stateplaceholder intersecting the newCollisionSequence, and split it
+                var relevantStatePlaceholders = currentActiveExample.StatePlaceholders.FindAll(statePlaceholder =>
+                    statePlaceholder.sequence.IsInside(newCollisionSequence));
+
+                if (relevantStatePlaceholders.Count > 1)
+                {
+                    throw new Exception("This shouldn't happen");
+                }
+
+                if (relevantStatePlaceholders.Count == 1)
+                {
+                    //Split the StatePlaceholder
+
+                    var statePlaceholderToDelete = relevantStatePlaceholders[0];
+
+                    //Delete the existing one, and create two new state placeholders
+
+                    var newBeforeStatePlaceholder = StateTimelineUIElement.CreateStateTimelineElement(
+                        currentActiveExample.stateTimelineElementPrefab,
+                        currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>(),
+                        statePlaceholderToDelete.sequence.StartIndex,
+                        newCollisionSequence.StartIndex - statePlaceholderToDelete.sequence.StartIndex,
+                        GetSizeOfMainRecordedData(),
+                        "State " + currentActiveExample.StatePlaceholders.Count);
+
+                    this.currentActiveExample.StatePlaceholders.Add(newBeforeStatePlaceholder
+                        .GetComponent<StateTimelineUIElement>());
+
+                    var newAfterStatePlaceholder = StateTimelineUIElement.CreateStateTimelineElement(
+                        currentActiveExample.stateTimelineElementPrefab,
+                        currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>(),
+                        newCollisionSequence.StartIndex,
+                        statePlaceholderToDelete.sequence.EndIndexFrame - newCollisionSequence.StartIndex,
+                        GetSizeOfMainRecordedData(),
+                        "State " + currentActiveExample.StatePlaceholders.Count);
+
+                    this.currentActiveExample.StatePlaceholders.Add(newAfterStatePlaceholder
+                        .GetComponent<StateTimelineUIElement>());
+
+                    Destroy(statePlaceholderToDelete.gameObject);
+                }
             }
         }
     }
@@ -854,7 +944,7 @@ public class Recorder : MonoBehaviour
                 var nextState = localStatesDict[nexStatePlaceholder];
 
                 //Find transitions between currentStatePlaceholder to nexStatePlaceholder
-                var actualTriggers = allPotentialTriggers.FindAll(x => x.CanTriggerAt(nexStatePlaceholder.StartIndex));
+                var actualTriggers = allPotentialTriggers.FindAll(x => x.CanTriggerAt(nexStatePlaceholder.sequence.StartIndex));
                 if (actualTriggers.Count > 0) {
                     //Let's build the transition
                     Func<Frame, bool> transitionConditionFunction = (Frame frame) => {return true;};
@@ -877,11 +967,11 @@ public class Recorder : MonoBehaviour
             {
                 foreach (var assetSequence in assetSequences)
                 {
-                    if (assetSequence.StartIndex >= currentStatePlaceholder.StartIndex && 
-                        assetSequence.StartIndex < currentStatePlaceholder.StartIndex+currentStatePlaceholder.Length)
+                    if (assetSequence.StartIndex >= currentStatePlaceholder.sequence.StartIndex && 
+                        assetSequence.StartIndex < currentStatePlaceholder.sequence.StartIndex+currentStatePlaceholder.sequence.Length)
                     {
-                        int distanceToStateStart = Math.Abs(assetSequence.StartIndex - currentStatePlaceholder.StartIndex);
-                        int distanceToStateEnd = Math.Abs(currentStatePlaceholder.StartIndex + currentStatePlaceholder.Length - assetSequence.StartIndex - 1);
+                        int distanceToStateStart = Math.Abs(assetSequence.StartIndex - currentStatePlaceholder.sequence.StartIndex);
+                        int distanceToStateEnd = Math.Abs(currentStatePlaceholder.sequence.StartIndex + currentStatePlaceholder.sequence.Length - assetSequence.StartIndex - 1);
 
                         if(distanceToStateStart < distanceToStateEnd)
                         {
@@ -1072,29 +1162,17 @@ public class Recorder : MonoBehaviour
         var gestures = currentActiveExample.AllGestureSequences;
         var collisions = currentActiveExample.collisionSequencesLists.SelectMany(x => x).ToList();
         var voiceCommands = currentActiveExample.VoiceCommandSequences;
-        // Create a list of events (start or end of a sequence)
-        var eventsThatStartStates = new List<(int Index, string Type, GestureSequence Gesture, CollisionSequence Collision, VoiceSequence VoiceCommand)>();
-        foreach (var gesture in gestures)
-        {
-            eventsThatStartStates.Add((gesture.StartIndex, "start", gesture, null, null));
-        }
-        foreach (var collision in collisions)
-        {
-            eventsThatStartStates.Add((collision.StartIndex, "start", null, collision, null));
-        }
-        foreach (var voiceCommand in voiceCommands)
-        {
-            eventsThatStartStates.Add((voiceCommand.StartIndex, "start", null, null, voiceCommand));
-        }
-        // Sort the events by their index
-        eventsThatStartStates = eventsThatStartStates.OrderBy(e => e.Index).ToList();
+
+        var eventsThatStartStates = gestures.Cast<Sequence>().ToList().Concat(collisions).Concat(voiceCommands).ToList();
+
+        eventsThatStartStates = eventsThatStartStates.OrderBy(e => e.StartIndex).ToList();
         int lastIndex = 0;
         // Iterate over events to create states
         for (int i = 0; i < eventsThatStartStates.Count; i++) {
             var currentEvent = eventsThatStartStates[i];
-            if (lastIndex != currentEvent.Index) {
+            if (lastIndex != currentEvent.StartIndex) {
                 var startIndex = lastIndex;
-                var length = currentEvent.Index - lastIndex;
+                var length = currentEvent.StartIndex - lastIndex;
                 var stateTimelineElement = StateTimelineUIElement.CreateStateTimelineElement(
                     currentActiveExample.stateTimelineElementPrefab,
                     currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>(),
@@ -1104,7 +1182,7 @@ public class Recorder : MonoBehaviour
                     "State " + currentActiveExample.StatePlaceholders.Count);
                 this.currentActiveExample.StatePlaceholders.Add(stateTimelineElement.GetComponent<StateTimelineUIElement>());
             }
-            lastIndex = currentEvent.Index;
+            lastIndex = currentEvent.StartIndex;
         }
         // Last state
         if (lastIndex < recordedFramesTotal) {

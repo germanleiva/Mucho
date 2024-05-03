@@ -46,7 +46,7 @@ public class FollowLineTrigger : MonoBehaviour
             renderer.material = highlightMaterial;
             var asset = followLine.asset.GetComponent<Asset>();
             
-            Action anAction = asset.FollowLeftHand;
+            Action anAction = null;
 
             switch (followTargetType) {
                 case FollowTargetType.LEFTHAND:
