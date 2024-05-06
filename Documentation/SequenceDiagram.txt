@@ -1,0 +1,129 @@
+title Mucho
+
+Unity->ForceArrow: ThrowAsset()
+ForceArrow->Manager.Instance: currAppState = ASSETRECORDING
+ForceArrow->Asset: isThisAssetThown = true
+ForceArrow->Asset: PrepareForceSimulation(initialVelocity)
+activate Asset
+Asset->Recorder.Instance: recordedAssetFrames = currentActiveExample.assetFramesDict[this]
+Asset->AssetManager.Instance: HideMiscObjs()
+Asset->AssetManager.Instance: leftHandPinchObj.SetActive(false); 
+Asset->AssetManager.Instance: rightHandPinchObj.SetActive(false);
+Asset->Asset: savePlaybackPosition()
+Asset->Asset: saveInitPosBeforePhysicsSimulation()
+Asset->Asset: saveInitRotBeforePhysicsSimulation()
+loop foreach recordedAssetFrames[i] from _frameStart = playbackSlider.value to recordedAssetFrames.Count
+Asset->Asset: recordedAssetFrames[i].rootPosition = recordedAssetFrames[_frameStart].rootPosition
+Asset->Asset: recordedAssetFrames[i].ActionType = ACTION_ENUM.NONE
+Asset->Asset: recordedAssetFrames[i].ActionDelegate = null
+Asset->Asset: recordedAssetFrames[i].CollisionType = COLLISION_ENUM.NONE
+Asset->Asset: recordedAssetFrames[i].CollisionDelegate = null
+end
+Asset->Asset:ModifyAssetFrame(playbackSlider.value, actionType:.APPLY_FORCE, actionDelegate: () => asset.ApplyForce(initialVelocity) })
+Asset->Asset:ApplyForce(Vector3 initialVelocity)
+activate Asset
+Asset->RigidBody: constraints = .None
+Asset->RigidBody: useGravity = true
+Asset->RigidBody: AddForce(initialVelocity, ForceMode.VelocityChange)
+deactivate Asset
+deactivate Asset
+
+loop
+Unity->Asset: FixedUpdate()
+opt Manager.Instance.currAppState == .ASSETRECORDING && isThisAssetThrown
+Asset->Recorder.Instance: playbackSlider.value += 1
+Asset->Asset:ModifyAssetFrame(playbackSlider.value, actionType:.APPLY_FORCE, collisionType:.NONE, propagate: true)
+end
+end
+
+loop
+Unity->AssetManager.Instance: FixedUpdate()
+note over AssetManager.Instance: ignore in LiveMode or currentActiveExample == null
+alt currAppState == RECORDING
+loop for each asset in currentActiveExample.assets
+AssetManager.Instance->Asset:RecordAssetFrame()
+Asset->Asset: createNewAssetFrame(transform.position, transform.rotation)
+note over Asset: this uses _collidedObjectDuringRecording and creates a SHOW action for the first frame
+end
+else currAppState == PLAYBACK
+loop for each asset in currentActiveExample.assets
+AssetManager.Instance->Asset:PlaybackAssetFrame()
+end
+end
+end
+
+loop
+Unity->Recorder.Instance: FixedUpdate()
+alt Manager.Instance.currAppState == RECORDING
+Recorder.Instance->Recorder.Instance: Record(head,leftHand,rightHand)
+else Manager.Instance.currAppState == PLAYBACK OR RECORDING_DURING_PLAYBACK
+Recorder.Instance->Recorder.Instance: UpdatePosRot(head,leftHand,rightHand)
+end
+end
+
+loop
+Unity->InputManager.Instance: Update()
+InputManager.Instance->InputManager.Instance: ProcessEvents()
+activate InputManager.Instance
+alt currAppState == .LIVE
+InputManager.Instance->Frame: leftHandGesture = leftHand.currentGesture
+InputManager.Instance->Frame: rightHandGesture = rightHand.currentGesture
+InputManager.Instance->Frame: collidingObjectThisFrame_1 = collidingObjectNotified_1
+InputManager.Instance->Frame: collidingObjectThisFrame_2 = collidingObjectNotified_2
+InputManager.Instance->Frame: voiceCommand = currentVoiceCommand
+note over InputManager.Instance: send frame to StateMachine
+else currAppState == .INIT
+note over InputManager.Instance: check collidingObjectNotified_2 is Left/RightHandPinchContactSphere
+note over InputManager.Instance: check left/rightHand.currentGesture (PINCH, NONE, OPEN) to decide to Follow or Unfollow
+InputManager.Instance->InputManager.Instance: assetInContactWithLeft/RightHand.Un/Follow(left/RightHand)
+InputManager.Instance->InputManager.Instance: collidingObjectNotified_1 = null
+InputManager.Instance->InputManager.Instance: collidingObjectNotified_2 = null
+InputManager.Instance->InputManager.Instance: assetInContactWithLeftHand = null
+InputManager.Instance->InputManager.Instance: assetInContactWithRightHand = null
+end
+deactivate InputManager.Instance
+end
+
+Unity->Asset: onCollisionEnter(collision)
+activate Asset
+Asset->InputManager.Instance: SaveCurrentCollision(obj1 = base.gameObject, obj2 = collision.collider.gameObject)
+InputManager.Instance->InputManager.Instance: collidingObjectNotified_1 = obj1
+InputManager.Instance->InputManager.Instance: collidingObjectNotified_2 = obj2
+alt currAppState == .ASSETRECORDING && isThisAssetThrown
+Asset->Manager.Instance: currAppState = .PLAYBACK
+Asset->Asset: ModifyAssetFrame(collidedObject:collision.collider.gameObject)
+Asset->Asset: ResetPhysicsProperties()
+Asset->Asset: isThisAssetThrown = false
+Asset->InputManager.Instance: leftHandPinchObj.SetActive(true)
+Asset->InputManager.Instance: rightHandPinchObj.SetActive(true)
+Asset->InputManager.Instance: SaveCurrentCollision(obj1 = null, obj2 = null)
+InputManager.Instance->InputManager.Instance: collidingObjectNotified_1 = null
+InputManager.Instance->InputManager.Instance: collidingObjectNotified_2 = null
+Asset->Asset: retrievePlaybackPosition()
+Asset->Asset: retrieveInitPosBeforePhysicsSimulation()
+Asset->Asset: retrieveInitRotBeforePhysicsSimulation()
+Asset->RigidBody: constraints = .FreezeAll
+Asset->RigidBody: useGravity = false
+Asset->Recorder.Instance: RefreshTimelineAssets(isPhysicsRefresh = true)
+end
+deactivate Asset
+activate Asset
+Unity->Asset: OnCollisionStay(collision)
+alt Manager.Instance.currAppState != Manager.AppState.RECORDING && Manager.Instance.currAppState != Manager.AppState.RECORDING_DURING_PLAYBACK
+note over Asset: ignore collisions with "LeftHandPinchContactSphere", "RightHandPinchContactSphere", "HeadContactSphere"
+Asset->InputManager.Instance: SaveCurrentCollision(obj1 = base.gameObject, obj2 = collision.collider.gameObject)
+else //Recording
+Asset->Asset: _collidedObjectDuringRecording = collision.collider.gameObject
+end
+deactivate Asset
+activate Asset
+Unity->Asset: OnCollisionExit(collision)
+alt Manager.Instance.currAppState != Manager.AppState.RECORDING && Manager.Instance.currAppState != Manager.AppState.RECORDING_DURING_PLAYBACK
+alt if colliding with "LeftHandPinchContactSphere", "RightHandPinchContactSphere", "HeadContactSphere"
+Asset->InputManager.Instance: SaveCurrentCollision(obj1 = null, obj2 = null)
+end
+else //Recording
+Asset->Asset: _collidedObjectDuringRecording = null
+end
+deactivate Asset
+
