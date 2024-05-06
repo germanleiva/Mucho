@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting.Dependencies.NCalc;
 using System.ComponentModel;
+using System.Reflection;
 
 //using Assets.OVR.Scripts;
 //using UnityEditor.VersionControl;
@@ -435,7 +436,7 @@ public class CollisionSequence : Sequence {
     }
 
     public override string ToString() {
-        return $"{CollidingObject1.tag},{CollidingObject2.tag}";
+        return $"{CollidingObject1.tag} hit {CollidingObject2.tag}";
     }
 }
 public enum ACTION_ENUM { 
@@ -486,11 +487,29 @@ public class AssetActionSequence : Sequence
     }
     
     public override string ToString() {
-        return $"{ActionType}";
+        return GetDescription(ActionType);
     }
 
-
-    //public GestureManager.Gesture GestureType { get; set; }
+    public string GetDescription(ACTION_ENUM value)
+    {
+        Type type = value.GetType();
+        string name = Enum.GetName(type, value);
+        if (name != null)
+        {
+            FieldInfo field = type.GetField(name);
+            if (field != null)
+            {
+                DescriptionAttribute attr = 
+                    Attribute.GetCustomAttribute(field, 
+                        typeof(DescriptionAttribute)) as DescriptionAttribute;
+                if (attr != null)
+                {
+                    return attr.Description;
+                }
+            }
+        }
+        return null;
+    }
 
 
 }

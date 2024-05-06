@@ -701,7 +701,7 @@ public class Recorder : MonoBehaviour
         CreateTimelineInputSequences();
         CreateTimelineActions();
         
-        CreateStatePlaceholders();
+        CreateStatePlaceholders(true);
     }
 
     public void RefreshTimelineVoiceSequences()
@@ -1066,7 +1066,7 @@ public class Recorder : MonoBehaviour
         CreateStatePlaceholders();
     }
     
-    public void CreateStatePlaceholders() {
+    public void CreateStatePlaceholders(bool startHidden=false) {
         DeleteStatePlaceholders();
         int recordedFramesTotal = GetSizeOfMainRecordedData();
         var gestures = currentActiveExample.AllGestureSequences;
@@ -1119,6 +1119,14 @@ public class Recorder : MonoBehaviour
                 "State " + currentActiveExample.StatePlaceholders.Count);
             this.currentActiveExample.StatePlaceholders.Add(stateTimelineElement.GetComponent<StateTimelineUIElement>());
         }
+        if (startHidden)
+        {
+            foreach (var statePlaceholder in  this.currentActiveExample.StatePlaceholders)
+            {
+                statePlaceholder.gameObject.SetActive(false);
+            }
+        }
+
     }        
 
     //Dictionary<State, StateTimelineUIElement> StatesDict = new();

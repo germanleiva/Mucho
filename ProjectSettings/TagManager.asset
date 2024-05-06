@@ -8,6 +8,7 @@ TagManager:
   - Sphere
   - LeftHand
   - RightHand
+  - Floor
   layers:
   - Default
   - TransparentFX
