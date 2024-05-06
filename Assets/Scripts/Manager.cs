@@ -431,7 +431,7 @@ public class CollisionSequence : Sequence {
 
     public override bool CanTriggerAt(int stateStartIndex)
     {
-        return StartIndex < stateStartIndex && stateStartIndex < (StartIndex + Length);
+        return StartIndex == stateStartIndex || (stateStartIndex > StartIndex && stateStartIndex < (StartIndex + Length));
     }
 
     public override string ToString() {
