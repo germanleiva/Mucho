@@ -80,7 +80,7 @@ public class Manager : MonoBehaviour
         currAppState = Manager.AppState.LIVE;
         Recorder.Instance.playbackSlider.value = 0;
         Recorder.Instance.SetPlaybackObjectsVisibility(false);
-        //AssetManager.Instance.HideMiscObjs();
+        AssetManager.Instance.HideMiscObjs();
         AssetManager.Instance.SetAllAssetMenusPokeable(false);
         Recorder.Instance.CreateStateMachine();
         // Recorder.Instance.ResetStateMachine();

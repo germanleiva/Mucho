@@ -195,9 +195,9 @@ public class AssetManager : MonoBehaviour
 
     public void HideMiscObjs()
     {
-        foreach (Asset recordable in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
+        foreach (Asset asset in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
         {
-            recordable.assetMenu.SetActive(false);
+            asset.assetMenu.SetActive(false);
         }
     }
 
