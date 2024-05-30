@@ -76,17 +76,16 @@ public class Recorder : MonoBehaviour
         currentActiveExample.examplePlaybackPanel.gameObject.SetActive(true);
         currentActiveExample.button.GetComponent<Image>().color = Color.green;
         
-        CreateTimelineAndStatePlaceholders(); 
     }
 
     public void AddExample()
     {        
-        var obj = Instantiate(firstExampleButtonObj, firstExampleButtonObj.transform.parent);
-        obj.SetActive(true);
+        var numberButton = Instantiate(firstExampleButtonObj, firstExampleButtonObj.transform.parent);
+        numberButton.SetActive(true);
         //clone _examplePlaybackPanel
         RectTransform examplePlaybackPanel_clone = Instantiate(examplePlaybackPanelPrefab, examplePlaybackPanelPrefab.parent);
         
-        Example example = new(obj.GetComponent<Button>(), examplePlaybackPanel_clone);
+        Example example = new(numberButton.GetComponent<Button>(), examplePlaybackPanel_clone);
         examples.Add(example);
         //example.button.GetComponentInChildren<TMPro.TMP_Text>().text = (examples.Count + 1).ToString();
         //Place the button 20 units below the previous button
@@ -103,6 +102,8 @@ public class Recorder : MonoBehaviour
         }
         
         SelectExample(example);  
+        CreateTimelineAndStatePlaceholders(false); 
+
     }
 
     // Start recording.
@@ -668,6 +669,7 @@ public class Recorder : MonoBehaviour
         {
             if (currentActiveExample.assetFramesDict[recordable].Count > 0)
             {
+                //if it doesnt exists, add it
                 currentActiveExample.collisionSequencesLists.Add(GenerateCollisionSequences(currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>(), recordable));
             }
         }
@@ -683,7 +685,8 @@ public class Recorder : MonoBehaviour
         {
             ++assetsCounter;
             GameObject timelinePanel = Instantiate(currentActiveExample.assetTimelinePanelPrefab, currentActiveExample.examplePlaybackPanel);
-            timelineAssetRows.Add(recordable,timelinePanel);
+            if(!timelineAssetRows.ContainsKey(recordable)) 
+                timelineAssetRows.Add(recordable,timelinePanel);
             timelinePanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(timelinePanel.GetComponent<RectTransform>().anchoredPosition.x, timelinePanel.GetComponent<RectTransform>().anchoredPosition.y - assetsCounter * 100);
             timelinePanel.SetActive(true);
             timelinePanel.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text = Manager.Instance.CleanAssetName(recordable.name); //Assign asset name
@@ -696,12 +699,12 @@ public class Recorder : MonoBehaviour
         }
     }
 
-    public void CreateTimelineAndStatePlaceholders()
+    public void CreateTimelineAndStatePlaceholders(bool startHidden=true)
     {
         CreateTimelineInputSequences();
         CreateTimelineActions();
         
-        CreateStatePlaceholders(true);
+        CreateStatePlaceholders(startHidden);
     }
 
     public void RefreshTimelineVoiceSequences()

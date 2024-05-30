@@ -77,6 +77,13 @@ public class Manager : MonoBehaviour
             DebugLogger.Instance.Log("No examples to change to live mode");
             return;
         }
+        
+        //If the state machine is empty, create the states
+        
+        if(CustomStateMachine.Instance.GetSize() <2)
+        {
+            Recorder.Instance.CreateStateMachine();
+        }
 
         currAppState = Manager.AppState.LIVE;
         Recorder.Instance.playbackSlider.value = 0;
@@ -347,6 +354,7 @@ public class Example
         {
             assetFramesDict.Add(entry.Key, new List<AssetFrame>(entry.Value.Select(item => (AssetFrame)item.Clone())));
         }
+        
     }
 
     public void RefreshAssetsInExample()
