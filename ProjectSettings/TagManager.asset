@@ -9,6 +9,7 @@ TagManager:
   - LeftHand
   - RightHand
   - Floor
+  - Wall
   layers:
   - Default
   - TransparentFX
