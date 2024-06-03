@@ -118,11 +118,16 @@ public class AssetManager : MonoBehaviour
         Destroy(target.gameObject);
 
         newAssetObject.SetActive(true);
-        Recorder.Instance.assetsInScene.Add(newAssetObject.GetComponentInChildren<Asset>());
-        Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
+        Recorder.Instance.allAssets.Add(newAssetObject.GetComponentInChildren<Asset>());
+        
+        foreach (var example in Recorder.Instance.examples)
+        {
+            example.RefreshAssetsInExample();
+        }
+        
         //RefreshAssetsInAllExamples();
         //Recorder.Instance.RefreshTimelineAndStates();
-        //Recorder.Instance.RefreshTimelineAssets();
+        //Recorder.Instance.RecreateTimelineAssetRows();
         if(Recorder.Instance.GetSizeOfMainRecordedData() > 0) //Recording already exists, the main purpose is to check for new collisions
         {
             Manager.Instance.currAppState = Manager.AppState.RECORDING_DURING_PLAYBACK;
@@ -167,18 +172,60 @@ public class AssetManager : MonoBehaviour
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         InputManager.Instance.SetPlaybackObjectsActive(false);
         //DebugLogger.Instance.Log("AddAssetFrameToAssetFramesDict: DoRecordSizesMatch() - " + DoRecordSizesMatch());
-        Recorder.Instance.RefreshTimelineAssets(null);
-        Recorder.Instance.RefreshTimelineCollisions();
-        
-    }
+        Debug.Log("in AddAssetFrameToAssetFramesDict before refresh 0");
 
+        for (int i = 0; i < Recorder.Instance.examples.Count; i++)
+        {
+            var playbackPanel = Recorder.Instance.examples[i].examplePlaybackPanel;
+            Transform[] transformsChilds = playbackPanel.GetComponentsInChildren<Transform>();
+            foreach (var child in transformsChilds)
+            {
+                if (child.gameObject.name.StartsWith("AssetEventsPanel"))
+                {
+                    Debug.Log("In example " + i + " " + child.gameObject.name);
+                }
+            }
+        }
+        Recorder.Instance.RecreateTimelineAssetRows();
+        Debug.Log("in AddAssetFrameToAssetFramesDict after refresh 0");
+
+        for (int i = 0; i < Recorder.Instance.examples.Count; i++)
+        {
+            var playbackPanel = Recorder.Instance.examples[i].examplePlaybackPanel;
+            Transform[] transformsChilds = playbackPanel.GetComponentsInChildren<Transform>();
+            foreach (var child in transformsChilds)
+            {
+                if (child.gameObject.name.StartsWith("AssetEventsPanel"))
+                {
+                    Debug.Log("In example " + i + " " + child.gameObject.name);
+                }
+            }
+        }
+        Recorder.Instance.RefreshTimelineCollisions();
+        Debug.Log("in AddAssetFrameToAssetFramesDict after refresh 1");
+
+        for (int i = 0; i < Recorder.Instance.examples.Count; i++)
+        {
+            var playbackPanel = Recorder.Instance.examples[i].examplePlaybackPanel;
+            Transform[] transformsChilds = playbackPanel.GetComponentsInChildren<Transform>();
+            foreach (var child in transformsChilds)
+            {
+                if (child.gameObject.name.StartsWith("AssetEventsPanel"))
+                {
+                    Debug.Log("In example " + i + " " + child.gameObject.name);
+                }
+            }
+        }
+    }
 
     public void DeleteAsset(GameObject obj)
     {
         DebugLogger.Instance.Log("Deleted " + obj.name);        
-        Recorder.Instance.assetsInScene.Remove(obj.GetComponentInChildren<Asset>());
-        Recorder.Instance.currentActiveExample.RefreshAssetsInExample();
-        //RefreshAssetsInAllExamples();
+        Recorder.Instance.allAssets.Remove(obj.GetComponentInChildren<Asset>());
+        foreach (var example in Recorder.Instance.examples)
+        {
+            example.RefreshAssetsInExample();
+        }
         
         //TODO: check if that is enough to refresh
         Recorder.Instance.RefreshTimelineCollisions();
@@ -260,7 +307,7 @@ public class AssetManager : MonoBehaviour
         //forceArrowScript.arrowHeadGhost.transform.position = forceArrowScript.arrowHeadReal.transform.position;
         //forceArrowScript.DrawTrajectory();     
         //TODO check if it is not really needed (as german said....) I don't think he has right though
-        //Recorder.Instance.RefreshTimelineAssets(null);
+        //Recorder.Instance.RecreateTimelineAssetRows(null);
         
     }
    

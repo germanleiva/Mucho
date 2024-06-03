@@ -5,6 +5,7 @@ using Unity.VisualScripting;
 using UnityEditor;
 //using UnityEditor.VersionControl;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class Recorder : MonoBehaviour
@@ -33,8 +34,8 @@ public class Recorder : MonoBehaviour
     [SerializeField]
     GameObject stateGraphElementPrefab;   
 
-
-    public List<Asset> assetsInScene = new();
+    // Everytime this variable changes we need to update timelineAssetsRow and assetFramesDict
+    [FormerlySerializedAs("assetsInScene")] public List<Asset> allAssets = new();
 
     public GameObject firstExampleButtonObj;
     public Button addExampleButton;
@@ -66,6 +67,7 @@ public class Recorder : MonoBehaviour
     public void SelectExample(Example _currentActiveExample)
     {
         DebugLogger.Instance.Log("Selecting example " + _currentActiveExample.exampleId);
+        
         currentActiveExample = _currentActiveExample;
         foreach (var ex in examples)
         {
@@ -76,8 +78,25 @@ public class Recorder : MonoBehaviour
         currentActiveExample.examplePlaybackPanel.gameObject.SetActive(true);
         currentActiveExample.button.GetComponent<Image>().color = Color.green;
         
+        RecreateTimeline();
+    }
+    
+    public void RecreateTimeline()
+    {
+        //Delete all existing timeline elements in the input and create the new ones
+        RecreateTimelineInputs();
+        
+        //Delete all existing asset rows and create the new ones
+        RecreateTimelineAssetRows();
     }
 
+    public void RecreateTimelineInputs()
+    {
+        RefreshTimelineGestures();
+        RefreshTimelineVoiceSequences();
+        RefreshTimelineCollisions();
+    }
+    
     public void AddExample()
     {        
         var numberButton = Instantiate(firstExampleButtonObj, firstExampleButtonObj.transform.parent);
@@ -102,7 +121,7 @@ public class Recorder : MonoBehaviour
         }
         
         SelectExample(example);  
-        CreateTimelineAndStatePlaceholders(false); 
+        //CreateTimelineAndStatePlaceholders(false); 
 
     }
 
@@ -646,54 +665,24 @@ public class Recorder : MonoBehaviour
         return null;
     }
 
-
-    //List of asset timelines
-    Dictionary<Asset,GameObject> timelineAssetRows = new();
-    
-
-    public void CreateTimelineInputSequences()
-    {
-        DebugLogger.Instance.Log("Creating input sequences");
-
-        //Generate gesture sequences for left and right hand
-        currentActiveExample.LeftHandGestureSequences = GenerateGestureSequences(currentActiveExample.leftHandTimelinePanel, currentActiveExample.activeLeftHandFrames);
-        currentActiveExample.RightHandGestureSequences = GenerateGestureSequences(currentActiveExample.rightHandTimelinePanel, currentActiveExample.activeRightHandFrames);
-        currentActiveExample.AllGestureSequences = currentActiveExample.LeftHandGestureSequences.Concat(currentActiveExample.RightHandGestureSequences).ToList();
-
-        //Generate voice command sequences
-        currentActiveExample.VoiceCommandSequences = GenerateVoiceCommandSequences(currentActiveExample.voiceTimelinePanel);
-
-        //Generate collision sequences
-        currentActiveExample.collisionSequencesLists.Clear();
-        foreach (var recordable in currentActiveExample.assetFramesDict.Keys)
-        {
-            if (currentActiveExample.assetFramesDict[recordable].Count > 0)
-            {
-                //if it doesnt exists, add it
-                currentActiveExample.collisionSequencesLists.Add(GenerateCollisionSequences(currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>(), recordable));
-            }
-        }
-    }
-
-    public void CreateTimelineActions()
+    public void CreateTimelineRowsAndActions()
     {
         DebugLogger.Instance.Log("Creating assets timeline for example " + currentActiveExample.exampleId);
 
         int assetsCounter = 0;
         currentActiveExample.assetSequencesLists.Clear();
-        foreach (var recordable in currentActiveExample.assetFramesDict.Keys)
+        foreach (var asset in currentActiveExample.assetFramesDict.Keys)
         {
             ++assetsCounter;
             GameObject timelinePanel = Instantiate(currentActiveExample.assetTimelinePanelPrefab, currentActiveExample.examplePlaybackPanel);
-            if(!timelineAssetRows.ContainsKey(recordable)) 
-                timelineAssetRows.Add(recordable,timelinePanel);
+            timelinePanel.GetComponent<TimelineAssetRow>().AssetInstanceID = asset.GetInstanceID();
             timelinePanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(timelinePanel.GetComponent<RectTransform>().anchoredPosition.x, timelinePanel.GetComponent<RectTransform>().anchoredPosition.y - assetsCounter * 100);
             timelinePanel.SetActive(true);
-            timelinePanel.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text = Manager.Instance.CleanAssetName(recordable.name); //Assign asset name
+            timelinePanel.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text = Manager.Instance.CleanAssetName(asset.name); //Assign asset name
 
-            if (currentActiveExample.assetFramesDict[recordable].Count > 0)
+            if (currentActiveExample.assetFramesDict[asset].Count > 0)
             {
-                currentActiveExample.assetSequencesLists.Add(GenerateAssetActionSequences(timelinePanel.GetComponent<RectTransform>(), recordable));
+                currentActiveExample.assetSequencesLists.Add(GenerateAssetActionSequences(timelinePanel.GetComponent<RectTransform>(), asset));
 
             }
         }
@@ -701,8 +690,8 @@ public class Recorder : MonoBehaviour
 
     public void CreateTimelineAndStatePlaceholders(bool startHidden=true)
     {
-        CreateTimelineInputSequences();
-        CreateTimelineActions();
+        RecreateTimelineInputs();
+        CreateTimelineRowsAndActions();
         
         CreateStatePlaceholders(startHidden);
     }
@@ -723,16 +712,15 @@ public class Recorder : MonoBehaviour
         RefreshStatePlaceholders();
     }
 
-    public void RefreshTimelineAssets(AssetFrame assetFrame)
+    public void RecreateTimelineAssetRows()
     {
         //Refresh action events in the timeline
         DebugLogger.Instance.Log("Refresh assets timeline for example " + currentActiveExample.exampleId);
 
-        foreach (var timelineAssetRow in timelineAssetRows.Values)
+        foreach (var timelineAssetRow in currentActiveExample.GetTimelineAssetRows())
         {
             Destroy(timelineAssetRow);
         }
-        timelineAssetRows.Clear();
 
         int assetsCounter = 0;
         currentActiveExample.assetSequencesLists.Clear();
@@ -746,7 +734,7 @@ public class Recorder : MonoBehaviour
     public void CreateTimelineAssetRow(Asset asset, int assetsCounter)
     {
         GameObject assetRow = Instantiate(currentActiveExample.assetTimelinePanelPrefab, currentActiveExample.examplePlaybackPanel);
-        timelineAssetRows.Add(asset,assetRow);
+        assetRow.GetComponent<TimelineAssetRow>().AssetInstanceID = asset.GetInstanceID();
         assetRow.GetComponent<RectTransform>().anchoredPosition = new Vector2(assetRow.GetComponent<RectTransform>().anchoredPosition.x, assetRow.GetComponent<RectTransform>().anchoredPosition.y - assetsCounter * 100);
         assetRow.SetActive(true);
         assetRow.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text = Manager.Instance.CleanAssetName(asset.name); //Assign asset name
@@ -758,7 +746,7 @@ public class Recorder : MonoBehaviour
     {
         if (currentActiveExample.assetFramesDict[asset].Count > 0)
         {
-            var assetRow = timelineAssetRows[asset];
+            var assetRow = currentActiveExample.GetTimelineRowFor(asset);
             currentActiveExample.assetSequencesLists.Add(GenerateAssetActionSequences(assetRow.GetComponent<RectTransform>(), asset));
         }
         RefreshTimelineCollisions();
@@ -795,17 +783,15 @@ public class Recorder : MonoBehaviour
         }
         //Generate gesture sequences for left and right hand
         currentActiveExample.LeftHandGestureSequences = GenerateGestureSequences(currentActiveExample.leftHandTimelinePanel, currentActiveExample.activeLeftHandFrames);
-        currentActiveExample.RightHandGestureSequences = GenerateGestureSequences(currentActiveExample.rightHandTimelinePanel, currentActiveExample.activeRightHandFrames);
-        currentActiveExample.AllGestureSequences = currentActiveExample.LeftHandGestureSequences.Concat(currentActiveExample.RightHandGestureSequences).ToList();
-
-        
+        currentActiveExample.RightHandGestureSequences = GenerateGestureSequences(currentActiveExample.rightHandTimelinePanel,
+                currentActiveExample.activeRightHandFrames);
     }
 
     /*
     public void RefreshTimelineAndStates()
     { 
         RefreshTimelineInputSequences();
-        RefreshTimelineAssets();
+        RecreateTimelineAssetRows();
         CreateStates();
         
         //TODO: call them only in live mode

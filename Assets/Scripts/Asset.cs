@@ -562,7 +562,7 @@ public class Asset : MonoBehaviour
         //Pin(Recorder.Instance.wall.transform.position);
 
         Recorder.Instance.RefreshTimelineAndStates();
-        //Recorder.Instance.RefreshTimelineAssets();
+        //Recorder.Instance.RecreateTimelineAssetRows();
     } */
 
     public void Pin(Vector3 location)
@@ -673,7 +673,7 @@ public class Asset : MonoBehaviour
             recordedAssetFrames[i].CollisionType = COLLISION_ENUM.NONE;
         }
         
-        Recorder.Instance.RefreshTimelineAssets(assetFrame);
+        Recorder.Instance.RecreateTimelineAssetRows();
     }
 
     //For assets
@@ -723,7 +723,7 @@ public class Asset : MonoBehaviour
             currentAssetRecordedData[i].CollisionType = COLLISION_ENUM.NONE;
         }                        
         
-        Recorder.Instance.RefreshTimelineAssets(assetFrame);
+        Recorder.Instance.RecreateTimelineAssetRows();
 
         //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[2].playbackObject.transform);
     }
@@ -898,7 +898,7 @@ public class Asset : MonoBehaviour
             currentAssetRecordedData[i].CollisionType = COLLISION_ENUM.NONE;
         }
         //CopyPoseFromRecordable(this, (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:true, copyRotation:false);
-        Recorder.Instance.RefreshTimelineAssets(assetFrame);
+        Recorder.Instance.RecreateTimelineAssetRows();
         //recordable.playbackObject.transform.SetParent(null);
     }
 
@@ -1030,7 +1030,7 @@ public class Asset : MonoBehaviour
         GetComponent<Rigidbody>().useGravity = false;
         
         
-        Recorder.Instance.RefreshTimelineAssets(null);
+        Recorder.Instance.RecreateTimelineAssetRows();
        
     }
 

@@ -256,7 +256,12 @@ public class Example
 
     public List<VoiceSequence> VoiceCommandSequences = new();
 
-    public List<GestureSequence> AllGestureSequences = new();
+    public List<GestureSequence> AllGestureSequences {
+        get
+        {
+            return LeftHandGestureSequences.Concat(RightHandGestureSequences).ToList();
+        }
+}
     public List<List<AssetActionSequence>> assetSequencesLists = new();
     public List<List<CollisionSequence>> collisionSequencesLists = new();
     
@@ -271,6 +276,7 @@ public class Example
     //public List<Recordable> assets;
     public List<StateTimelineUIElement> StatePlaceholders;
     // public Dictionary<State, StateTimelineUIElement> StatesDict;
+    
 
     public Example(Button _button, RectTransform _examplePlaybackPanel)
     {
@@ -306,15 +312,14 @@ public class Example
         LeftHandGestureSequences = new();
         RightHandGestureSequences = new();
         VoiceCommandSequences = new();
-        AllGestureSequences = new();
         assetSequencesLists = new();
         collisionSequencesLists = new();
 
         assetFramesDict = new Dictionary<Asset, List<AssetFrame>>();
         StatePlaceholders = new();
         // StatesDict = new Dictionary<State, StateTimelineUIElement>();
-        //Copy assetsInScene to assets
-        foreach (Asset recordable in Recorder.Instance.assetsInScene)
+        //Copy allAssets to assets
+        foreach (Asset recordable in Recorder.Instance.allAssets)
         {            
             //Create a new list of recordable frames for each asset
             assetFramesDict.Add(recordable, new List<AssetFrame>());            
@@ -338,6 +343,29 @@ public class Example
         DebugLogger.Instance.Log("Created example " + exampleId);
     }
 
+    public List<GameObject> GetTimelineAssetRows()
+    {
+        List<GameObject> result = new();
+        foreach (var timelineRow in examplePlaybackPanel.GetComponentsInChildren<TimelineAssetRow>())
+        {
+            result.Add(timelineRow.gameObject);
+        }
+
+        return result;
+    }
+    public GameObject GetTimelineRowFor(Asset asset)
+    {
+        foreach (var timelineAssetRow in examplePlaybackPanel.GetComponentsInChildren<TimelineAssetRow>())
+        {
+            if (timelineAssetRow.AssetInstanceID == asset.GetInstanceID())
+            {
+                return timelineAssetRow.gameObject;
+            }
+        }
+
+        return null;
+    }
+
     public void CopyExampleDataFrom(Example example)
     {
         DebugLogger.Instance.Log("Copying data from example " + example.exampleId + " to example " + exampleId);
@@ -359,8 +387,8 @@ public class Example
 
     public void RefreshAssetsInExample()
     {
-        //Copy assetsInScene to assets
-        foreach (Asset recordable in Recorder.Instance.assetsInScene)
+        //Copy allAssets to assets
+        foreach (Asset recordable in Recorder.Instance.allAssets)
         {
             //Create a new list of recordable frames for each asset
             if (!assetFramesDict.ContainsKey(recordable))
@@ -373,7 +401,7 @@ public class Example
         List<Asset> assetsToRemove = new List<Asset>();
         foreach (Asset recordable in assetFramesDict.Keys)
         {
-            if (!Recorder.Instance.assetsInScene.Contains(recordable))
+            if (!Recorder.Instance.allAssets.Contains(recordable))
             {
                 assetsToRemove.Add(recordable);
             }
