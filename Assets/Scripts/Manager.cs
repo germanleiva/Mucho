@@ -526,7 +526,7 @@ public class AssetActionSequence : Sequence
         return GetDescription(ActionType);
     }
 
-    public string GetDescription(ACTION_ENUM value)
+    public static string GetDescription(ACTION_ENUM value)
     {
         Type type = value.GetType();
         string name = Enum.GetName(type, value);
@@ -547,6 +547,25 @@ public class AssetActionSequence : Sequence
         return null;
     }
 
+    public static bool IsActionEnum(string actionName)
+    {
+        foreach (ACTION_ENUM action in Enum.GetValues(typeof(ACTION_ENUM)))
+        {
+            if (action.ToString().Equals(actionName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            // Check if the actionName matches the description of the enum value
+            string description = GetDescription(action);
+            if (description != null && description.Equals(actionName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+        }
+        return false;
+    }
 
 }
 

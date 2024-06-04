@@ -20,6 +20,7 @@ public class TimelineUIElement : MonoBehaviour
     //Store startindex and length
     public int StartIndex;
     public int Length;
+    public static float MinimumLength => 75;
 
     public void Start()
     {
@@ -106,6 +107,15 @@ public class TimelineUIElement : MonoBehaviour
         float positionX = MapIndexToTimelinePosition(parentTransform, startIndex, recordingLength);
         float sizeDeltaX = MapIndexToTimelinePosition(parentTransform, startIndex + length, recordingLength) - positionX;
 
+        //minimum length of action timeline events
+        if(AssetActionSequence.IsActionEnum(id))
+        {
+            if (sizeDeltaX < MinimumLength)
+            {
+                sizeDeltaX = MinimumLength;
+            }
+        }
+        
         RectTransform elementRect = timelineElement.GetComponent<RectTransform>();
         elementRect.anchoredPosition = new Vector2(positionX, elementRect.anchoredPosition.y);
         elementRect.sizeDelta = new Vector2(sizeDeltaX, elementRect.sizeDelta.y);
@@ -116,6 +126,8 @@ public class TimelineUIElement : MonoBehaviour
         
         return timelineElement;
     }
+
+    
 
     public static void SetTimeLineElementWidthAccordingToText(GameObject timelineElement)
     {
