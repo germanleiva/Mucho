@@ -77,20 +77,15 @@ public class Manager : MonoBehaviour
             DebugLogger.Instance.Log("No examples to change to live mode");
             return;
         }
-        
-        //If the state machine is empty, create the states
-        
-        if(CustomStateMachine.Instance.GetSize() <2)
-        {
-            Recorder.Instance.CreateStateMachine();
-        }
 
         currAppState = Manager.AppState.LIVE;
         Recorder.Instance.playbackSlider.value = 0;
         Recorder.Instance.SetPlaybackObjectsVisibility(false);
         AssetManager.Instance.HideMiscObjs();
         AssetManager.Instance.SetAllAssetMenusPokeable(false);
-        Recorder.Instance.CreateStateMachine();
+        
+        CustomStateMachine.CombinedStateMachine(Recorder.Instance.examples);
+        
         // Recorder.Instance.ResetStateMachine();
         InputManager.Instance.NotifyCollision(null,null);
         CustomStateMachine.Instance.InvokeOnEnterActionsOfInitialState();

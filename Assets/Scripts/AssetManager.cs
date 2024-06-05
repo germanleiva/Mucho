@@ -172,50 +172,11 @@ public class AssetManager : MonoBehaviour
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         InputManager.Instance.SetPlaybackObjectsActive(false);
         //DebugLogger.Instance.Log("AddAssetFrameToAssetFramesDict: DoRecordSizesMatch() - " + DoRecordSizesMatch());
-        Debug.Log("in AddAssetFrameToAssetFramesDict before refresh 0");
-
-        for (int i = 0; i < Recorder.Instance.examples.Count; i++)
-        {
-            var playbackPanel = Recorder.Instance.examples[i].examplePlaybackPanel;
-            Transform[] transformsChilds = playbackPanel.GetComponentsInChildren<Transform>();
-            foreach (var child in transformsChilds)
-            {
-                if (child.gameObject.name.StartsWith("AssetEventsPanel"))
-                {
-                    Debug.Log("In example " + i + " " + child.gameObject.name);
-                }
-            }
-        }
+        
         Recorder.Instance.RecreateTimelineAssetRows();
-        Debug.Log("in AddAssetFrameToAssetFramesDict after refresh 0");
-
-        for (int i = 0; i < Recorder.Instance.examples.Count; i++)
-        {
-            var playbackPanel = Recorder.Instance.examples[i].examplePlaybackPanel;
-            Transform[] transformsChilds = playbackPanel.GetComponentsInChildren<Transform>();
-            foreach (var child in transformsChilds)
-            {
-                if (child.gameObject.name.StartsWith("AssetEventsPanel"))
-                {
-                    Debug.Log("In example " + i + " " + child.gameObject.name);
-                }
-            }
-        }
+        
         Recorder.Instance.RefreshTimelineCollisions();
-        Debug.Log("in AddAssetFrameToAssetFramesDict after refresh 1");
-
-        for (int i = 0; i < Recorder.Instance.examples.Count; i++)
-        {
-            var playbackPanel = Recorder.Instance.examples[i].examplePlaybackPanel;
-            Transform[] transformsChilds = playbackPanel.GetComponentsInChildren<Transform>();
-            foreach (var child in transformsChilds)
-            {
-                if (child.gameObject.name.StartsWith("AssetEventsPanel"))
-                {
-                    Debug.Log("In example " + i + " " + child.gameObject.name);
-                }
-            }
-        }
+        
     }
 
     public void DeleteAsset(GameObject obj)

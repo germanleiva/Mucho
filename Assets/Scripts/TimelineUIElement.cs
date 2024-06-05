@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -84,6 +82,9 @@ public class TimelineUIElement : MonoBehaviour
 
     }
 
+    //destroy the action timeline event
+    
+
     public static float MapIndexToTimelinePosition(RectTransform _rectTransform, int index, int recordingLength)
     {
         float rectStartX = 0;
@@ -108,13 +109,13 @@ public class TimelineUIElement : MonoBehaviour
         float sizeDeltaX = MapIndexToTimelinePosition(parentTransform, startIndex + length, recordingLength) - positionX;
 
         //minimum length of action timeline events
-        if(AssetActionSequence.IsActionEnum(id))
+        /*if(AssetActionSequence.IsActionEnum(id))
         {
             if (sizeDeltaX < MinimumLength)
             {
                 sizeDeltaX = MinimumLength;
             }
-        }
+        }*/
         
         RectTransform elementRect = timelineElement.GetComponent<RectTransform>();
         elementRect.anchoredPosition = new Vector2(positionX, elementRect.anchoredPosition.y);

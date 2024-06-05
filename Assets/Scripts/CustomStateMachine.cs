@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CustomStateMachine : MonoBehaviour
@@ -10,7 +11,7 @@ public class CustomStateMachine : MonoBehaviour
     public static CustomStateMachine Instance { get; private set; }
 
     private State currentState;
-    private Dictionary<string, State> states = new Dictionary<string, State>();
+    private List<State> states = new();
 
     public TMPro.TMP_Text currentActiveStateText;
 
@@ -29,7 +30,7 @@ public class CustomStateMachine : MonoBehaviour
     public void AddState(string name, State state)
     {
         state.name = name;
-        states.Add(name, state);
+        states.Add(state);
     }
 
     public void SetInitialState(State state)
@@ -53,11 +54,6 @@ public class CustomStateMachine : MonoBehaviour
         return states.Count;
     }
 
-    public void DeleteState(string name)
-    {
-        states.Remove(name);
-    }
-
     public void DeleteAllStates()
     {
         states.Clear();
@@ -68,8 +64,11 @@ public class CustomStateMachine : MonoBehaviour
         DebugLogger.Instance.Log("Printing details of state machine", VRConsoleEnabled);
         foreach (var state in states)
         {
-            state.Value.PrintDetailsOfState(VRConsoleEnabled);
+            state.PrintDetailsOfState(VRConsoleEnabled);
         }
+        
+        DebugLogger.Instance.Log("END DETAILS", VRConsoleEnabled);
+
     }
 
 
@@ -84,7 +83,7 @@ public class CustomStateMachine : MonoBehaviour
         
         foreach (var state in states)
         {
-            state.Value.stateGraphElement = StateGraphUI.CreateStateGraphElement(stateElementPrefab, parentTransform, state.Value);
+            state.stateGraphElement = StateGraphUI.CreateStateGraphElement(stateElementPrefab, parentTransform, state);
         }
         //StateGraphUI.CreateStateGraphElement(stateElementPrefab, parentTransform, initialState);
     }
@@ -120,6 +119,186 @@ public class CustomStateMachine : MonoBehaviour
         //onupdate()?? 
     }
 
+    public static void CombinedStateMachine(List<Example> examples)
+    {
+        List<CustomStateMachine> stateMachines = new List<CustomStateMachine>();
+        foreach (var example in examples)
+        {
+            stateMachines.Add(CreateStateMachine(example));
+        }
+
+        var resultingStateMachine = stateMachines.First();
+        stateMachines.RemoveAt(0);
+        
+        //We need to analyze all the CustomStateMachines to merge the duplicated states
+        foreach (var stateMachineToDelete in stateMachines)
+        {
+            for (int i = 0; i < stateMachineToDelete.states.Count; i++)
+            {
+                var currentState = stateMachineToDelete.states.ElementAt(i);
+         
+                //Find if the state does not exist in the resultingStateMachine
+                var equivalentState = resultingStateMachine.states
+                    .Find(x => x.IsStateEqualTo(currentState));
+                if (equivalentState != null)
+                {
+                    //this state is represented in the resultingStateMachine
+                    
+                    //TODO Should we add the extra actions in this state if there are any?
+
+                } else {
+                    //This state is not equal to any state in the resultingStateMachine
+                    //We need to add this state to the resultingStateMachine
+                    if (i == 0)
+                    {
+                        //This is the first state. The only option is to merge both initial states
+                    } else 
+                    {
+                        var previousState = stateMachineToDelete.states.ElementAt(i - 1);
+                        var equivalentPreviousState = resultingStateMachine.states
+                            .Find(x => x.IsStateEqualTo(previousState));
+
+                        if (equivalentPreviousState == null)
+                        {
+                            throw new Exception("This should not happen");
+                        }
+                        
+                        
+                        /*
+                        equivalentPreviousState;
+                        previousState;
+                        */
+
+                        var equivalentCurrentState = new State();
+                        equivalentCurrentState.name = currentState.name;
+                        //Copy all onEnter/onUpdate/onExit/etc
+                        equivalentCurrentState.OnEnterActions = currentState.OnEnterActions;
+                        equivalentCurrentState.OnUpdateActions = currentState.OnUpdateActions;
+                        equivalentCurrentState.OnExitActions = currentState.OnExitActions;
+                        equivalentCurrentState.OnEnterActionsStr = currentState.OnEnterActionsStr;
+                        equivalentCurrentState.OnUpdateActionsStr = currentState.OnUpdateActionsStr;
+                        equivalentCurrentState.OnExitActionsStr = currentState.OnExitActionsStr;
+                        equivalentCurrentState.Gesture = currentState.Gesture;
+                        equivalentCurrentState.Collision = currentState.Collision;
+                        equivalentCurrentState.VoiceSequence = currentState.VoiceSequence;
+                        resultingStateMachine.AddState(currentState.name,currentState);
+                        
+                        var potentialTransitionsToAdd = previousState.transitions.FindAll(x => x.to.IsStateEqualTo(currentState));
+                        
+                        //Could it be this a potentialTransitionToAdd is already in the resultingStateMachine?
+                        //Technically no, because currentState is not on the resultingStateMachine so any transition to currentState should not be in the resultingStateMachine
+                        
+                        foreach (var transitionToAdd in potentialTransitionsToAdd)
+                        {
+                            
+                            //This transition is not in the resultingStateMachine
+                            //We need to add this transition to the resultingStateMachine
+                            equivalentPreviousState.AddTransitionTo(equivalentCurrentState, transitionToAdd.condition, transitionToAdd.textDescription);
+                        }
+                        
+                    }
+                }
+            }
+        }
+
+        resultingStateMachine.PrintDetailsOfStateMachine();
+        CustomStateMachine.Instance = resultingStateMachine;
+        //return resultingStateMachine;
+    }
+    
+    public static CustomStateMachine CreateStateMachine(Example example)
+    {
+        CustomStateMachine StateMachine = new CustomStateMachine();
+        
+        var localStatesDict = new Dictionary<StateTimelineUIElement,State>();
+
+        foreach (var statePlaceholder in example.StatePlaceholders) {
+            var newState = new State {
+                name = "State " + StateMachine.GetSize()
+            };
+            StateMachine.AddState(newState.name, newState);
+
+            localStatesDict.Add(statePlaceholder, newState);
+        }
+
+        var gestures = example.AllGestureSequences;
+        var collisions = example.collisionSequencesLists.SelectMany(x => x).ToList();
+        var voiceCommands = example.VoiceCommandSequences;
+
+        List<Sequence> allPotentialTriggers = gestures.Cast<Sequence>()
+                                  .Concat(collisions.Cast<Sequence>())
+                                  .Concat(voiceCommands.Cast<Sequence>())
+                                  .ToList();
+
+        var allActions = example.assetSequencesLists;
+
+        State firstState = null;
+
+        for (int i = 0; i < example.StatePlaceholders.Count; i++) {
+            var currentStatePlaceholder = example.StatePlaceholders[i];
+            var nexStatePlaceholder = i < example.StatePlaceholders.Count - 1 ? example.StatePlaceholders[i + 1] : null;
+
+            var currentState = localStatesDict[currentStatePlaceholder];
+            if (i == 0) {
+                firstState = currentState;
+            }
+
+            if (nexStatePlaceholder != null) {
+                var nextState = localStatesDict[nexStatePlaceholder];
+
+                //Find transitions between currentStatePlaceholder to nexStatePlaceholder
+                var actualTriggers = allPotentialTriggers.FindAll(x => x.CanTriggerAt(nexStatePlaceholder.StartIndex));
+                if (actualTriggers.Count > 0) {
+                    //Let's build the transition
+                    Func<Frame, bool> transitionConditionFunction = (Frame frame) => {return true;};
+                    string transitionDescription = "" + currentState.name + "->" + nextState.name + ":";
+                    foreach (var trigger in actualTriggers) {
+                        transitionConditionFunction = trigger.AddConditionToFunction(transitionConditionFunction);
+                        transitionDescription = transitionDescription + " && " + trigger.ToString();
+                    }
+                    //Let's add a transition between currentState and nextState
+                    currentState.AddTransitionTo(nextState, transitionConditionFunction, transitionDescription);
+                }
+            } else {
+                //currentStatePlaceholder is the last statePlaceholder
+            }
+
+            DebugLogger.Instance.Log("Adding OnEnter and OnExit actions to state " + currentState.name);
+
+            //var stateInTimeline = currentActiveExample.StatesDict.First().Key;
+            foreach (var assetSequences in allActions)
+            {
+                foreach (var assetSequence in assetSequences)
+                {
+                    if (assetSequence.StartIndex >= currentStatePlaceholder.StartIndex && 
+                        assetSequence.StartIndex < currentStatePlaceholder.StartIndex+currentStatePlaceholder.Length)
+                    {
+                        int distanceToStateStart = Math.Abs(assetSequence.StartIndex - currentStatePlaceholder.StartIndex);
+                        int distanceToStateEnd = Math.Abs(currentStatePlaceholder.StartIndex + currentStatePlaceholder.Length - assetSequence.StartIndex - 1);
+
+                        if(distanceToStateStart < distanceToStateEnd)
+                        {
+                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionType + " for state " + currentState.name + " in OnEnterActions");
+                            currentState.OnEnterActions += () => assetSequence.ActionDelegate();
+                            currentState.OnEnterActionsStr += assetSequence.ActionType.ToString()+ " ";
+                        }
+                        else
+                        {
+                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionType + " for state " + currentState.name + " in OnExitActions");
+                            currentState.OnExitActions += () => assetSequence.ActionDelegate();
+                            currentState.OnExitActionsStr += assetSequence.ActionType.ToString() + " ";
+                        }
+                    }
+                }
+            }
+        }
+
+        CustomStateMachine.Instance.SetInitialState(firstState);
+
+        Recorder.Instance.PrintDetailsOfStateMachine(localStatesDict.Values.ToList());    
+        return StateMachine;
+    }
+
 }
 
 [System.Serializable]
@@ -140,7 +319,7 @@ public class State
 
     public GameObject stateGraphElement;
 
-    Color originalColor = Color.white;  
+    Color originalColor = Color.white;
     public GestureSequence Gesture { get; set; }
     public AssetActionSequence Collision { get; set; }
 
@@ -158,21 +337,22 @@ public class State
 
         OnEnterActions?.Invoke();
 
-        if(stateGraphElement != null)
-        {            
+        if (stateGraphElement != null)
+        {
             //originalColor = stateGraphElement.GetComponent<UnityEngine.UI.Image>().color;
             stateGraphElement.GetComponent<UnityEngine.UI.Image>().color = Color.green;
         }
     }
+
     public void OnUpdate()
     {
         //OnUpdateActions?.Invoke();
     }
 
-    public bool IsStateEqualTo(State state)
+    public bool IsStateEqualTo(State state) 
     {
         //Check if the state's actions and transitions are equal
-
+        
         if(OnEnterActionsStr == state.OnEnterActionsStr &&            
            OnExitActionsStr == state.OnExitActionsStr && 
            transitions.Select(t => t.textDescription).SequenceEqual(state.transitions.Select(t => t.textDescription)))

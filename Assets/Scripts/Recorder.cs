@@ -709,18 +709,22 @@ public class Recorder : MonoBehaviour
         currentActiveExample.VoiceCommandSequences = GenerateVoiceCommandSequences(currentActiveExample.voiceTimelinePanel);
         
         //refresh state placeholders 
-        RefreshStatePlaceholders();
+        //RefreshStatePlaceholders();
     }
 
     public void RecreateTimelineAssetRows()
     {
         //Refresh action events in the timeline
-        DebugLogger.Instance.Log("Refresh assets timeline for example " + currentActiveExample.exampleId);
+        DebugLogger.Instance.Log("Deleting assets row in timeline for example " + currentActiveExample.exampleId);
 
         foreach (var timelineAssetRow in currentActiveExample.GetTimelineAssetRows())
         {
+            //Destroy() is async so we need to disable the usage of timelineAssetRow so it is not confused with the new one
+            timelineAssetRow.GetComponent<TimelineAssetRow>().AssetInstanceID = 0;
             Destroy(timelineAssetRow);
         }
+
+        DebugLogger.Instance.Log("Recreating assets row in timeline for example " + currentActiveExample.exampleId);
 
         int assetsCounter = 0;
         currentActiveExample.assetSequencesLists.Clear();
