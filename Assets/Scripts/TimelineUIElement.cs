@@ -20,8 +20,6 @@ public class TimelineUIElement : MonoBehaviour
     public int StartIndex;
     public int Length;
     public static float MinimumLength => 75;
-    //Instance ID of the asset to which this timeline element belongs
-    [FormerlySerializedAs("AssetInstanceID")] public int ActionInstanceID; 
 
     public void Start()
     {
@@ -79,33 +77,27 @@ public class TimelineUIElement : MonoBehaviour
         //SetColor(Color.blue);
     }
     
-    public void OnDeleteActionEvent()
+    public void OnDeleteActionEvent(GameObject deleteEventPanel)
     {
-        DebugLogger.Instance.Log("Delete action event");
+        DebugLogger.Instance.Log("Delete action event on object " + this);
 
-        Asset assetToDelete = null;
-        //Find the asset 
-        foreach (var asset in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
+        int correspondingAssetInstanceID = gameObject.transform.parent.GetComponent<TimelineAssetRow>().AssetInstanceID;
+        Asset correspondingAsset = Recorder.Instance.allAssets.Find(asset => asset.GetInstanceID() == correspondingAssetInstanceID);
+        if (correspondingAsset == null)
         {
-            Debug.Log("Asset name> " + asset.name + " Event text " + eventText.text);
-            // debug ids
-            int assetInstanceID = asset.GetInstanceID();
-           if(assetInstanceID == ActionInstanceID)
-           {
-               //Delete the action event from the asset action sequence list
-               assetToDelete = asset;
-                break;
-           }
+            Debug.LogError("Asset not found");
+            return;
         }
         
         //Delete the action event from the asset action sequence list
-        Recorder.Instance.DeleteAssetActionSequence(assetToDelete,StartIndex);
+        Recorder.Instance.DeleteAssetActionSequence(correspondingAsset,StartIndex,Length);
         
         //Refresh collisions
+        //TODO refresh should run a physics simulation to recalculate the collisions
         Recorder.Instance.RefreshTimelineCollisions();
-        
-        //Destroy(gameObject);
 
+        deleteEventPanel.SetActive(false);
+        Destroy(gameObject);
     }
 
     void Update()
@@ -144,15 +136,9 @@ public class TimelineUIElement : MonoBehaviour
         //minimum length of action timeline events
         if(AssetActionSequence.IsActionEnum(id))
         {
-            /*if (sizeDeltaX < MinimumLength)
+            if (sizeDeltaX < MinimumLength)
             {
                 sizeDeltaX = MinimumLength;
-            }*/
-            //Set the instance ID of the asset to which this timeline element belongs
-            if (asset)
-            {
-                int assetInstanceID = asset.GetInstanceID();
-                timelineElement.GetComponent<TimelineUIElement>().ActionInstanceID = assetInstanceID;
             }
         }
         RectTransform elementRect = timelineElement.GetComponent<RectTransform>();
@@ -201,14 +187,7 @@ public class TimelineUIElement : MonoBehaviour
         //Get y max and min of the RectTransform
         float yMax = rootRectTransform.anchoredPosition.y + rootRectTransform.sizeDelta.y / 2;
         float yMin = rootRectTransform.anchoredPosition.y - rootRectTransform.sizeDelta.y / 2;
-        if (point.y > yMax || point.y < yMin)
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+        return point.y <= yMax && point.y >= yMin;
 
     }
 

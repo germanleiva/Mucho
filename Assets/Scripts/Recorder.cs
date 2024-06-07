@@ -627,7 +627,7 @@ public class Recorder : MonoBehaviour
                 DebugLogger.Instance.Log("Action delegate found: " + recordedAssetFrames[sequence.StartIndex].ActionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordedAssetFrames[sequence.StartIndex].ActionDelegate.Method.GetParameters().Select(x => x.Name)));
             }
 
-            if (sequence.ActionType == ACTION_ENUM.HIDE)
+            /*if (sequence.ActionType == ACTION_ENUM.HIDE)
             {
                 GameObject hideElement = Instantiate(currentActiveExample.hideTimelinePanelPrefab, timelinePanel);
                 hideElement.SetActive(true);
@@ -638,9 +638,14 @@ public class Recorder : MonoBehaviour
                 GameObject showElement = Instantiate(currentActiveExample.showTimelinePanelPrefab, timelinePanel);
                 showElement.SetActive(true);
                 showElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(TimelineUIElement.MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex, GetSizeOfMainRecordedData()), showElement.GetComponent<RectTransform>().anchoredPosition.y);
-            }
+            }*/
             
-            if(followActions.Contains(sequence.ActionType) || sequence.ActionType == ACTION_ENUM.APPLY_FORCE || sequence.ActionType == ACTION_ENUM.CHANGE_COLOR || sequence.ActionType == ACTION_ENUM.PIN) //Other types of events - physics, attach etc
+            if(followActions.Contains(sequence.ActionType) || 
+               sequence.ActionType == ACTION_ENUM.HIDE || 
+               sequence.ActionType == ACTION_ENUM.SHOW || 
+               sequence.ActionType == ACTION_ENUM.APPLY_FORCE || 
+               sequence.ActionType == ACTION_ENUM.CHANGE_COLOR || 
+               sequence.ActionType == ACTION_ENUM.PIN) //Other types of events - physics, attach etc
             {                
                 TimelineUIElement.CreateTimelineElement(currentActiveExample.assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ToString(), asset);
             }
@@ -648,18 +653,43 @@ public class Recorder : MonoBehaviour
         return sequences;
     }
 
-    public void DeleteAssetActionSequence(Asset asset, int startIndex)
+    public void DeleteAssetActionSequence(Asset asset, int startIndex, int length)
     {
         var recordedAssetFrames = currentActiveExample.assetFramesDict[asset];
-        var actionTypes = recordedAssetFrames.Select(x => x.ActionType).ToList();
-        var sequences = GetSequences(actionTypes);
-        var sequenceToDelete = sequences.Find(x => x.StartIndex == startIndex);
-        if (sequenceToDelete != null)
+        
+        var currentAssetFrame = recordedAssetFrames[Math.Max(startIndex - 1,0)];
+        for (int i = startIndex; i < startIndex+length; i++)
         {
-            sequences.Remove(sequenceToDelete);
-            currentActiveExample.assetFramesDict[asset].RemoveRange(sequenceToDelete.StartIndex, sequenceToDelete.Length);
-            RecreateTimelineAssetRows();
+            var assetFrame = recordedAssetFrames[i];
+            var actionType = assetFrame.ActionType;
+            switch (actionType)
+            {
+                case ACTION_ENUM.PIN:
+                case ACTION_ENUM.APPLY_FORCE:
+                case ACTION_ENUM.RESET_PHYSICS:
+                case ACTION_ENUM.FOLLOW_G_FOCUS:
+                case ACTION_ENUM.FOLLOW_L_FOCUS: 
+                case ACTION_ENUM.FOLLOW_R_FOCUS:
+                case ACTION_ENUM.FOLLOW_LEFT_HAND:
+                case ACTION_ENUM.FOLLOW_RIGHT_HAND:
+                case ACTION_ENUM.UNFOLLOW:
+                    assetFrame.rootPosition = currentAssetFrame.rootPosition;
+                    assetFrame.rootRotation = currentAssetFrame.rootRotation;
+                    break;
+                case ACTION_ENUM.HIDE:
+                    currentAssetFrame.showStatusForThisFrame = true;
+                    break;
+                case ACTION_ENUM.SHOW:
+                    currentAssetFrame.showStatusForThisFrame = false;
+                    break;
+                case ACTION_ENUM.CHANGE_COLOR:
+                    assetFrame.color = currentAssetFrame.color;
+                    break;
+            }
+            recordedAssetFrames[i].ActionType = ACTION_ENUM.NONE;
+            recordedAssetFrames[i].ActionDelegate = null;
         }
+        
     }
     
     public List<CollisionSequence> GenerateCollisionSequences(RectTransform collisionTimelinePanelTransform, Asset asset) //Strong assumption that all sources of action come from collision
@@ -673,9 +703,6 @@ public class Recorder : MonoBehaviour
             List<CollisionSequence> sequences = GetSequences(collisionTypes);
             foreach (CollisionSequence sequence in sequences)
             {
-                //DebugLogger.Instance.Log("Collision sequence name: " + sequence.Action + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
-                //DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(collisionTimelinePanelTransform, sequence.StartIndex + sequence.Length));
-
                 if (recordedAssetFrames[sequence.StartIndex].CollisionDelegate != null)
                     DebugLogger.Instance.Log("Collision delegate found: " + recordedAssetFrames[sequence.StartIndex].CollisionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordedAssetFrames[sequence.StartIndex].CollisionDelegate.Method.GetParameters().Select(x => x.Name)));
                 if (recordedAssetFrames[sequence.StartIndex].CollidedObject != null)
