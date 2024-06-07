@@ -156,7 +156,6 @@ public class TimelineUIElement : MonoBehaviour
             }
 
         }
-        
         RectTransform elementRect = timelineElement.GetComponent<RectTransform>();
         elementRect.anchoredPosition = new Vector2(positionX, elementRect.anchoredPosition.y);
         elementRect.sizeDelta = new Vector2(sizeDeltaX, elementRect.sizeDelta.y);
