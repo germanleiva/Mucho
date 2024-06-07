@@ -53512,6 +53512,7 @@ MonoBehaviour:
   eventText: {fileID: 50439955}
   StartIndex: 0
   Length: 0
+  AssetInstanceID: 0
 --- !u!114 &893771103
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -70106,7 +70107,7 @@ GameObject:
   - component: {fileID: 1109687351}
   m_Layer: 7
   m_Name: HeadContactSphere
-  m_TagString: Untagged
+  m_TagString: Head
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -74357,6 +74358,18 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+        - m_Target: {fileID: 1186146832}
+          m_TargetAssemblyTypeName: TimelineUIElement, Assembly-CSharp
+          m_MethodName: OnDeleteActionEvent
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!114 &1186146832
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -74374,6 +74387,7 @@ MonoBehaviour:
   eventText: {fileID: 184923726}
   StartIndex: 0
   Length: 0
+  AssetInstanceID: 0
 --- !u!114 &1186146833
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -85578,6 +85592,7 @@ MonoBehaviour:
   eventText: {fileID: 222792312}
   StartIndex: 0
   Length: 0
+  AssetInstanceID: 0
 --- !u!1 &1376681992
 GameObject:
   m_ObjectHideFlags: 0
@@ -100020,6 +100035,7 @@ MonoBehaviour:
   eventText: {fileID: 2076505760}
   StartIndex: 0
   Length: 0
+  AssetInstanceID: 0
 --- !u!114 &1597076315
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -110511,6 +110527,7 @@ MonoBehaviour:
   eventText: {fileID: 779920583}
   StartIndex: 0
   Length: 0
+  AssetInstanceID: 0
 --- !u!114 &1763086623
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -128625,6 +128642,7 @@ MonoBehaviour:
   eventText: {fileID: 334800210}
   StartIndex: 0
   Length: 0
+  AssetInstanceID: 0
 --- !u!114 &2032458726
 MonoBehaviour:
   m_ObjectHideFlags: 0

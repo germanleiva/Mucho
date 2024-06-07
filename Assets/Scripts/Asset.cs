@@ -178,20 +178,7 @@ public class Asset : MonoBehaviour
     GameObject collidedObject = null, 
     bool propagateValueToSubsequentFrames = false)
     {
-        //AssetFrame item = new(transform.position, transform.rotation, showStatus, actionStr, collisionStr, actionDelegate, collisionDelegate, collidedObject, frameNumber);
-        //DebugLogger.Instance.Log("Inserting asset record frame at index " + frameNumber);
-
         var recordedAssetFrames = Recorder.Instance.currentActiveExample.assetFramesDict[this];
-
-        /*if(currentAssetRecordedData[frameNumber].ActionDelegate != null)
-        {
-            DebugLogger.Instance.Log("InsertAssetRecordFrame() - Action delegate at frame number " + frameNumber + " is not null. Adding to the existing delegate.");
-            item.ActionDelegate += currentAssetRecordedData[frameNumber].ActionDelegate; //Copy existing action delegate
-            item.ActionType += "," + currentAssetRecordedData[frameNumber].ActionType; //Copy existing action
-        }*/
-
-
-
         AssetFrame currentAssetFrame = recordedAssetFrames[frameNumber];
         currentAssetFrame.rootPosition = transform.position;
         currentAssetFrame.rootRotation = transform.rotation;
@@ -200,19 +187,7 @@ public class Asset : MonoBehaviour
         currentAssetFrame.CollisionType = collisionType;
         currentAssetFrame.CollisionDelegate = collisionDelegate;
         currentAssetFrame.CollidedObject = collidedObject;
-        //item.color = currentObjColor;
-        //item.showStatusForThisFrame = item.showStatusForThisFrame;
-
-        /*if(currentAssetRecordedData[frameNumber].CollisionType != "None")
-        {
-            DebugLogger.Instance.Log("InsertAssetRecordFrame() - Collision delegate at frame number " + frameNumber + " is not null. Adding to the existing delegate.");
-            item.CollisionDelegate = currentAssetRecordedData[frameNumber].CollisionDelegate; //Copy existing collision delegate
-            item.CollisionType = "," + currentAssetRecordedData[frameNumber].CollisionType; //Copy existing collision
-        }*/
-
-
         recordedAssetFrames[frameNumber] = currentAssetFrame;
-        //currentAssetRecordedData[frameNumber] = item;
 
         if (propagateValueToSubsequentFrames) // Propagate the value to subsequent frames
         {
@@ -364,7 +339,7 @@ public class Asset : MonoBehaviour
         }
 
         SetVisibility(false);
-
+        
         Recorder.Instance.CreateTimelineActionsForAsset(this);
         
     }

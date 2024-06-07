@@ -525,17 +525,24 @@ public class Recorder : MonoBehaviour
 
     public List<CollisionSequence> GetSequences(List<COLLISION_ENUM> actions)
     {
+        // Initialize an empty list to store the sequences of collisions.
         List<CollisionSequence> sequences = new();
 
+        // Initialize variables to track the start index of the current sequence
+        // and the type of the current collision action.
         int startIndex = -1;
         COLLISION_ENUM currentAction = COLLISION_ENUM.UNDEFINED;
 
+        // Loop through the list of actions.
         for (int i = 0; i < actions.Count; i++)
         {
+            // Check if the current action is not NONE.
             if (actions[i] != COLLISION_ENUM.NONE)
             {
+                // If the current action is undefined or matches the previous action.
                 if (currentAction == COLLISION_ENUM.UNDEFINED || currentAction == actions[i])
                 {
+                    // If the current action was undefined, update the current action and start index.
                     if (currentAction == COLLISION_ENUM.UNDEFINED)
                     {
                         currentAction = actions[i];
@@ -544,6 +551,8 @@ public class Recorder : MonoBehaviour
                 }
                 else
                 {
+                    // If the current action is different from the previous one,
+                    // create a new CollisionSequence for the previous sequence.
                     sequences.Add(new CollisionSequence
                     {
                         StartIndex = startIndex,
@@ -551,12 +560,15 @@ public class Recorder : MonoBehaviour
                         CollisionType = currentAction,
                     });
 
+                    // Update the start index and current action for the new sequence.
                     startIndex = i;
                     currentAction = actions[i];
                 }
             }
             else if (currentAction != COLLISION_ENUM.UNDEFINED)
             {
+                // If the current action is NONE and there was a previous sequence,
+                // create a new CollisionSequence for the previous sequence.
                 sequences.Add(new CollisionSequence
                 {
                     StartIndex = startIndex,
@@ -564,13 +576,16 @@ public class Recorder : MonoBehaviour
                     CollisionType = currentAction
                 });
 
+                // Reset the start index and current action.
                 startIndex = -1;
                 currentAction = COLLISION_ENUM.UNDEFINED;
             }
         }
 
+        // After looping through all actions, check if there is an unfinished sequence.
         if (currentAction != COLLISION_ENUM.UNDEFINED)
         {
+            // Create a new CollisionSequence for the remaining sequence.
             sequences.Add(new CollisionSequence
             {
                 StartIndex = startIndex,
@@ -579,8 +594,10 @@ public class Recorder : MonoBehaviour
             });
         }
 
+        // Return the list of collision sequences.
         return sequences;
     }
+
 
     public List<AssetActionSequence> GenerateAssetActionSequences(RectTransform timelinePanel, Asset asset)
     {
@@ -625,18 +642,33 @@ public class Recorder : MonoBehaviour
             
             if(followActions.Contains(sequence.ActionType) || sequence.ActionType == ACTION_ENUM.APPLY_FORCE || sequence.ActionType == ACTION_ENUM.CHANGE_COLOR || sequence.ActionType == ACTION_ENUM.PIN) //Other types of events - physics, attach etc
             {                
-                TimelineUIElement.CreateTimelineElement(currentActiveExample.assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ToString());
+                TimelineUIElement.CreateTimelineElement(currentActiveExample.assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ToString(), asset);
             }
         }
         return sequences;
     }
 
+    public void DeleteAssetActionSequence(Asset asset, int startIndex)
+    {
+        var recordedAssetFrames = currentActiveExample.assetFramesDict[asset];
+        var actionTypes = recordedAssetFrames.Select(x => x.ActionType).ToList();
+        var sequences = GetSequences(actionTypes);
+        var sequenceToDelete = sequences.Find(x => x.StartIndex == startIndex);
+        if (sequenceToDelete != null)
+        {
+            sequences.Remove(sequenceToDelete);
+            currentActiveExample.assetFramesDict[asset].RemoveRange(sequenceToDelete.StartIndex, sequenceToDelete.Length);
+            RecreateTimelineAssetRows();
+        }
+    }
+    
     public List<CollisionSequence> GenerateCollisionSequences(RectTransform collisionTimelinePanelTransform, Asset asset) //Strong assumption that all sources of action come from collision
     {
         DebugLogger.Instance.Log("Generating collision sequences for " + asset.name);
         var recordedAssetFrames = currentActiveExample.assetFramesDict[asset]; 
         try
         {
+            // Extract the list of collision types from the recorded frames
             List<COLLISION_ENUM> collisionTypes = recordedAssetFrames.Select(x => x.CollisionType).ToList();
             List<CollisionSequence> sequences = GetSequences(collisionTypes);
             foreach (CollisionSequence sequence in sequences)
@@ -753,7 +785,9 @@ public class Recorder : MonoBehaviour
             var assetRow = currentActiveExample.GetTimelineRowFor(asset);
             currentActiveExample.assetSequencesLists.Add(GenerateAssetActionSequences(assetRow.GetComponent<RectTransform>(), asset));
         }
+        //Refresh timeline collisions because there are some actions like follow and addforce that may create collisions
         RefreshTimelineCollisions();
+        
     }
 
     public void RefreshTimelineCollisions()

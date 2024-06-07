@@ -19,6 +19,8 @@ public class TimelineUIElement : MonoBehaviour
     public int StartIndex;
     public int Length;
     public static float MinimumLength => 75;
+    //Instance ID of the asset to which this timeline element belongs
+    public int AssetInstanceID; 
 
     public void Start()
     {
@@ -75,6 +77,36 @@ public class TimelineUIElement : MonoBehaviour
         DebugLogger.Instance.Log("Panel clicked");
         //SetColor(Color.blue);
     }
+    
+    public void OnDeleteActionEvent()
+    {
+        DebugLogger.Instance.Log("Delete action event");
+
+        Asset assetToDelete = null;
+        //Find the asset 
+        foreach (var asset in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
+        {
+            Debug.Log("Asset name> " + asset.name + " Event text " + eventText.text);
+            // debug ids
+            int assetInstanceID = asset.GetInstanceID();
+            Debug.Log("Asset id> " + asset.GetInstanceID() + " Event id " + AssetInstanceID);
+           if(asset.GetInstanceID() == AssetInstanceID)
+           {
+               //Delete the action event from the asset action sequence list
+               assetToDelete = asset;
+                break;
+           }
+        }
+        
+        //Delete the action event from the asset action sequence list
+        Recorder.Instance.DeleteAssetActionSequence(assetToDelete,StartIndex);
+        
+        //Refresh collisions
+        Recorder.Instance.RefreshTimelineCollisions();
+        
+        //Destroy(gameObject);
+
+    }
 
     void Update()
     {
@@ -100,7 +132,8 @@ public class TimelineUIElement : MonoBehaviour
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 
-    public static GameObject CreateTimelineElement(GameObject prefab, RectTransform parentTransform, int startIndex, int length, int recordingLength, string id)
+    public static GameObject CreateTimelineElement(GameObject prefab, RectTransform parentTransform, int startIndex, int length, int recordingLength, string id,
+        Asset asset = null)
     {
         GameObject timelineElement = Instantiate(prefab, parentTransform);
         timelineElement.SetActive(true);
@@ -109,13 +142,20 @@ public class TimelineUIElement : MonoBehaviour
         float sizeDeltaX = MapIndexToTimelinePosition(parentTransform, startIndex + length, recordingLength) - positionX;
 
         //minimum length of action timeline events
-        /*if(AssetActionSequence.IsActionEnum(id))
+        if(AssetActionSequence.IsActionEnum(id))
         {
             if (sizeDeltaX < MinimumLength)
             {
                 sizeDeltaX = MinimumLength;
             }
-        }*/
+            //Set the instance ID of the asset to which this timeline element belongs
+            if (asset)
+            {
+                int assetInstanceID = asset.GetInstanceID();
+                timelineElement.GetComponent<TimelineUIElement>().AssetInstanceID = assetInstanceID;
+            }
+
+        }
         
         RectTransform elementRect = timelineElement.GetComponent<RectTransform>();
         elementRect.anchoredPosition = new Vector2(positionX, elementRect.anchoredPosition.y);
@@ -123,9 +163,15 @@ public class TimelineUIElement : MonoBehaviour
         
         timelineElement.GetComponent<TimelineUIElement>().SetEvent(id);
 
-        //timelineElement.GetComponent<TimelineUIElement>().SetStartAndLength(startIndex, length);
+        timelineElement.GetComponent<TimelineUIElement>().SetStartAndLength(startIndex, length);
         
         return timelineElement;
+    }
+    
+    public void SetStartAndLength(int _startIndex, int _length)
+    {
+        StartIndex = _startIndex;
+        Length = _length;
     }
 
     
