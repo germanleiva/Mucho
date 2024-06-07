@@ -141,6 +141,8 @@ public class AssetManager : MonoBehaviour
                 {
                     //This was added to fix a mysterious bug that made the asset not visible after adding it AFTER an input recording was done
                     recordable.SetColor(Color.gray);
+                    recordable.SetInitialPosition(recordable.transform.localPosition);
+                    recordable.SetInitialRotation(recordable.transform.localRotation);
                     
                 }
                 {

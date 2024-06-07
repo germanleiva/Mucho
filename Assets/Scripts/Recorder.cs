@@ -661,7 +661,7 @@ public class Recorder : MonoBehaviour
         for (int i = startIndex; i < startIndex+length; i++)
         {
             var assetFrame = recordedAssetFrames[i];
-            var actionType = assetFrame.ActionType;
+            /*var actionType = assetFrame.ActionType;
             switch (actionType)
             {
                 case ACTION_ENUM.PIN:
@@ -677,17 +677,46 @@ public class Recorder : MonoBehaviour
                     assetFrame.rootRotation = currentAssetFrame.rootRotation;
                     break;
                 case ACTION_ENUM.HIDE:
-                    currentAssetFrame.showStatusForThisFrame = true;
+                    assetFrame.showStatusForThisFrame = true;
                     break;
                 case ACTION_ENUM.SHOW:
-                    currentAssetFrame.showStatusForThisFrame = false;
+                    assetFrame.showStatusForThisFrame = false;
                     break;
                 case ACTION_ENUM.CHANGE_COLOR:
                     assetFrame.color = currentAssetFrame.color;
                     break;
-            }
+            }*/
             recordedAssetFrames[i].ActionType = ACTION_ENUM.NONE;
             recordedAssetFrames[i].ActionDelegate = null;
+        }
+        
+        //Recreate actual values
+
+        var firstAssetFrame = recordedAssetFrames[0];
+        firstAssetFrame.rootPosition = asset.GetInitialPosition();
+        firstAssetFrame.rootRotation = asset.GetInitialRotation();
+        firstAssetFrame.color = Color.gray;
+        firstAssetFrame.showStatusForThisFrame = true;
+        
+        asset.SetColor(Color.grey);
+        asset.transform.localPosition = asset.GetInitialPosition();
+        asset.transform.localRotation = asset.GetInitialRotation();
+        asset.SetVisibility(firstAssetFrame.showStatusForThisFrame);
+
+        for (int i = 0; i < recordedAssetFrames.Count; i++)
+        {
+            var assetFrameEvaluated = recordedAssetFrames[i];
+            if (assetFrameEvaluated.ActionDelegate != null)
+            {
+                asset.executeActionInMyContext(assetFrameEvaluated.ActionDelegate);
+            }
+
+            assetFrameEvaluated.rootPosition = asset.transform.position;
+            assetFrameEvaluated.rootRotation = asset.transform.rotation;
+            assetFrameEvaluated.color = asset.gameObject.GetComponent<MeshRenderer>().material.color;
+            asset.SetVisibility(assetFrameEvaluated.showStatusForThisFrame);
+            //assetFrameEvaluated.showStatusForThisFrame = asset.gameObject.GetComponent<MeshRenderer>().enabled;
+            assetFrameEvaluated.showStatusForThisFrame = asset.gameObject.GetComponent<MeshRenderer>().material == asset.defaultMaterial;
         }
         
     }

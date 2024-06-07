@@ -49,6 +49,12 @@ public class Asset : MonoBehaviour
         currentObjColor = gameObject.GetComponent<MeshRenderer>().material.color;
     }
 
+    
+    public void executeActionInMyContext(Action anActionDelegate)
+    {
+        Action lambda = () => { anActionDelegate(); };
+        lambda();
+    }
     void FixedUpdate()
     {
         /*
@@ -1104,6 +1110,27 @@ public class Asset : MonoBehaviour
         }
     }
 
+    private Quaternion initialRotation;
+    private Vector3 initialPosition;
+    public void SetInitialRotation(Quaternion transformRotation)
+    {
+        initialRotation = transformRotation;
+    }
+    
+    public void SetInitialPosition(Vector3 transformPosition)
+    {
+        initialPosition = transformPosition;
+    }
+
+    public Vector3 GetInitialPosition()
+    {
+        return initialPosition;
+    }
+    
+    public Quaternion GetInitialRotation()
+    {
+        return initialRotation;
+    }
 }
 
 
