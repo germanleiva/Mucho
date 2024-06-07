@@ -321,15 +321,16 @@ public class Asset : MonoBehaviour
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         //Turn the material in recordable.playbackObject to 0.5 alpha
         gameObject.GetComponent<MeshRenderer>().material = AssetManager.Instance.translucentMaterial;
-        AssetFrame assetFrame = null;
+        AssetFrame currentAssetFrame = currentAssetRecordedData[(int)Recorder.Instance.playbackSlider.value];
         //showStatus = false;
         if(Recorder.Instance.GetSizeOfMainRecordedData() > 0)
         {
             DebugLogger.Instance.Log("Recorded hide for  " + base.gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
-            assetFrame = ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
+            ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionType: ACTION_ENUM.HIDE, 
+                                    collisionType: currentAssetFrame.CollisionType,
+                                    collidedObject: currentAssetFrame.CollidedObject,
                                     actionDelegate: () => { GetComponent<Asset>().SetVisibility(false); });
-            
 
             int _frameStart = (int)Recorder.Instance.playbackSlider.value;
             for (int i = _frameStart; i < currentAssetRecordedData.Count; i++)
@@ -351,12 +352,14 @@ public class Asset : MonoBehaviour
         //Turn the material in recordable.playbackObject to 1 alpha
         gameObject.GetComponent<MeshRenderer>().material = defaultMaterial;
         //showStatus = true;
-        AssetFrame assetFrame = null;
+        AssetFrame currentAssetFrame = currentAssetRecordedData[(int)Recorder.Instance.playbackSlider.value];;
         if(Recorder.Instance.GetSizeOfMainRecordedData() > 0)
         {
             DebugLogger.Instance.Log("Recorded show for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
-            assetFrame = ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
+            ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                     actionType: ACTION_ENUM.SHOW, 
+                                    collisionType: currentAssetFrame.CollisionType,
+                                    collidedObject: currentAssetFrame.CollidedObject,
                                     actionDelegate: () => { GetComponent<Asset>().SetVisibility(true); });
             
                     
@@ -377,12 +380,14 @@ public class Asset : MonoBehaviour
     {
         Color color = buttonImage.color;
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
-        AssetFrame assetFrame = null;
+        AssetFrame currentAssetFrame = currentAssetRecordedData[(int)Recorder.Instance.playbackSlider.value];;
         if(Recorder.Instance.GetSizeOfMainRecordedData() > 0)
         {
             DebugLogger.Instance.Log("Recorded color change for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
-            assetFrame = ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
+            ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                         actionType: ACTION_ENUM.CHANGE_COLOR, 
+                                        collisionType: currentAssetFrame.CollisionType,
+                                        collidedObject: currentAssetFrame.CollidedObject,
                                         actionDelegate: () => { GetComponent<Asset>().SetColor(color); });
             
 
@@ -415,9 +420,11 @@ public class Asset : MonoBehaviour
     {
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
-        AssetFrame assetFrame;
-        assetFrame = ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
+        AssetFrame currentAssetFrame = currentAssetRecordedData[(int)Recorder.Instance.playbackSlider.value];;
+        ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionType: ACTION_ENUM.PIN, 
+                                collisionType: currentAssetFrame.CollisionType,
+                                collidedObject: currentAssetFrame.CollidedObject,
                                 actionDelegate: () => { GetComponent<Asset>().Pin(InputManager.Instance.leftHandPinchObj.transform.position); }); 
         
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
@@ -437,9 +444,11 @@ public class Asset : MonoBehaviour
     {
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
-        AssetFrame assetFrame;
-        assetFrame = ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
+        AssetFrame currentAssetFrame = currentAssetRecordedData[(int)Recorder.Instance.playbackSlider.value];; 
+        ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionType: ACTION_ENUM.PIN, 
+                                collisionType: currentAssetFrame.CollisionType,
+                                collidedObject: currentAssetFrame.CollidedObject,
                                 actionDelegate: () => { GetComponent<Asset>().Pin(InputManager.Instance.rightHandPinchObj.transform.position); });
         
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
@@ -458,9 +467,11 @@ public class Asset : MonoBehaviour
     {
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
-        AssetFrame assetFrame;
-        assetFrame = ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
-                                actionType: ACTION_ENUM.PIN, 
+        AssetFrame currentAssetFrame = currentAssetRecordedData[(int)Recorder.Instance.playbackSlider.value];
+        ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
+                                actionType: ACTION_ENUM.PIN,
+                                collisionType: currentAssetFrame.CollisionType,
+                                collidedObject: currentAssetFrame.CollidedObject,
                                 actionDelegate: () => { GetComponent<Asset>().Pin(InputManager.Instance.leftFocus.transform.position); });
         
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
@@ -479,9 +490,11 @@ public class Asset : MonoBehaviour
     {
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
-        AssetFrame assetFrame;
-        assetFrame = ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
+        AssetFrame currentAssetFrame = currentAssetRecordedData[(int)Recorder.Instance.playbackSlider.value];
+         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionType: ACTION_ENUM.PIN, 
+                                collisionType: currentAssetFrame.CollisionType,
+                                collidedObject: currentAssetFrame.CollidedObject,
                                 actionDelegate: () => { GetComponent<Asset>().Pin(InputManager.Instance.rightFocus.transform.position); });
         
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
@@ -500,9 +513,11 @@ public class Asset : MonoBehaviour
     {
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
-        AssetFrame assetFrame;
-        assetFrame = ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
+        AssetFrame currentAssetFrame = currentAssetRecordedData[(int)Recorder.Instance.playbackSlider.value];
+        ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
                                 actionType: ACTION_ENUM.PIN, 
+                                collisionType: currentAssetFrame.CollisionType,
+                                collidedObject: currentAssetFrame.CollidedObject,
                                 actionDelegate: () => { GetComponent<Asset>().Pin(InputManager.Instance.gazeFocus.transform.position); });
         
         int _frameStart = (int)Recorder.Instance.playbackSlider.value;
@@ -912,7 +927,7 @@ public class Asset : MonoBehaviour
 
 
             ApplyForce(initialVelocity);
-            DebugLogger.Instance.Log("Intial velocity magnitude is " + initialVelocity.magnitude);
+            DebugLogger.Instance.Log("Initial velocity magnitude is " + initialVelocity.magnitude);
         }
     }
 

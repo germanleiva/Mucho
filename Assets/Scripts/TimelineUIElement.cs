@@ -2,6 +2,7 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 
 public class TimelineUIElement : MonoBehaviour
 {
@@ -20,7 +21,7 @@ public class TimelineUIElement : MonoBehaviour
     public int Length;
     public static float MinimumLength => 75;
     //Instance ID of the asset to which this timeline element belongs
-    public int AssetInstanceID; 
+    [FormerlySerializedAs("AssetInstanceID")] public int ActionInstanceID; 
 
     public void Start()
     {
@@ -89,8 +90,7 @@ public class TimelineUIElement : MonoBehaviour
             Debug.Log("Asset name> " + asset.name + " Event text " + eventText.text);
             // debug ids
             int assetInstanceID = asset.GetInstanceID();
-            Debug.Log("Asset id> " + asset.GetInstanceID() + " Event id " + AssetInstanceID);
-           if(asset.GetInstanceID() == AssetInstanceID)
+           if(assetInstanceID == ActionInstanceID)
            {
                //Delete the action event from the asset action sequence list
                assetToDelete = asset;
@@ -144,17 +144,16 @@ public class TimelineUIElement : MonoBehaviour
         //minimum length of action timeline events
         if(AssetActionSequence.IsActionEnum(id))
         {
-            if (sizeDeltaX < MinimumLength)
+            /*if (sizeDeltaX < MinimumLength)
             {
                 sizeDeltaX = MinimumLength;
-            }
+            }*/
             //Set the instance ID of the asset to which this timeline element belongs
             if (asset)
             {
                 int assetInstanceID = asset.GetInstanceID();
-                timelineElement.GetComponent<TimelineUIElement>().AssetInstanceID = assetInstanceID;
+                timelineElement.GetComponent<TimelineUIElement>().ActionInstanceID = assetInstanceID;
             }
-
         }
         RectTransform elementRect = timelineElement.GetComponent<RectTransform>();
         elementRect.anchoredPosition = new Vector2(positionX, elementRect.anchoredPosition.y);
