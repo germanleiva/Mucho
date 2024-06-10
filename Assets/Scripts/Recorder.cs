@@ -699,18 +699,21 @@ public class Recorder : MonoBehaviour
         firstAssetFrame.showStatusForThisFrame = true;
         
         asset.SetColor(Color.grey);
-        asset.transform.localPosition = asset.GetInitialPosition();
-        asset.transform.localRotation = asset.GetInitialRotation();
+        asset.transform.position = asset.GetInitialPosition();
+        asset.transform.rotation = asset.GetInitialRotation();
         asset.SetVisibility(firstAssetFrame.showStatusForThisFrame);
 
         for (int i = 0; i < recordedAssetFrames.Count; i++)
         {
             var assetFrameEvaluated = recordedAssetFrames[i];
+            //DebugLogger.Instance.Log("Asset before: " + asset.name + ", Frame: " + i + ", Position: " + asset.transform.position + ", Rotation: " + asset.transform.rotation);
+
             if (assetFrameEvaluated.ActionDelegate != null)
             {
                 asset.executeActionInMyContext(assetFrameEvaluated.ActionDelegate);
             }
-
+            // print previous and current position and rotation
+            //DebugLogger.Instance.Log("Asset after: " + asset.name + ", Frame: " + i + ", Position: " + asset.transform.position + ", Rotation: " + asset.transform.rotation);
             assetFrameEvaluated.rootPosition = asset.transform.position;
             assetFrameEvaluated.rootRotation = asset.transform.rotation;
             assetFrameEvaluated.color = asset.gameObject.GetComponent<MeshRenderer>().material.color;
