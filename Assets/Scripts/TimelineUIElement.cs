@@ -21,6 +21,8 @@ public class TimelineUIElement : MonoBehaviour
     public int Length;
     public static float MinimumLength => 75;
 
+    public Sequence sequenceModelObject;
+
     public void Start()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -89,12 +91,12 @@ public class TimelineUIElement : MonoBehaviour
             return;
         }
         
-        //Delete the action event from the asset action sequence list
-        Recorder.Instance.DeleteAssetActionSequence(correspondingAsset,StartIndex,Length);
+        //TODO (only Germán, Vittoria does not agree xD) for now the action is independent in every example, so we are not deleting this action from other examples than the currrentActiveExample
+        Recorder.Instance.currentActiveExample.assetsDict[correspondingAsset].assetActions.Remove((AssetActionSequence)sequenceModelObject);
         
-        //Refresh collisions
-        //TODO refresh should run a physics simulation to recalculate the collisions
-        Recorder.Instance.RefreshTimelineCollisions();
+        correspondingAsset.UpdateAllAssetFramesAndCollisions((int)Recorder.Instance.playbackSlider.value, Recorder.Instance.currentActiveExample);
+        
+        Recorder.Instance.RecreateCollisionsInTimeline();
 
         deleteEventPanel.SetActive(false);
         Destroy(gameObject);
@@ -124,14 +126,17 @@ public class TimelineUIElement : MonoBehaviour
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 
-    public static GameObject CreateTimelineElement(GameObject prefab, RectTransform parentTransform, int startIndex, int length, int recordingLength, string id,
-        Asset asset = null)
+    public static void CreateTimelineElement(GameObject prefab, RectTransform parentTransform, int totalFrameCount, Sequence sequence)
     {
+        var startIndex = sequence.StartIndex;
+        var length = sequence.Length;
+        var id = sequence.ToString();
+        
         GameObject timelineElement = Instantiate(prefab, parentTransform);
         timelineElement.SetActive(true);
         
-        float positionX = MapIndexToTimelinePosition(parentTransform, startIndex, recordingLength);
-        float sizeDeltaX = MapIndexToTimelinePosition(parentTransform, startIndex + length, recordingLength) - positionX;
+        float positionX = MapIndexToTimelinePosition(parentTransform, startIndex, totalFrameCount);
+        float sizeDeltaX = MapIndexToTimelinePosition(parentTransform, startIndex + length, totalFrameCount) - positionX;
 
         //minimum length of action timeline events
         if(AssetActionSequence.IsActionEnum(id))
@@ -144,12 +149,17 @@ public class TimelineUIElement : MonoBehaviour
         RectTransform elementRect = timelineElement.GetComponent<RectTransform>();
         elementRect.anchoredPosition = new Vector2(positionX, elementRect.anchoredPosition.y);
         elementRect.sizeDelta = new Vector2(sizeDeltaX, elementRect.sizeDelta.y);
+            
+        var timelineElementScript = timelineElement.GetComponent<TimelineUIElement>();
         
-        timelineElement.GetComponent<TimelineUIElement>().SetEvent(id);
-
-        timelineElement.GetComponent<TimelineUIElement>().SetStartAndLength(startIndex, length);
+        timelineElementScript.SetEvent(id);
+        timelineElementScript.SetStartAndLength(startIndex, length);
+        timelineElementScript.sequenceModelObject = sequence;
         
-        return timelineElement;
+        if (length == 0)
+        {
+            SetTimeLineElementWidthAccordingToText(timelineElement);
+        }
     }
     
     public void SetStartAndLength(int _startIndex, int _length)

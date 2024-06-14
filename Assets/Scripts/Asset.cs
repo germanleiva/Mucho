@@ -1,6 +1,9 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using Assets.OVR.Scripts;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 //[RequireComponent(typeof(LineRenderer))]
 public class Asset : MonoBehaviour
@@ -14,9 +17,7 @@ public class Asset : MonoBehaviour
     public List<GameObject> forceArrows = new();
 
     int firstFrameOfManualRecording, lastFrameOfManualRecording;
-
-    public bool isThisAssetThrown;
-
+    
     public enum AssetRecordingType
     {
         None,
@@ -28,33 +29,31 @@ public class Asset : MonoBehaviour
 
     public Vector3 initPosBeforePhysicsSimulation;
     public Quaternion initRotBeforePhysicsSimulation;
-
-    private float oldMainPlaybackSliderValue = 0;
-
+    
     public GameObject followLineObj;
 
     public GameObject colliderVisualizerObj, colliderBoundaryGizmoObj1, colliderBoundaryGizmoObj2;
 
-    public Color currentObjColor;
-
+    //TODO the color is the color of the material of the asset, we do not need this extra variable
+    public Color CurrentColor
+    {
+        get { return gameObject.GetComponent<MeshRenderer>().material.color; }
+        set { 
+            gameObject.GetComponent<MeshRenderer>().material.color = value;
+            //DebugLogger.Instance.Log("Setting color to " + _color + " for " + gameObject.name);
+        }
+    }
+    
     public Material defaultMaterial;
     
     //public bool showStatus = true;
 
     void Start()
     {
-        isThisAssetThrown = false;
         lastAssetPosition = transform.position;
         defaultMaterial = gameObject.GetComponent<MeshRenderer>().material;
-        currentObjColor = gameObject.GetComponent<MeshRenderer>().material.color;
     }
-
     
-    public void executeActionInMyContext(Action anActionDelegate)
-    {
-        Action lambda = () => { anActionDelegate(); };
-        lambda();
-    }
     void FixedUpdate()
     {
         /*
@@ -74,15 +73,13 @@ public class Asset : MonoBehaviour
         }
         */
 
-        if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING && isThisAssetThrown)
+        if(Manager.Instance.currAppState == Manager.AppState.SIMULATING)
         {
             //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "ApplyForce()", true);                
             //Increment the slider value by frame duration
             if( Recorder.Instance.playbackSlider.value < Recorder.Instance.playbackSlider.maxValue)
                 Recorder.Instance.playbackSlider.value += 1;
             ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
-                actionType: ACTION_ENUM.APPLY_FORCE,
-                collisionType: COLLISION_ENUM.NONE, 
                 propagateValueToSubsequentFrames: true);
         }
 
@@ -91,60 +88,14 @@ public class Asset : MonoBehaviour
 
     public void RecordAssetFrame()
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
-        //DebugLogger.Instance.Log("Recording frame for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
-        if(collidedObjectDuringRecording != null)
-        {            
-            //DebugLogger.Instance.Log("RecordAssetFrame: Collision between " + gameObject.name + " and " + collidedObject.name + "during recording");
-            if(collidedObjectDuringRecording == InputManager.Instance.leftHandPinchObj)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.leftHandPinchObj); }, InputManager.Instance.leftHandPinchObj, currentObjColor, currentAssetRecordedData.Count));
-            else if(collidedObjectDuringRecording == InputManager.Instance.rightHandPinchObj)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.rightHandPinchObj); }, InputManager.Instance.rightHandPinchObj, currentObjColor, currentAssetRecordedData.Count));
-            else if(collidedObjectDuringRecording == InputManager.Instance.headContactObj)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.headContactObj); }, InputManager.Instance.headContactObj, currentObjColor, currentAssetRecordedData.Count));
-            else if(collidedObjectDuringRecording == InputManager.Instance.leftFocus)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.leftFocus); }, InputManager.Instance.leftFocus, currentObjColor, currentAssetRecordedData.Count));
-            else if(collidedObjectDuringRecording == InputManager.Instance.rightFocus)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.rightFocus); }, InputManager.Instance.rightFocus, currentObjColor, currentAssetRecordedData.Count));
-            else if(collidedObjectDuringRecording == InputManager.Instance.gazeFocus)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.gazeFocus); }, InputManager.Instance.gazeFocus, currentObjColor, currentAssetRecordedData.Count));
-            else if(collidedObjectDuringRecording == InputManager.Instance.playbackLeftHandPinchObj)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.leftHandPinchObj); }, InputManager.Instance.leftHandPinchObj, currentObjColor, currentAssetRecordedData.Count));
-            else if(collidedObjectDuringRecording == InputManager.Instance.playbackRightHandPinchObj)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.rightHandPinchObj); }, InputManager.Instance.rightHandPinchObj, currentObjColor, currentAssetRecordedData.Count));
-            else if(collidedObjectDuringRecording == InputManager.Instance.playbackHeadContactObj)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.headContactObj); }, InputManager.Instance.headContactObj, currentObjColor, currentAssetRecordedData.Count));                
-            else if(collidedObjectDuringRecording == InputManager.Instance.playbackLeftFocus)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.leftFocus); }, InputManager.Instance.leftFocus, currentObjColor, currentAssetRecordedData.Count));
-            else if(collidedObjectDuringRecording == InputManager.Instance.playbackRightFocus)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.rightFocus); }, InputManager.Instance.rightFocus, currentObjColor, currentAssetRecordedData.Count));
-            else if(collidedObjectDuringRecording == InputManager.Instance.playbackGazeFocus)
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.COLLIDE, null, (Frame frame) => { frame.IsColliding(gameObject, InputManager.Instance.gazeFocus); }, InputManager.Instance.gazeFocus, currentObjColor, currentAssetRecordedData.Count));   
-            else
-            {
-                DebugLogger.Instance.Log("RecordAssetFrame: unaccounted collision between " + gameObject.name + " and " + collidedObjectDuringRecording.name + "during recording");
-                currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.NONE, null, null, null, currentObjColor, currentAssetRecordedData.Count));    
-            }
-        }
-        else 
-        {
-            currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, ACTION_ENUM.NONE, COLLISION_ENUM.NONE, null, null, null, currentObjColor, currentAssetRecordedData.Count));
-            if(currentAssetRecordedData.Count == 1)
-            {
-                DebugLogger.Instance.Log("Setting visibility to true for " + gameObject.name + " at index 0");
-                ModifyAssetFrame(0, 
-                        actionType: ACTION_ENUM.SHOW, 
-                        actionDelegate: () => { GetComponent<Asset>().SetVisibility(true); });
-                //ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, actionStr: "None", collisionStr: "None", propagateValueToSubsequentFrames: true);
-            }
-        }
-        //AssetFrame item = new AssetFrame(recordable.gameObject.transform.position, recordable.gameObject.transform.rotation, recordable.showStatus, "None", "None", null, null, null, i);
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetsDict[this].assetFrames;
+        currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, CurrentColor));
     }
 
     public void PlaybackAssetFrame()
     {
         int currentFrameNum = (int)Recorder.Instance.playbackSlider.value;
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetsDict[this].assetFrames;
         
         //foreach (var recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
         //{
@@ -154,11 +105,9 @@ public class Asset : MonoBehaviour
                 //DebugLogger.Instance.Log("Playing back " + recordable.playbackObject.name + " at " + currentFrameNum);
                 transform.position = currentAssetRecordedData[currentFrameNum].rootPosition;
                 transform.rotation = currentAssetRecordedData[currentFrameNum].rootRotation; 
-                SetColor(currentAssetRecordedData[currentFrameNum].color);
-                
-
-                SetVisibility(currentAssetRecordedData[currentFrameNum].showStatusForThisFrame);
-                /*if (data[currentFrameNum].showStatusForThisFrame)
+                CurrentColor = currentAssetRecordedData[currentFrameNum].color;
+                SetVisibility(currentAssetRecordedData[currentFrameNum].isVisible);
+                /*if (data[currentFrameNum].isVisible)
                 {
                     //DebugLogger.Instance.Log("Showing " + recordable.playbackObject.name + " at " + currentFrameNum);
                     recordable.gameObject.GetComponent<MeshRenderer>().material = AssetManager.Instance.defaultMaterial;
@@ -176,23 +125,12 @@ public class Asset : MonoBehaviour
     }
 
     //For assets
-    public AssetFrame ModifyAssetFrame(int frameNumber, 
-    ACTION_ENUM actionType = ACTION_ENUM.NONE, 
-    COLLISION_ENUM collisionType = COLLISION_ENUM.NONE, 
-    Action actionDelegate = null, 
-    Action<Frame> collisionDelegate = null, 
-    GameObject collidedObject = null, 
-    bool propagateValueToSubsequentFrames = false)
+    public void ModifyAssetFrame(int frameNumber, bool propagateValueToSubsequentFrames = false)
     {
-        var recordedAssetFrames = Recorder.Instance.currentActiveExample.assetFramesDict[this];
+        var recordedAssetFrames = Recorder.Instance.currentActiveExample.assetsDict[this].assetFrames;
         AssetFrame currentAssetFrame = recordedAssetFrames[frameNumber];
         currentAssetFrame.rootPosition = transform.position;
         currentAssetFrame.rootRotation = transform.rotation;
-        currentAssetFrame.ActionType = actionType;
-        currentAssetFrame.ActionDelegate = actionDelegate;
-        currentAssetFrame.CollisionType = collisionType;
-        currentAssetFrame.CollisionDelegate = collisionDelegate;
-        currentAssetFrame.CollidedObject = collidedObject;
         recordedAssetFrames[frameNumber] = currentAssetFrame;
 
         if (propagateValueToSubsequentFrames) // Propagate the value to subsequent frames
@@ -200,31 +138,17 @@ public class Asset : MonoBehaviour
             //DebugLogger.Instance.Log("InsertAssetRecordFrame() - Propagating value to subsequent frames, starting from index " + frameNumber + " to " + currentAssetRecordedData.Count);
             for (int i = frameNumber + 1; i < recordedAssetFrames.Count; i++)
             {
-                //recordedData[i].showStatusForThisFrame = item.showStatusForThisFrame;
-                if (recordedAssetFrames[i].ActionType == ACTION_ENUM.APPLY_FORCE)
-                {
-                    DebugLogger.Instance.Log("InsertAssetRecordFrame() - Encountered ApplyForce() at frame number " + i + ". Breaking out of the loop.");
-                    break;
-                }
-                if (recordedAssetFrames[i].CollisionType == COLLISION_ENUM.COLLIDE)
-                {
-                    DebugLogger.Instance.Log("InsertAssetRecordFrame() - Encountered Collide() at frame number " + i + ". Breaking out of the loop.");
-                    break;
-                }
-
                 recordedAssetFrames[i].rootPosition = currentAssetFrame.rootPosition;
                 recordedAssetFrames[i].rootRotation = currentAssetFrame.rootRotation;
             }
         }
-
-        return currentAssetFrame;
     }
 
 
 
     public void StartManualRecording()
     {
-        Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
+        Manager.Instance.currAppState = Manager.AppState.SIMULATING;
 
         DebugLogger.Instance.Log("StartRecording in " + gameObject.name);
         firstFrameOfManualRecording = (int)Recorder.Instance.playbackSlider.value;
@@ -256,7 +180,7 @@ public class Asset : MonoBehaviour
         for (int i = firstFrameOfManualRecording; i <= lastFrameOfManualRecording; i++)
         {
             // Get the RecordFrameData for the current frame
-            var assetFrameData = Recorder.Instance.currentActiveExample.assetFramesDict[recordable][i];
+            var assetFrameData = Recorder.Instance.currentActiveExample.assetsDict[recordable].assetFrames[i];
             var headFrameData = Recorder.Instance.currentActiveExample.headFrames[i];//mainRecorder.objectsToRecord[0].recordedData[i];
             var leftHandFrameData = Recorder.Instance.currentActiveExample.leftHandFrames[i];
             var rightHandFrameData = Recorder.Instance.currentActiveExample.rightHandFrames[i];
@@ -321,9 +245,136 @@ public class Asset : MonoBehaviour
         followLineObj.GetComponent<FollowLine>().ResetFollowLine();
     }*/
 
+
+    public void RecordAction(ACTION_ENUM actionType, Action actionDelegate,int frameStart = -1)
+    {
+        if (frameStart == -1)
+        {
+            frameStart = (int)Recorder.Instance.playbackSlider.value;
+        }
+
+        var newAction = CreateAction(frameStart, actionType, actionDelegate);
+
+        if (newAction.IsFollow())
+        {
+            var frameEndForFollow = FindFollowEndIndex((int)Recorder.Instance.playbackSlider.value);
+            newAction.Length = frameEndForFollow - frameStart;
+            RecordUnfollow(frameEndForFollow);
+        }
+        
+        Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.Add(newAction);
+
+        UpdateAllAssetFramesAndCollisions(frameStart, Recorder.Instance.currentActiveExample);
+        
+        Recorder.Instance.CreateTimelineActionsForAsset(this);
+    }
+    
+    public AssetActionSequence CreateAction(int frameStart, ACTION_ENUM actionType, Action actionDelegate)
+    {
+        var newAssetActionSequence = new AssetActionSequence();
+        newAssetActionSequence.StartIndex = frameStart;
+        newAssetActionSequence.ActionType = actionType;
+        newAssetActionSequence.ActionDelegate = actionDelegate;
+
+        return newAssetActionSequence;
+    }
+
+    public void SaveMainVisualValuesIn(AssetFrame assetFrame)
+    {
+        assetFrame.rootPosition = transform.position;
+        assetFrame.rootRotation = transform.rotation;
+        assetFrame.color = gameObject.GetComponent<MeshRenderer>().material.color;
+        // assetFrame.isVisible = gameObject.GetComponent<MeshRenderer>().enabled;
+        assetFrame.isVisible = gameObject.GetComponent<MeshRenderer>().material == defaultMaterial;
+    }
+
+    public void ResetMainVisualValues()
+    {
+        transform.position = InitialPosition;
+        transform.rotation = InitialRotation;
+        CurrentColor = Color.gray;
+        SetVisibility(true);
+    }
+
+    private IEnumerator SimulateAssetFramesAndCollisions(Example example, Dictionary<int, List<AssetActionSequence>> actionsToPerformGroupedByFrames)
+    {
+        var oldState = Manager.Instance.currAppState;
+        var oldActiveExample = Recorder.Instance.currentActiveExample;
+        
+        Recorder.Instance.currentActiveExample = example;
+        
+        Manager.Instance.currAppState = Manager.AppState.SIMULATING;
+        
+        var allAssets = Recorder.Instance.allAssets;
+        for (int frameIndex = 0; frameIndex < Recorder.Instance.GetSizeOfMainRecordedData(); frameIndex++)
+        {
+            Recorder.Instance.playbackSlider.value = frameIndex;
+            //DebugLogger.Instance.Log("AddAssetFrameToAssetFramesDict: Adding frame at index " + Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count);
+            foreach (var anAction in actionsToPerformGroupedByFrames[frameIndex])
+            {
+                // if (frameIndex == anAction.FrameStart) This check should be unnecesary
+                anAction.ActionDelegate(); //This will execute the action and any related collision
+            }
+            
+            yield return new WaitForSeconds(0.01f); 
+            //We pause the execution of this routine to let Unity send the collision events: OnCollisionEnter, OnCollisionStay, OnCollisionExit
+            //Collisions are saved in the corresponding model Example
+            
+            allAssets.ForEach(asset =>
+            {
+                asset.SaveMainVisualValuesIn(example.assetsDict[asset].assetFrames[frameIndex]);
+            });
+        }
+
+        //Set the frameEnd of all the unclosed collisions to the final frame of the recorded data
+        foreach (var collisionModelWithoutFrameEnd in Recorder.Instance.currentActiveExample.CollisionModelsWithoutFrameEnd())
+        {
+            collisionModelWithoutFrameEnd.Length = (example.RecordedDataCount - 1) - collisionModelWithoutFrameEnd.StartIndex;
+        }
+        
+        Manager.Instance.currAppState = oldState;
+        Recorder.Instance.currentActiveExample = oldActiveExample;
+
+        // Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
+        // InputManager.Instance.SetPlaybackObjectsActive(false);
+        // //DebugLogger.Instance.Log("AddAssetFrameToAssetFramesDict: DoRecordSizesMatch() - " + DoRecordSizesMatch());
+        //     
+        // Recorder.Instance.RecreateTimelineAssetRows();
+        //     
+        // Recorder.Instance.RecreateCollisionsInTimeline();
+    }
+    
+    public void UpdateAllAssetFramesAndCollisions(int updateFrameStart, Example example)
+    {
+        //TODO for now this update should focus on the receiver asset values and not other assets, but physic simulations might make this action to affect other assets
+        //TODO use the updateFrameStart so we update only the FrameStart > updateFrameStart
+        
+        //Create a dictionary where the key is an indexFrame and the value is the corresponding assetAction
+        var allActionsGroupedByFrames = new Dictionary<int, List<AssetActionSequence>>();
+        Recorder.Instance.allAssets.ForEach(asset => {
+            //We bring back the asset to its initial state
+            asset.ResetMainVisualValues();
+            example.assetsDict[asset].assetActions.ForEach(action => {
+                if (!allActionsGroupedByFrames.ContainsKey(action.StartIndex))
+                {
+                    allActionsGroupedByFrames[action.StartIndex] = new List<AssetActionSequence>();
+                }
+                allActionsGroupedByFrames[action.StartIndex].Add(action);
+            });
+        });
+
+        //We clear the collision models before simulating the frames
+        example.CollisionModels.Clear();
+        
+        StartCoroutine(SimulateAssetFramesAndCollisions(example, allActionsGroupedByFrames));
+    }
+    
     //For assets
     public void RecordHide()
     {
+        RecordAction(ACTION_ENUM.HIDE,() => { GetComponent<Asset>().SetVisibility(false); });
+
+        /*
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         //Turn the material in recordable.playbackObject to 0.5 alpha
         gameObject.GetComponent<MeshRenderer>().material = AssetManager.Instance.translucentMaterial;
@@ -341,20 +392,22 @@ public class Asset : MonoBehaviour
             int _frameStart = (int)Recorder.Instance.playbackSlider.value;
             for (int i = _frameStart; i < currentAssetRecordedData.Count; i++)
             {
-                currentAssetRecordedData[i].showStatusForThisFrame = false;
+                currentAssetRecordedData[i].isVisible = false;
             }
         }
 
         SetVisibility(false);
         
-        Recorder.Instance.CreateTimelineActionsForAsset(this);
+        Recorder.Instance.CreateTimelineActionsForAsset(this);*/
         
     }
 
     //For assets
     public void RecordShow()
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
+        RecordAction(ACTION_ENUM.SHOW,() => { GetComponent<Asset>().SetVisibility(true); });
+        
+        /*var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         //Turn the material in recordable.playbackObject to 1 alpha
         gameObject.GetComponent<MeshRenderer>().material = defaultMaterial;
         //showStatus = true;
@@ -372,19 +425,24 @@ public class Asset : MonoBehaviour
             int _frameStart = (int)Recorder.Instance.playbackSlider.value;
             for (int i = _frameStart; i < currentAssetRecordedData.Count; i++)
             {
-                currentAssetRecordedData[i].showStatusForThisFrame = true;
+                currentAssetRecordedData[i].isVisible = true;
             }
         }
 
-        SetVisibility(true);
-
-        Recorder.Instance.CreateTimelineActionsForAsset(this);
-
+        SetVisibility(true);*/
     }
 
     public void RecordColorChange(UnityEngine.UI.Image buttonImage)
     {
         Color color = buttonImage.color;
+        RecordAction(ACTION_ENUM.CHANGE_COLOR, () =>
+        {
+            //TODO this is not considering live vs other modes
+            GetComponent<Asset>().CurrentColor = color;
+        });
+
+        return; //TODO check that we disabled unnecesary code
+        /*Color color = buttonImage.color;
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         AssetFrame currentAssetFrame = currentAssetRecordedData[(int)Recorder.Instance.playbackSlider.value];;
         if(Recorder.Instance.GetSizeOfMainRecordedData() > 0)
@@ -406,7 +464,7 @@ public class Asset : MonoBehaviour
 
         SetColor(color);
 
-        Recorder.Instance.CreateTimelineActionsForAsset(this);
+        Recorder.Instance.CreateTimelineActionsForAsset(this);*/
     }
 
     public void ReplaceMesh(GameObject newMeshObj)
@@ -415,151 +473,14 @@ public class Asset : MonoBehaviour
         gameObject.GetComponent<MeshFilter>().mesh = newMeshObj.GetComponent<MeshFilter>().mesh;
     }
 
-    public void SetColor(Color _color)
+    public void RecordPin(Vector3 position)
     {
-        currentObjColor = _color;
-        gameObject.GetComponent<MeshRenderer>().material.color = _color;
-        //DebugLogger.Instance.Log("Setting color to " + _color + " for " + gameObject.name);
-    }
-
-    public void RecordPinToLeftHand()
-    {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
-        DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
-        AssetFrame currentAssetFrame = currentAssetRecordedData[(int)Recorder.Instance.playbackSlider.value];;
-        ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
-                                actionType: ACTION_ENUM.PIN, 
-                                collisionType: currentAssetFrame.CollisionType,
-                                collidedObject: currentAssetFrame.CollidedObject,
-                                actionDelegate: () => { GetComponent<Asset>().Pin(InputManager.Instance.leftHandPinchObj.transform.position); }); 
-        
-        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
-        for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
+        RecordAction(ACTION_ENUM.PIN, () =>
         {
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandFrames[_frameStart].pinchPosition;
-            //currentAssetRecordedData[i].ActionType = "Pin()";
-        }
-
-
-        //Pin(Recorder.Instance.leftHand.GetCurrentPosition());
-
-        Recorder.Instance.CreateTimelineActionsForAsset(this);
+            //For now, this behaviour is the same for all the modes of the app
+            GetComponent<Asset>().Pin(position);
+        });
     }
-
-    public void RecordPinToRightHand()
-    {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
-        DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
-        AssetFrame currentAssetFrame = currentAssetRecordedData[(int)Recorder.Instance.playbackSlider.value];; 
-        ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
-                                actionType: ACTION_ENUM.PIN, 
-                                collisionType: currentAssetFrame.CollisionType,
-                                collidedObject: currentAssetFrame.CollidedObject,
-                                actionDelegate: () => { GetComponent<Asset>().Pin(InputManager.Instance.rightHandPinchObj.transform.position); });
-        
-        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
-        for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
-        {
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandFrames[_frameStart].pinchPosition;
-            //currentAssetRecordedData[i].ActionType = "Pin()";
-        }
-
-        //Pin(Recorder.Instance.rightHand.GetCurrentPosition());
-
-        Recorder.Instance.CreateTimelineActionsForAsset(this);
-    }
-
-    public void RecordPinToLeftFocus()
-    {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
-        DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
-        AssetFrame currentAssetFrame = currentAssetRecordedData[(int)Recorder.Instance.playbackSlider.value];
-        ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
-                                actionType: ACTION_ENUM.PIN,
-                                collisionType: currentAssetFrame.CollisionType,
-                                collidedObject: currentAssetFrame.CollidedObject,
-                                actionDelegate: () => { GetComponent<Asset>().Pin(InputManager.Instance.leftFocus.transform.position); });
-        
-        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
-        for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
-        {
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandFrames[_frameStart].focusSquarePosition;
-            //currentAssetRecordedData[i].ActionType = "Pin()";
-        }
-
-        //Pin(Recorder.Instance.leftFocus.transform.position);
-
-        Recorder.Instance.CreateTimelineActionsForAsset(this);
-    }
-
-    public void RecordPinToRightFocus()
-    {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
-        DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
-        AssetFrame currentAssetFrame = currentAssetRecordedData[(int)Recorder.Instance.playbackSlider.value];
-         ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
-                                actionType: ACTION_ENUM.PIN, 
-                                collisionType: currentAssetFrame.CollisionType,
-                                collidedObject: currentAssetFrame.CollidedObject,
-                                actionDelegate: () => { GetComponent<Asset>().Pin(InputManager.Instance.rightFocus.transform.position); });
-        
-        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
-        for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
-        {
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandFrames[_frameStart].focusSquarePosition;
-            //currentAssetRecordedData[i].ActionType = "Pin()";
-        }
-
-        //Pin(Recorder.Instance.rightFocus.transform.position);
-        
-        Recorder.Instance.CreateTimelineActionsForAsset(this);
-    }
-
-    public void RecordPinToGazeFocus()
-    {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
-        DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
-        AssetFrame currentAssetFrame = currentAssetRecordedData[(int)Recorder.Instance.playbackSlider.value];
-        ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
-                                actionType: ACTION_ENUM.PIN, 
-                                collisionType: currentAssetFrame.CollisionType,
-                                collidedObject: currentAssetFrame.CollidedObject,
-                                actionDelegate: () => { GetComponent<Asset>().Pin(InputManager.Instance.gazeFocus.transform.position); });
-        
-        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
-        for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
-        {
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.headFrames[_frameStart].focusSquarePosition;
-            //currentAssetRecordedData[i].ActionType = "Pin()";
-        }
-
-        //Pin(Recorder.Instance.gazeFocus.transform.position);
-
-        Recorder.Instance.CreateTimelineActionsForAsset(this);
-
-    }
-
-    /*
-    public void RecordPinToWall()
-    {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetDataDict[this];
-        DebugLogger.Instance.Log("Recorded pin for " + gameObject.name + " at " + Recorder.Instance.playbackSlider.value);
-        ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
-                                actionStr: "Pin()", 
-                                actionDelegate: () => { GetComponent<Recordable>().Pin(InputManager.Instance.wall.transform.position); });
-        
-        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
-        for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
-        {
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.wallData[_frameStart].focusSquarePosition;
-            //currentAssetRecordedData[i].ActionType = "Pin()";
-        }
-
-        //Pin(Recorder.Instance.wall.transform.position);
-
-        Recorder.Instance.RefreshTimelineAndStates();
-        //Recorder.Instance.RecreateTimelineAssetRows();
-    } */
 
     public void Pin(Vector3 location)
     {
@@ -596,6 +517,7 @@ public class Asset : MonoBehaviour
                 DebugLogger.Instance.Log("LIVE mode: Setting visibility to false for " + gameObject.name);
                 //Set mesh renderer for playbackObject 
                 gameObject.GetComponent<MeshRenderer>().enabled = false;
+                gameObject.GetComponent<MeshRenderer>().material = AssetManager.Instance.translucentMaterial;
                 if(gameObject.GetComponentInChildren<TextAsset>() != null)
                 {
                     gameObject.GetComponent<TextAsset>().SetTextVisibility(false);
@@ -609,309 +531,104 @@ public class Asset : MonoBehaviour
         }
     }
 
-    int FindFollowEndIndex(int _frameStart) 
+    int FindFollowEndIndex(int frameStart) 
     {
         var statePlaceholders = Recorder.Instance.currentActiveExample.StatePlaceholders;
         foreach (var statePlaceholder in statePlaceholders)
         {
             int stateEndIndex = statePlaceholder.StartIndex + statePlaceholder.Length;
-            if(stateEndIndex > _frameStart)
+            if(stateEndIndex > frameStart)
             {
                 return stateEndIndex;
             }
         }      
-        return 0;  
+        return 0;
     }
 
     //For assets
-    public void FollowLeftHand()
+    public void RecordFollow(FollowLineTrigger.FollowTargetType followTargetType)
     {
-        var recordedAssetFrames = Recorder.Instance.currentActiveExample.assetFramesDict[this];
-        DebugLogger.Instance.Log("Attach called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
-
-        var assetFrame = ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
-                                    actionType: ACTION_ENUM.FOLLOW_LEFT_HAND, 
-                                    actionDelegate: () => { GetComponent<Asset>().Follow(Recorder.Instance.leftHand.transform);}, 
-                                    collisionDelegate: (Frame frame) => { frame.IsColliding(base.gameObject, InputManager.Instance.leftHandPinchObj); }, 
-                                    // collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left hand)", 
-                                    collisionType: COLLISION_ENUM.COLLIDE,
-                                    collidedObject: InputManager.Instance.leftHandPinchObj);   
-        //Copy the pose from "other" recordable (hands) at index _frameStart, to this asset and propagate the value to subsequent frames
-        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
-        DebugLogger.Instance.Log("Copying pose from left hand at frame " + _frameStart + " to frame " + recordedAssetFrames.Count);
-
-        int followEndIndex = FindFollowEndIndex(_frameStart) - 1;
-
-        DebugLogger.Instance.Log("Copying pose from left hand at frame " + _frameStart + " to frame " + followEndIndex);
-
-        for (int i = _frameStart + 1; i < followEndIndex; i++)
+        GameObject followTargetInLiveMode;
+        GameObject followTargetInPlayback;
+        ACTION_ENUM actionType;
+        
+        switch (followTargetType)
         {
+            case FollowLineTrigger.FollowTargetType.LEFTHAND:
+                actionType = ACTION_ENUM.FOLLOW_LEFT_HAND;
+                followTargetInLiveMode = InputManager.Instance.leftHandPinchObj;
+                followTargetInPlayback = InputManager.Instance.playbackLeftHandPinchObj;
+                break;
+            case FollowLineTrigger.FollowTargetType.RIGHTHAND:
+                actionType = ACTION_ENUM.FOLLOW_RIGHT_HAND;
+                followTargetInLiveMode = InputManager.Instance.rightHandPinchObj;
+                followTargetInPlayback = InputManager.Instance.playbackRightHandPinchObj;
+                break;
+            case FollowLineTrigger.FollowTargetType.RIGHTFOCUS:
+                actionType = ACTION_ENUM.FOLLOW_R_FOCUS;
+                followTargetInLiveMode = InputManager.Instance.rightFocus;
+                followTargetInPlayback = InputManager.Instance.playbackRightFocus;
+                break;
+            case FollowLineTrigger.FollowTargetType.LEFTFOCUS:
+                actionType = ACTION_ENUM.FOLLOW_L_FOCUS;
+                followTargetInLiveMode = InputManager.Instance.leftFocus;
+                followTargetInPlayback = InputManager.Instance.playbackLeftFocus;
+                break;
+            case FollowLineTrigger.FollowTargetType.GAZEFOCUS:
+                actionType = ACTION_ENUM.FOLLOW_G_FOCUS;
+                followTargetInLiveMode = InputManager.Instance.gazeFocus;
+                followTargetInPlayback = InputManager.Instance.playbackGazeFocus;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(followTargetType), followTargetType, null);
+        }
+        
+        RecordAction(actionType, () =>
+        {
+            if (Manager.Instance.currAppState == Manager.AppState.LIVE)
+            {
+                GetComponent<Asset>().ApplyFollow(followTargetInLiveMode.transform);
+            }
+            else
+            {
+                GetComponent<Asset>().ApplyFollow(followTargetInPlayback.transform);
+            }
             
-            recordedAssetFrames[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandFrames[i].pinchPosition; //Copy the position of the left hand at frame _frameStart
-            recordedAssetFrames[i].ActionType = ACTION_ENUM.FOLLOW_LEFT_HAND;
-            // currentAssetRecordedData[i].CollisionType = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left hand)";
-            recordedAssetFrames[i].CollisionType = COLLISION_ENUM.COLLIDE;
-
-        }
-
-        DebugLogger.Instance.Log("Unfollowing at frame " + followEndIndex);
-
-        ModifyAssetFrame(followEndIndex, 
-                        actionType: ACTION_ENUM.UNFOLLOW,  
-                        actionDelegate: () => { GetComponent<Asset>().Unfollow(); });
-
-        recordedAssetFrames[followEndIndex].rootPosition = recordedAssetFrames[followEndIndex - 1].rootPosition;                          
-
-        for (int i = followEndIndex + 1; i < recordedAssetFrames.Count; i++)
-        {
-            recordedAssetFrames[i].rootPosition = recordedAssetFrames[followEndIndex - 1].rootPosition;
-            recordedAssetFrames[i].ActionType = ACTION_ENUM.NONE;
-            recordedAssetFrames[i].CollisionType = COLLISION_ENUM.NONE;
-        }
-        
-        Recorder.Instance.RecreateTimelineAssetRows();
-    }
-
-    //For assets
-    public void FollowRightHand()
-    {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];        
-        DebugLogger.Instance.Log("Attach called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
-
-        var assetFrame = ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
-                                    actionType: ACTION_ENUM.FOLLOW_RIGHT_HAND, 
-                                    actionDelegate: () => { GetComponent<Asset>().Follow(Recorder.Instance.rightHand.transform);}, 
-                                    collisionDelegate: (Frame frame) => { frame.IsColliding(base.gameObject, InputManager.Instance.rightHandPinchObj); }, 
-                                    // collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right hand)", 
-                                    collisionType: COLLISION_ENUM.COLLIDE, 
-                                    collidedObject: InputManager.Instance.rightHandPinchObj);
-        //Copy the pose from "other" recordable (hands) at index _frameStart, to this asset and propagate the value to subsequent frames
-        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
-        DebugLogger.Instance.Log("Copying pose from right hand at frame " + _frameStart + " to frame " + currentAssetRecordedData.Count);
-
-                
-        int followEndIndex = FindFollowEndIndex(_frameStart) - 1;
-
-        DebugLogger.Instance.Log("Copying pose from right hand at frame " + _frameStart + " to frame " + followEndIndex);
-
-        for (int i = _frameStart + 1; i < followEndIndex; i++)
-        {
-            
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandFrames[i].pinchPosition; //Copy the position of the right hand at frame _frameStart
-            currentAssetRecordedData[i].ActionType = ACTION_ENUM.FOLLOW_RIGHT_HAND;
-            // currentAssetRecordedData[i].CollisionType = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right hand)";
-            currentAssetRecordedData[i].CollisionType = COLLISION_ENUM.COLLIDE;
-        }
-
-        DebugLogger.Instance.Log("Unfollowing at frame " + followEndIndex);
-
-        ModifyAssetFrame(followEndIndex, 
-                        actionType: ACTION_ENUM.UNFOLLOW,  
-                        actionDelegate: () => { GetComponent<Asset>().Unfollow(); });
-
-        //TODO:Change ModifyAssetFrame to also accept modifications to position!
-        currentAssetRecordedData[followEndIndex].rootPosition = currentAssetRecordedData[followEndIndex - 1].rootPosition;                        
-
-        for (int i = followEndIndex + 1; i < currentAssetRecordedData.Count; i++)
-        {
-            currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[followEndIndex-1].rootPosition;
-            currentAssetRecordedData[i].ActionType = ACTION_ENUM.NONE;
-            currentAssetRecordedData[i].CollisionType = COLLISION_ENUM.NONE;
-        }                        
-        
-        Recorder.Instance.RecreateTimelineAssetRows();
-
-        //recordable.playbackObject.transform.SetParent(mainRecorder.objectsToRecord[2].playbackObject.transform);
-    }
-
-
-
-    //For assets
-    public void FollowLeftHandFocusSquare()
-    {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];  
-        DebugLogger.Instance.Log("Follow left focus called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
-
-
-        ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
-                                    actionType: ACTION_ENUM.FOLLOW_L_FOCUS, 
-                                    actionDelegate: () => { GetComponent<Asset>().Follow(InputManager.Instance.leftFocus.transform);}, 
-                                    collisionDelegate: (Frame frame) => { frame.IsColliding(base.gameObject, InputManager.Instance.leftFocus); }, 
-                                    // collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left focus)", 
-                                    collisionType: COLLISION_ENUM.COLLIDE,
-                                    collidedObject: InputManager.Instance.leftFocus);
-
-        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
-
-        int followEndIndex = FindFollowEndIndex(_frameStart) - 1;
-        //int followEndIndex = Recorder.Instance.GetSizeOfMainRecordedData();
-
-        DebugLogger.Instance.Log("Copying pose from left focus square at frame " + _frameStart + " to frame " + followEndIndex);
-
-        Vector3 startPosDiff = Recorder.Instance.currentActiveExample.leftHandFrames[_frameStart].focusSquarePosition - currentAssetRecordedData[_frameStart].rootPosition;
-
-        for (int i = _frameStart + 1; i < followEndIndex; i++)
-        {   
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.leftHandFrames[i].focusSquarePosition - startPosDiff;
-            currentAssetRecordedData[i].ActionType = ACTION_ENUM.FOLLOW_L_FOCUS;
-            // currentAssetRecordedData[i].CollisionType = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Left focus)";
-            currentAssetRecordedData[i].CollisionType = COLLISION_ENUM.COLLIDE;
-        }
-       
-        DebugLogger.Instance.Log("Unfollowing at frame " + followEndIndex);
-
-        ModifyAssetFrame(followEndIndex, 
-                        actionType: ACTION_ENUM.UNFOLLOW,  
-                        actionDelegate: () => { GetComponent<Asset>().Unfollow(); });
-
-        currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.leftHandFrames[followEndIndex - 1].focusSquarePosition - startPosDiff;
-
-        for (int i = followEndIndex + 1; i < currentAssetRecordedData.Count; i++)
-        {
-            currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[followEndIndex - 1].rootPosition;
-            currentAssetRecordedData[i].ActionType = ACTION_ENUM.NONE;
-            currentAssetRecordedData[i].CollisionType = COLLISION_ENUM.NONE;
-        }
-
-        Recorder.Instance.RefreshTimelineCollisions();
-    }
-
-    //For assets
-    public void FollowRightHandFocusSquare()
-    {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];  
-        DebugLogger.Instance.Log("AttachToRightHandFocusSquare: Follow right focus called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
-
-
-        ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
-                                    actionType: ACTION_ENUM.FOLLOW_R_FOCUS, 
-                                    actionDelegate: () => { GetComponent<Asset>().Follow(InputManager.Instance.rightFocus.transform);}, 
-                                    collisionDelegate: (Frame frame) => { frame.IsColliding(base.gameObject, InputManager.Instance.rightFocus); }, 
-                                    // collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right focus)", 
-                                    collisionType: COLLISION_ENUM.COLLIDE, 
-
-                                    collidedObject: InputManager.Instance.rightFocus);
-
-        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
-
-        int followEndIndex = FindFollowEndIndex(_frameStart) - 1;
-        //int followEndIndex = Recorder.Instance.GetSizeOfMainRecordedData();
-
-        DebugLogger.Instance.Log("Copying pose from right focus square at frame " + _frameStart + " to frame " + followEndIndex);
-
-        Vector3 startPosDiff = Recorder.Instance.currentActiveExample.rightHandFrames[_frameStart].focusSquarePosition - currentAssetRecordedData[_frameStart].rootPosition;
-
-        for (int i = _frameStart + 1; i < followEndIndex; i++)
-        {   
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.rightHandFrames[i].focusSquarePosition - startPosDiff;
-            currentAssetRecordedData[i].ActionType = ACTION_ENUM.FOLLOW_R_FOCUS;
-            // currentAssetRecordedData[i].CollisionType = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Right focus)";
-            currentAssetRecordedData[i].CollisionType = COLLISION_ENUM.COLLIDE;
-        }
-
-        DebugLogger.Instance.Log("Unfollowing at frame " + followEndIndex);
-
-        ModifyAssetFrame(followEndIndex, 
-                        actionType: ACTION_ENUM.UNFOLLOW,  
-                        actionDelegate: () => { GetComponent<Asset>().Unfollow(); });
-        
-        currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.rightHandFrames[followEndIndex - 1].focusSquarePosition - startPosDiff;
-
-        for (int i = followEndIndex + 1; i < currentAssetRecordedData.Count; i++)
-        {
-            currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[followEndIndex - 1].rootPosition;
-            currentAssetRecordedData[i].ActionType = ACTION_ENUM.NONE;
-            currentAssetRecordedData[i].CollisionType = COLLISION_ENUM.NONE;
-        }
-
-        Recorder.Instance.RefreshTimelineCollisions();
-    }
-
-    //For assets
-    public void FollowGazeFocusSquare()
-    {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];  
-        DebugLogger.Instance.Log("AttachToGazeFocusSquare: Follow gaze focus called for " + gameObject.name + " in example " + Recorder.Instance.currentActiveExample.exampleId);
-
-
-        ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
-                                    actionType: ACTION_ENUM.FOLLOW_G_FOCUS, 
-                                    actionDelegate: () => { GetComponent<Asset>().Follow(InputManager.Instance.gazeFocus.transform);}, 
-                                    collisionDelegate: (Frame frame) => { frame.IsColliding(base.gameObject, InputManager.Instance.gazeFocus); }, 
-                                    // collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Gaze focus)", 
-                                    collisionType: COLLISION_ENUM.COLLIDE, 
-                                    collidedObject: InputManager.Instance.gazeFocus);
-
-        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
-
-        int followEndIndex = FindFollowEndIndex(_frameStart);
-
-        DebugLogger.Instance.Log("Copying pose from head focus square at frame " + _frameStart + " to frame " + followEndIndex);
-
-        Vector3 startPosDiff = Recorder.Instance.currentActiveExample.headFrames[_frameStart].focusSquarePosition - currentAssetRecordedData[_frameStart].rootPosition;
-
-        for (int i = _frameStart + 1; i < followEndIndex; i++)
-        {   
-            currentAssetRecordedData[i].rootPosition = Recorder.Instance.currentActiveExample.headFrames[i].focusSquarePosition - startPosDiff;
-            currentAssetRecordedData[i].ActionType = ACTION_ENUM.FOLLOW_G_FOCUS;
-            // currentAssetRecordedData[i].CollisionType = "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + ", Gaze focus)";
-            currentAssetRecordedData[i].CollisionType = COLLISION_ENUM.COLLIDE;
-        }
-
-        DebugLogger.Instance.Log("Unfollowing at frame " + followEndIndex);
-
-        ModifyAssetFrame(followEndIndex, 
-                        actionType: ACTION_ENUM.UNFOLLOW,  
-                        actionDelegate: () => { GetComponent<Asset>().Unfollow(); });
-
-        currentAssetRecordedData[followEndIndex].rootPosition =  Recorder.Instance.currentActiveExample.headFrames[followEndIndex - 1].focusSquarePosition - startPosDiff;
-
-        for (int i = followEndIndex + 1; i < currentAssetRecordedData.Count; i++)
-        {
-            currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[followEndIndex - 1].rootPosition;
-            currentAssetRecordedData[i].ActionType = ACTION_ENUM.NONE;
-            currentAssetRecordedData[i].CollisionType = COLLISION_ENUM.NONE;
-        }
-
-        Recorder.Instance.RefreshTimelineCollisions();
+        });
     }
     
     //For assets
     public void Detach()
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
-        DebugLogger.Instance.Log("Unfollow called for " + gameObject.name);
+        RecordUnfollow((int)Recorder.Instance.playbackSlider.value);
+    }
 
-        //Unfollow();
-        AssetFrame assetFrame = ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
-                                actionType: ACTION_ENUM.UNFOLLOW,  
-                                actionDelegate: () => { GetComponent<Asset>().Unfollow(); });
-        int _frameStart = (int)Recorder.Instance.playbackSlider.value;
-        for (int i = _frameStart + 1; i < currentAssetRecordedData.Count; i++)
+    public void RecordUnfollow(int startFrame)
+    {
+        RecordAction(ACTION_ENUM.UNFOLLOW, () =>
         {
-            currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[_frameStart].rootPosition;
-            currentAssetRecordedData[i].ActionType = ACTION_ENUM.NONE;
-            currentAssetRecordedData[i].CollisionType = COLLISION_ENUM.NONE;
-        }
-        //CopyPoseFromRecordable(this, (int)Recorder.Instance.playbackSlider.value, copyFirstRecord:true, copyRotation:false);
-        Recorder.Instance.RecreateTimelineAssetRows();
-        //recordable.playbackObject.transform.SetParent(null);
+            // if (Manager.Instance.currAppState == Manager.AppState.LIVE)
+            // {
+            // For now, UNFOLLOW is the same for all the modes of the app
+                GetComponent<Asset>().ApplyUnfollow();
+            // }
+        }, startFrame);
     }
 
 
     //For assets
     public void PrepareForceSimulation(Vector3 initialVelocity)
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetsDict[this].assetFrames;
 
-        if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING && isThisAssetThrown)
+        if(Manager.Instance.currAppState == Manager.AppState.SIMULATING)
         {
             AssetManager.Instance.HideMiscObjs();
 
             InputManager.Instance.leftHandPinchObj.SetActive(false);
             InputManager.Instance.rightHandPinchObj.SetActive(false);
-            
-            oldMainPlaybackSliderValue = Recorder.Instance.playbackSlider.value; //This is so awkward, but it works
+
+            Recorder.Instance.SavePlaybackPosition();
 
             initPosBeforePhysicsSimulation = transform.position;
             initRotBeforePhysicsSimulation = transform.rotation;
@@ -920,18 +637,10 @@ public class Asset : MonoBehaviour
             for (int i = _frameStart; i < currentAssetRecordedData.Count; i++)
             {
                 currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[_frameStart].rootPosition;
-                currentAssetRecordedData[i].ActionType = ACTION_ENUM.NONE;
-                currentAssetRecordedData[i].ActionDelegate = null;
-                currentAssetRecordedData[i].CollisionType = COLLISION_ENUM.NONE;
-                currentAssetRecordedData[i].CollisionDelegate = null;
             }
 
-            ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
-                                    actionType: ACTION_ENUM.APPLY_FORCE, 
-                                    // actionDelegate: () => { GetComponent<Asset>().ApplyForceInLiveMode(initialVelocity); });
-                                    actionDelegate: () => { GetComponent<Asset>().ApplyForce(initialVelocity); });
-
-
+            ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value);
+            
             ApplyForce(initialVelocity);
             DebugLogger.Instance.Log("Initial velocity magnitude is " + initialVelocity.magnitude);
         }
@@ -972,40 +681,44 @@ public class Asset : MonoBehaviour
 
     GameObject collidedObjectDuringRecording;
 
-    public void NotifyAsset(GameObject other)
-    {
-        collidedObjectDuringRecording = other;
-    }
-
     //For assets
     void OnCollisionEnter(Collision collision)
     {
-        DebugLogger.Instance.Log("Recordable.OnCollisionEnter: Notifying collision detected between " + base.gameObject.name + " and " + collision.collider.name);
-        InputManager.Instance.NotifyCollision(base.gameObject, collision.collider.gameObject);
-
-        //Return if asset is colliding with inputmanager's left or right pinch objects
-        if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere" || 
-            collision.collider.name == "HeadContactSphere" || collision.collider.name == "OVRRightHandVisual_Playback" || 
-            collision.collider.name == "OVRLeftHandVisual_Playback")
+        if (Manager.Instance.currAppState == Manager.AppState.SIMULATING)
         {
-            return;
+            //If we are simulating we need to save the collision
+            Recorder.Instance.currentActiveExample.AddNewCollision((int)Recorder.Instance.playbackSlider.value,base.gameObject, collision.collider.gameObject);
         }
 
-        if(Manager.Instance.currAppState == Manager.AppState.ASSETRECORDING && isThisAssetThrown)
-        {            
-            Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
+        DebugLogger.Instance.Log("Recordable.OnCollisionEnter: Notifying collision detected between " + base.gameObject.name + " and " + collision.collider.name);
+        InputManager.Instance.SaveCurrentCollision(base.gameObject, collision.collider.gameObject);
 
-            DebugLogger.Instance.Log("Recordable.OnCollisionEnter: Collision detected between " + base.gameObject.name + " and " + collision.collider.name);            
+        //TODO Check if this is needed
+        
+        //Return if asset is colliding with inputmanager's left or right pinch objects
+        //Another way of saying this is: if you are colliding with the real-time hands or head ignore the collision
+        // if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere" || 
+        //     collision.collider.name == "HeadContactSphere" || collision.collider.name == "OVRRightHandVisual_Playback" || 
+        //     collision.collider.name == "OVRLeftHandVisual_Playback")
+        // {
+        //     return;
+        // }
 
-            ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
-                                // actionType: ACTION_ENUM.RESET_PHYSICS, 
-                                // collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + "," + Manager.Instance.CleanAssetName(collision.collider.name) + ")", 
-                                collisionType: COLLISION_ENUM.COLLIDE, 
-                                // actionDelegate: () => { GetComponent<Asset>().ResetPhysicsPropertiesInLiveMode(); }, 
-                                collidedObject: collision.collider.gameObject);
-
-            ResetPhysicsProperties();           
-        }
+        // if(Manager.Instance.currAppState == Manager.AppState.SIMULATING)
+        // {            
+        //     Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
+        //
+        //     DebugLogger.Instance.Log("Recordable.OnCollisionEnter: Collision detected between " + base.gameObject.name + " and " + collision.collider.name);            
+        //
+        //     ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
+        //                         // actionType: ACTION_ENUM.RESET_PHYSICS, 
+        //                         // collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + "," + Manager.Instance.CleanAssetName(collision.collider.name) + ")", 
+        //                         collisionType: COLLISION_ENUM.COLLIDE, 
+        //                         // actionDelegate: () => { GetComponent<Asset>().ResetPhysicsPropertiesInLiveMode(); }, 
+        //                         collidedObject: collision.collider.gameObject);
+        //
+        //     ResetPhysicsProperties();           
+        // }
     }
 
     //For assets
@@ -1013,13 +726,14 @@ public class Asset : MonoBehaviour
     {
         DebugLogger.Instance.Log("ResetPhysicsProperties called for " + gameObject.name);
         //Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
-        isThisAssetThrown = false;
         //Recorder.Instance.isMainPlaybackOn = false;
         InputManager.Instance.leftHandPinchObj.SetActive(true);
         InputManager.Instance.rightHandPinchObj.SetActive(true);
 
-        InputManager.Instance.NotifyCollision(null,null);       
-        Recorder.Instance.playbackSlider.value = oldMainPlaybackSliderValue;
+        InputManager.Instance.SaveCurrentCollision(null,null);       
+
+        Recorder.Instance.RetrievePlaybackPosition();
+        
         transform.position = initPosBeforePhysicsSimulation;
         transform.rotation = initRotBeforePhysicsSimulation;
         GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
@@ -1044,12 +758,13 @@ public class Asset : MonoBehaviour
     //For assets
     void OnCollisionStay(Collision collision)
     {
+        
         if(Manager.Instance.currAppState != Manager.AppState.RECORDING && Manager.Instance.currAppState != Manager.AppState.RECORDING_DURING_PLAYBACK)
         {
             //DebugLogger.Instance.Log("Notifying collision detected between " + base.gameObject.name + " and " + collision.collider.name);
             if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere" || collision.collider.name == "HeadContactSphere")
             {                 
-                InputManager.Instance.NotifyCollision(base.gameObject, collision.collider.gameObject);
+                InputManager.Instance.SaveCurrentCollision(base.gameObject, collision.collider.gameObject);
             }
                       
         }
@@ -1063,12 +778,17 @@ public class Asset : MonoBehaviour
     //For assets
     void OnCollisionExit(Collision collision)
     {
+        if (Manager.Instance.currAppState == Manager.AppState.SIMULATING)
+        {
+            Recorder.Instance.currentActiveExample.EndPreviousCollision((int)Recorder.Instance.playbackSlider.value,base.gameObject, collision.collider.gameObject);
+        }
+        
         if(Manager.Instance.currAppState != Manager.AppState.RECORDING && Manager.Instance.currAppState != Manager.AppState.RECORDING_DURING_PLAYBACK)
         {
             //DebugLogger.Instance.Log("Notifying collision ended between " + gameObject.name + " and " + collision.collider.name);
             if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere" || collision.collider.name == "HeadContactSphere")
             {      
-                InputManager.Instance.NotifyCollision(null,null);
+                InputManager.Instance.SaveCurrentCollision(null,null);
             }          
         }
         else //Recording
@@ -1079,13 +799,13 @@ public class Asset : MonoBehaviour
     }
 
     //For assets
-    public void Follow(Transform other)
+    public void ApplyFollow(Transform other)
     {
         transform.SetParent(other);
     }
 
     //For assets
-    public void Unfollow()
+    public void ApplyUnfollow()
     {
         transform.SetParent(null);
     }
@@ -1098,7 +818,7 @@ public class Asset : MonoBehaviour
         if(status)
         {
             oldAppState = Manager.Instance.currAppState;
-            Manager.Instance.currAppState = Manager.AppState.EDITCOLLIDERS;
+            Manager.Instance.currAppState = Manager.AppState.EDIT_BOUNDING_SPHERE;
         }
         else
         {
@@ -1109,56 +829,20 @@ public class Asset : MonoBehaviour
             colliderBoundaryGizmoObj2.SetActive(status);
         }
     }
-
-    private Quaternion initialRotation;
-    private Vector3 initialPosition;
-    public void SetInitialRotation(Quaternion transformRotation)
-    {
-        initialRotation = transformRotation;
-    }
     
-    public void SetInitialPosition(Vector3 transformPosition)
-    {
-        initialPosition = transformPosition;
-    }
-
-    public Vector3 GetInitialPosition()
-    {
-        return initialPosition;
-    }
+    public Quaternion InitialRotation { get; set; }
+    public Vector3 InitialPosition { get; set; }
     
-    public Quaternion GetInitialRotation()
-    {
-        return initialRotation;
-    }
 }
-
 
 [System.Serializable]
 public class AssetFrame : ICloneable
 {
     public Vector3 rootPosition;
     public Quaternion rootRotation;
+    
+    [FormerlySerializedAs("isShown")] [FormerlySerializedAs("showStatusForThisFrame")] public bool isVisible = true;
 
-    public int frameNumber;
-
-
-    //public Vector3 pinchPosition;
-
-
-    public bool showStatusForThisFrame = true;
-    public InputManager.Gesture gestureType;
-
-    public ACTION_ENUM ActionType = ACTION_ENUM.NONE;
-
-    //public Recordable.RecordingType recordingMode;
-
-    public Action ActionDelegate;
-
-    public Action<Frame> CollisionDelegate;
-
-    public GameObject CollidedObject;
-    public COLLISION_ENUM CollisionType = COLLISION_ENUM.NONE;
     public Color color;
 
     //public string voiceCommand = "None";
@@ -1169,23 +853,11 @@ public class AssetFrame : ICloneable
     public AssetFrame(Vector3 _position, 
     Quaternion _rotation, 
     bool _showStatus, 
-    ACTION_ENUM _actionType, 
-    COLLISION_ENUM _collisionType, 
-    Action _actionDelegate, 
-    Action<Frame> _collisionDelegate, 
-    GameObject _collidedObject, 
-    Color _color, 
-    int _frameNumber)
+    Color _color)
     {
         rootPosition = _position;
         rootRotation = _rotation;
-        showStatusForThisFrame = _showStatus;
-        frameNumber = _frameNumber;
-        ActionType = _actionType;
-        CollisionType = _collisionType;
-        ActionDelegate = _actionDelegate;
-        CollisionDelegate = _collisionDelegate;
-        CollidedObject = _collidedObject;
+        isVisible = _showStatus;
         color = _color;
     }
 
@@ -1196,18 +868,9 @@ public class AssetFrame : ICloneable
         (
             this.rootPosition,
             this.rootRotation,
-            this.showStatusForThisFrame,
-            this.ActionType,
-            this.CollisionType,
-            this.ActionDelegate,
-            this.CollisionDelegate,
-            this.CollidedObject,
-            this.color,
-            this.frameNumber
+            this.isVisible,
+            this.color
         );
-
-        //clonedFrame.pinchPosition = this.pinchPosition;
-        clonedFrame.gestureType = this.gestureType;        
 
         // Return the cloned object
         return clonedFrame;

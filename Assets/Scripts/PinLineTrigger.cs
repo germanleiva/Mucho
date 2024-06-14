@@ -10,7 +10,7 @@ public class PinLineTrigger : MonoBehaviour
 
     public PinTargetType pinTargetType;
 
-    new public Renderer renderer;
+    public new Renderer renderer;
     public Material highlightMaterial;
     Material defaultMaterial;
 
@@ -40,39 +40,10 @@ public class PinLineTrigger : MonoBehaviour
 
         if(pinLine != null)
         {
-            //followLine.DeactivateFollowLine();
-            renderer.material = highlightMaterial;  
-            if(pinTargetType == PinTargetType.LEFTHAND)
-            {                
-                pinLine.PinAction = () => { pinLine.asset.GetComponent<Asset>().RecordPinToLeftHand(); renderer.material = defaultMaterial;};             
-                //followLine.asset.GetComponent<Recordable>().AttachToLeftHand();
-            }
-            else if(pinTargetType == PinTargetType.RIGHTHAND)
-            {                
-                pinLine.PinAction = () => { pinLine.asset.GetComponent<Asset>().RecordPinToRightHand(); renderer.material = defaultMaterial;};
-                //followLine.asset.GetComponent<Recordable>().AttachToRightHand();
-            }
-            else if(pinTargetType == PinTargetType.LEFTFOCUS)
-            {
-                pinLine.PinAction = () => { pinLine.asset.GetComponent<Asset>().RecordPinToLeftFocus(); renderer.material = defaultMaterial;}; 
-            }
-            else if(pinTargetType == PinTargetType.RIGHTFOCUS)
-            {
-                pinLine.PinAction = () => { pinLine.asset.GetComponent<Asset>().RecordPinToRightFocus(); renderer.material = defaultMaterial;};
-            }
-            else if(pinTargetType == PinTargetType.GAZEFOCUS)
-            {
-                pinLine.PinAction = () => { pinLine.asset.GetComponent<Asset>().RecordPinToGazeFocus(); renderer.material = defaultMaterial;};
-            }
-            /*else if(pinTargetType == PinTargetType.WALL)
-            {
-                pinLine.PinAction = () => { pinLine.asset.GetComponent<Recordable>().RecordPinToWall(); renderer.material = defaultMaterial;};
-            }*/
-            else
-            {
-                DebugLogger.Instance.Log("PinLineTrigger: No PinTargetType found for " + pinTargetType);
-            }
+            //The PinLineTrigger component is attached to a potential object that can be highlighted (playback_focus_square_gaze, playback_focus_square_left, playback_focus_square_right, OVRLeftHandVisual_Playback, OVRRightHandVisual_Playback)
+            renderer.material = highlightMaterial;
             
+            pinLine.UndoHighlightingOfAssetIfAny = () => { renderer.material = defaultMaterial;};
         }
     }
 
@@ -93,7 +64,7 @@ public class PinLineTrigger : MonoBehaviour
         {
             //followLine.ResetFollowLine();
             renderer.material = defaultMaterial;
-            pinLine.PinAction = null;
+            pinLine.UndoHighlightingOfAssetIfAny = null;
         }
     }
 }

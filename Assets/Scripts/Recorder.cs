@@ -11,7 +11,7 @@ using UnityEngine.UI;
 public class Recorder : MonoBehaviour
 {
     public static Recorder Instance { get; private set; }
-
+    private float oldMainPlaybackSliderValue = 0;
     [Header("Record & Playback")]
     public GameObject rootPlaybackArea;
     public Slider playbackSlider;
@@ -92,9 +92,9 @@ public class Recorder : MonoBehaviour
 
     public void RecreateTimelineInputs()
     {
-        RefreshTimelineGestures();
-        RefreshTimelineVoiceSequences();
-        RefreshTimelineCollisions();
+        RecreateTimelineGestures();
+        RecreateVoiceTimelineElements();
+        RecreateCollisionsInTimeline();
     }
     
     public void AddExample()
@@ -136,7 +136,7 @@ public class Recorder : MonoBehaviour
         rootPlaybackArea.SetActive(false);
         DebugLogger.Instance.Log("StartRecording");
 
-        currentActiveExample.ResetData();
+        currentActiveExample.CleanDataBeforeRecording();
         //AssetManager.Instance.ShowMiscObjs();
         AssetManager.Instance.SetAllAssetMenusPokeable(false);
 
@@ -156,9 +156,9 @@ public class Recorder : MonoBehaviour
         DebugLogger.Instance.Log("Size of recordedData leftHand: " + currentActiveExample.leftHandFrames.Count);
         DebugLogger.Instance.Log("Size of recordedData rightHand: " + currentActiveExample.rightHandFrames.Count);
 
-        foreach(var asset in currentActiveExample.assetFramesDict.Keys)
+        foreach(var asset in currentActiveExample.assetsDict.Keys)
         {
-            DebugLogger.Instance.Log("Size of recordedData asset: " + asset.name + ", " + currentActiveExample.assetFramesDict[asset].Count);
+            DebugLogger.Instance.Log("Size of recordedData asset: " + asset.name + ", " + currentActiveExample.assetsDict[asset].assetFrames.Count);
         }
         
         //TODO: If sizes do no match raise an error
@@ -297,7 +297,7 @@ public class Recorder : MonoBehaviour
     public int GetSizeOfMainRecordedData()
     {
         //return objectsToRecord[0].recordedData.Count;
-        return currentActiveExample.headFrames.Count;
+        return currentActiveExample.RecordedDataCount;
     }
     public void ExpandRecordedData(int size)
     {
@@ -314,294 +314,17 @@ public class Recorder : MonoBehaviour
         AssetPoseRecorder.Instance.DoRecordSizesMatch();*/
     }
 
-    public List<GestureSequence> GetContinuousGestureSequences(List<InputManager.Gesture> gestures)
+    public void CreateAssetActionSequencesInTimeline(RectTransform timelinePanel, Asset asset)
     {
-        List<GestureSequence> sequences = new();
-
-        int startIndex = -1;
-        InputManager.Gesture? currentGesture = null;
-
-        for (int i = 0; i < gestures.Count; i++)
+        foreach (var assetAction in currentActiveExample.assetsDict[asset].assetActions)
         {
-            if (gestures[i] != InputManager.Gesture.LEFTHANDNONE && gestures[i] != InputManager.Gesture.RIGHTHANDNONE)
-            {
-                if (currentGesture == null || currentGesture == gestures[i])
-                {
-                    if (currentGesture == null)
-                    {
-                        currentGesture = gestures[i];
-                        startIndex = i;
-                    }
-                }
-                else
-                {
-                    sequences.Add(new GestureSequence
-                    {
-                        StartIndex = startIndex,
-                        Length = i - startIndex,
-                        GestureType = currentGesture.Value
-                    });
-
-                    startIndex = i;
-                    currentGesture = gestures[i];
-                }
-            }
-            else if (currentGesture != null)
-            {
-                sequences.Add(new GestureSequence
-                {
-                    StartIndex = startIndex,
-                    Length = i - startIndex,
-                    GestureType = currentGesture.Value
-                });
-
-                startIndex = -1;
-                currentGesture = null;
-            }
+            TimelineUIElement.CreateTimelineElement(currentActiveExample.assetTimelineElementPrefab, timelinePanel, GetSizeOfMainRecordedData(), assetAction);
+            //If the timelineElement (UI) has a reference to the action (model) we can simplify the process of moving the timelineElement to a new FrameStart or modifying its FrameDuration
+            //timelineElement.assetAction = assetAction;
         }
 
-        if (currentGesture != null)
-        {
-            sequences.Add(new GestureSequence
-            {
-                StartIndex = startIndex,
-                Length = gestures.Count - startIndex,
-                GestureType = currentGesture.Value
-            });
-        }
-
-        //Iterate through gestures and assign the lambda 
-
-        return sequences;
-    }
-
-
-
-    public List<GestureSequence> GenerateGestureSequences(RectTransform timelinePanel, List<HandFrame> handFrames)
-    {
-        //DebugLogger.Instance.Log("Generating gesture sequences for " + handStr);
-        List<InputManager.Gesture> gestures = handFrames.Select(x => x.gesture).ToList();
-        List<GestureSequence> GestureSequences = GetContinuousGestureSequences(gestures);
-        foreach (GestureSequence sequence in GestureSequences)
-        {
-            //DebugLogger.Instance.Log("Sequence name: " + InputManager.Instance.GestureToString(sequence.GestureType) + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
-            //DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
-            TimelineUIElement.CreateTimelineElement(currentActiveExample.handTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), InputManager.Instance.GestureToString(sequence.GestureType));
-        }
-        return GestureSequences;
-    }
-
-    public List<VoiceSequence> GenerateVoiceCommandSequences(RectTransform timelinePanel)
-    {        
-        DebugLogger.Instance.Log("Generating voice command sequences");
-        List<string> voiceCommands = Recorder.Instance.currentActiveExample.headFrames.Select(x => x.voiceCommand).ToList();
-        List<VoiceSequence> voiceSequences = GetVoiceCommandSequences(voiceCommands);
-        foreach (VoiceSequence sequence in voiceSequences)
-        {
-            DebugLogger.Instance.Log("Voice sequence name: " + sequence.VoiceCommand + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
-            GameObject timelineElement = TimelineUIElement.CreateTimelineElement(currentActiveExample.voiceCommandTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.VoiceCommand);
-            TimelineUIElement.SetTimeLineElementWidthAccordingToText(timelineElement);
-        }
-        return voiceSequences;
-    }
-    
-    public List<VoiceSequence> GetVoiceCommandSequences(List<string> voiceCommands)
-    {
-        List<VoiceSequence> sequences = new();
-
-        int startIndex = -1;
-        string currentVoiceCommand = null;
-
-        for (int i = 0; i < voiceCommands.Count; i++)
-        {
-            if (voiceCommands[i] != null)
-            {
-                if (currentVoiceCommand == null || currentVoiceCommand == voiceCommands[i])
-                {
-                    if (currentVoiceCommand == null)
-                    {
-                        currentVoiceCommand = voiceCommands[i];
-                        startIndex = i;
-                    }
-                }
-                else
-                {
-                    sequences.Add(new VoiceSequence
-                    {
-                        StartIndex = startIndex,
-                        Length = i - startIndex,
-                        VoiceCommand = currentVoiceCommand
-                    });
-
-                    startIndex = i;
-                    currentVoiceCommand = voiceCommands[i];
-                }
-            }
-            else if (currentVoiceCommand != null)
-            {
-                sequences.Add(new VoiceSequence
-                {
-                    StartIndex = startIndex,
-                    Length = i - startIndex,
-                    VoiceCommand = currentVoiceCommand
-                });
-
-                startIndex = -1;
-                currentVoiceCommand = null;
-            }
-        }
-
-        if (currentVoiceCommand != null)
-        {
-            sequences.Add(new VoiceSequence
-            {
-                StartIndex = startIndex,
-                Length = voiceCommands.Count - startIndex,
-                VoiceCommand = currentVoiceCommand
-            });
-        }
-
-        return sequences;
-    }
-    
-    public List<AssetActionSequence> GetSequences(List<ACTION_ENUM> actions)
-    {
-        List<AssetActionSequence> sequences = new();
-
-        int startIndex = -1;
-        ACTION_ENUM currentAction = ACTION_ENUM.UNDEFINED;
-
-        for (int i = 0; i < actions.Count; i++)
-        {
-            if (actions[i] != ACTION_ENUM.NONE)
-            {
-                if (currentAction == ACTION_ENUM.UNDEFINED || currentAction == actions[i])
-                {
-                    if (currentAction == ACTION_ENUM.UNDEFINED)
-                    {
-                        currentAction = actions[i];
-                        startIndex = i;
-                    }
-                }
-                else
-                {
-                    sequences.Add(new AssetActionSequence
-                    {
-                        StartIndex = startIndex,
-                        Length = i - startIndex,
-                        ActionType = currentAction,
-                    });
-
-                    startIndex = i;
-                    currentAction = actions[i];
-                }
-            }
-            else if (currentAction != ACTION_ENUM.UNDEFINED)
-            {
-                sequences.Add(new AssetActionSequence
-                {
-                    StartIndex = startIndex,
-                    Length = i - startIndex,
-                    ActionType = currentAction
-                });
-
-                startIndex = -1;
-                currentAction = ACTION_ENUM.UNDEFINED;
-            }
-        }
-
-        if (currentAction != ACTION_ENUM.UNDEFINED)
-        {
-            sequences.Add(new AssetActionSequence
-            {
-                StartIndex = startIndex,
-                Length = actions.Count - startIndex,
-                ActionType = currentAction,
-            });
-        }
-
-        return sequences;
-    }
-
-    public List<CollisionSequence> GetSequences(List<COLLISION_ENUM> actions)
-    {
-        // Initialize an empty list to store the sequences of collisions.
-        List<CollisionSequence> sequences = new();
-
-        // Initialize variables to track the start index of the current sequence
-        // and the type of the current collision action.
-        int startIndex = -1;
-        COLLISION_ENUM currentAction = COLLISION_ENUM.UNDEFINED;
-
-        // Loop through the list of actions.
-        for (int i = 0; i < actions.Count; i++)
-        {
-            // Check if the current action is not NONE.
-            if (actions[i] != COLLISION_ENUM.NONE)
-            {
-                // If the current action is undefined or matches the previous action.
-                if (currentAction == COLLISION_ENUM.UNDEFINED || currentAction == actions[i])
-                {
-                    // If the current action was undefined, update the current action and start index.
-                    if (currentAction == COLLISION_ENUM.UNDEFINED)
-                    {
-                        currentAction = actions[i];
-                        startIndex = i;
-                    }
-                }
-                else
-                {
-                    // If the current action is different from the previous one,
-                    // create a new CollisionSequence for the previous sequence.
-                    sequences.Add(new CollisionSequence
-                    {
-                        StartIndex = startIndex,
-                        Length = i - startIndex,
-                        CollisionType = currentAction,
-                    });
-
-                    // Update the start index and current action for the new sequence.
-                    startIndex = i;
-                    currentAction = actions[i];
-                }
-            }
-            else if (currentAction != COLLISION_ENUM.UNDEFINED)
-            {
-                // If the current action is NONE and there was a previous sequence,
-                // create a new CollisionSequence for the previous sequence.
-                sequences.Add(new CollisionSequence
-                {
-                    StartIndex = startIndex,
-                    Length = i - startIndex,
-                    CollisionType = currentAction
-                });
-
-                // Reset the start index and current action.
-                startIndex = -1;
-                currentAction = COLLISION_ENUM.UNDEFINED;
-            }
-        }
-
-        // After looping through all actions, check if there is an unfinished sequence.
-        if (currentAction != COLLISION_ENUM.UNDEFINED)
-        {
-            // Create a new CollisionSequence for the remaining sequence.
-            sequences.Add(new CollisionSequence
-            {
-                StartIndex = startIndex,
-                Length = actions.Count - startIndex,
-                CollisionType = currentAction,
-            });
-        }
-
-        // Return the list of collision sequences.
-        return sequences;
-    }
-
-
-    public List<AssetActionSequence> GenerateAssetActionSequences(RectTransform timelinePanel, Asset asset)
-    {
-
+        //TODO Check if its ok to ignore all
+        /*
         List<ACTION_ENUM> followActions = new()
             {
                 ACTION_ENUM.FOLLOW_RIGHT_HAND,
@@ -627,18 +350,7 @@ public class Recorder : MonoBehaviour
                 DebugLogger.Instance.Log("Action delegate found: " + recordedAssetFrames[sequence.StartIndex].ActionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordedAssetFrames[sequence.StartIndex].ActionDelegate.Method.GetParameters().Select(x => x.Name)));
             }
 
-            /*if (sequence.ActionType == ACTION_ENUM.HIDE)
-            {
-                GameObject hideElement = Instantiate(currentActiveExample.hideTimelinePanelPrefab, timelinePanel);
-                hideElement.SetActive(true);
-                hideElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(TimelineUIElement.MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex, GetSizeOfMainRecordedData()), hideElement.GetComponent<RectTransform>().anchoredPosition.y);
-            }
-            else if (sequence.ActionType == ACTION_ENUM.SHOW)
-            {
-                GameObject showElement = Instantiate(currentActiveExample.showTimelinePanelPrefab, timelinePanel);
-                showElement.SetActive(true);
-                showElement.GetComponent<RectTransform>().anchoredPosition = new Vector2(TimelineUIElement.MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex, GetSizeOfMainRecordedData()), showElement.GetComponent<RectTransform>().anchoredPosition.y);
-            }*/
+            
             
             if(followActions.Contains(sequence.ActionType) || 
                sequence.ActionType == ACTION_ENUM.HIDE || 
@@ -650,144 +362,18 @@ public class Recorder : MonoBehaviour
                 TimelineUIElement.CreateTimelineElement(currentActiveExample.assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ToString(), asset);
             }
         }
-        return sequences;
-    }
-
-    public void DeleteAssetActionSequence(Asset asset, int startIndex, int length)
-    {
-        var recordedAssetFrames = currentActiveExample.assetFramesDict[asset];
-        
-        var currentAssetFrame = recordedAssetFrames[Math.Max(startIndex - 1,0)];
-        for (int i = startIndex; i < startIndex+length; i++)
-        {
-            var assetFrame = recordedAssetFrames[i];
-            /*var actionType = assetFrame.ActionType;
-            switch (actionType)
-            {
-                case ACTION_ENUM.PIN:
-                case ACTION_ENUM.APPLY_FORCE:
-                case ACTION_ENUM.RESET_PHYSICS:
-                case ACTION_ENUM.FOLLOW_G_FOCUS:
-                case ACTION_ENUM.FOLLOW_L_FOCUS: 
-                case ACTION_ENUM.FOLLOW_R_FOCUS:
-                case ACTION_ENUM.FOLLOW_LEFT_HAND:
-                case ACTION_ENUM.FOLLOW_RIGHT_HAND:
-                case ACTION_ENUM.UNFOLLOW:
-                    assetFrame.rootPosition = currentAssetFrame.rootPosition;
-                    assetFrame.rootRotation = currentAssetFrame.rootRotation;
-                    break;
-                case ACTION_ENUM.HIDE:
-                    assetFrame.showStatusForThisFrame = true;
-                    break;
-                case ACTION_ENUM.SHOW:
-                    assetFrame.showStatusForThisFrame = false;
-                    break;
-                case ACTION_ENUM.CHANGE_COLOR:
-                    assetFrame.color = currentAssetFrame.color;
-                    break;
-            }*/
-            recordedAssetFrames[i].ActionType = ACTION_ENUM.NONE;
-            recordedAssetFrames[i].ActionDelegate = null;
-        }
-        
-        //Recreate actual values
-
-        var firstAssetFrame = recordedAssetFrames[0];
-        firstAssetFrame.rootPosition = asset.GetInitialPosition();
-        firstAssetFrame.rootRotation = asset.GetInitialRotation();
-        firstAssetFrame.color = Color.gray;
-        firstAssetFrame.showStatusForThisFrame = true;
-        
-        asset.SetColor(Color.grey);
-        asset.transform.position = asset.GetInitialPosition();
-        asset.transform.rotation = asset.GetInitialRotation();
-        asset.SetVisibility(firstAssetFrame.showStatusForThisFrame);
-
-        for (int i = 0; i < recordedAssetFrames.Count; i++)
-        {
-            var assetFrameEvaluated = recordedAssetFrames[i];
-            //DebugLogger.Instance.Log("Asset before: " + asset.name + ", Frame: " + i + ", Position: " + asset.transform.position + ", Rotation: " + asset.transform.rotation);
-
-            if (assetFrameEvaluated.ActionDelegate != null)
-            {
-                asset.executeActionInMyContext(assetFrameEvaluated.ActionDelegate);
-            }
-            // print previous and current position and rotation
-            //DebugLogger.Instance.Log("Asset after: " + asset.name + ", Frame: " + i + ", Position: " + asset.transform.position + ", Rotation: " + asset.transform.rotation);
-            assetFrameEvaluated.rootPosition = asset.transform.position;
-            assetFrameEvaluated.rootRotation = asset.transform.rotation;
-            assetFrameEvaluated.color = asset.gameObject.GetComponent<MeshRenderer>().material.color;
-            asset.SetVisibility(assetFrameEvaluated.showStatusForThisFrame);
-            //assetFrameEvaluated.showStatusForThisFrame = asset.gameObject.GetComponent<MeshRenderer>().enabled;
-            assetFrameEvaluated.showStatusForThisFrame = asset.gameObject.GetComponent<MeshRenderer>().material == asset.defaultMaterial;
-        }
-        
-    }
-    
-    public List<CollisionSequence> GenerateCollisionSequences(RectTransform collisionTimelinePanelTransform, Asset asset) //Strong assumption that all sources of action come from collision
-    {
-        DebugLogger.Instance.Log("Generating collision sequences for " + asset.name);
-        var recordedAssetFrames = currentActiveExample.assetFramesDict[asset]; 
-        try
-        {
-            // Extract the list of collision types from the recorded frames
-            List<COLLISION_ENUM> collisionTypes = recordedAssetFrames.Select(x => x.CollisionType).ToList();
-            List<CollisionSequence> sequences = GetSequences(collisionTypes);
-            foreach (CollisionSequence sequence in sequences)
-            {
-                if (recordedAssetFrames[sequence.StartIndex].CollisionDelegate != null)
-                    DebugLogger.Instance.Log("Collision delegate found: " + recordedAssetFrames[sequence.StartIndex].CollisionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordedAssetFrames[sequence.StartIndex].CollisionDelegate.Method.GetParameters().Select(x => x.Name)));
-                if (recordedAssetFrames[sequence.StartIndex].CollidedObject != null)
-                {
-                    DebugLogger.Instance.Log("Collided object: " + recordedAssetFrames[sequence.StartIndex].CollidedObject.name);
-                    sequence.CollidingObject1 = asset.gameObject;
-                    sequence.CollidingObject2 = recordedAssetFrames[sequence.StartIndex].CollidedObject;
-                    sequence.CollisionType = recordedAssetFrames[sequence.StartIndex].CollisionType;
-                }
-
-                TimelineUIElement.CreateTimelineElement(currentActiveExample.collisionTimelineElementPrefab, collisionTimelinePanelTransform, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ToString());
-            }
-            return sequences;
-        }
-        catch (System.Exception e)
-        {
-            DebugLogger.Instance.LogException(e);
-        }
-        return null;
-    }
-
-    public void CreateTimelineRowsAndActions()
-    {
-        DebugLogger.Instance.Log("Creating assets timeline for example " + currentActiveExample.exampleId);
-
-        int assetsCounter = 0;
-        currentActiveExample.assetSequencesLists.Clear();
-        foreach (var asset in currentActiveExample.assetFramesDict.Keys)
-        {
-            ++assetsCounter;
-            GameObject timelinePanel = Instantiate(currentActiveExample.assetTimelinePanelPrefab, currentActiveExample.examplePlaybackPanel);
-            timelinePanel.GetComponent<TimelineAssetRow>().AssetInstanceID = asset.GetInstanceID();
-            timelinePanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(timelinePanel.GetComponent<RectTransform>().anchoredPosition.x, timelinePanel.GetComponent<RectTransform>().anchoredPosition.y - assetsCounter * 100);
-            timelinePanel.SetActive(true);
-            timelinePanel.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text = Manager.Instance.CleanAssetName(asset.name); //Assign asset name
-
-            if (currentActiveExample.assetFramesDict[asset].Count > 0)
-            {
-                currentActiveExample.assetSequencesLists.Add(GenerateAssetActionSequences(timelinePanel.GetComponent<RectTransform>(), asset));
-
-            }
-        }
+        return sequences;*/
     }
 
     public void CreateTimelineAndStatePlaceholders(bool startHidden=true)
     {
         RecreateTimelineInputs();
-        CreateTimelineRowsAndActions();
+        RecreateTimelineAssetRows();
         
         CreateStatePlaceholders(startHidden);
     }
 
-    public void RefreshTimelineVoiceSequences()
+    public void RecreateVoiceTimelineElements()
     {
         // refresh voice command sequences
         //TODO: not creating them all over again but just add the new one
@@ -797,10 +383,11 @@ public class Recorder : MonoBehaviour
             Destroy(currentActiveExample.voiceTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
         }
         
-        currentActiveExample.VoiceCommandSequences = GenerateVoiceCommandSequences(currentActiveExample.voiceTimelinePanel);
-        
-        //refresh state placeholders 
-        //RefreshStatePlaceholders();
+        foreach (VoiceSequence sequence in currentActiveExample.VoiceCommandSequences)
+        {
+            DebugLogger.Instance.Log("Voice sequence name: " + sequence.VoiceCommand + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
+            TimelineUIElement.CreateTimelineElement(currentActiveExample.voiceCommandTimelineElementPrefab, currentActiveExample.voiceTimelinePanel, GetSizeOfMainRecordedData(), sequence);
+        }
     }
 
     public void RecreateTimelineAssetRows()
@@ -818,8 +405,7 @@ public class Recorder : MonoBehaviour
         DebugLogger.Instance.Log("Recreating assets row in timeline for example " + currentActiveExample.exampleId);
 
         int assetsCounter = 0;
-        currentActiveExample.assetSequencesLists.Clear();
-        foreach (var asset in currentActiveExample.assetFramesDict.Keys)
+        foreach (var asset in Recorder.Instance.allAssets)
         {
             ++assetsCounter;
             CreateTimelineAssetRow(asset, assetsCounter);
@@ -839,17 +425,11 @@ public class Recorder : MonoBehaviour
 
     public void CreateTimelineActionsForAsset(Asset asset)
     {
-        if (currentActiveExample.assetFramesDict[asset].Count > 0)
-        {
-            var assetRow = currentActiveExample.GetTimelineRowFor(asset);
-            currentActiveExample.assetSequencesLists.Add(GenerateAssetActionSequences(assetRow.GetComponent<RectTransform>(), asset));
-        }
-        //Refresh timeline collisions because there are some actions like follow and addforce that may create collisions
-        RefreshTimelineCollisions();
-        
+        var assetRow = currentActiveExample.GetTimelineRowFor(asset);
+        CreateAssetActionSequencesInTimeline(assetRow.GetComponent<RectTransform>(), asset);
     }
 
-    public void RefreshTimelineCollisions()
+    public void RecreateCollisionsInTimeline()
     {
         //Delete all existing collision timeline elements
         for (int i = 2; i < currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>().childCount; i++)
@@ -858,17 +438,15 @@ public class Recorder : MonoBehaviour
         }
         
         //Generate collision sequences
-        currentActiveExample.collisionSequencesLists.Clear();
-        foreach (var recordable in currentActiveExample.assetFramesDict.Keys)
+        foreach (var collisionModel in currentActiveExample.CollisionModels)
         {
-            if (currentActiveExample.assetFramesDict[recordable].Count > 0)
-            {
-                currentActiveExample.collisionSequencesLists.Add(GenerateCollisionSequences(currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>(), recordable));
-            }
+            var collisionTimelinePanelTransform =
+                currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>();
+            TimelineUIElement.CreateTimelineElement(currentActiveExample.collisionTimelineElementPrefab, collisionTimelinePanelTransform, GetSizeOfMainRecordedData(), collisionModel);
         }
     }
 
-    public void RefreshTimelineGestures()
+    public void RecreateTimelineGestures()
     {
         for (int i = 1; i < currentActiveExample.leftHandTimelinePanel.GetComponent<RectTransform>().childCount; i++)
         {
@@ -878,10 +456,15 @@ public class Recorder : MonoBehaviour
         {
             Destroy(currentActiveExample.rightHandTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
         }
-        //Generate gesture sequences for left and right hand
-        currentActiveExample.LeftHandGestureSequences = GenerateGestureSequences(currentActiveExample.leftHandTimelinePanel, currentActiveExample.activeLeftHandFrames);
-        currentActiveExample.RightHandGestureSequences = GenerateGestureSequences(currentActiveExample.rightHandTimelinePanel,
-                currentActiveExample.activeRightHandFrames);
+        
+        foreach (GestureSequence sequence in currentActiveExample.LeftHandGestureSequences)
+        {
+            TimelineUIElement.CreateTimelineElement(currentActiveExample.handTimelineElementPrefab, currentActiveExample.leftHandTimelinePanel, GetSizeOfMainRecordedData(), sequence);
+        }
+        foreach (GestureSequence sequence in currentActiveExample.RightHandGestureSequences)
+        {
+            TimelineUIElement.CreateTimelineElement(currentActiveExample.handTimelineElementPrefab, currentActiveExample.rightHandTimelinePanel, GetSizeOfMainRecordedData(), sequence);
+        }
     }
 
     /*
@@ -915,7 +498,7 @@ public class Recorder : MonoBehaviour
         }
 
         var gestures = currentActiveExample.AllGestureSequences;
-        var collisions = currentActiveExample.collisionSequencesLists.SelectMany(x => x).ToList();
+        var collisions = currentActiveExample.CollisionModels;
         var voiceCommands = currentActiveExample.VoiceCommandSequences;
 
         List<Sequence> allPotentialTriggers = gestures.Cast<Sequence>()
@@ -923,7 +506,7 @@ public class Recorder : MonoBehaviour
                                   .Concat(voiceCommands.Cast<Sequence>())
                                   .ToList();
 
-        var allActions = currentActiveExample.assetSequencesLists;
+        var allActions = currentActiveExample.assetsDict.Select(keyValuePair => keyValuePair.Value.assetActions).ToList();
 
         State firstState = null;
 
@@ -1156,7 +739,7 @@ public class Recorder : MonoBehaviour
         DeleteStatePlaceholders();
         int recordedFramesTotal = GetSizeOfMainRecordedData();
         var gestures = currentActiveExample.AllGestureSequences;
-        var collisions = currentActiveExample.collisionSequencesLists.SelectMany(x => x).ToList();
+        var collisions = currentActiveExample.CollisionModels;
         var voiceCommands = currentActiveExample.VoiceCommandSequences;
         // Create a list of events (start or end of a sequence)
         var eventsThatStartStates = new List<(int Index, string Type, GestureSequence Gesture, CollisionSequence Collision, VoiceSequence VoiceCommand)>();
@@ -1499,6 +1082,16 @@ public class Recorder : MonoBehaviour
 
         }
 
+    }
+
+    public void SavePlaybackPosition()
+    {
+        oldMainPlaybackSliderValue = playbackSlider.value; //This is so awkward, but it works
+    }
+
+    public void RetrievePlaybackPosition()
+    {
+        playbackSlider.value = oldMainPlaybackSliderValue;
     }
 }
 

@@ -288,9 +288,9 @@ public class ForceArrow : MonoBehaviour
 
     public void ThrowAsset()
     {
-        Manager.Instance.currAppState = Manager.AppState.ASSETRECORDING;
+        //This method is executed when the user releases the arrow during the creation of an AddForce action
+        Manager.Instance.currAppState = Manager.AppState.SIMULATING;
         GameObject throwableAsset = asset.gameObject;
-        throwableAsset.GetComponent<Asset>().isThisAssetThrown = true;
         throwableAsset.GetComponent<Asset>().PrepareForceSimulation(initialVelocity);
         if (AssetManager.isForceArrowGhostActive) {
             arrowHeadGhost.transform.position = arrowHeadReal.transform.position;

@@ -52,9 +52,9 @@ public class AssetManager : MonoBehaviour
     public bool DoRecordSizesMatch()
     {
         int size = Recorder.Instance.GetSizeOfMainRecordedData(); //Get size of head in main recorder
-        foreach(Asset recordable in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
+        foreach(Asset recordable in Recorder.Instance.currentActiveExample.assetsDict.Keys)
         {
-            if(Recorder.Instance.currentActiveExample.assetFramesDict[recordable].Count != size)
+            if(Recorder.Instance.currentActiveExample.assetsDict[recordable].assetFrames.Count != size)
             {
                 DebugLogger.Instance.Log("Asset recording sizes are different from main recording size");
                 return false;
@@ -96,16 +96,16 @@ public class AssetManager : MonoBehaviour
 
         if(Manager.Instance.currAppState == Manager.AppState.RECORDING)
         {
-            foreach(Asset recordable in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
+            foreach(Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys)
             {
-                recordable.RecordAssetFrame();
+                asset.RecordAssetFrame();
             }
         }
         else if (Manager.Instance.currAppState == Manager.AppState.PLAYBACK)
         {
-            foreach(Asset recordable in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
+            foreach(Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys)
             {
-                recordable.PlaybackAssetFrame();
+                asset.PlaybackAssetFrame();
             }
         }
     }
@@ -113,36 +113,45 @@ public class AssetManager : MonoBehaviour
     public void CreateAsset(Transform target, GameObject prefab)
     {
         DebugLogger.Instance.Log("Spawned Asset");
-        GameObject newAssetObject = Instantiate(prefab, target.position, Quaternion.identity);
+        GameObject newAssetGameObject = Instantiate(prefab, target.position, Quaternion.identity);
 
         Destroy(target.gameObject);
 
-        newAssetObject.SetActive(true);
-        Recorder.Instance.allAssets.Add(newAssetObject.GetComponentInChildren<Asset>());
+        newAssetGameObject.SetActive(true);
+        var newAsset = newAssetGameObject.GetComponentInChildren<Asset>();
+        Recorder.Instance.allAssets.Add(newAsset);
         
         foreach (var example in Recorder.Instance.examples)
         {
             example.RefreshAssetsInExample();
         }
+
+        if (Recorder.Instance.GetSizeOfMainRecordedData() > 0)
+        {
+            newAsset.UpdateAllAssetFramesAndCollisions(0, Recorder.Instance.currentActiveExample);    
+            Recorder.Instance.RecreateCollisionsInTimeline();
+        }
+        
+        Recorder.Instance.RecreateTimelineAssetRows();
         
         //RefreshAssetsInAllExamples();
         //Recorder.Instance.RefreshTimelineAndStates();
         //Recorder.Instance.RecreateTimelineAssetRows();
-        if(Recorder.Instance.GetSizeOfMainRecordedData() > 0) //Recording already exists, the main purpose is to check for new collisions
+        /*if(Recorder.Instance.GetSizeOfMainRecordedData() > 0) //Recording already exists, the main purpose is to check for new collisions
         {
             Manager.Instance.currAppState = Manager.AppState.RECORDING_DURING_PLAYBACK;
             Recorder.Instance.playbackSlider.value = 0;
             InputManager.Instance.SetPlaybackObjectsActive(true);
    
-            if (newAssetObject != null)
+            if (newAssetGameObject != null)
             {
-                Asset recordable = newAssetObject.GetComponentInChildren<Asset>();
+                Asset recordable = newAssetGameObject.GetComponentInChildren<Asset>();
                 if (recordable != null)
                 {
                     //This was added to fix a mysterious bug that made the asset not visible after adding it AFTER an input recording was done
-                    recordable.SetColor(Color.gray);
-                    recordable.SetInitialPosition(recordable.transform.position);
-                    recordable.SetInitialRotation(recordable.transform.rotation);
+                    recordable.CurrentColor = Color.gray;
+                    recordable.InitialPosition = recordable.transform.position;
+                    recordable.InitialRotation = recordable.transform.rotation;
                     
                 }
                 {
@@ -156,16 +165,16 @@ public class AssetManager : MonoBehaviour
             }
             
             StartCoroutine(AddAssetFrameToAssetFramesDict(
-                newAssetObject.GetComponentInChildren<Asset>()));
-        }
+                newAssetGameObject.GetComponentInChildren<Asset>()));
+        }*/
     }
 
 
     IEnumerator AddAssetFrameToAssetFramesDict(Asset recordable)
     {
-        while(Recorder.Instance.currentActiveExample.assetFramesDict[recordable].Count < Recorder.Instance.GetSizeOfMainRecordedData())
+        while(Recorder.Instance.currentActiveExample.assetsDict[recordable].assetFrames.Count < Recorder.Instance.GetSizeOfMainRecordedData())
         {
-            Recorder.Instance.playbackSlider.value = Recorder.Instance.currentActiveExample.assetFramesDict[recordable].Count;
+            Recorder.Instance.playbackSlider.value = Recorder.Instance.currentActiveExample.assetsDict[recordable].assetFrames.Count;
             //DebugLogger.Instance.Log("AddAssetFrameToAssetFramesDict: Adding frame at index " + Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count);
             recordable.RecordAssetFrame();
             yield return new WaitForSeconds(0.01f);
@@ -177,7 +186,7 @@ public class AssetManager : MonoBehaviour
         
         Recorder.Instance.RecreateTimelineAssetRows();
         
-        Recorder.Instance.RefreshTimelineCollisions();
+        Recorder.Instance.RecreateCollisionsInTimeline();
         
     }
 
@@ -188,10 +197,16 @@ public class AssetManager : MonoBehaviour
         foreach (var example in Recorder.Instance.examples)
         {
             example.RefreshAssetsInExample();
+            
+            //Update the model in all the examples
+            foreach (var asset in example.assetsDict.Keys)
+            {
+                asset.UpdateAllAssetFramesAndCollisions(0, example);
+            }
         }
         
-        //TODO: check if that is enough to refresh
-        Recorder.Instance.RefreshTimelineCollisions();
+        Recorder.Instance.RecreateTimelineAssetRows();
+        
         Destroy(obj);
     }
 
@@ -205,7 +220,7 @@ public class AssetManager : MonoBehaviour
 
     public void HideMiscObjs()
     {
-        foreach (Asset asset in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
+        foreach (Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys)
         {
             asset.assetMenu.SetActive(false);
         }
@@ -213,7 +228,7 @@ public class AssetManager : MonoBehaviour
 
     public void ShowMiscObjs()
     {
-        foreach (Asset recordable in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
+        foreach (Asset recordable in Recorder.Instance.currentActiveExample.assetsDict.Keys)
         {
             recordable.assetMenu.SetActive(true);
         }
@@ -221,7 +236,7 @@ public class AssetManager : MonoBehaviour
 
     public void ResetMeshRendererForAllAssets()
     {
-        foreach (Asset asset in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
+        foreach (Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys)
         {
             asset.GetComponent<MeshRenderer>().enabled = true;
         }
@@ -229,7 +244,7 @@ public class AssetManager : MonoBehaviour
 
     public void SetAllAssetMenusPokeable(bool status)
     {
-        foreach (Asset recordable in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
+        foreach (Asset recordable in Recorder.Instance.currentActiveExample.assetsDict.Keys)
         {
             recordable.GetComponent<PokeInteractable>().enabled = status;
         }
@@ -237,7 +252,7 @@ public class AssetManager : MonoBehaviour
 
     public void ResetPhysicsForAllAssets()
     {
-        foreach (Asset asset in Recorder.Instance.currentActiveExample.assetFramesDict.Keys)
+        foreach (Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys)
         {
             asset.ResetPhysicsPropertiesInLiveMode();
         }

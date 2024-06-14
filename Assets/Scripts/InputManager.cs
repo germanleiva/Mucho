@@ -30,7 +30,9 @@ public class InputManager : MonoBehaviour
 
     public string currentVoiceCommand;
 
-    public GameObject leftHandPinchObj, rightHandPinchObj, headContactObj;
+    public GameObject leftHandPinchObj;
+    public GameObject rightHandPinchObj;
+    public GameObject headContactObj;
 
     public GameObject playbackLeftHandPinchObj, playbackRightHandPinchObj, playbackHeadContactObj, playbackLeftFocus, playbackRightFocus, playbackGazeFocus;
 
@@ -120,9 +122,9 @@ public class InputManager : MonoBehaviour
 
         State grabState = new()
         {
-            OnEnterActions = () => { DebugLogger.Instance.Log("Grab OnEnter"); testBall.GetComponent<Asset>().Follow(rightHand.transform); },
+            OnEnterActions = () => { DebugLogger.Instance.Log("Grab OnEnter"); testBall.GetComponent<Asset>().ApplyFollow(rightHand.transform); },
             //OnUpdateActions = () => { DebugLogger.Instance.Log("Grab OnUpdate"); },
-            OnExitActions = () => { DebugLogger.Instance.Log("State 2 OnExit"); testBall.GetComponent<Asset>().Unfollow(); }
+            OnExitActions = () => { DebugLogger.Instance.Log("State 2 OnExit"); testBall.GetComponent<Asset>().ApplyUnfollow(); }
         };
 
         State throwState = new()
@@ -197,7 +199,7 @@ public class InputManager : MonoBehaviour
         currentVoiceCommand = command;
     }
 
-    public void NotifyCollision(GameObject object1, GameObject object2)
+    public void SaveCurrentCollision(GameObject object1, GameObject object2)
     {
         if (object1 != null && object2 != null)
         {
@@ -238,6 +240,8 @@ public class InputManager : MonoBehaviour
         }
         else if (Manager.Instance.currAppState == Manager.AppState.INIT)
         {
+            throw new Exception("WTF");
+            
             if(frame.collidingObjectThisFrame_1 != null && frame.collidingObjectThisFrame_2 != null)
             {
                 if (collidingObjectNotified_2.name == "LeftHandPinchContactSphere")    
@@ -245,13 +249,13 @@ public class InputManager : MonoBehaviour
                     assetInContactWithLeftHand = collidingObjectNotified_1.GetComponent<Asset>();
                     if(leftHand.currentGesture == Gesture.LEFTHANDPINCH)
                     {
-                        assetInContactWithLeftHand.Follow(leftHand.transform);
+                        assetInContactWithLeftHand.ApplyFollow(leftHand.transform);
                         leftHandHoldingObject = true;
 
                     }
                     else if (leftHand.currentGesture == Gesture.LEFTHANDNONE || leftHandHoldingObject)
                     {
-                        assetInContactWithLeftHand.Unfollow();
+                        assetInContactWithLeftHand.ApplyUnfollow();
                         leftHandHoldingObject = false;
                     }
 
@@ -262,12 +266,12 @@ public class InputManager : MonoBehaviour
                     assetInContactWithRightHand = collidingObjectNotified_1.GetComponent<Asset>();
                     if (rightHand.currentGesture == Gesture.RIGHTHANDPINCH)
                     {
-                        assetInContactWithRightHand.Follow(rightHand.transform);
+                        assetInContactWithRightHand.ApplyFollow(rightHand.transform);
                         rightHandHoldingObject = true;
                     }
                     else if (rightHand.currentGesture == Gesture.RIGHTHANDNONE || rightHand.currentGesture == Gesture.RIGHTHANDOPEN || rightHandHoldingObject)
                     {
-                        assetInContactWithRightHand.Unfollow();
+                        assetInContactWithRightHand.ApplyUnfollow();
                         rightHandHoldingObject = false;
                     }
                 }
@@ -320,8 +324,3 @@ public class InputManager : MonoBehaviour
     }
 
 }
-
-
-
-
-

@@ -222,7 +222,7 @@ public class CustomStateMachine : MonoBehaviour
         }
 
         var gestures = example.AllGestureSequences;
-        var collisions = example.collisionSequencesLists.SelectMany(x => x).ToList();
+        var collisions = example.CollisionModels;
         var voiceCommands = example.VoiceCommandSequences;
 
         List<Sequence> allPotentialTriggers = gestures.Cast<Sequence>()
@@ -230,7 +230,7 @@ public class CustomStateMachine : MonoBehaviour
                                   .Concat(voiceCommands.Cast<Sequence>())
                                   .ToList();
 
-        var allActions = example.assetSequencesLists;
+        var allActions = example.assetsDict.Select(keyValuePair => keyValuePair.Value.assetActions).ToList(); 
 
         State firstState = null;
 
@@ -270,21 +270,25 @@ public class CustomStateMachine : MonoBehaviour
             {
                 foreach (var assetSequence in assetSequences)
                 {
-                    if (assetSequence.StartIndex >= currentStatePlaceholder.StartIndex && 
-                        assetSequence.StartIndex < currentStatePlaceholder.StartIndex+currentStatePlaceholder.Length)
+                    if (assetSequence.StartIndex >= currentStatePlaceholder.StartIndex &&
+                        assetSequence.StartIndex < currentStatePlaceholder.StartIndex + currentStatePlaceholder.Length)
                     {
-                        int distanceToStateStart = Math.Abs(assetSequence.StartIndex - currentStatePlaceholder.StartIndex);
-                        int distanceToStateEnd = Math.Abs(currentStatePlaceholder.StartIndex + currentStatePlaceholder.Length - assetSequence.StartIndex - 1);
+                        int distanceToStateStart =
+                            Math.Abs(assetSequence.StartIndex - currentStatePlaceholder.StartIndex);
+                        int distanceToStateEnd = Math.Abs(currentStatePlaceholder.StartIndex +
+                            currentStatePlaceholder.Length - assetSequence.StartIndex - 1);
 
-                        if(distanceToStateStart < distanceToStateEnd)
+                        if (distanceToStateStart < distanceToStateEnd)
                         {
-                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionType + " for state " + currentState.name + " in OnEnterActions");
+                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionType + " for state " +
+                                                     currentState.name + " in OnEnterActions");
                             currentState.OnEnterActions += () => assetSequence.ActionDelegate();
-                            currentState.OnEnterActionsStr += assetSequence.ActionType.ToString()+ " ";
+                            currentState.OnEnterActionsStr += assetSequence.ActionType.ToString() + " ";
                         }
                         else
                         {
-                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionType + " for state " + currentState.name + " in OnExitActions");
+                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionType + " for state " +
+                                                     currentState.name + " in OnExitActions");
                             currentState.OnExitActions += () => assetSequence.ActionDelegate();
                             currentState.OnExitActionsStr += assetSequence.ActionType.ToString() + " ";
                         }

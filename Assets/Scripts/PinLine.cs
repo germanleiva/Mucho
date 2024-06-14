@@ -8,7 +8,7 @@ public class PinLine : MonoBehaviour
     public Transform pinLineStart;
     public Transform pinGuide;
 
-    public Action PinAction;
+    public Action UndoHighlightingOfAssetIfAny;
 
     //public Transform fo
 
@@ -34,14 +34,16 @@ public class PinLine : MonoBehaviour
 
     public void TriggerPinAction()
     {
-        if(PinAction != null)
+        asset.GetComponent<Asset>().RecordPin(pinGuide.position);
+        
+        if(UndoHighlightingOfAssetIfAny != null)
         {
             //DebugLogger.Instance.Log("Calling PinLine: TriggerPinAction");
-            PinAction?.Invoke();
+            UndoHighlightingOfAssetIfAny?.Invoke();
         }    
         else
         {
-            //DebugLogger.Instance.Log("PinLine: PinAction is null");
+            //DebugLogger.Instance.Log("PinLine: UndoHighlightingOfAssetIfAny is null");
         }
         gameObject.SetActive(false);
         pinGuide.transform.position = pinLineStart.position;

@@ -5,6 +5,8 @@ using System.Linq;
 using Unity.VisualScripting.Dependencies.NCalc;
 using System.ComponentModel;
 using System.Reflection;
+using Oculus.Interaction;
+using Unity.VisualScripting;
 
 //using Assets.OVR.Scripts;
 //using UnityEditor.VersionControl;
@@ -14,7 +16,7 @@ using UnityEngine.UI;
 public class Manager : MonoBehaviour
 {
     public GameObject leftHandMenu;
-    public AppState currAppState;
+    public AppState currAppState; //TODO check all the usages of this and transform the != to ==
     public SpeechToText speechToTextEngine;
     public GameObject spherePrefab;
     public GameObject cubePrefab;
@@ -24,11 +26,11 @@ public class Manager : MonoBehaviour
     {
         INIT,
         RECORDING,
-        RECORDING_DURING_PLAYBACK,
-        ASSETRECORDING,
         PLAYBACK,
+        SIMULATING,
         LIVE,
-        EDITCOLLIDERS
+        RECORDING_DURING_PLAYBACK, //TODO Most likely delete this
+        EDIT_BOUNDING_SPHERE
     }
 
     public static Manager Instance { get; private set; }
@@ -87,7 +89,7 @@ public class Manager : MonoBehaviour
         CustomStateMachine.CombinedStateMachine(Recorder.Instance.examples);
         
         // Recorder.Instance.ResetStateMachine();
-        InputManager.Instance.NotifyCollision(null,null);
+        InputManager.Instance.SaveCurrentCollision(null,null);
         CustomStateMachine.Instance.InvokeOnEnterActionsOfInitialState();
         speechToTextEngine.StartListening();
     }
@@ -188,7 +190,7 @@ public class Manager : MonoBehaviour
             eachRightHandData.isActive = !eachRightHandData.isActive;
         }
 
-        Recorder.Instance.RefreshTimelineGestures();
+        Recorder.Instance.RecreateTimelineGestures();
     }
     public void ToggleLeftHandEventRow(Boolean leftHandEventsOn) {
         foreach (var eachLeftHandData in Recorder.Instance.currentActiveExample.leftHandFrames)
@@ -196,7 +198,7 @@ public class Manager : MonoBehaviour
             eachLeftHandData.isActive = !eachLeftHandData.isActive;
         }
 
-        Recorder.Instance.RefreshTimelineGestures();
+        Recorder.Instance.RecreateTimelineGestures();
     }
 
     public void PressedRecreateStatePlaceholders() {
@@ -246,10 +248,30 @@ public class Example
     public GameObject hideTimelinePanelPrefab;   
     public GameObject showTimelinePanelPrefab;
 
-    public List<GestureSequence> LeftHandGestureSequences = new();
-    public List<GestureSequence> RightHandGestureSequences = new();
+    public List<GestureSequence> LeftHandGestureSequences {
+        get
+        {
+            List<InputManager.Gesture> gestures = activeLeftHandFrames.Select(x => x.gesture).ToList();
+            return Sequence.GetContinuousGestureSequences(gestures);
+        }
+    }
+    
+    public List<GestureSequence> RightHandGestureSequences {
+        get
+        {
+            List<InputManager.Gesture> gestures = activeRightHandFrames.Select(x => x.gesture).ToList();
+            return Sequence.GetContinuousGestureSequences(gestures);
+        }
+    }
 
-    public List<VoiceSequence> VoiceCommandSequences = new();
+    public List<VoiceSequence> VoiceCommandSequences
+    {
+        get
+        {
+            List<string> voiceCommands = headFrames.Select(x => x.voiceCommand).ToList();
+            return VoiceSequence.GetVoiceCommandSequences(voiceCommands);
+        }
+    }
 
     public List<GestureSequence> AllGestureSequences {
         get
@@ -257,8 +279,14 @@ public class Example
             return LeftHandGestureSequences.Concat(RightHandGestureSequences).ToList();
         }
 }
-    public List<List<AssetActionSequence>> assetSequencesLists = new();
-    public List<List<CollisionSequence>> collisionSequencesLists = new();
+
+    public int RecordedDataCount
+    {
+        get
+        {
+            return headFrames.Count;
+        }
+    }
     
     public GameObject startRecordingButton, stopRecordingButton;
 
@@ -266,12 +294,16 @@ public class Example
     public int numberOfRecordedFrames = 0;
     public Button button;
     //Create a dictionary matching assets to the list of their recordable frames
-    public Dictionary<Asset, List<AssetFrame>> assetFramesDict;   
+    // public Dictionary<Asset, List<AssetFrame>> assetFramesDict;   
 
     //public List<Recordable> assets;
     public List<StateTimelineUIElement> StatePlaceholders;
     // public Dictionary<State, StateTimelineUIElement> StatesDict;
     
+    public readonly List<CollisionSequence> CollisionModels = new();
+    // public readonly Dictionary<Asset,List<AssetActionSequence>> AssetActions = new ();
+    
+    public readonly Dictionary<Asset, (List<AssetFrame> assetFrames, List<AssetActionSequence> assetActions)> assetsDict = new();
 
     public Example(Button _button, RectTransform _examplePlaybackPanel)
     {
@@ -303,21 +335,14 @@ public class Example
         collisionTimelineElementPrefab = collisionTimelinePanel.transform.GetChild(0).gameObject;
         hideTimelinePanelPrefab = assetTimelinePanelPrefab.transform.GetChild(2).gameObject;
         showTimelinePanelPrefab = assetTimelinePanelPrefab.transform.GetChild(3).gameObject;
-
-        LeftHandGestureSequences = new();
-        RightHandGestureSequences = new();
-        VoiceCommandSequences = new();
-        assetSequencesLists = new();
-        collisionSequencesLists = new();
-
-        assetFramesDict = new Dictionary<Asset, List<AssetFrame>>();
+        
         StatePlaceholders = new();
         // StatesDict = new Dictionary<State, StateTimelineUIElement>();
         //Copy allAssets to assets
         foreach (Asset recordable in Recorder.Instance.allAssets)
         {            
             //Create a new list of recordable frames for each asset
-            assetFramesDict.Add(recordable, new List<AssetFrame>());            
+            assetsDict.Add(recordable, (new List<AssetFrame>(), new List<AssetActionSequence>()));            
         }
         
         //find in the children of the voicetimelinepanel a child called StartAudio
@@ -371,11 +396,13 @@ public class Example
         {
             data.voiceCommand = null;
         }
-
-        assetFramesDict = new Dictionary<Asset, List<AssetFrame>>();
-        foreach (var entry in example.assetFramesDict)
+        
+        foreach ( var entry in example.assetsDict)
         {
-            assetFramesDict.Add(entry.Key, new List<AssetFrame>(entry.Value.Select(item => (AssetFrame)item.Clone())));
+            var assetFrames = new List<AssetFrame>(entry.Value.assetFrames.Select(item => (AssetFrame)item.Clone()));
+            var assetActions = new List<AssetActionSequence>(entry.Value.assetActions.Select(item => (AssetActionSequence)item.Clone()));
+            
+            assetsDict.Add(entry.Key, (assetFrames, assetActions));
         }
         
     }
@@ -383,27 +410,27 @@ public class Example
     public void RefreshAssetsInExample()
     {
         //Copy allAssets to assets
-        foreach (Asset recordable in Recorder.Instance.allAssets)
+        foreach (Asset asset in Recorder.Instance.allAssets)
         {
             //Create a new list of recordable frames for each asset
-            if (!assetFramesDict.ContainsKey(recordable))
+            if (!assetsDict.ContainsKey(asset))
             {
-                assetFramesDict.Add(recordable, new List<AssetFrame>());
+                assetsDict.Add(asset, (assetFrames:new List<AssetFrame>(),assetActions:new List<AssetActionSequence>()));
             }
         }
 
         //Remove assets that are no longer in the scene
         List<Asset> assetsToRemove = new List<Asset>();
-        foreach (Asset recordable in assetFramesDict.Keys)
+        foreach (Asset asset in assetsDict.Keys)
         {
-            if (!Recorder.Instance.allAssets.Contains(recordable))
+            if (!Recorder.Instance.allAssets.Contains(asset))
             {
-                assetsToRemove.Add(recordable);
+                assetsToRemove.Add(asset);
             }
         }
-        foreach (Asset recordable in assetsToRemove)
+        foreach (Asset asset in assetsToRemove)
         {
-            assetFramesDict.Remove(recordable);
+            assetsDict.Remove(asset);
         }
     }
 
@@ -416,17 +443,17 @@ public class Example
         // }
     }
 
-    public void ResetData()
+    public void CleanDataBeforeRecording()
     {
         DebugLogger.Instance.Log("Resetting data for example " + exampleId);
         leftHandFrames.Clear();
         rightHandFrames.Clear();
         headFrames.Clear();
-        //assets.Clear();
-        foreach(Asset recordable in assetFramesDict.Keys)
+        
+        foreach(Asset asset in assetsDict.Keys)
         {
-            assetFramesDict[recordable].Clear();
-            foreach (GameObject obj in recordable.forceArrows)
+            assetsDict[asset].assetFrames.Clear();
+            foreach (GameObject obj in asset.forceArrows)
             {
                 UnityEngine.Object.Destroy(obj);
             }
@@ -438,14 +465,161 @@ public class Example
         //Delete the example from the list of examples
     }
 
+    public void AddNewCollision(int frameStart, GameObject assetGameObject, GameObject anotherGameObject)
+    {
+        var newCollisionModel = new CollisionSequence();
+        newCollisionModel.StartIndex = frameStart;
+        newCollisionModel.CollisionType = COLLISION_ENUM.COLLIDE; //TODO needed?
+        newCollisionModel.CollidingObject1 = assetGameObject;
+        newCollisionModel.CollidingObject2 = anotherGameObject;
+
+        GameObject collidedObjectOnLiveMode;
+
+        if (anotherGameObject == InputManager.Instance.leftHandPinchObj || anotherGameObject == InputManager.Instance.playbackLeftHandPinchObj)
+        {
+            collidedObjectOnLiveMode = InputManager.Instance.leftHandPinchObj;
+            
+        } else if (anotherGameObject == InputManager.Instance.rightHandPinchObj || anotherGameObject == InputManager.Instance.playbackRightHandPinchObj)
+        {
+            collidedObjectOnLiveMode = InputManager.Instance.rightHandPinchObj;
+            
+        } else if (anotherGameObject == InputManager.Instance.headContactObj || anotherGameObject == InputManager.Instance.playbackHeadContactObj)
+        {
+            collidedObjectOnLiveMode = InputManager.Instance.headContactObj;
+            
+        } else if (anotherGameObject == InputManager.Instance.leftFocus || anotherGameObject == InputManager.Instance.playbackLeftFocus)
+        {
+            collidedObjectOnLiveMode = InputManager.Instance.leftFocus;
+            
+        } else if (anotherGameObject == InputManager.Instance.rightFocus || anotherGameObject == InputManager.Instance.playbackRightFocus)
+        {
+            collidedObjectOnLiveMode = InputManager.Instance.rightFocus;
+            
+        } else if (anotherGameObject == InputManager.Instance.gazeFocus || anotherGameObject == InputManager.Instance.playbackGazeFocus)
+        {
+            collidedObjectOnLiveMode = InputManager.Instance.gazeFocus;
+            
+        } else
+        {
+            //TODO what happen with collisions with other assets or the floor?
+            collidedObjectOnLiveMode = anotherGameObject;
+        }
+        
+        newCollisionModel.collisionDelegate = (Frame frame) => { frame.IsColliding(assetGameObject, collidedObjectOnLiveMode);};
+        
+        CollisionModels.Add(newCollisionModel);
+    }
+
+    public void EndPreviousCollision(int frameIndex, GameObject assetGameObject, GameObject anotherGameObject)
+    {
+        //We need to find the corresponding CollisionModel and set its end frame
+        //We iterate the list of CollisionModels from newest to oldest
+        for (int i = CollisionModels.Count-1; i < CollisionModels.Count; i--)
+        {
+            var collisionModel = CollisionModels[i];
+            if (collisionModel.CollidingObject1 == assetGameObject && collisionModel.CollidingObject2 == anotherGameObject)
+            {
+                collisionModel.Length = frameIndex - collisionModel.StartIndex;
+            }
+        }
+    }
+
+    public List<CollisionSequence> CollisionModelsWithoutFrameEnd()
+    {
+        return CollisionModels.FindAll(collisionModel => collisionModel.Length == 0);
+    }
 }
 
-public abstract class Sequence {
+public class CollisionModel
+{
+    public Action<Frame> collisionDelegate;
+
+    public CollisionModel(int frameStart, GameObject assetGameObject, GameObject anotherGameObject)
+    {
+        FrameStart = frameStart;
+        AssetGameObject = assetGameObject;
+        ColliderGameObject = anotherGameObject;
+    }
+
+    public GameObject ColliderGameObject { get; }
+
+    public GameObject AssetGameObject { get; }
+
+    public int FrameStart { get; }
+    public int FrameEnd { get; set;  }
+}
+
+public abstract class Sequence: ICloneable {
     public int StartIndex { get; set; }
     public int Length { get; set; }
 
     abstract public Boolean CanTriggerAt(int stateStartIndex);
     abstract public Func<Frame,bool> AddConditionToFunction(Func<Frame,bool> conditionFunction);
+    public virtual object Clone()
+    {
+        throw new NotImplementedException();
+    }
+    
+    public static List<GestureSequence> GetContinuousGestureSequences(List<InputManager.Gesture> gestures)
+    {
+        List<GestureSequence> sequences = new();
+
+        int startIndex = -1;
+        InputManager.Gesture? currentGesture = null;
+
+        for (int i = 0; i < gestures.Count; i++)
+        {
+            if (gestures[i] != InputManager.Gesture.LEFTHANDNONE && gestures[i] != InputManager.Gesture.RIGHTHANDNONE)
+            {
+                if (currentGesture == null || currentGesture == gestures[i])
+                {
+                    if (currentGesture == null)
+                    {
+                        currentGesture = gestures[i];
+                        startIndex = i;
+                    }
+                }
+                else
+                {
+                    sequences.Add(new GestureSequence
+                    {
+                        StartIndex = startIndex,
+                        Length = i - startIndex,
+                        GestureType = currentGesture.Value
+                    });
+
+                    startIndex = i;
+                    currentGesture = gestures[i];
+                }
+            }
+            else if (currentGesture != null)
+            {
+                sequences.Add(new GestureSequence
+                {
+                    StartIndex = startIndex,
+                    Length = i - startIndex,
+                    GestureType = currentGesture.Value
+                });
+
+                startIndex = -1;
+                currentGesture = null;
+            }
+        }
+
+        if (currentGesture != null)
+        {
+            sequences.Add(new GestureSequence
+            {
+                StartIndex = startIndex,
+                Length = gestures.Count - startIndex,
+                GestureType = currentGesture.Value
+            });
+        }
+
+        //Iterate through gestures and assign the lambda 
+
+        return sequences;
+    }
 }
 
 public enum COLLISION_ENUM { NONE, COLLIDE, UNDEFINED};
@@ -455,6 +629,8 @@ public class CollisionSequence : Sequence {
 
     public GameObject CollidingObject1 { get; set; }
     public GameObject CollidingObject2 { get; set; }
+
+    public Action<Frame> collisionDelegate { get; set; }
 
     public override Func<Frame, bool> AddConditionToFunction(Func<Frame, bool> conditionFunction)
     {
@@ -469,19 +645,36 @@ public class CollisionSequence : Sequence {
     public override string ToString() {
         return $"{CollidingObject1.tag} hit {CollidingObject2.tag}";
     }
+    
+    
+    public override object Clone()
+    {
+        // Create a new instance of the class
+        CollisionSequence clonedCollision = new();
+        
+        // Copy the properties of the current object
+        clonedCollision.StartIndex = StartIndex;
+        clonedCollision.Length = Length;
+        clonedCollision.CollisionType = CollisionType;
+        clonedCollision.CollidingObject1 = CollidingObject1;
+        clonedCollision.CollidingObject2 = CollidingObject2;
+
+        // Return the cloned object
+        return clonedCollision;
+    }
 }
 public enum ACTION_ENUM { 
     [Description("None")]
     NONE, 
-    [Description("Follow(Left hand)")]
+    [Description("ApplyFollow(Left hand)")]
     FOLLOW_LEFT_HAND,
-    [Description("Follow(Right hand)")]
+    [Description("ApplyFollow(Right hand)")]
     FOLLOW_RIGHT_HAND,
-    [Description("Follow(L-focus)")]
+    [Description("ApplyFollow(L-focus)")]
     FOLLOW_L_FOCUS,
-    [Description("Follow(R-focus)")]
+    [Description("ApplyFollow(R-focus)")]
     FOLLOW_R_FOCUS,
-    [Description("Follow(G-focus)")]
+    [Description("ApplyFollow(G-focus)")]
     FOLLOW_G_FOCUS,
     [Description("ApplyForce()")]
     APPLY_FORCE,
@@ -493,7 +686,7 @@ public enum ACTION_ENUM {
     CHANGE_COLOR,
     [Description("Pin()")]
     PIN,
-    [Description("Unfollow()")]
+    [Description("ApplyUnfollow()")]
     UNFOLLOW,
     [Description("ResetPhysics()")]
     RESET_PHYSICS,
@@ -502,8 +695,7 @@ public enum ACTION_ENUM {
 
 public class AssetActionSequence : Sequence
 {
-
-    public ACTION_ENUM ActionType { get; set; } //None, Physics, Follow, Show, Hide
+    public ACTION_ENUM ActionType { get; set; } //None, Physics, ApplyFollow, Show, Hide
 
     public Action ActionDelegate { get; set; }
 
@@ -562,6 +754,26 @@ public class AssetActionSequence : Sequence
         return false;
     }
 
+    public override object Clone()
+    {
+        // Create a new instance of the class
+        AssetActionSequence clonedAction = new();
+        
+        // Copy the properties of the current object
+        clonedAction.StartIndex = StartIndex;
+        clonedAction.Length = Length;
+        clonedAction.ActionType = ActionType;
+        clonedAction.ActionDelegate = ActionDelegate;  
+
+        // Return the cloned object
+        return clonedAction;
+    }
+
+    public bool IsFollow()
+    {
+        var followActions = new List<ACTION_ENUM> {ACTION_ENUM.FOLLOW_LEFT_HAND, ACTION_ENUM.FOLLOW_RIGHT_HAND, ACTION_ENUM.FOLLOW_L_FOCUS, ACTION_ENUM.FOLLOW_R_FOCUS, ACTION_ENUM.FOLLOW_G_FOCUS};
+        return followActions.Contains(ActionType);
+    }
 }
 
 public class GestureSequence : Sequence
@@ -589,8 +801,10 @@ public class GestureSequence : Sequence
                 return conditionFunction;
         }
     }
-    public override string ToString() {
-        return $"GestureSequence {GestureType.ToString()}";
+    public override string ToString()
+    {
+        return InputManager.Instance.GestureToString(GestureType);
+        //return $"GestureSequence {GestureType.ToString()}";
     }
 }
 
@@ -607,6 +821,65 @@ public class VoiceSequence : Sequence
 
     public override string ToString() {
         return $"VoiceSequence {VoiceCommand}";
+    }
+    
+    public static List<VoiceSequence> GetVoiceCommandSequences(List<string> voiceCommands)
+    {
+        List<VoiceSequence> sequences = new();
+
+        int startIndex = -1;
+        string currentVoiceCommand = null;
+
+        for (int i = 0; i < voiceCommands.Count; i++)
+        {
+            if (voiceCommands[i] != null)
+            {
+                if (currentVoiceCommand == null || currentVoiceCommand == voiceCommands[i])
+                {
+                    if (currentVoiceCommand == null)
+                    {
+                        currentVoiceCommand = voiceCommands[i];
+                        startIndex = i;
+                    }
+                }
+                else
+                {
+                    sequences.Add(new VoiceSequence
+                    {
+                        StartIndex = startIndex,
+                        Length = i - startIndex,
+                        VoiceCommand = currentVoiceCommand
+                    });
+
+                    startIndex = i;
+                    currentVoiceCommand = voiceCommands[i];
+                }
+            }
+            else if (currentVoiceCommand != null)
+            {
+                sequences.Add(new VoiceSequence
+                {
+                    StartIndex = startIndex,
+                    Length = i - startIndex,
+                    VoiceCommand = currentVoiceCommand
+                });
+
+                startIndex = -1;
+                currentVoiceCommand = null;
+            }
+        }
+
+        if (currentVoiceCommand != null)
+        {
+            sequences.Add(new VoiceSequence
+            {
+                StartIndex = startIndex,
+                Length = voiceCommands.Count - startIndex,
+                VoiceCommand = currentVoiceCommand
+            });
+        }
+
+        return sequences;
     }
 }
 

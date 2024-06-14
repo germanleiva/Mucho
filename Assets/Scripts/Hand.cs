@@ -142,7 +142,7 @@ public class Hand : MonoBehaviour
     }
 
     // Clear the recorded data.
-    /*public void ResetData()
+    /*public void CleanDataBeforeRecording()
     {
         recordedData.Clear();
     }*/
