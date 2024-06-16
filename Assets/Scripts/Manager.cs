@@ -190,7 +190,7 @@ public class Manager : MonoBehaviour
             eachRightHandData.isActive = !eachRightHandData.isActive;
         }
 
-        Recorder.Instance.RecreateTimelineGestures();
+        Recorder.Instance.RecreateTimelineUI_Gestures();
     }
     public void ToggleLeftHandEventRow(Boolean leftHandEventsOn) {
         foreach (var eachLeftHandData in Recorder.Instance.currentActiveExample.leftHandFrames)
@@ -198,11 +198,11 @@ public class Manager : MonoBehaviour
             eachLeftHandData.isActive = !eachLeftHandData.isActive;
         }
 
-        Recorder.Instance.RecreateTimelineGestures();
+        Recorder.Instance.RecreateTimelineUI_Gestures();
     }
 
     public void PressedRecreateStatePlaceholders() {
-       Recorder.Instance.CreateStatePlaceholders();
+       Recorder.Instance.RecreateTimelineUI_StatePlaceholders();
     }
 }
 
@@ -519,6 +519,10 @@ public class Example
             var collisionModel = CollisionModels[i];
             if (collisionModel.CollidingObject1 == assetGameObject && collisionModel.CollidingObject2 == anotherGameObject)
             {
+                if (collisionModel.Length != 0)
+                {
+                    throw new Exception("We shouldn't re-close a collision that already have an EndFrame");
+                }
                 collisionModel.Length = frameIndex - collisionModel.StartIndex;
             }
         }

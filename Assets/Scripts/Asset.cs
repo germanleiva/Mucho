@@ -2,20 +2,36 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Assets.OVR.Scripts;
+using Oculus.Interaction;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 //[RequireComponent(typeof(LineRenderer))]
 public class Asset : MonoBehaviour
 {
-    //public List<RecordableFrame> recordedData = new();
-    public Collider grabCollider;
-    public GameObject assetMenu;
+    private Grabbable _grabbable;
+    
+    public Quaternion InitialRotation { get; set; }
+    public Vector3 InitialPosition { get; set; }
 
-    Vector3 lastAssetPosition = Vector3.zero;
-
+    [NonSerialized]
     public List<GameObject> forceArrows = new();
+    
+    [SerializeField]
+    private Collider grabCollider;
+    
+    [SerializeField]
+    public GameObject assetMenu;
+    
+    [SerializeField]
+    private GameObject followLineObj;
 
+    [SerializeField]
+    private GameObject colliderVisualizerObj, colliderBoundaryGizmoObj1;
+    
+    [NonSerialized]
+    public Material defaultMaterial;
+    
     int firstFrameOfManualRecording, lastFrameOfManualRecording;
     
     public enum AssetRecordingType
@@ -27,30 +43,101 @@ public class Asset : MonoBehaviour
         Visibility
     }
 
-    public Vector3 initPosBeforePhysicsSimulation;
-    public Quaternion initRotBeforePhysicsSimulation;
+    private Vector3 initPosBeforePhysicsSimulation;
+    private Quaternion initRotBeforePhysicsSimulation;
     
-    public GameObject followLineObj;
-
-    public GameObject colliderVisualizerObj, colliderBoundaryGizmoObj1, colliderBoundaryGizmoObj2;
 
     //TODO the color is the color of the material of the asset, we do not need this extra variable
     public Color CurrentColor
     {
-        get { return gameObject.GetComponent<MeshRenderer>().material.color; }
-        set { 
-            gameObject.GetComponent<MeshRenderer>().material.color = value;
-            //DebugLogger.Instance.Log("Setting color to " + _color + " for " + gameObject.name);
+        get => gameObject.GetComponent<MeshRenderer>().material.color;
+        set => gameObject.GetComponent<MeshRenderer>().material.color = value;
+        //DebugLogger.Instance.Log("Setting color to " + _color + " for " + gameObject.name);
+    }
+
+    public bool isVisible
+    {
+        get => gameObject.GetComponent<MeshRenderer>().material == defaultMaterial;
+        set
+        {
+            //DebugLogger.Instance.Log("SetVisibility: true for " + gameObject.name + " at index " + (int)Recorder.Instance.playbackSlider.value);
+            if(value)
+            {
+                if(Manager.Instance.currAppState == Manager.AppState.LIVE)
+                {
+                    DebugLogger.Instance.Log("LIVE mode: Setting visibility to true for " + gameObject.name);
+                    //Set mesh renderer for playbackObject 
+                    gameObject.GetComponent<MeshRenderer>().enabled = true;
+                    gameObject.GetComponent<MeshRenderer>().material = defaultMaterial;
+                    //If gameobject has TextAsset component then call ChangeTextPanelBackground(Material mat)
+                    if(gameObject.GetComponentInChildren<TextAsset>() != null)
+                    {
+                        gameObject.GetComponent<TextAsset>().SetTextVisibility(true);
+                    }
+                }
+                else
+                {
+                    gameObject.GetComponent<MeshRenderer>().material = defaultMaterial;
+                }
+            }
+            else
+            {
+                if(Manager.Instance.currAppState == Manager.AppState.LIVE)
+                {
+                    DebugLogger.Instance.Log("LIVE mode: Setting visibility to false for " + gameObject.name);
+                    //Set mesh renderer for playbackObject 
+                    gameObject.GetComponent<MeshRenderer>().enabled = false;
+                    gameObject.GetComponent<MeshRenderer>().material = AssetManager.Instance.translucentMaterial;
+                    if(gameObject.GetComponentInChildren<TextAsset>() != null)
+                    {
+                        gameObject.GetComponent<TextAsset>().SetTextVisibility(false);
+                    }
+                }
+                else
+                {
+                    gameObject.GetComponent<MeshRenderer>().material = AssetManager.Instance.translucentMaterial;
+                }
+            }
         }
     }
     
-    public Material defaultMaterial;
-    
-    //public bool showStatus = true;
+    private void Awake()
+    {
+        _grabbable = GetComponent<Grabbable>();
+        if (_grabbable != null)
+        {
+            _grabbable.WhenPointerEventRaised += HandlePointerEventRaised;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (_grabbable != null)
+        {
+            _grabbable.WhenPointerEventRaised -= HandlePointerEventRaised;
+        }
+    }
+
+    private void HandlePointerEventRaised(PointerEvent pointerEvent)
+    {
+        //Check if the event is a release
+        if (pointerEvent.Type == PointerEventType.Unselect)
+        {
+            SetInitialVisualMainValues();
+            
+            Recorder.Instance.UpdateAllAssetFramesAndCollisions((int)Recorder.Instance.playbackSlider.value, Recorder.Instance.currentActiveExample);
+            Recorder.Instance.RecreateTimelineUI_Collisions();
+        }
+    }
+
+    public void SetInitialVisualMainValues()
+    {
+        InitialPosition = transform.position;
+        InitialRotation = transform.rotation;
+    }
 
     void Start()
     {
-        lastAssetPosition = transform.position;
         defaultMaterial = gameObject.GetComponent<MeshRenderer>().material;
     }
     
@@ -71,17 +158,16 @@ public class Asset : MonoBehaviour
             lastAssetPosition = recordable.gameObject.transform.position;
             
         }
-        */
 
         if(Manager.Instance.currAppState == Manager.AppState.SIMULATING)
         {
             //recordable.InsertAssetRecordFrame((int)mainRecorder.playbackSlider.value, "ApplyForce()", true);                
             //Increment the slider value by frame duration
-            if( Recorder.Instance.playbackSlider.value < Recorder.Instance.playbackSlider.maxValue)
+            if( Recorder.Instance.playbackSlider.value + 1 <= Recorder.Instance.playbackSlider.maxValue)
                 Recorder.Instance.playbackSlider.value += 1;
-            ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
-                propagateValueToSubsequentFrames: true);
+            //ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, propagateValueToSubsequentFrames: true);
         }
+        */
 
 
     }
@@ -89,7 +175,7 @@ public class Asset : MonoBehaviour
     public void RecordAssetFrame()
     {
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetsDict[this].assetFrames;
-        currentAssetRecordedData.Add(new(transform.position, transform.rotation, true, CurrentColor));
+        currentAssetRecordedData.Add(new(transform.position, transform.rotation, isVisible, CurrentColor));
     }
 
     public void PlaybackAssetFrame()
@@ -106,7 +192,7 @@ public class Asset : MonoBehaviour
                 transform.position = currentAssetRecordedData[currentFrameNum].rootPosition;
                 transform.rotation = currentAssetRecordedData[currentFrameNum].rootRotation; 
                 CurrentColor = currentAssetRecordedData[currentFrameNum].color;
-                SetVisibility(currentAssetRecordedData[currentFrameNum].isVisible);
+                isVisible = currentAssetRecordedData[currentFrameNum].isVisible;
                 /*if (data[currentFrameNum].isVisible)
                 {
                     //DebugLogger.Instance.Log("Showing " + recordable.playbackObject.name + " at " + currentFrameNum);
@@ -253,39 +339,42 @@ public class Asset : MonoBehaviour
             frameStart = (int)Recorder.Instance.playbackSlider.value;
         }
 
-        var newAction = CreateAction(frameStart, actionType, actionDelegate);
+        var newAction = new AssetActionSequence
+        {
+            StartIndex = frameStart,
+            ActionType = actionType,
+            ActionDelegate = actionDelegate
+        };
+        Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.Add(newAction);
 
         if (newAction.IsFollow())
         {
             var frameEndForFollow = FindFollowEndIndex((int)Recorder.Instance.playbackSlider.value);
             newAction.Length = frameEndForFollow - frameStart;
-            RecordUnfollow(frameEndForFollow);
+
+            var newEndAction = new AssetActionSequence
+            {
+                StartIndex = frameEndForFollow,
+                ActionType = ACTION_ENUM.UNFOLLOW,
+                ActionDelegate = () => { GetComponent<Asset>().ApplyUnfollow(); }
+            };
+                
+            Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.Add(newEndAction);
         }
-        
-        Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.Add(newAction);
 
-        UpdateAllAssetFramesAndCollisions(frameStart, Recorder.Instance.currentActiveExample);
+        Recorder.Instance.UpdateAllAssetFramesAndCollisions(frameStart, Recorder.Instance.currentActiveExample);
         
-        Recorder.Instance.CreateTimelineActionsForAsset(this);
-    }
-    
-    public AssetActionSequence CreateAction(int frameStart, ACTION_ENUM actionType, Action actionDelegate)
-    {
-        var newAssetActionSequence = new AssetActionSequence();
-        newAssetActionSequence.StartIndex = frameStart;
-        newAssetActionSequence.ActionType = actionType;
-        newAssetActionSequence.ActionDelegate = actionDelegate;
-
-        return newAssetActionSequence;
+        Recorder.Instance.RecreateTimelineUI_Collisions();
+        Recorder.Instance.CreateTimelineUI_ActionsForAsset(this,new List<AssetActionSequence>{newAction});
     }
 
     public void SaveMainVisualValuesIn(AssetFrame assetFrame)
     {
         assetFrame.rootPosition = transform.position;
         assetFrame.rootRotation = transform.rotation;
-        assetFrame.color = gameObject.GetComponent<MeshRenderer>().material.color;
+        assetFrame.color = CurrentColor;
         // assetFrame.isVisible = gameObject.GetComponent<MeshRenderer>().enabled;
-        assetFrame.isVisible = gameObject.GetComponent<MeshRenderer>().material == defaultMaterial;
+        assetFrame.isVisible = isVisible;
     }
 
     public void ResetMainVisualValues()
@@ -293,86 +382,16 @@ public class Asset : MonoBehaviour
         transform.position = InitialPosition;
         transform.rotation = InitialRotation;
         CurrentColor = Color.gray;
-        SetVisibility(true);
+        isVisible = true;
     }
 
-    private IEnumerator SimulateAssetFramesAndCollisions(Example example, Dictionary<int, List<AssetActionSequence>> actionsToPerformGroupedByFrames)
-    {
-        var oldState = Manager.Instance.currAppState;
-        var oldActiveExample = Recorder.Instance.currentActiveExample;
-        
-        Recorder.Instance.currentActiveExample = example;
-        
-        Manager.Instance.currAppState = Manager.AppState.SIMULATING;
-        
-        var allAssets = Recorder.Instance.allAssets;
-        for (int frameIndex = 0; frameIndex < Recorder.Instance.GetSizeOfMainRecordedData(); frameIndex++)
-        {
-            Recorder.Instance.playbackSlider.value = frameIndex;
-            //DebugLogger.Instance.Log("AddAssetFrameToAssetFramesDict: Adding frame at index " + Recorder.Instance.currentActiveExample.assetDataDict[recordable].Count);
-            foreach (var anAction in actionsToPerformGroupedByFrames[frameIndex])
-            {
-                // if (frameIndex == anAction.FrameStart) This check should be unnecesary
-                anAction.ActionDelegate(); //This will execute the action and any related collision
-            }
-            
-            yield return new WaitForSeconds(0.01f); 
-            //We pause the execution of this routine to let Unity send the collision events: OnCollisionEnter, OnCollisionStay, OnCollisionExit
-            //Collisions are saved in the corresponding model Example
-            
-            allAssets.ForEach(asset =>
-            {
-                asset.SaveMainVisualValuesIn(example.assetsDict[asset].assetFrames[frameIndex]);
-            });
-        }
-
-        //Set the frameEnd of all the unclosed collisions to the final frame of the recorded data
-        foreach (var collisionModelWithoutFrameEnd in Recorder.Instance.currentActiveExample.CollisionModelsWithoutFrameEnd())
-        {
-            collisionModelWithoutFrameEnd.Length = (example.RecordedDataCount - 1) - collisionModelWithoutFrameEnd.StartIndex;
-        }
-        
-        Manager.Instance.currAppState = oldState;
-        Recorder.Instance.currentActiveExample = oldActiveExample;
-
-        // Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
-        // InputManager.Instance.SetPlaybackObjectsActive(false);
-        // //DebugLogger.Instance.Log("AddAssetFrameToAssetFramesDict: DoRecordSizesMatch() - " + DoRecordSizesMatch());
-        //     
-        // Recorder.Instance.RecreateTimelineAssetRows();
-        //     
-        // Recorder.Instance.RecreateCollisionsInTimeline();
-    }
-    
-    public void UpdateAllAssetFramesAndCollisions(int updateFrameStart, Example example)
-    {
-        //TODO for now this update should focus on the receiver asset values and not other assets, but physic simulations might make this action to affect other assets
-        //TODO use the updateFrameStart so we update only the FrameStart > updateFrameStart
-        
-        //Create a dictionary where the key is an indexFrame and the value is the corresponding assetAction
-        var allActionsGroupedByFrames = new Dictionary<int, List<AssetActionSequence>>();
-        Recorder.Instance.allAssets.ForEach(asset => {
-            //We bring back the asset to its initial state
-            asset.ResetMainVisualValues();
-            example.assetsDict[asset].assetActions.ForEach(action => {
-                if (!allActionsGroupedByFrames.ContainsKey(action.StartIndex))
-                {
-                    allActionsGroupedByFrames[action.StartIndex] = new List<AssetActionSequence>();
-                }
-                allActionsGroupedByFrames[action.StartIndex].Add(action);
-            });
-        });
-
-        //We clear the collision models before simulating the frames
-        example.CollisionModels.Clear();
-        
-        StartCoroutine(SimulateAssetFramesAndCollisions(example, allActionsGroupedByFrames));
-    }
-    
     //For assets
     public void RecordHide()
     {
-        RecordAction(ACTION_ENUM.HIDE,() => { GetComponent<Asset>().SetVisibility(false); });
+        RecordAction(ACTION_ENUM.HIDE, () =>
+        {
+            GetComponent<Asset>().isVisible = false;
+        });
 
         /*
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
@@ -405,7 +424,10 @@ public class Asset : MonoBehaviour
     //For assets
     public void RecordShow()
     {
-        RecordAction(ACTION_ENUM.SHOW,() => { GetComponent<Asset>().SetVisibility(true); });
+        RecordAction(ACTION_ENUM.SHOW, () =>
+        {
+            GetComponent<Asset>().isVisible = true;
+        });
         
         /*var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
         //Turn the material in recordable.playbackObject to 1 alpha
@@ -486,50 +508,6 @@ public class Asset : MonoBehaviour
     {
         transform.position = location;
     }
-    
-    //For assets
-    public void SetVisibility(bool _showStatus)
-    {
-        //DebugLogger.Instance.Log("SetVisibility: true for " + gameObject.name + " at index " + (int)Recorder.Instance.playbackSlider.value);
-        if(_showStatus)
-        {
-            if(Manager.Instance.currAppState == Manager.AppState.LIVE)
-            {
-                DebugLogger.Instance.Log("LIVE mode: Setting visibility to true for " + gameObject.name);
-                //Set mesh renderer for playbackObject 
-                gameObject.GetComponent<MeshRenderer>().enabled = true;
-                gameObject.GetComponent<MeshRenderer>().material = defaultMaterial;
-                //If gameobject has TextAsset component then call ChangeTextPanelBackground(Material mat)
-                if(gameObject.GetComponentInChildren<TextAsset>() != null)
-                {
-                    gameObject.GetComponent<TextAsset>().SetTextVisibility(true);
-                }
-            }
-            else
-            {
-                gameObject.GetComponent<MeshRenderer>().material = defaultMaterial;
-            }
-        }
-        else
-        {
-            if(Manager.Instance.currAppState == Manager.AppState.LIVE)
-            {
-                DebugLogger.Instance.Log("LIVE mode: Setting visibility to false for " + gameObject.name);
-                //Set mesh renderer for playbackObject 
-                gameObject.GetComponent<MeshRenderer>().enabled = false;
-                gameObject.GetComponent<MeshRenderer>().material = AssetManager.Instance.translucentMaterial;
-                if(gameObject.GetComponentInChildren<TextAsset>() != null)
-                {
-                    gameObject.GetComponent<TextAsset>().SetTextVisibility(false);
-                }
-            }
-            else
-            {
-                gameObject.GetComponent<MeshRenderer>().material = AssetManager.Instance.translucentMaterial;
-            }
-            
-        }
-    }
 
     int FindFollowEndIndex(int frameStart) 
     {
@@ -605,14 +583,8 @@ public class Asset : MonoBehaviour
 
     public void RecordUnfollow(int startFrame)
     {
-        RecordAction(ACTION_ENUM.UNFOLLOW, () =>
-        {
-            // if (Manager.Instance.currAppState == Manager.AppState.LIVE)
-            // {
-            // For now, UNFOLLOW is the same for all the modes of the app
-                GetComponent<Asset>().ApplyUnfollow();
-            // }
-        }, startFrame);
+        //TODO delete
+        throw new Exception("DEPRECATED");
     }
 
 
@@ -684,13 +656,15 @@ public class Asset : MonoBehaviour
     //For assets
     void OnCollisionEnter(Collision collision)
     {
+        DebugLogger.Instance.Log("Asset.OnCollisionEnter: Notifying collision detected between " 
+                                 + base.gameObject.name + " and " + collision.collider.name);
+        
         if (Manager.Instance.currAppState == Manager.AppState.SIMULATING)
         {
             //If we are simulating we need to save the collision
             Recorder.Instance.currentActiveExample.AddNewCollision((int)Recorder.Instance.playbackSlider.value,base.gameObject, collision.collider.gameObject);
         }
-
-        DebugLogger.Instance.Log("Recordable.OnCollisionEnter: Notifying collision detected between " + base.gameObject.name + " and " + collision.collider.name);
+        
         InputManager.Instance.SaveCurrentCollision(base.gameObject, collision.collider.gameObject);
 
         //TODO Check if this is needed
@@ -740,7 +714,7 @@ public class Asset : MonoBehaviour
         GetComponent<Rigidbody>().useGravity = false;
         
         
-        Recorder.Instance.RecreateTimelineAssetRows();
+        Recorder.Instance.RecreateTimelineUI_AssetRows();
        
     }
 
@@ -778,6 +752,8 @@ public class Asset : MonoBehaviour
     //For assets
     void OnCollisionExit(Collision collision)
     {
+        DebugLogger.Instance.Log("Notifying collision ended between " + gameObject.name + " and " + collision.collider.name);
+
         if (Manager.Instance.currAppState == Manager.AppState.SIMULATING)
         {
             Recorder.Instance.currentActiveExample.EndPreviousCollision((int)Recorder.Instance.playbackSlider.value,base.gameObject, collision.collider.gameObject);
@@ -785,7 +761,6 @@ public class Asset : MonoBehaviour
         
         if(Manager.Instance.currAppState != Manager.AppState.RECORDING && Manager.Instance.currAppState != Manager.AppState.RECORDING_DURING_PLAYBACK)
         {
-            //DebugLogger.Instance.Log("Notifying collision ended between " + gameObject.name + " and " + collision.collider.name);
             if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere" || collision.collider.name == "HeadContactSphere")
             {      
                 InputManager.Instance.SaveCurrentCollision(null,null);
@@ -824,14 +799,8 @@ public class Asset : MonoBehaviour
         {
             Manager.Instance.currAppState = oldAppState;
         }
-        if(colliderBoundaryGizmoObj2 != null) //Two gizmos for box collider
-        {
-            colliderBoundaryGizmoObj2.SetActive(status);
-        }
     }
     
-    public Quaternion InitialRotation { get; set; }
-    public Vector3 InitialPosition { get; set; }
     
 }
 

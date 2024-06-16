@@ -118,7 +118,7 @@ public class Head : MonoBehaviour
 
         StopVoiceRecord();
 
-        Recorder.Instance.RecreateVoiceTimelineElements();
+        Recorder.Instance.RecreateTimelineUI_VoiceCommands();
     }
 
     public void PrintAllVoiceCommands()

@@ -75,7 +75,10 @@ public class InputManager : MonoBehaviour
 
     void Update()
     {
-        ProcessEvents(); 
+        if (Manager.Instance.currAppState == Manager.AppState.LIVE)
+        {
+            ProcessEvents();    
+        }
         // Add the current positions to the queues
         rightHandPositions.Enqueue(rightHandPinchObj.transform.position);
         leftHandPositions.Enqueue(leftHandPinchObj.transform.position);
@@ -234,11 +237,12 @@ public class InputManager : MonoBehaviour
         //DebugLogger.Instance.Log("Process Events in Mode: " + Manager.Instance.currAppState.ToString());
         //DebugLogger.Instance.Log("Left Hand Gesture: " + frame.leftHandGesture + ", Right Hand Gesture: " + frame.rightHandGesture + ",Colliding Object 1: " + frame.collidingObjectThisFrame_1 + ", Colliding Object 2: " + frame.collidingObjectThisFrame_2);
 
-        if (Manager.Instance.currAppState == Manager.AppState.LIVE)
-        {
+        //if (Manager.Instance.currAppState == Manager.AppState.LIVE)
+        //{
             sm.ProcessFrame(frame);
-        }
-        else if (Manager.Instance.currAppState == Manager.AppState.INIT)
+        //}
+
+        if (Manager.Instance.currAppState == Manager.AppState.INIT)
         {
             throw new Exception("WTF");
             

@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEditor;
@@ -7,6 +9,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
+using Debug = UnityEngine.Debug;
 
 public class Recorder : MonoBehaviour
 {
@@ -84,17 +87,17 @@ public class Recorder : MonoBehaviour
     public void RecreateTimeline()
     {
         //Delete all existing timeline elements in the input and create the new ones
-        RecreateTimelineInputs();
+        RecreateTimelineUI_Inputs();
         
         //Delete all existing asset rows and create the new ones
-        RecreateTimelineAssetRows();
+        RecreateTimelineUI_AssetRows();
     }
 
-    public void RecreateTimelineInputs()
+    public void RecreateTimelineUI_Inputs()
     {
-        RecreateTimelineGestures();
-        RecreateVoiceTimelineElements();
-        RecreateCollisionsInTimeline();
+        RecreateTimelineUI_Gestures();
+        RecreateTimelineUI_VoiceCommands();
+        RecreateTimelineUI_Collisions();
     }
     
     public void AddExample()
@@ -141,7 +144,7 @@ public class Recorder : MonoBehaviour
         AssetManager.Instance.SetAllAssetMenusPokeable(false);
 
         recordStartFrame = 0;//Time.time;
-        frameCount = 0;
+        _latestRecordedFrameIndex = 0;
         //RefreshTimelineAndStates(); 
     }
 
@@ -176,7 +179,7 @@ public class Recorder : MonoBehaviour
         AssetManager.Instance.SetAllAssetMenusPokeable(true);
  
         AssetManager.Instance.DoRecordSizesMatch();
-        CreateTimelineAndStatePlaceholders();   
+        RecreateTimelineUIAndStatePlaceholders();   
 
         PreparePlayback();
     }
@@ -314,66 +317,15 @@ public class Recorder : MonoBehaviour
         AssetPoseRecorder.Instance.DoRecordSizesMatch();*/
     }
 
-    public void CreateAssetActionSequencesInTimeline(RectTransform timelinePanel, Asset asset)
+    public void RecreateTimelineUIAndStatePlaceholders(bool startHidden=true)
     {
-        foreach (var assetAction in currentActiveExample.assetsDict[asset].assetActions)
-        {
-            TimelineUIElement.CreateTimelineElement(currentActiveExample.assetTimelineElementPrefab, timelinePanel, GetSizeOfMainRecordedData(), assetAction);
-            //If the timelineElement (UI) has a reference to the action (model) we can simplify the process of moving the timelineElement to a new FrameStart or modifying its FrameDuration
-            //timelineElement.assetAction = assetAction;
-        }
-
-        //TODO Check if its ok to ignore all
-        /*
-        List<ACTION_ENUM> followActions = new()
-            {
-                ACTION_ENUM.FOLLOW_RIGHT_HAND,
-                ACTION_ENUM.FOLLOW_LEFT_HAND,
-                ACTION_ENUM.FOLLOW_L_FOCUS,
-                ACTION_ENUM.FOLLOW_R_FOCUS,
-                ACTION_ENUM.FOLLOW_G_FOCUS
-        };
-            
-        DebugLogger.Instance.Log("Generating asset action sequences for " + asset.name);
-
-        var recordedAssetFrames = currentActiveExample.assetFramesDict[asset]; 
-
-        List<ACTION_ENUM> actionTypes = recordedAssetFrames.Select(x => x.ActionType).ToList();
-        List<AssetActionSequence> sequences = GetSequences(actionTypes);
-        foreach (AssetActionSequence sequence in sequences)
-        {
-            DebugLogger.Instance.Log("Sequence name: " + sequence.ActionType + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
-            //DebugLogger.Instance.Log("Start x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex) + ", End x: " + MapIndexToTimelinePosition(timelinePanel, sequence.StartIndex + sequence.Length));
-            if (recordedAssetFrames[sequence.StartIndex].ActionDelegate != null)
-            {
-                sequence.ActionDelegate = recordedAssetFrames[sequence.StartIndex].ActionDelegate;
-                DebugLogger.Instance.Log("Action delegate found: " + recordedAssetFrames[sequence.StartIndex].ActionDelegate.Method.Name + ", Parameters: " + string.Join(", ", recordedAssetFrames[sequence.StartIndex].ActionDelegate.Method.GetParameters().Select(x => x.Name)));
-            }
-
-            
-            
-            if(followActions.Contains(sequence.ActionType) || 
-               sequence.ActionType == ACTION_ENUM.HIDE || 
-               sequence.ActionType == ACTION_ENUM.SHOW || 
-               sequence.ActionType == ACTION_ENUM.APPLY_FORCE || 
-               sequence.ActionType == ACTION_ENUM.CHANGE_COLOR || 
-               sequence.ActionType == ACTION_ENUM.PIN) //Other types of events - physics, attach etc
-            {                
-                TimelineUIElement.CreateTimelineElement(currentActiveExample.assetTimelineElementPrefab, timelinePanel, sequence.StartIndex, sequence.Length, GetSizeOfMainRecordedData(), sequence.ToString(), asset);
-            }
-        }
-        return sequences;*/
-    }
-
-    public void CreateTimelineAndStatePlaceholders(bool startHidden=true)
-    {
-        RecreateTimelineInputs();
-        RecreateTimelineAssetRows();
+        RecreateTimelineUI_Inputs();
+        RecreateTimelineUI_AssetRows();
         
-        CreateStatePlaceholders(startHidden);
+        RecreateTimelineUI_StatePlaceholders(startHidden);
     }
 
-    public void RecreateVoiceTimelineElements()
+    public void RecreateTimelineUI_VoiceCommands()
     {
         // refresh voice command sequences
         //TODO: not creating them all over again but just add the new one
@@ -389,30 +341,122 @@ public class Recorder : MonoBehaviour
             TimelineUIElement.CreateTimelineElement(currentActiveExample.voiceCommandTimelineElementPrefab, currentActiveExample.voiceTimelinePanel, GetSizeOfMainRecordedData(), sequence);
         }
     }
+    
+    public void UpdateAllAssetFramesAndCollisions(int updateFrameStart, Example example)
+    {
+        //TODO for now this update should focus on the receiver asset values and not other assets, but physic simulations might make this action to affect other assets
+        //TODO use the updateFrameStart so we update only the FrameStart > updateFrameStart
+        
+        //Create a dictionary where the key is an indexFrame and the value is the corresponding assetAction
+        var allActionsGroupedByFrames = new Dictionary<int, List<AssetActionSequence>>();
+        allAssets.ForEach(asset => {
+            //We bring back the asset to its initial state
+            asset.ResetMainVisualValues();
+            example.assetsDict[asset].assetActions.ForEach(action => {
+                if (!allActionsGroupedByFrames.ContainsKey(action.StartIndex))
+                {
+                    allActionsGroupedByFrames[action.StartIndex] = new List<AssetActionSequence>();
+                }
+                allActionsGroupedByFrames[action.StartIndex].Add(action);
+            });
+        });
 
-    public void RecreateTimelineAssetRows()
+        //We clear the collision models before simulating the frames
+        example.CollisionModels.Clear();
+        
+        StartCoroutine(SimulateAssetFramesAndCollisions(example, allActionsGroupedByFrames));
+    }
+    
+    private IEnumerator SimulateAssetFramesAndCollisions(Example example,
+        Dictionary<int, List<AssetActionSequence>> actionsToPerformGroupedByFrames)
+    {
+        var oldState = Manager.Instance.currAppState;
+        var oldActiveExample = currentActiveExample;
+        
+        currentActiveExample = example;
+        
+        Manager.Instance.currAppState = Manager.AppState.SIMULATING;
+        
+        InputManager.Instance.SetPlaybackObjectsActive(true);
+
+        for (int frameIndex = 0; frameIndex < Recorder.Instance.currentActiveExample.RecordedDataCount; frameIndex++)
+        {
+            DebugLogger.Instance.Log("Updating slider from SIMULATING " + frameIndex);
+            Recorder.Instance.playbackSlider.value = frameIndex;
+
+            if (actionsToPerformGroupedByFrames.TryGetValue(frameIndex, out var actionsToSimulate))
+            {
+                foreach (var anAction in actionsToSimulate)
+                {
+                    // if (frameIndex == anAction.FrameStart) This check should be unnecesary
+                    anAction.ActionDelegate(); //This will execute the action and any related collision
+                }
+            } else 
+            {
+                Debug.Log("There were no actions to simulate on frame " + frameIndex);
+            }
+            //We pause the execution of this routine to let Unity send the collision events: OnCollisionEnter, OnCollisionStay, OnCollisionExit
+            //Collisions are saved in the corresponding model Example
+            
+            yield return new WaitForSeconds(0.001f);
+            
+            allAssets.ForEach(asset =>
+            {
+                asset.SaveMainVisualValuesIn(example.assetsDict[asset].assetFrames[frameIndex]);
+            });
+        }
+        
+        //Set the frameEnd of all the unclosed collisions to the final frame of the recorded data
+        foreach (var collisionModelWithoutFrameEnd in Recorder.Instance.currentActiveExample.CollisionModelsWithoutFrameEnd())
+        {
+            collisionModelWithoutFrameEnd.Length = (example.RecordedDataCount - 1) - collisionModelWithoutFrameEnd.StartIndex;
+        }
+        
+        InputManager.Instance.SetPlaybackObjectsActive(false);
+        Manager.Instance.currAppState = oldState;
+        currentActiveExample = oldActiveExample;
+
+        // Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
+        // InputManager.Instance.SetPlaybackObjectsActive(false);
+        // //DebugLogger.Instance.Log("AddAssetFrameToAssetFramesDict: DoRecordSizesMatch() - " + DoRecordSizesMatch());
+        //     
+        // Recorder.Instance.RecreateTimelineAssetRows();
+        //     
+        // Recorder.Instance.RecreateCollisionsInTimeline();
+    }
+
+    public void RecreateTimelineUI_AssetRowsAndCollisions()
+    {
+        if (currentActiveExample.RecordedDataCount > 0)
+        {
+            UpdateAllAssetFramesAndCollisions(0, currentActiveExample);    
+            RecreateTimelineUI_Collisions();
+        }
+        
+        RecreateTimelineUI_AssetRows();
+    }
+    
+    public void RecreateTimelineUI_AssetRows()
     {
         //Refresh action events in the timeline
         DebugLogger.Instance.Log("Deleting assets row in timeline for example " + currentActiveExample.exampleId);
 
         foreach (var timelineAssetRow in currentActiveExample.GetTimelineAssetRows())
         {
-            //Destroy() is async so we need to disable the usage of timelineAssetRow so it is not confused with the new one
+            //Destroy() is async so we need to disable the usage of timelineAssetRow, so it is not confused with the new one
             timelineAssetRow.GetComponent<TimelineAssetRow>().AssetInstanceID = 0;
             Destroy(timelineAssetRow);
         }
 
         DebugLogger.Instance.Log("Recreating assets row in timeline for example " + currentActiveExample.exampleId);
 
-        int assetsCounter = 0;
-        foreach (var asset in Recorder.Instance.allAssets)
+        for (int i = 0; i < allAssets.Count; i++)
         {
-            ++assetsCounter;
-            CreateTimelineAssetRow(asset, assetsCounter);
+            CreateTimelineUI_AssetRow(allAssets[i], i + 1);
         }
     }
 
-    public void CreateTimelineAssetRow(Asset asset, int assetsCounter)
+    public void CreateTimelineUI_AssetRow(Asset asset, int assetsCounter)
     {
         GameObject assetRow = Instantiate(currentActiveExample.assetTimelinePanelPrefab, currentActiveExample.examplePlaybackPanel);
         assetRow.GetComponent<TimelineAssetRow>().AssetInstanceID = asset.GetInstanceID();
@@ -420,16 +464,21 @@ public class Recorder : MonoBehaviour
         assetRow.SetActive(true);
         assetRow.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text = Manager.Instance.CleanAssetName(asset.name); //Assign asset name
 
-        CreateTimelineActionsForAsset(asset);
+        CreateTimelineUI_ActionsForAsset(asset, currentActiveExample.assetsDict[asset].assetActions);
     }
 
-    public void CreateTimelineActionsForAsset(Asset asset)
+    public void CreateTimelineUI_ActionsForAsset(Asset asset, List<AssetActionSequence> assetActions)
     {
         var assetRow = currentActiveExample.GetTimelineRowFor(asset);
-        CreateAssetActionSequencesInTimeline(assetRow.GetComponent<RectTransform>(), asset);
+        
+        var timelinePanel = assetRow.GetComponent<RectTransform>();
+        foreach (var assetAction in assetActions)
+        {
+            TimelineUIElement.CreateTimelineElement(currentActiveExample.assetTimelineElementPrefab, timelinePanel, currentActiveExample.RecordedDataCount, assetAction);
+        }
     }
 
-    public void RecreateCollisionsInTimeline()
+    public void RecreateTimelineUI_Collisions()
     {
         //Delete all existing collision timeline elements
         for (int i = 2; i < currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>().childCount; i++)
@@ -446,7 +495,7 @@ public class Recorder : MonoBehaviour
         }
     }
 
-    public void RecreateTimelineGestures()
+    public void RecreateTimelineUI_Gestures()
     {
         for (int i = 1; i < currentActiveExample.leftHandTimelinePanel.GetComponent<RectTransform>().childCount; i++)
         {
@@ -466,18 +515,6 @@ public class Recorder : MonoBehaviour
             TimelineUIElement.CreateTimelineElement(currentActiveExample.handTimelineElementPrefab, currentActiveExample.rightHandTimelinePanel, GetSizeOfMainRecordedData(), sequence);
         }
     }
-
-    /*
-    public void RefreshTimelineAndStates()
-    { 
-        RefreshTimelineInputSequences();
-        RecreateTimelineAssetRows();
-        CreateStates();
-        
-        //TODO: call them only in live mode
-        AddActionsToAllStates();
-        CombineExamples();       
-    } */
 
     public void CreateStateMachine()
     {
@@ -732,10 +769,10 @@ public class Recorder : MonoBehaviour
     public void RefreshStatePlaceholders()
     {
         //TODO
-        CreateStatePlaceholders();
+        RecreateTimelineUI_StatePlaceholders();
     }
     
-    public void CreateStatePlaceholders(bool startHidden=false) {
+    public void RecreateTimelineUI_StatePlaceholders(bool startHidden=false) {
         DeleteStatePlaceholders();
         int recordedFramesTotal = GetSizeOfMainRecordedData();
         var gestures = currentActiveExample.AllGestureSequences;
@@ -959,10 +996,6 @@ public class Recorder : MonoBehaviour
         currentActiveExample.StatePlaceholders.Clear();
     }
 
-
-
-
-
     public void ResetStateMachine()
     {
         //Find the id of the first state in the state machine
@@ -970,8 +1003,7 @@ public class Recorder : MonoBehaviour
         //CustomStateMachine.Instance.SetInitialState("State 0");
         // CustomStateMachine.Instance.SetInitialState(currentActiveExample.StatesDict.First().Key.name);
     }
-
-
+    
     public void PrintDetailsOfStateMachine(List<State> states)
     {
         DebugLogger.Instance.ClearVRDebugText();
@@ -1020,68 +1052,81 @@ public class Recorder : MonoBehaviour
             DebugLogger.Instance.Log("Cannot merge state " + selectedStateUIElement.name + " with state to the left because it is the first state");
         }
     }
-
-
-    int frameCount = 0;
+    
+    int _latestRecordedFrameIndex = 0;
 
     private void FixedUpdate()
     {
-        if (Manager.Instance.currAppState == Manager.AppState.RECORDING)
+        switch (Manager.Instance.currAppState)
         {
-            ++frameCount;
-
-            head.Record(frameCount);
-            leftHand.Record(frameCount, currentActiveExample.leftHandFrames);
-            rightHand.Record(frameCount, currentActiveExample.rightHandFrames);
-
-        }
-        else if (Manager.Instance.currAppState == Manager.AppState.PLAYBACK || Manager.Instance.currAppState == Manager.AppState.RECORDING_DURING_PLAYBACK)
-        {
-
-            if (isAutomaticPlayback)
+            case Manager.AppState.RECORDING:
             {
-                playbackSlider.value += 1;//Time.deltaTime;
-                if (playbackSlider.value >= GetSizeOfMainRecordedData())
-                {
-                    playbackSlider.value = 0;
-                }
+                _latestRecordedFrameIndex++;
+
+                head.Record(_latestRecordedFrameIndex);
+                leftHand.Record(_latestRecordedFrameIndex, currentActiveExample.leftHandFrames);
+                rightHand.Record(_latestRecordedFrameIndex, currentActiveExample.rightHandFrames);
+                break;
             }
-
-            int currentFrameNum = (int)playbackSlider.value;
-
-
-            if (head.playbackObject != null)
+            case Manager.AppState.PLAYBACK:
+            case Manager.AppState.RECORDING_DURING_PLAYBACK:
+            case Manager.AppState.SIMULATING:
             {
-                head.playbackObject.transform.SetLocalPositionAndRotation(currentActiveExample.headFrames[currentFrameNum].rootPosition, currentActiveExample.headFrames[currentFrameNum].rootRotation);
-                head.playbackFocusSquare.transform.SetPositionAndRotation(currentActiveExample.headFrames[currentFrameNum].focusSquarePosition, currentActiveExample.headFrames[currentFrameNum].focusSquareRotation);
-            }
-
-            if (leftHand.playbackObject != null)
-            {
-                leftHand.playbackObject.transform.SetLocalPositionAndRotation(currentActiveExample.leftHandFrames[currentFrameNum].rootPosition, currentActiveExample.leftHandFrames[currentFrameNum].rootRotation * Quaternion.Euler(leftHand.rotationCorrection));
-                if (leftHand.playbackObject.GetComponent<HandPlaybackObjectScript>() != null)
+                if (isAutomaticPlayback)
                 {
-                    leftHand.playbackObject.GetComponent<HandPlaybackObjectScript>().SetPoseForAllFingerJoints(currentActiveExample.leftHandFrames[currentFrameNum]);
-                    leftHand.playbackGestureText.text = InputManager.Instance.GestureToString(currentActiveExample.leftHandFrames[currentFrameNum].gesture);
+                    playbackSlider.value += 1;//Time.deltaTime;
+                    if (playbackSlider.value >= currentActiveExample.RecordedDataCount)
+                    {
+                        playbackSlider.value = 0;
+                    }
                 }
 
-                leftHand.playbackFocusSquare.transform.SetPositionAndRotation(currentActiveExample.leftHandFrames[currentFrameNum].focusSquarePosition, currentActiveExample.leftHandFrames[currentFrameNum].focusSquareRotation);
-            }
+                int currentFrameNum = (int)playbackSlider.value;
 
-            if (rightHand.playbackObject != null)
+                UpdatePlaybackObjects(currentFrameNum);
+                
+                break;
+            }
+            default:
             {
-                rightHand.playbackObject.transform.SetLocalPositionAndRotation(currentActiveExample.rightHandFrames[currentFrameNum].rootPosition, currentActiveExample.rightHandFrames[currentFrameNum].rootRotation * Quaternion.Euler(rightHand.rotationCorrection));
-                if (rightHand.playbackObject.GetComponent<HandPlaybackObjectScript>() != null)
-                {
-                    rightHand.playbackObject.GetComponent<HandPlaybackObjectScript>().SetPoseForAllFingerJoints(currentActiveExample.rightHandFrames[currentFrameNum]);
-                    rightHand.playbackGestureText.text = InputManager.Instance.GestureToString(currentActiveExample.rightHandFrames[currentFrameNum].gesture);
-                }
-
-                rightHand.playbackFocusSquare.transform.SetPositionAndRotation(currentActiveExample.rightHandFrames[currentFrameNum].focusSquarePosition, currentActiveExample.rightHandFrames[currentFrameNum].focusSquareRotation);
+                DebugLogger.Instance.Log("Ignoring currAppState " + Manager.Instance.currAppState + " in Recorder >> FixedUpdate");
+                return;
             }
-
         }
 
+    }
+
+    private void UpdatePlaybackObjects(int currentFrameNum)
+    {
+        if (head.playbackObject != null)
+        {
+            head.playbackObject.transform.SetLocalPositionAndRotation(currentActiveExample.headFrames[currentFrameNum].rootPosition, currentActiveExample.headFrames[currentFrameNum].rootRotation);
+            head.playbackFocusSquare.transform.SetPositionAndRotation(currentActiveExample.headFrames[currentFrameNum].focusSquarePosition, currentActiveExample.headFrames[currentFrameNum].focusSquareRotation);
+        }
+
+        if (leftHand.playbackObject != null)
+        {
+            leftHand.playbackObject.transform.SetLocalPositionAndRotation(currentActiveExample.leftHandFrames[currentFrameNum].rootPosition, currentActiveExample.leftHandFrames[currentFrameNum].rootRotation * Quaternion.Euler(leftHand.rotationCorrection));
+            if (leftHand.playbackObject.GetComponent<HandPlaybackObjectScript>() != null)
+            {
+                leftHand.playbackObject.GetComponent<HandPlaybackObjectScript>().SetPoseForAllFingerJoints(currentActiveExample.leftHandFrames[currentFrameNum]);
+                leftHand.playbackGestureText.text = InputManager.Instance.GestureToString(currentActiveExample.leftHandFrames[currentFrameNum].gesture);
+            }
+
+            leftHand.playbackFocusSquare.transform.SetPositionAndRotation(currentActiveExample.leftHandFrames[currentFrameNum].focusSquarePosition, currentActiveExample.leftHandFrames[currentFrameNum].focusSquareRotation);
+        }
+
+        if (rightHand.playbackObject != null)
+        {
+            rightHand.playbackObject.transform.SetLocalPositionAndRotation(currentActiveExample.rightHandFrames[currentFrameNum].rootPosition, currentActiveExample.rightHandFrames[currentFrameNum].rootRotation * Quaternion.Euler(rightHand.rotationCorrection));
+            if (rightHand.playbackObject.GetComponent<HandPlaybackObjectScript>() != null)
+            {
+                rightHand.playbackObject.GetComponent<HandPlaybackObjectScript>().SetPoseForAllFingerJoints(currentActiveExample.rightHandFrames[currentFrameNum]);
+                rightHand.playbackGestureText.text = InputManager.Instance.GestureToString(currentActiveExample.rightHandFrames[currentFrameNum].gesture);
+            }
+
+            rightHand.playbackFocusSquare.transform.SetPositionAndRotation(currentActiveExample.rightHandFrames[currentFrameNum].focusSquarePosition, currentActiveExample.rightHandFrames[currentFrameNum].focusSquareRotation);
+        }
     }
 
     public void SavePlaybackPosition()

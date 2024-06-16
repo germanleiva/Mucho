@@ -94,9 +94,9 @@ public class TimelineUIElement : MonoBehaviour
         //TODO (only Germán, Vittoria does not agree xD) for now the action is independent in every example, so we are not deleting this action from other examples than the currrentActiveExample
         Recorder.Instance.currentActiveExample.assetsDict[correspondingAsset].assetActions.Remove((AssetActionSequence)sequenceModelObject);
         
-        correspondingAsset.UpdateAllAssetFramesAndCollisions((int)Recorder.Instance.playbackSlider.value, Recorder.Instance.currentActiveExample);
+        Recorder.Instance.UpdateAllAssetFramesAndCollisions((int)Recorder.Instance.playbackSlider.value, Recorder.Instance.currentActiveExample);
         
-        Recorder.Instance.RecreateCollisionsInTimeline();
+        Recorder.Instance.RecreateTimelineUI_Collisions();
 
         deleteEventPanel.SetActive(false);
         Destroy(gameObject);
