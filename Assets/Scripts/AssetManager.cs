@@ -189,12 +189,21 @@ public class AssetManager : MonoBehaviour
     {
         DebugLogger.Instance.Log("Deleted " + obj.name);        
         Recorder.Instance.allAssets.Remove(obj.GetComponentInChildren<Asset>());
-        foreach (var example in Recorder.Instance.examples)
+        
+        //Update the model in all the examples
+        for (int i = 0; i < Recorder.Instance.examples.Count; i++)
         {
+            var example = Recorder.Instance.examples[i];
             example.RefreshAssetsInExample();
-            
-            //Update the model in all the examples
-            Recorder.Instance.UpdateAllAssetFramesAndCollisions(0, example, Recorder.Instance.RecreateTimelineUI_AssetRowsAndCollisions); //TODO WRONG, we should call the onCompletion action only on the last example (I think)
+
+            Action onCompletion = null;
+            if (i == Recorder.Instance.examples.Count - 1)
+            {
+                //Only for the last example
+                onCompletion = Recorder.Instance.RecreateTimelineUI_AssetRowsAndCollisions;    
+            }
+            Recorder.Instance.UpdateAllAssetFramesAndCollisions(0, example, onCompletion);    
+
         }
         
         Destroy(obj);
@@ -261,7 +270,7 @@ public class AssetManager : MonoBehaviour
         ForceArrow forceArrowScript = forceArrow.GetComponent<ForceArrow>();
         forceArrowScript.indexWhereArrowIsVisible = (int) Recorder.Instance.playbackSlider.value;
         forceArrowScript.associatedExample = Recorder.Instance.currentActiveExample;
-        asset.forceArrows.Add(forceArrow);
+        asset.forceArrows.Add(forceArrowScript);
         forceArrowScript.associatedAsset = asset;
         //forceArrowScript.arrowHead should be positioned 1 unit above the arrowEnd in the y axis
         if (!AssetManager.isForceArrowGhostActive) {
@@ -272,6 +281,11 @@ public class AssetManager : MonoBehaviour
             forceArrowScript.arrowHeadGhost.position = forceArrowScript.arrowHeadReal.position; // recordable.gameObject.transform.position + new Vector3(0f,0.2f,0.2f);
             forceArrowScript.OrientForceArrow();
         }
+        //forceArrowScript.arrowHeadGhost.transform.position = forceArrowScript.arrowHeadReal.transform.position;
+        //forceArrowScript.DrawTrajectory();     
+        //TODO check if it is not really needed (as german said....) I don't think he has right though
+        //Recorder.Instance.RecreateTimelineAssetRows(null);
+        
     }
    
 }

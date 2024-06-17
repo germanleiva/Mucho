@@ -343,7 +343,7 @@ public class Recorder : MonoBehaviour
         }
     }
     
-    public void UpdateAllAssetFramesAndCollisions(int updateFrameStart, Example example, Action onCompletionDelegate)
+    public void UpdateAllAssetFramesAndCollisions(int updateFrameStart, Example example, Action onCompletionDelegate = null)
     {
         //TODO for now this update should focus on the receiver asset values and not other assets, but physic simulations might make this action to affect other assets
         //TODO use the updateFrameStart so we update only the FrameStart > updateFrameStart
@@ -419,7 +419,10 @@ public class Recorder : MonoBehaviour
         Manager.Instance.currAppState = oldState;
         currentActiveExample = oldActiveExample;
 
-        onCompletionDelegate();
+        if (onCompletionDelegate != null)
+        { 
+            onCompletionDelegate();
+        }
         // Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         // InputManager.Instance.SetPlaybackObjectsActive(false);
         // //DebugLogger.Instance.Log("AddAssetFrameToAssetFramesDict: DoRecordSizesMatch() - " + DoRecordSizesMatch());
@@ -434,10 +437,12 @@ public class Recorder : MonoBehaviour
     {
         if (currentActiveExample.RecordedDataCount > 0)
         {
-            UpdateAllAssetFramesAndCollisions(0, currentActiveExample, RecreateTimelineUI_Collisions);    
+            UpdateAllAssetFramesAndCollisions(0, currentActiveExample, () =>
+            {
+                RecreateTimelineUI_Collisions();
+                RecreateTimelineUI_AssetRows();
+            });    
         }
-        
-        RecreateTimelineUI_AssetRows();
     }
     
     public void RecreateTimelineUI_AssetRows()
@@ -471,6 +476,19 @@ public class Recorder : MonoBehaviour
         CreateTimelineUI_ActionsForAsset(asset, currentActiveExample.assetsDict[asset].assetActions);
     }
 
+    public void RecreateTimelineUI_ActionsForAsset(Asset asset)
+    {
+        var assetRow = currentActiveExample.GetTimelineRowFor(asset);
+        
+        //Delete all existing action timeline elements
+        for (int i = 4; i < assetRow.transform.childCount; i++)
+        {
+            Destroy(assetRow.transform.GetChild(i).gameObject);
+        }
+
+        CreateTimelineUI_ActionsForAsset(asset, currentActiveExample.assetsDict[asset].assetActions);
+    }
+
     public void CreateTimelineUI_ActionsForAsset(Asset asset, List<AssetActionSequence> assetActions)
     {
         var assetRow = currentActiveExample.GetTimelineRowFor(asset);
@@ -478,7 +496,11 @@ public class Recorder : MonoBehaviour
         var timelinePanel = assetRow.GetComponent<RectTransform>();
         foreach (var assetAction in assetActions)
         {
-            TimelineUIElement.CreateTimelineElement(currentActiveExample.assetTimelineElementPrefab, timelinePanel, currentActiveExample.RecordedDataCount, assetAction);
+            if (assetAction.shouldShowInTimeline)
+            {
+                TimelineUIElement.CreateTimelineElement(currentActiveExample.assetTimelineElementPrefab, timelinePanel,
+                    currentActiveExample.RecordedDataCount, assetAction);
+            }
         }
     }
 

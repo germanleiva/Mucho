@@ -463,10 +463,10 @@ public class Example
         foreach(Asset asset in assetsDict.Keys)
         {
             assetsDict[asset].assetFrames.Clear();
-            foreach (GameObject obj in asset.forceArrows)
+            foreach (ForceArrow forceArrow in asset.forceArrows)
             {
-                UnityEngine.Object.Destroy(obj);
-            }
+                UnityEngine.Object.Destroy(forceArrow.gameObject);
+            } 
         }
     }
 
@@ -713,6 +713,8 @@ public class AssetActionSequence : Sequence
 
     public Action ActionDelegate { get; set; }
 
+    public AssetActionSequence associatedEndAction;
+
     public override Func<Frame, bool> AddConditionToFunction(Func<Frame, bool> conditionFunction)
     {
         throw new NotImplementedException();
@@ -771,7 +773,6 @@ public class AssetActionSequence : Sequence
     public static bool IsAddForceAction(string actionName)
     {
         return actionName.Equals("ApplyForce()", StringComparison.OrdinalIgnoreCase);
-        
     }
 
     public override object Clone()
@@ -794,12 +795,14 @@ public class AssetActionSequence : Sequence
         var followActions = new List<ACTION_ENUM> {ACTION_ENUM.FOLLOW_LEFT_HAND, ACTION_ENUM.FOLLOW_RIGHT_HAND, ACTION_ENUM.FOLLOW_L_FOCUS, ACTION_ENUM.FOLLOW_R_FOCUS, ACTION_ENUM.FOLLOW_G_FOCUS};
         return followActions.Contains(ActionType);
     }
+
+    public bool shouldShowInTimeline => ActionType != ACTION_ENUM.UNFOLLOW && ActionType != ACTION_ENUM.RESET_PHYSICS;
 }
 
 public class GestureSequence : Sequence
 {
     public InputManager.Gesture GestureType { get; set; }
-    override public Boolean CanTriggerAt(int stateStartIndex) {
+    public override Boolean CanTriggerAt(int stateStartIndex) {
         return StartIndex == stateStartIndex;
     }
 
@@ -808,11 +811,11 @@ public class GestureSequence : Sequence
             case InputManager.Gesture.LEFTHANDGRAB:
             case InputManager.Gesture.LEFTHANDPINCH:
             case InputManager.Gesture.LEFTHANDOPEN:
-                return (Frame frame) => { return conditionFunction(frame) && frame.leftHandGesture == GestureType;};
+                return (Frame frame) => conditionFunction(frame) && frame.leftHandGesture == GestureType;
             case InputManager.Gesture.RIGHTHANDGRAB:
             case InputManager.Gesture.RIGHTHANDPINCH:
             case InputManager.Gesture.RIGHTHANDOPEN:
-                return (Frame frame) => { return conditionFunction(frame) && frame.rightHandGesture == GestureType;};
+                return (Frame frame) => conditionFunction(frame) && frame.rightHandGesture == GestureType;
             case InputManager.Gesture.LEFTHANDNONE:
             case InputManager.Gesture.RIGHTHANDNONE:
             case InputManager.Gesture.LEFTHANDMENUOPEN: 

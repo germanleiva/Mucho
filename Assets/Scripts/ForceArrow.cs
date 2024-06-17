@@ -1,4 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using Assets.OVR.Scripts;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class ForceArrow : MonoBehaviour
@@ -27,6 +31,7 @@ public class ForceArrow : MonoBehaviour
     public GameObject connectedAsset;
     public Material arrowTranslucentMaterial;
 
+    [NonSerialized]
     public int indexWhereArrowIsVisible = 0;
 
     public Example associatedExample = null;
@@ -300,8 +305,22 @@ public class ForceArrow : MonoBehaviour
     public void ThrowAsset()
     {
         //This method is executed when the user releases the arrow during the creation of an AddForce action
-        Manager.Instance.currAppState = Manager.AppState.SIMULATING;
         
+        int currentFrame = (int)Recorder.Instance.playbackSlider.value;
+        
+        var assetActions = Recorder.Instance.currentActiveExample.assetsDict[associatedAsset].assetActions;
+        var copiedActions = new List<AssetActionSequence>(assetActions);
+        foreach (var action in copiedActions)
+        {
+            if (action.ActionType == ACTION_ENUM.APPLY_FORCE && action.StartIndex == currentFrame)
+            {
+                assetActions.Remove(action);
+                assetActions.Remove(action.associatedEndAction);
+            }
+        }
+
+        Manager.Instance.currAppState = Manager.AppState.SIMULATING;
+
         associatedAsset.RecordAction(ACTION_ENUM.APPLY_FORCE, () =>
         {
             associatedAsset.ApplyForce(initialVelocity);

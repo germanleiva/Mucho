@@ -15,7 +15,7 @@ public class Asset : MonoBehaviour
     public Vector3 InitialPosition { get; set; }
 
     [NonSerialized]
-    public List<GameObject> forceArrows = new();
+    public List<ForceArrow> forceArrows = new();
     
     [SerializeField]
     private Collider grabCollider;
@@ -182,7 +182,7 @@ public class Asset : MonoBehaviour
         //foreach (var recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
         //{
             //var data = Recorder.Instance.currentActiveExample.assetDataDict[recordable];
-            if (Recorder.Instance.GetSizeOfMainRecordedData() > 0 && currentFrameNum < currentAssetRecordedData.Count)
+            if (Recorder.Instance.currentActiveExample.RecordedDataCount > 0 && currentFrameNum < currentAssetRecordedData.Count)
             {
                 //DebugLogger.Instance.Log("Playing back " + recordable.playbackObject.name + " at " + currentFrameNum);
                 transform.position = currentAssetRecordedData[currentFrameNum].rootPosition;
@@ -352,6 +352,8 @@ public class Asset : MonoBehaviour
                 ActionType = ACTION_ENUM.UNFOLLOW,
                 ActionDelegate = () => { GetComponent<Asset>().ApplyUnfollow(); }
             };
+
+            newAction.associatedEndAction = newEndAction;
                 
             Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.Add(newEndAction);
         }
@@ -359,7 +361,7 @@ public class Asset : MonoBehaviour
         Recorder.Instance.UpdateAllAssetFramesAndCollisions(frameStart, Recorder.Instance.currentActiveExample, () =>
         {
             Recorder.Instance.RecreateTimelineUI_Collisions();
-            Recorder.Instance.CreateTimelineUI_ActionsForAsset(this,new List<AssetActionSequence>{newAction});
+            Recorder.Instance.RecreateTimelineUI_ActionsForAsset(this);
         });
     }
 
@@ -661,6 +663,8 @@ public class Asset : MonoBehaviour
                             ActionType = ACTION_ENUM.RESET_PHYSICS,
                             ActionDelegate = ResetPhysicsPropertiesInLiveMode
                         };
+                        
+                        action.associatedEndAction = newResetPhysicsAction;
                         
                         addedResetPhysicsActions.Add(newResetPhysicsAction);
                         
