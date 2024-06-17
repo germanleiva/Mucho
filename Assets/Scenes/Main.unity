@@ -194,16 +194,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   grabCollider: {fileID: 2427954}
   assetMenu: {fileID: 1503750824}
-  forceArrows: []
-  isThisAssetThrown: 0
-  initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
-  initRotBeforePhysicsSimulation: {x: 0, y: 0, z: 0, w: 0}
   followLineObj: {fileID: 0}
   colliderVisualizerObj: {fileID: 0}
   colliderBoundaryGizmoObj1: {fileID: 0}
-  colliderBoundaryGizmoObj2: {fileID: 0}
-  currentObjColor: {r: 0, g: 0, b: 0, a: 0}
-  defaultMaterial: {fileID: 0}
 --- !u!135 &2427954
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -9855,7 +9848,7 @@ GameObject:
   - component: {fileID: 146323311}
   m_Layer: 7
   m_Name: PlaybackLeftHandPinchContactSphere
-  m_TagString: Untagged
+  m_TagString: LeftHand
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -31242,16 +31235,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   grabCollider: {fileID: 4135284671933341618}
   assetMenu: {fileID: 1159954569}
-  forceArrows: []
-  isThisAssetThrown: 0
-  initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
-  initRotBeforePhysicsSimulation: {x: 0, y: 0, z: 0, w: 0}
   followLineObj: {fileID: 1723312799}
   colliderVisualizerObj: {fileID: 1806115011}
   colliderBoundaryGizmoObj1: {fileID: 655126352}
-  colliderBoundaryGizmoObj2: {fileID: 0}
-  currentObjColor: {r: 0, g: 0, b: 0, a: 0}
-  defaultMaterial: {fileID: 0}
 --- !u!1 &561801854
 GameObject:
   m_ObjectHideFlags: 0
@@ -33057,16 +33043,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   grabCollider: {fileID: 595010859}
   assetMenu: {fileID: 95445047}
-  forceArrows: []
-  isThisAssetThrown: 0
-  initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
-  initRotBeforePhysicsSimulation: {x: 0, y: 0, z: 0, w: 0}
   followLineObj: {fileID: 0}
   colliderVisualizerObj: {fileID: 0}
   colliderBoundaryGizmoObj1: {fileID: 0}
-  colliderBoundaryGizmoObj2: {fileID: 0}
-  currentObjColor: {r: 0, g: 0, b: 0, a: 0}
-  defaultMaterial: {fileID: 0}
 --- !u!135 &595010859
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -46169,16 +46148,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   grabCollider: {fileID: 781693685}
   assetMenu: {fileID: 2001158092}
-  forceArrows: []
-  isThisAssetThrown: 0
-  initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
-  initRotBeforePhysicsSimulation: {x: 0, y: 0, z: 0, w: 0}
   followLineObj: {fileID: 0}
   colliderVisualizerObj: {fileID: 0}
   colliderBoundaryGizmoObj1: {fileID: 0}
-  colliderBoundaryGizmoObj2: {fileID: 0}
-  currentObjColor: {r: 0, g: 0, b: 0, a: 0}
-  defaultMaterial: {fileID: 0}
 --- !u!135 &781693685
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -49688,16 +49660,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   grabCollider: {fileID: 0}
   assetMenu: {fileID: 624260986}
-  forceArrows: []
-  isThisAssetThrown: 0
-  initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
-  initRotBeforePhysicsSimulation: {x: 0, y: 0, z: 0, w: 0}
   followLineObj: {fileID: 0}
   colliderVisualizerObj: {fileID: 0}
   colliderBoundaryGizmoObj1: {fileID: 0}
-  colliderBoundaryGizmoObj2: {fileID: 0}
-  currentObjColor: {r: 0, g: 0, b: 0, a: 0}
-  defaultMaterial: {fileID: 0}
 --- !u!65 &831533414
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -56153,7 +56118,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   leftHandMenu: {fileID: 447131886}
-  currAppState: 0
   speechToTextEngine: {fileID: 4443345514525557374}
   spherePrefab: {fileID: 515536004}
   cubePrefab: {fileID: 1306604326}
@@ -60277,16 +60241,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   grabCollider: {fileID: 954484073}
   assetMenu: {fileID: 1872402034}
-  forceArrows: []
-  isThisAssetThrown: 0
-  initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
-  initRotBeforePhysicsSimulation: {x: 0, y: 0, z: 0, w: 0}
   followLineObj: {fileID: 0}
   colliderVisualizerObj: {fileID: 0}
   colliderBoundaryGizmoObj1: {fileID: 0}
-  colliderBoundaryGizmoObj2: {fileID: 0}
-  currentObjColor: {r: 0, g: 0, b: 0, a: 0}
-  defaultMaterial: {fileID: 0}
 --- !u!114 &954484060
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -77902,16 +77859,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   grabCollider: {fileID: 1216932257}
   assetMenu: {fileID: 785056905}
-  forceArrows: []
-  isThisAssetThrown: 0
-  initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
-  initRotBeforePhysicsSimulation: {x: 0, y: 0, z: 0, w: 0}
   followLineObj: {fileID: 1912736170}
   colliderVisualizerObj: {fileID: 1888373039}
   colliderBoundaryGizmoObj1: {fileID: 1091980707}
-  colliderBoundaryGizmoObj2: {fileID: 0}
-  currentObjColor: {r: 0, g: 0, b: 0, a: 0}
-  defaultMaterial: {fileID: 0}
 --- !u!135 &1216932257
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -96598,7 +96548,7 @@ GameObject:
   - component: {fileID: 1523758127}
   m_Layer: 7
   m_Name: PlaybackRightHandPinchContactSphere
-  m_TagString: Untagged
+  m_TagString: RightHand
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -119994,16 +119944,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   grabCollider: {fileID: 0}
   assetMenu: {fileID: 1748900839}
-  forceArrows: []
-  isThisAssetThrown: 0
-  initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
-  initRotBeforePhysicsSimulation: {x: 0, y: 0, z: 0, w: 0}
   followLineObj: {fileID: 0}
   colliderVisualizerObj: {fileID: 0}
   colliderBoundaryGizmoObj1: {fileID: 0}
-  colliderBoundaryGizmoObj2: {fileID: 0}
-  currentObjColor: {r: 0, g: 0, b: 0, a: 0}
-  defaultMaterial: {fileID: 0}
 --- !u!65 &1875992455
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -132216,16 +132159,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   grabCollider: {fileID: 2059295647}
   assetMenu: {fileID: 0}
-  forceArrows: []
-  isThisAssetThrown: 0
-  initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
-  initRotBeforePhysicsSimulation: {x: 0, y: 0, z: 0, w: 0}
   followLineObj: {fileID: 0}
   colliderVisualizerObj: {fileID: 0}
   colliderBoundaryGizmoObj1: {fileID: 0}
-  colliderBoundaryGizmoObj2: {fileID: 0}
-  currentObjColor: {r: 0, g: 0, b: 0, a: 0}
-  defaultMaterial: {fileID: 0}
 --- !u!1 &2059612760
 GameObject:
   m_ObjectHideFlags: 0

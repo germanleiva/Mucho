@@ -207,7 +207,6 @@ public class InputManager : MonoBehaviour
         if (object1 != null && object2 != null)
         {
             DebugLogger.Instance.Log("Collision between " + object1.name + " and " + object2.name);
-
         }
 
         collidingObjectNotified_1 = object1;
@@ -242,9 +241,8 @@ public class InputManager : MonoBehaviour
             sm.ProcessFrame(frame);
         //}
 
-        if (Manager.Instance.currAppState == Manager.AppState.INIT)
-        {
-            throw new Exception("WTF");
+        /* if (Manager.Instance.currAppState == Manager.AppState.INIT)
+         {
             
             if(frame.collidingObjectThisFrame_1 != null && frame.collidingObjectThisFrame_2 != null)
             {
@@ -289,7 +287,7 @@ public class InputManager : MonoBehaviour
 
             currentVoiceCommand = "";
             
-        } 
+        } */
     }
 
     public void SetPlaybackObjectsActive(bool show)

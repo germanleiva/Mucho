@@ -182,6 +182,8 @@ public class Recorder : MonoBehaviour
         RecreateTimelineUIAndStatePlaceholders();   
 
         PreparePlayback();
+        
+        UpdateAllAssetFramesAndCollisions(0, currentActiveExample, RecreateTimelineUI_Collisions);
     }
 
     public void SetAutomaticPlayMode(bool isAutomatic)
@@ -342,7 +344,7 @@ public class Recorder : MonoBehaviour
         }
     }
     
-    public void UpdateAllAssetFramesAndCollisions(int updateFrameStart, Example example)
+    public void UpdateAllAssetFramesAndCollisions(int updateFrameStart, Example example, Action onCompletionDelegate)
     {
         //TODO for now this update should focus on the receiver asset values and not other assets, but physic simulations might make this action to affect other assets
         //TODO use the updateFrameStart so we update only the FrameStart > updateFrameStart
@@ -364,11 +366,12 @@ public class Recorder : MonoBehaviour
         //We clear the collision models before simulating the frames
         example.CollisionModels.Clear();
         
-        StartCoroutine(SimulateAssetFramesAndCollisions(example, allActionsGroupedByFrames));
+        StartCoroutine(SimulateAssetFramesAndCollisions(example, allActionsGroupedByFrames, onCompletionDelegate));
+        
     }
     
     private IEnumerator SimulateAssetFramesAndCollisions(Example example,
-        Dictionary<int, List<AssetActionSequence>> actionsToPerformGroupedByFrames)
+        Dictionary<int, List<AssetActionSequence>> actionsToPerformGroupedByFrames, Action onCompletionDelegate)
     {
         var oldState = Manager.Instance.currAppState;
         var oldActiveExample = currentActiveExample;
@@ -379,7 +382,7 @@ public class Recorder : MonoBehaviour
         
         InputManager.Instance.SetPlaybackObjectsActive(true);
 
-        for (int frameIndex = 0; frameIndex < Recorder.Instance.currentActiveExample.RecordedDataCount; frameIndex++)
+        for (int frameIndex = 0; frameIndex < example.RecordedDataCount; frameIndex++)
         {
             DebugLogger.Instance.Log("Updating slider from SIMULATING " + frameIndex);
             Recorder.Instance.playbackSlider.value = frameIndex;
@@ -407,7 +410,7 @@ public class Recorder : MonoBehaviour
         }
         
         //Set the frameEnd of all the unclosed collisions to the final frame of the recorded data
-        foreach (var collisionModelWithoutFrameEnd in Recorder.Instance.currentActiveExample.CollisionModelsWithoutFrameEnd())
+        foreach (var collisionModelWithoutFrameEnd in example.CollisionModelsWithoutFrameEnd())
         {
             collisionModelWithoutFrameEnd.Length = (example.RecordedDataCount - 1) - collisionModelWithoutFrameEnd.StartIndex;
         }
@@ -416,6 +419,7 @@ public class Recorder : MonoBehaviour
         Manager.Instance.currAppState = oldState;
         currentActiveExample = oldActiveExample;
 
+        onCompletionDelegate();
         // Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         // InputManager.Instance.SetPlaybackObjectsActive(false);
         // //DebugLogger.Instance.Log("AddAssetFrameToAssetFramesDict: DoRecordSizesMatch() - " + DoRecordSizesMatch());
@@ -423,14 +427,14 @@ public class Recorder : MonoBehaviour
         // Recorder.Instance.RecreateTimelineAssetRows();
         //     
         // Recorder.Instance.RecreateCollisionsInTimeline();
+
     }
 
     public void RecreateTimelineUI_AssetRowsAndCollisions()
     {
         if (currentActiveExample.RecordedDataCount > 0)
         {
-            UpdateAllAssetFramesAndCollisions(0, currentActiveExample);    
-            RecreateTimelineUI_Collisions();
+            UpdateAllAssetFramesAndCollisions(0, currentActiveExample, RecreateTimelineUI_Collisions);    
         }
         
         RecreateTimelineUI_AssetRows();
@@ -1069,7 +1073,6 @@ public class Recorder : MonoBehaviour
                 break;
             }
             case Manager.AppState.PLAYBACK:
-            case Manager.AppState.RECORDING_DURING_PLAYBACK:
             case Manager.AppState.SIMULATING:
             {
                 if (isAutomaticPlayback)

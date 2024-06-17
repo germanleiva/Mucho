@@ -194,10 +194,8 @@ public class AssetManager : MonoBehaviour
             example.RefreshAssetsInExample();
             
             //Update the model in all the examples
-            Recorder.Instance.UpdateAllAssetFramesAndCollisions(0, example);
+            Recorder.Instance.UpdateAllAssetFramesAndCollisions(0, example, Recorder.Instance.RecreateTimelineUI_AssetRowsAndCollisions); //TODO WRONG, we should call the onCompletion action only on the last example (I think)
         }
-        
-        Recorder.Instance.RecreateTimelineUI_AssetRowsAndCollisions();
         
         Destroy(obj);
     }

@@ -16,7 +16,19 @@ using UnityEngine.UI;
 public class Manager : MonoBehaviour
 {
     public GameObject leftHandMenu;
-    public AppState currAppState; //TODO check all the usages of this and transform the != to ==
+
+    private AppState _currAppState;
+    public AppState currAppState
+    {
+        get
+        {
+            return _currAppState;
+        }
+        set
+        {
+            _currAppState = value;
+        }
+    }
     public SpeechToText speechToTextEngine;
     public GameObject spherePrefab;
     public GameObject cubePrefab;
@@ -24,12 +36,10 @@ public class Manager : MonoBehaviour
 
     public enum AppState
     {
-        INIT,
         RECORDING,
         PLAYBACK,
         SIMULATING,
         LIVE,
-        RECORDING_DURING_PLAYBACK, //TODO Most likely delete this
         EDIT_BOUNDING_SPHERE
     }
 
@@ -52,7 +62,7 @@ public class Manager : MonoBehaviour
     public TMPro.TMP_Text VRDebugText;
     void Start()
     {
-        currAppState = Manager.AppState.INIT;
+        currAppState = Manager.AppState.PLAYBACK;
     }
 
     public void ClearDebugText()

@@ -125,8 +125,7 @@ public class Asset : MonoBehaviour
         {
             SetInitialVisualMainValues();
             
-            Recorder.Instance.UpdateAllAssetFramesAndCollisions((int)Recorder.Instance.playbackSlider.value, Recorder.Instance.currentActiveExample);
-            Recorder.Instance.RecreateTimelineUI_Collisions();
+            Recorder.Instance.UpdateAllAssetFramesAndCollisions((int)Recorder.Instance.playbackSlider.value, Recorder.Instance.currentActiveExample, Recorder.Instance.RecreateTimelineUI_Collisions);
         }
     }
 
@@ -229,9 +228,7 @@ public class Asset : MonoBehaviour
             }
         }
     }
-
-
-
+    
     public void StartManualRecording()
     {
         Manager.Instance.currAppState = Manager.AppState.SIMULATING;
@@ -362,9 +359,8 @@ public class Asset : MonoBehaviour
             Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.Add(newEndAction);
         }
 
-        Recorder.Instance.UpdateAllAssetFramesAndCollisions(frameStart, Recorder.Instance.currentActiveExample);
+        Recorder.Instance.UpdateAllAssetFramesAndCollisions(frameStart, Recorder.Instance.currentActiveExample, Recorder.Instance.RecreateTimelineUI_Collisions);
         
-        Recorder.Instance.RecreateTimelineUI_Collisions();
         Recorder.Instance.CreateTimelineUI_ActionsForAsset(this,new List<AssetActionSequence>{newAction});
     }
 
@@ -662,7 +658,11 @@ public class Asset : MonoBehaviour
         if (Manager.Instance.currAppState == Manager.AppState.SIMULATING)
         {
             //If we are simulating we need to save the collision
-            Recorder.Instance.currentActiveExample.AddNewCollision((int)Recorder.Instance.playbackSlider.value,base.gameObject, collision.collider.gameObject);
+            if(!collision.collider.gameObject.CompareTag("Untagged"))
+            {
+                Recorder.Instance.currentActiveExample.AddNewCollision((int)Recorder.Instance.playbackSlider.value,base.gameObject, collision.collider.gameObject);            
+            }
+            
         }
         
         InputManager.Instance.SaveCurrentCollision(base.gameObject, collision.collider.gameObject);
@@ -733,7 +733,7 @@ public class Asset : MonoBehaviour
     void OnCollisionStay(Collision collision)
     {
         
-        if(Manager.Instance.currAppState != Manager.AppState.RECORDING && Manager.Instance.currAppState != Manager.AppState.RECORDING_DURING_PLAYBACK)
+        if(Manager.Instance.currAppState != Manager.AppState.RECORDING)
         {
             //DebugLogger.Instance.Log("Notifying collision detected between " + base.gameObject.name + " and " + collision.collider.name);
             if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere" || collision.collider.name == "HeadContactSphere")
@@ -756,10 +756,13 @@ public class Asset : MonoBehaviour
 
         if (Manager.Instance.currAppState == Manager.AppState.SIMULATING)
         {
-            Recorder.Instance.currentActiveExample.EndPreviousCollision((int)Recorder.Instance.playbackSlider.value,base.gameObject, collision.collider.gameObject);
+            if(!collision.collider.gameObject.CompareTag("Untagged"))
+            {
+                Recorder.Instance.currentActiveExample.EndPreviousCollision((int)Recorder.Instance.playbackSlider.value,base.gameObject, collision.collider.gameObject);
+            }
         }
         
-        if(Manager.Instance.currAppState != Manager.AppState.RECORDING && Manager.Instance.currAppState != Manager.AppState.RECORDING_DURING_PLAYBACK)
+        if(Manager.Instance.currAppState != Manager.AppState.RECORDING)
         {
             if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere" || collision.collider.name == "HeadContactSphere")
             {      
