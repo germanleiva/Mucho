@@ -1,8 +1,20 @@
+using System;
 using UnityEngine;
 
 public class ForceArrow : MonoBehaviour
 {
-    public Transform asset;
+    private Asset _associatedAsset;
+    public Asset associatedAsset
+    {
+        get => _associatedAsset;
+        set
+        {
+            _associatedAsset = value;
+            assetTransform = value.transform;
+        }
+    }
+
+    public Transform assetTransform;
     public Transform arrowHeadGhost;
     public Transform arrowHeadReal;
 
@@ -32,7 +44,6 @@ public class ForceArrow : MonoBehaviour
     {
         previousArrowGhostHeadPosition = arrowHeadGhost.position;
         previousArrowHeadPosition = arrowHeadReal.position;
-        
     }
 
     //TODO: Make this event driven from grab
@@ -78,14 +89,14 @@ public class ForceArrow : MonoBehaviour
     private void PositionAndScaleArrowBody()
     {
         // Position the cylinder
-        arrowBody.position = Vector3.Lerp(asset.position, arrowHeadReal.position, 0.5f);
+        arrowBody.position = Vector3.Lerp(assetTransform.position, arrowHeadReal.position, 0.5f);
 
         // Scale the cylinder
-        float distance = Vector3.Distance(asset.position, arrowHeadReal.position);
+        float distance = Vector3.Distance(assetTransform.position, arrowHeadReal.position);
         arrowBody.localScale = new Vector3(arrowBody.localScale.x, distance / 2, arrowBody.localScale.z);
 
         // Rotate the cylinder
-        Vector3 direction = arrowHeadReal.position - asset.position;
+        Vector3 direction = arrowHeadReal.position - assetTransform.position;
         Quaternion rotation = Quaternion.FromToRotation(Vector3.up, direction);
         arrowBody.rotation = rotation;
     }
@@ -93,7 +104,7 @@ public class ForceArrow : MonoBehaviour
     private void ReOrientArrowHead()
     {
         // Calculate the direction from asset to the arrow (this)
-        Vector3 direction = arrowHeadReal.position - asset.position;
+        Vector3 direction = arrowHeadReal.position - assetTransform.position;
 
         // Calculate the rotation to align the arrow with this direction
         Quaternion rotation = Quaternion.FromToRotation(Vector3.up, direction);
@@ -106,22 +117,22 @@ public class ForceArrow : MonoBehaviour
     public float OrientForceArrow()
     {
         //Ghost arrow head
-        Vector3 direction = arrowHeadGhost.position - asset.position;
+        Vector3 direction = arrowHeadGhost.position - assetTransform.position;
         Quaternion ghostArrowRot = Quaternion.FromToRotation(Vector3.up, direction);
         arrowHeadGhost.rotation = ghostArrowRot;
 
         //Calculate magnitude and direction of force
-        float magnitude = Vector3.Distance(arrowHeadGhost.position, asset.position) * 19;
+        float magnitude = Vector3.Distance(arrowHeadGhost.position, assetTransform.position) * 19;
         Vector3 forceDir = CalculateDirectionFromHand();
                 
         //Real arrow head
-        arrowHeadReal.position = asset.position + forceDir * magnitude;     
+        arrowHeadReal.position = assetTransform.position + forceDir * magnitude;     
         Quaternion realArrowRot = Quaternion.FromToRotation(Vector3.up, forceDir);
         arrowHeadReal.rotation = realArrowRot;
 
         //Arrow body
-        arrowBody.position = Vector3.Lerp(asset.position, arrowHeadReal.position, 0.5f);
-        float distance = Vector3.Distance(asset.position, arrowHeadReal.position);
+        arrowBody.position = Vector3.Lerp(assetTransform.position, arrowHeadReal.position, 0.5f);
+        float distance = Vector3.Distance(assetTransform.position, arrowHeadReal.position);
         arrowBody.localScale = new Vector3(arrowBody.localScale.x, distance / 2, arrowBody.localScale.z);
         Quaternion bodyRot = Quaternion.FromToRotation(Vector3.up, forceDir);
         arrowBody.rotation = bodyRot;
@@ -133,8 +144,8 @@ public class ForceArrow : MonoBehaviour
     Vector3 CalculateDirectionFromHand()
     {
         Vector3 direction = Vector3.zero;
-        float distanceToLeftHand = Vector3.Distance(asset.position, Recorder.Instance.leftHand.playbackObject.transform.position);
-        float distanceToRightHand = Vector3.Distance(asset.position, Recorder.Instance.rightHand.playbackObject.transform.position);
+        float distanceToLeftHand = Vector3.Distance(assetTransform.position, Recorder.Instance.leftHand.playbackObject.transform.position);
+        float distanceToRightHand = Vector3.Distance(assetTransform.position, Recorder.Instance.rightHand.playbackObject.transform.position);
         int currentIndex = (int) Recorder.Instance.playbackSlider.value;
         if (distanceToLeftHand < distanceToRightHand)
         {
@@ -193,7 +204,7 @@ public class ForceArrow : MonoBehaviour
     void PositionArrowHeadReal(Vector3 direction, float magnitude)
     {
         // Position the arrow head by a magnitude along the given direction with the asset as the origin
-        arrowHeadReal.position = asset.position + direction * magnitude;
+        arrowHeadReal.position = assetTransform.position + direction * magnitude;
 
     }
     
@@ -202,7 +213,7 @@ public class ForceArrow : MonoBehaviour
     {
         lineRenderer.enabled = true;
         
-        Vector3 position1 = asset.position;
+        Vector3 position1 = assetTransform.position;
         //DebugLogger.Instance.Log("Arrow end position: " + position1);
         Vector3 position2 = arrowHeadReal.position;
         //DebugLogger.Instance.Log("Arrow head position: " + position2);
@@ -290,8 +301,12 @@ public class ForceArrow : MonoBehaviour
     {
         //This method is executed when the user releases the arrow during the creation of an AddForce action
         Manager.Instance.currAppState = Manager.AppState.SIMULATING;
-        GameObject throwableAsset = asset.gameObject;
-        throwableAsset.GetComponent<Asset>().PrepareForceSimulation(initialVelocity);
+        
+        associatedAsset.RecordAction(ACTION_ENUM.APPLY_FORCE, () =>
+        {
+            associatedAsset.ApplyForce(initialVelocity);
+        });
+        
         if (AssetManager.isForceArrowGhostActive) {
             arrowHeadGhost.transform.position = arrowHeadReal.transform.position;
         }

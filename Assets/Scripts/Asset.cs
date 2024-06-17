@@ -42,9 +42,6 @@ public class Asset : MonoBehaviour
         Follow,
         Visibility
     }
-
-    private Vector3 initPosBeforePhysicsSimulation;
-    private Quaternion initRotBeforePhysicsSimulation;
     
 
     //TODO the color is the color of the material of the asset, we do not need this extra variable
@@ -359,9 +356,11 @@ public class Asset : MonoBehaviour
             Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.Add(newEndAction);
         }
 
-        Recorder.Instance.UpdateAllAssetFramesAndCollisions(frameStart, Recorder.Instance.currentActiveExample, Recorder.Instance.RecreateTimelineUI_Collisions);
-        
-        Recorder.Instance.CreateTimelineUI_ActionsForAsset(this,new List<AssetActionSequence>{newAction});
+        Recorder.Instance.UpdateAllAssetFramesAndCollisions(frameStart, Recorder.Instance.currentActiveExample, () =>
+        {
+            Recorder.Instance.RecreateTimelineUI_Collisions();
+            Recorder.Instance.CreateTimelineUI_ActionsForAsset(this,new List<AssetActionSequence>{newAction});
+        });
     }
 
     public void SaveMainVisualValuesIn(AssetFrame assetFrame)
@@ -587,7 +586,6 @@ public class Asset : MonoBehaviour
     //For assets
     public void PrepareForceSimulation(Vector3 initialVelocity)
     {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetsDict[this].assetFrames;
 
         if(Manager.Instance.currAppState == Manager.AppState.SIMULATING)
         {
@@ -595,19 +593,6 @@ public class Asset : MonoBehaviour
 
             InputManager.Instance.leftHandPinchObj.SetActive(false);
             InputManager.Instance.rightHandPinchObj.SetActive(false);
-
-            Recorder.Instance.SavePlaybackPosition();
-
-            initPosBeforePhysicsSimulation = transform.position;
-            initRotBeforePhysicsSimulation = transform.rotation;
-
-            int _frameStart = (int)Recorder.Instance.playbackSlider.value;
-            for (int i = _frameStart; i < currentAssetRecordedData.Count; i++)
-            {
-                currentAssetRecordedData[i].rootPosition = currentAssetRecordedData[_frameStart].rootPosition;
-            }
-
-            ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value);
             
             ApplyForce(initialVelocity);
             DebugLogger.Instance.Log("Initial velocity magnitude is " + initialVelocity.magnitude);
@@ -652,6 +637,7 @@ public class Asset : MonoBehaviour
     //For assets
     void OnCollisionEnter(Collision collision)
     {
+        var currentFrameIndex = (int)Recorder.Instance.playbackSlider.value;
         DebugLogger.Instance.Log("Asset.OnCollisionEnter: Notifying collision detected between " 
                                  + base.gameObject.name + " and " + collision.collider.name);
         
@@ -660,6 +646,33 @@ public class Asset : MonoBehaviour
             //If we are simulating we need to save the collision
             if(!collision.collider.gameObject.CompareTag("Untagged"))
             {
+                List<AssetActionSequence> addedResetPhysicsActions = new ();
+
+                foreach (var action in Recorder.Instance.currentActiveExample.assetsDict[this].assetActions)
+                {
+                    if (action.ActionType == ACTION_ENUM.APPLY_FORCE && action.Length == 0 && action.StartIndex <= currentFrameIndex)
+                    {
+                        //This asset has a pending unclosed APPLY_FORCE action, this collision is the end of that action
+                        action.Length = currentFrameIndex - action.StartIndex;
+
+                        var newResetPhysicsAction = new AssetActionSequence
+                        {
+                            StartIndex = currentFrameIndex,
+                            ActionType = ACTION_ENUM.RESET_PHYSICS,
+                            ActionDelegate = ResetPhysicsPropertiesInLiveMode
+                        };
+                        
+                        addedResetPhysicsActions.Add(newResetPhysicsAction);
+                        
+                        ResetPhysicsPropertiesInLiveMode();
+                    }
+                }
+
+                foreach (var resetPhysicsActionToAdd in addedResetPhysicsActions)
+                {
+                    Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.Add(resetPhysicsActionToAdd);
+                }
+                        
                 Recorder.Instance.currentActiveExample.AddNewCollision((int)Recorder.Instance.playbackSlider.value,base.gameObject, collision.collider.gameObject);            
             }
             
@@ -705,17 +718,9 @@ public class Asset : MonoBehaviour
         InputManager.Instance.rightHandPinchObj.SetActive(true);
 
         InputManager.Instance.SaveCurrentCollision(null,null);       
-
-        Recorder.Instance.RetrievePlaybackPosition();
         
-        transform.position = initPosBeforePhysicsSimulation;
-        transform.rotation = initRotBeforePhysicsSimulation;
         GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
         GetComponent<Rigidbody>().useGravity = false;
-        
-        
-        Recorder.Instance.RecreateTimelineUI_AssetRows();
-       
     }
 
     public void ResetPhysicsPropertiesInLiveMode()

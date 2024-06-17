@@ -248,7 +248,7 @@ public class AssetManager : MonoBehaviour
         }
     }
 
-    public void AddForceArrowToAsset(Asset recordable)
+    public void AddForceArrowToAsset(Asset asset)
     {
         /*foreach (GameObject obj in recordable.forceArrows)
         {
@@ -261,22 +261,17 @@ public class AssetManager : MonoBehaviour
         ForceArrow forceArrowScript = forceArrow.GetComponent<ForceArrow>();
         forceArrowScript.indexWhereArrowIsVisible = (int) Recorder.Instance.playbackSlider.value;
         forceArrowScript.associatedExample = Recorder.Instance.currentActiveExample;
-        recordable.forceArrows.Add(forceArrow);
-        forceArrowScript.asset = recordable.gameObject.transform;
+        asset.forceArrows.Add(forceArrow);
+        forceArrowScript.associatedAsset = asset;
         //forceArrowScript.arrowHead should be positioned 1 unit above the arrowEnd in the y axis
         if (!AssetManager.isForceArrowGhostActive) {
-            forceArrowScript.arrowHeadReal.position = recordable.gameObject.transform.position + new Vector3(0f,0.2f,0.2f);
+            forceArrowScript.arrowHeadReal.position = asset.gameObject.transform.position + new Vector3(0f,0.2f,0.2f);
             forceArrowScript.ReOrientArrow();
             forceArrowScript.DrawTrajectory(10);     
         } else {
             forceArrowScript.arrowHeadGhost.position = forceArrowScript.arrowHeadReal.position; // recordable.gameObject.transform.position + new Vector3(0f,0.2f,0.2f);
             forceArrowScript.OrientForceArrow();
         }
-        //forceArrowScript.arrowHeadGhost.transform.position = forceArrowScript.arrowHeadReal.transform.position;
-        //forceArrowScript.DrawTrajectory();     
-        //TODO check if it is not really needed (as german said....) I don't think he has right though
-        //Recorder.Instance.RecreateTimelineAssetRows(null);
-        
     }
    
 }

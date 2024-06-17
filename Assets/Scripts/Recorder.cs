@@ -14,7 +14,6 @@ using Debug = UnityEngine.Debug;
 public class Recorder : MonoBehaviour
 {
     public static Recorder Instance { get; private set; }
-    private float oldMainPlaybackSliderValue = 0;
     [Header("Record & Playback")]
     public GameObject rootPlaybackArea;
     public Slider playbackSlider;
@@ -401,7 +400,7 @@ public class Recorder : MonoBehaviour
             //We pause the execution of this routine to let Unity send the collision events: OnCollisionEnter, OnCollisionStay, OnCollisionExit
             //Collisions are saved in the corresponding model Example
             
-            yield return new WaitForSeconds(0.001f);
+            yield return new WaitForSeconds(0.01f);
             
             allAssets.ForEach(asset =>
             {
@@ -409,6 +408,7 @@ public class Recorder : MonoBehaviour
             });
         }
         
+        yield return new WaitForSeconds(0.01f);
         //Set the frameEnd of all the unclosed collisions to the final frame of the recorded data
         foreach (var collisionModelWithoutFrameEnd in example.CollisionModelsWithoutFrameEnd())
         {
@@ -1084,9 +1084,7 @@ public class Recorder : MonoBehaviour
                     }
                 }
 
-                int currentFrameNum = (int)playbackSlider.value;
-
-                UpdatePlaybackObjects(currentFrameNum);
+                UpdatePlaybackObjects((int)playbackSlider.value);
                 
                 break;
             }
@@ -1101,6 +1099,11 @@ public class Recorder : MonoBehaviour
 
     private void UpdatePlaybackObjects(int currentFrameNum)
     {
+        if (currentActiveExample.RecordedDataCount == 0)
+        {
+            return;
+        }
+        
         if (head.playbackObject != null)
         {
             head.playbackObject.transform.SetLocalPositionAndRotation(currentActiveExample.headFrames[currentFrameNum].rootPosition, currentActiveExample.headFrames[currentFrameNum].rootRotation);
@@ -1132,15 +1135,6 @@ public class Recorder : MonoBehaviour
         }
     }
 
-    public void SavePlaybackPosition()
-    {
-        oldMainPlaybackSliderValue = playbackSlider.value; //This is so awkward, but it works
-    }
-
-    public void RetrievePlaybackPosition()
-    {
-        playbackSlider.value = oldMainPlaybackSliderValue;
-    }
 }
 
 

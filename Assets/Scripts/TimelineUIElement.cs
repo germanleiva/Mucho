@@ -137,13 +137,13 @@ public class TimelineUIElement : MonoBehaviour
         float sizeDeltaX = MapIndexToTimelinePosition(parentTransform, startIndex + length, totalFrameCount) - positionX;
 
         //minimum length of action timeline events
-        if(AssetActionSequence.IsActionEnum(id))
+        /*if(AssetActionSequence.IsActionEnum(id) && !AssetActionSequence.IsAddForceAction(id))
         {
             if (sizeDeltaX < MinimumLength)
             {
                 sizeDeltaX = MinimumLength;
             }
-        }
+        }*/
         RectTransform elementRect = timelineElement.GetComponent<RectTransform>();
         elementRect.anchoredPosition = new Vector2(positionX, elementRect.anchoredPosition.y);
         elementRect.sizeDelta = new Vector2(sizeDeltaX, elementRect.sizeDelta.y);

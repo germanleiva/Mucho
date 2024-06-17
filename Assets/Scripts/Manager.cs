@@ -524,7 +524,7 @@ public class Example
     {
         //We need to find the corresponding CollisionModel and set its end frame
         //We iterate the list of CollisionModels from newest to oldest
-        for (int i = CollisionModels.Count-1; i < CollisionModels.Count; i--)
+        for (int i = CollisionModels.Count - 1; i >= 0; i--)
         {
             var collisionModel = CollisionModels[i];
             if (collisionModel.CollidingObject1 == assetGameObject && collisionModel.CollidingObject2 == anotherGameObject)
@@ -766,6 +766,12 @@ public class AssetActionSequence : Sequence
 
         }
         return false;
+    }
+    
+    public static bool IsAddForceAction(string actionName)
+    {
+        return actionName.Equals("ApplyForce()", StringComparison.OrdinalIgnoreCase);
+        
     }
 
     public override object Clone()
