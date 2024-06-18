@@ -168,12 +168,6 @@ public class Asset : MonoBehaviour
 
     }
 
-    public void RecordAssetFrame()
-    {
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetsDict[this].assetFrames;
-        currentAssetRecordedData.Add(new(transform.position, transform.rotation, isVisible, CurrentColor));
-    }
-
     public void PlaybackAssetFrame()
     {
         int currentFrameNum = (int)Recorder.Instance.playbackSlider.value;
@@ -206,126 +200,6 @@ public class Asset : MonoBehaviour
         //}
     }
 
-    //For assets
-    public void ModifyAssetFrame(int frameNumber, bool propagateValueToSubsequentFrames = false)
-    {
-        var recordedAssetFrames = Recorder.Instance.currentActiveExample.assetsDict[this].assetFrames;
-        AssetFrame currentAssetFrame = recordedAssetFrames[frameNumber];
-        currentAssetFrame.rootPosition = transform.position;
-        currentAssetFrame.rootRotation = transform.rotation;
-        recordedAssetFrames[frameNumber] = currentAssetFrame;
-
-        if (propagateValueToSubsequentFrames) // Propagate the value to subsequent frames
-        {
-            //DebugLogger.Instance.Log("InsertAssetRecordFrame() - Propagating value to subsequent frames, starting from index " + frameNumber + " to " + currentAssetRecordedData.Count);
-            for (int i = frameNumber + 1; i < recordedAssetFrames.Count; i++)
-            {
-                recordedAssetFrames[i].rootPosition = currentAssetFrame.rootPosition;
-                recordedAssetFrames[i].rootRotation = currentAssetFrame.rootRotation;
-            }
-        }
-    }
-    
-    public void StartManualRecording()
-    {
-        Manager.Instance.currAppState = Manager.AppState.SIMULATING;
-
-        DebugLogger.Instance.Log("StartRecording in " + gameObject.name);
-        firstFrameOfManualRecording = (int)Recorder.Instance.playbackSlider.value;
-        //currentActiveRecordable = recordable;
-        //recordable.currentRecordingMode = Recordable.RecordingType.ManualAnimation;
-    }
-
-    public void StopManualRecording()
-    {
-        Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
-
-        DebugLogger.Instance.Log("StopRecording in " + gameObject.name);
-        lastFrameOfManualRecording = (int)Recorder.Instance.playbackSlider.value;
-        DebugLogger.Instance.Log("First frame: " + firstFrameOfManualRecording + " Last frame: " + lastFrameOfManualRecording);
-        //CheckIfAssetIsFollowingAnything(recordable);
-        //Recorder.Instance.RefreshTimelineAndStates();
-    }
-
-    public void CheckIfAssetIsFollowingAnything(Asset recordable)
-    {
-        // Initialize variables to keep track of the count of the closest objects
-        int leftHandCount = 0;
-        int rightHandCount = 0;
-        int leftFocusSquareCount = 0;
-        int rightFocusSquareCount = 0;
-        int headFocusSquareCount = 0;
-
-        // Iterate over the frames from firstFrameOfManualRecording to lastFrameOfManualRecording
-        for (int i = firstFrameOfManualRecording; i <= lastFrameOfManualRecording; i++)
-        {
-            // Get the RecordFrameData for the current frame
-            var assetFrameData = Recorder.Instance.currentActiveExample.assetsDict[recordable].assetFrames[i];
-            var headFrameData = Recorder.Instance.currentActiveExample.headFrames[i];//mainRecorder.objectsToRecord[0].recordedData[i];
-            var leftHandFrameData = Recorder.Instance.currentActiveExample.leftHandFrames[i];
-            var rightHandFrameData = Recorder.Instance.currentActiveExample.rightHandFrames[i];
-
-            // Calculate the distances to the left hand, right hand, left focus square, and right focus square
-            // Note: We need to replace the placeholders below with the actual way to access the positions of these objects
-            float distanceToLeftHand = Vector3.Distance(assetFrameData.rootPosition, leftHandFrameData.rootPosition);
-            float distanceToRightHand = Vector3.Distance(assetFrameData.rootPosition, rightHandFrameData.rootPosition);
-            float distanceToLeftFocusSquare = Vector3.Distance(assetFrameData.rootPosition, leftHandFrameData.focusSquarePosition);
-            float distanceToRightFocusSquare = Vector3.Distance(assetFrameData.rootPosition, rightHandFrameData.focusSquarePosition);
-            float distanceToHeadFocusSquare = Vector3.Distance(assetFrameData.rootPosition, headFrameData.focusSquarePosition);
-
-            // Find the minimum distance and increment the count for the corresponding object
-            float minDistance = Mathf.Min(distanceToLeftHand, distanceToRightHand, distanceToLeftFocusSquare, distanceToRightFocusSquare, distanceToHeadFocusSquare);
-            if (minDistance == distanceToLeftHand) leftHandCount++;
-            else if (minDistance == distanceToRightHand) rightHandCount++;
-            else if (minDistance == distanceToLeftFocusSquare) leftFocusSquareCount++;
-            else if (minDistance == distanceToRightFocusSquare) rightFocusSquareCount++;
-            else headFocusSquareCount++;
-        }
-
-        // Determine which object was closest most frequently and return that information
-        int maxCount = Mathf.Max(leftHandCount, rightHandCount, leftFocusSquareCount, rightFocusSquareCount, headFocusSquareCount);
-        if (maxCount == leftHandCount)
-        {
-            DebugLogger.Instance.Log("Asset is following left hand");            
-            //recordable.CopyPoseFromRecordable(mainRecorder.objectsToRecord[1], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
-            //recordable.CopyPoseFromRecordable(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
-        }
-        else if (maxCount == rightHandCount)
-        {
-            DebugLogger.Instance.Log("Asset is following right hand");
-            //recordable.CopyPoseFromRecordable(mainRecorder.objectsToRecord[2], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
-            //recordable.CopyPoseFromRecordable(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
-        }
-        else if (maxCount == leftFocusSquareCount)
-        {
-            DebugLogger.Instance.Log("Asset is following left focus square");
-            //recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[1], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
-            //recordable.CopyPoseFromFocusSquare(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
-        }
-        else if (maxCount == rightFocusSquareCount)
-        {
-            DebugLogger.Instance.Log("Asset is following right focus square");
-            //recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[2], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
-            //recordable.CopyPoseFromFocusSquare(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
-        }
-        else
-        {
-            DebugLogger.Instance.Log("Asset is following head focus square");
-            //recordable.CopyPoseFromFocusSquare(mainRecorder.objectsToRecord[0], firstFrameOfManualRecording, lastFrameOfManualRecording, copyFirstRecord:false, copyRotation:false);
-            //recordable.CopyPoseFromFocusSquare(recordable, lastFrameOfManualRecording, copyFirstRecord:true, copyRotation:false);
-        }
-  
-        //Finally, refresh the timeline
-        //Recorder.Instance.RefreshTimelineAndStates();
-    }
-
-    /*public void CreateFollowLine()
-    {
-        //GameObject followLineObj = Instantiate(followLinePrefab, transform.position, Quaternion.identity);        
-        followLineObj.GetComponent<FollowLine>().ResetFollowLine();
-    }*/
-
-
     public void RecordAction(ACTION_ENUM actionType, Action actionDelegate,int frameStart = -1)
     {
         if (frameStart == -1)
@@ -349,7 +223,7 @@ public class Asset : MonoBehaviour
             var newEndAction = new AssetActionSequence
             {
                 StartIndex = frameEndForFollow,
-                ActionType = ACTION_ENUM.UNFOLLOW,
+                ActionType = ACTION_ENUM.FOLLOW_END,
                 ActionDelegate = () => { GetComponent<Asset>().ApplyUnfollow(); }
             };
 
@@ -584,23 +458,6 @@ public class Asset : MonoBehaviour
         throw new Exception("DEPRECATED");
     }
 
-
-    //For assets
-    public void PrepareForceSimulation(Vector3 initialVelocity)
-    {
-
-        if(Manager.Instance.currAppState == Manager.AppState.SIMULATING)
-        {
-            AssetManager.Instance.HideMiscObjs();
-
-            InputManager.Instance.leftHandPinchObj.SetActive(false);
-            InputManager.Instance.rightHandPinchObj.SetActive(false);
-            
-            ApplyForce(initialVelocity);
-            DebugLogger.Instance.Log("Initial velocity magnitude is " + initialVelocity.magnitude);
-        }
-    }
-
     //For assets
     public void ApplyForce(Vector3 initialVelocity)
     {        
@@ -640,43 +497,49 @@ public class Asset : MonoBehaviour
     void OnCollisionEnter(Collision collision)
     {
         var currentFrameIndex = (int)Recorder.Instance.playbackSlider.value;
-        DebugLogger.Instance.Log("Asset.OnCollisionEnter: Notifying collision detected between " 
-                                 + base.gameObject.name + " and " + collision.collider.name);
         
         if (Manager.Instance.currAppState == Manager.AppState.SIMULATING)
         {
             //If we are simulating we need to save the collision
             if(!collision.collider.gameObject.CompareTag("Untagged"))
             {
-                List<AssetActionSequence> addedResetPhysicsActions = new ();
-
-                foreach (var action in Recorder.Instance.currentActiveExample.assetsDict[this].assetActions)
+                if (!collision.collider.gameObject.CompareTag("Head") && !collision.collider.gameObject.CompareTag("LeftHand") && !collision.collider.gameObject.CompareTag("RightHand"))
                 {
-                    if (action.ActionType == ACTION_ENUM.APPLY_FORCE && action.Length == 0 && action.StartIndex <= currentFrameIndex)
-                    {
-                        //This asset has a pending unclosed APPLY_FORCE action, this collision is the end of that action
-                        action.Length = currentFrameIndex - action.StartIndex;
+                    List<AssetActionSequence> addedResetPhysicsActions = new();
 
-                        var newResetPhysicsAction = new AssetActionSequence
+                    foreach (var action in Recorder.Instance.currentActiveExample.assetsDict[this].assetActions)
+                    {
+                        if (action.ActionType == ACTION_ENUM.APPLY_FORCE_START && action.Length == 0 &&
+                            action.StartIndex <= currentFrameIndex)
                         {
-                            StartIndex = currentFrameIndex,
-                            ActionType = ACTION_ENUM.RESET_PHYSICS,
-                            ActionDelegate = ResetPhysicsPropertiesInLiveMode
-                        };
-                        
-                        action.associatedEndAction = newResetPhysicsAction;
-                        
-                        addedResetPhysicsActions.Add(newResetPhysicsAction);
-                        
-                        ResetPhysicsPropertiesInLiveMode();
+                            //This asset has a pending unclosed APPLY_FORCE_START action, this collision is the end of that action
+                            action.Length = currentFrameIndex - action.StartIndex;
+
+                            var newResetPhysicsAction = new AssetActionSequence
+                            {
+                                StartIndex = currentFrameIndex,
+                                ActionType = ACTION_ENUM.APPLY_FORCE_END,
+                                ActionDelegate = ResetPhysicsPropertiesInLiveMode
+                            };
+
+                            action.associatedEndAction = newResetPhysicsAction;
+
+                            addedResetPhysicsActions.Add(newResetPhysicsAction);
+
+                            ResetPhysicsPropertiesInLiveMode();
+                        }
+                    }
+
+                    foreach (var resetPhysicsActionToAdd in addedResetPhysicsActions)
+                    {
+                        Recorder.Instance.currentActiveExample.assetsDict[this].assetActions
+                            .Add(resetPhysicsActionToAdd);
                     }
                 }
 
-                foreach (var resetPhysicsActionToAdd in addedResetPhysicsActions)
-                {
-                    Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.Add(resetPhysicsActionToAdd);
-                }
-                        
+                DebugLogger.Instance.Log("Asset.OnCollisionEnter: AddNewCollision >> collision between " 
+                                         + base.gameObject.name + " and " + collision.collider.name);
+                
                 Recorder.Instance.currentActiveExample.AddNewCollision((int)Recorder.Instance.playbackSlider.value,base.gameObject, collision.collider.gameObject);            
             }
             
@@ -702,7 +565,7 @@ public class Asset : MonoBehaviour
         //     DebugLogger.Instance.Log("Recordable.OnCollisionEnter: Collision detected between " + base.gameObject.name + " and " + collision.collider.name);            
         //
         //     ModifyAssetFrame((int)Recorder.Instance.playbackSlider.value, 
-        //                         // actionType: ACTION_ENUM.RESET_PHYSICS, 
+        //                         // actionType: ACTION_ENUM.APPLY_FORCE_END, 
         //                         // collisionStr: "Collide(" + Manager.Instance.CleanAssetName(base.gameObject.name) + "," + Manager.Instance.CleanAssetName(collision.collider.name) + ")", 
         //                         collisionType: COLLISION_ENUM.COLLIDE, 
         //                         // actionDelegate: () => { GetComponent<Asset>().ResetPhysicsPropertiesInLiveMode(); }, 
@@ -761,12 +624,12 @@ public class Asset : MonoBehaviour
     //For assets
     void OnCollisionExit(Collision collision)
     {
-        DebugLogger.Instance.Log("Notifying collision ended between " + gameObject.name + " and " + collision.collider.name);
-
         if (Manager.Instance.currAppState == Manager.AppState.SIMULATING)
         {
             if(!collision.collider.gameObject.CompareTag("Untagged"))
             {
+                DebugLogger.Instance.Log("EndPreviousCollision >> collision ended between " + gameObject.name + " and " + collision.collider.name);
+
                 Recorder.Instance.currentActiveExample.EndPreviousCollision((int)Recorder.Instance.playbackSlider.value,base.gameObject, collision.collider.gameObject);
             }
         }

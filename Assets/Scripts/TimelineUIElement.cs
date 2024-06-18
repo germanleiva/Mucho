@@ -90,9 +90,19 @@ public class TimelineUIElement : MonoBehaviour
             Debug.LogError("Asset not found");
             return;
         }
-        
-        //TODO (only Germán, Vittoria does not agree xD) for now the action is independent in every example, so we are not deleting this action from other examples than the currrentActiveExample
-        Recorder.Instance.currentActiveExample.assetsDict[correspondingAsset].assetActions.Remove((AssetActionSequence)sequenceModelObject);
+
+        AssetActionSequence actionToDelete = (AssetActionSequence)sequenceModelObject;
+        actionToDelete.DeleteActionFrom(Recorder.Instance.currentActiveExample.assetsDict[correspondingAsset].assetActions);
+        if (actionToDelete.ActionType == ACTION_ENUM.APPLY_FORCE_START)
+        {
+            foreach (var correspondingAssetForceArrow in correspondingAsset.forceArrows)
+            {
+                if (correspondingAssetForceArrow.indexWhereArrowIsVisible == actionToDelete.StartIndex)
+                {
+                    Destroy(correspondingAssetForceArrow.gameObject);
+                }                
+            }
+        }
         
         Recorder.Instance.UpdateAllAssetFramesAndCollisions((int)Recorder.Instance.playbackSlider.value, Recorder.Instance.currentActiveExample, Recorder.Instance.RecreateTimelineUI_Collisions);
         

@@ -17,20 +17,18 @@ public class ForceArrow : MonoBehaviour
             assetTransform = value.transform;
         }
     }
-
     public Transform assetTransform;
     public Transform arrowHeadGhost;
     public Transform arrowHeadReal;
 
     public Transform arrowBody;
     public LineRenderer lineRenderer;
-    public int numberOfPoints = 20;
-    public float timeInterval = 0.5f;
-    public bool isConnectedToAsset = false;
-    public Vector3 initialVelocity = new(0, 0, 0);
-    public GameObject connectedAsset;
-    public Material arrowTranslucentMaterial;
+    private int numberOfPoints = 10;
+    private float timeInterval = 0.1f;
 
+    [NonSerialized]
+    public Vector3 initialVelocity = new(0, 0, 0);
+    
     [NonSerialized]
     public int indexWhereArrowIsVisible = 0;
 
@@ -312,16 +310,15 @@ public class ForceArrow : MonoBehaviour
         var copiedActions = new List<AssetActionSequence>(assetActions);
         foreach (var action in copiedActions)
         {
-            if (action.ActionType == ACTION_ENUM.APPLY_FORCE && action.StartIndex == currentFrame)
+            if (action.ActionType == ACTION_ENUM.APPLY_FORCE_START && action.StartIndex == currentFrame)
             {
-                assetActions.Remove(action);
-                assetActions.Remove(action.associatedEndAction);
+                action.DeleteActionFrom(assetActions);
             }
         }
 
         Manager.Instance.currAppState = Manager.AppState.SIMULATING;
 
-        associatedAsset.RecordAction(ACTION_ENUM.APPLY_FORCE, () =>
+        associatedAsset.RecordAction(ACTION_ENUM.APPLY_FORCE_START, () =>
         {
             associatedAsset.ApplyForce(initialVelocity);
         });

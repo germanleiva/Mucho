@@ -477,6 +477,11 @@ public class Example
 
     public void AddNewCollision(int frameStart, GameObject assetGameObject, GameObject anotherGameObject)
     {
+        if (CollisionModels.Exists(collision => collision.StartIndex == frameStart && collision.isCollidingWith(assetGameObject,anotherGameObject)))
+        {
+            //We have a similar collision, so we ignore it
+            return;
+        }
         var newCollisionModel = new CollisionSequence();
         newCollisionModel.StartIndex = frameStart;
         newCollisionModel.CollisionType = COLLISION_ENUM.COLLIDE; //TODO needed?
@@ -521,20 +526,12 @@ public class Example
     }
 
     public void EndPreviousCollision(int frameIndex, GameObject assetGameObject, GameObject anotherGameObject)
-    {
+    {       
         //We need to find the corresponding CollisionModel and set its end frame
-        //We iterate the list of CollisionModels from newest to oldest
-        for (int i = CollisionModels.Count - 1; i >= 0; i--)
+        var oldestUnclosedCollision = CollisionModels.Find(collision => collision.isCollidingWith(assetGameObject,anotherGameObject) && collision.Length == 0);
+        if (oldestUnclosedCollision != null)
         {
-            var collisionModel = CollisionModels[i];
-            if (collisionModel.CollidingObject1 == assetGameObject && collisionModel.CollidingObject2 == anotherGameObject)
-            {
-                if (collisionModel.Length != 0)
-                {
-                    throw new Exception("We shouldn't re-close a collision that already have an EndFrame");
-                }
-                collisionModel.Length = frameIndex - collisionModel.StartIndex;
-            }
+            oldestUnclosedCollision.Length = frameIndex - oldestUnclosedCollision.StartIndex;
         }
     }
 
@@ -676,10 +673,13 @@ public class CollisionSequence : Sequence {
         // Return the cloned object
         return clonedCollision;
     }
+
+    public bool isCollidingWith(GameObject assetGameObject, GameObject anotherGameObject)
+    {
+        return (CollidingObject1 == assetGameObject && CollidingObject2 == anotherGameObject) || (CollidingObject1 == anotherGameObject && CollidingObject2 == assetGameObject);
+    }
 }
 public enum ACTION_ENUM { 
-    [Description("None")]
-    NONE, 
     [Description("ApplyFollow(Left hand)")]
     FOLLOW_LEFT_HAND,
     [Description("ApplyFollow(Right hand)")]
@@ -690,21 +690,20 @@ public enum ACTION_ENUM {
     FOLLOW_R_FOCUS,
     [Description("ApplyFollow(G-focus)")]
     FOLLOW_G_FOCUS,
-    [Description("ApplyForce()")]
-    APPLY_FORCE,
+    [Description("ApplyFollowEnd()")]
+    FOLLOW_END,
     [Description("Show()")]
-    SHOW, 
+    SHOW,
     [Description("Hide()")]
-    HIDE, 
+    HIDE,
     [Description("ChangeColor()")]
     CHANGE_COLOR,
     [Description("Pin()")]
     PIN,
-    [Description("ApplyUnfollow()")]
-    UNFOLLOW,
-    [Description("ResetPhysics()")]
-    RESET_PHYSICS,
-    UNDEFINED,
+    [Description("ApplyForce()")]
+    APPLY_FORCE_START,
+    [Description("ApplyForceEnd()")]
+    APPLY_FORCE_END,
     };
 
 public class AssetActionSequence : Sequence
@@ -796,7 +795,19 @@ public class AssetActionSequence : Sequence
         return followActions.Contains(ActionType);
     }
 
-    public bool shouldShowInTimeline => ActionType != ACTION_ENUM.UNFOLLOW && ActionType != ACTION_ENUM.RESET_PHYSICS;
+    public bool shouldShowInTimeline => ActionType != ACTION_ENUM.FOLLOW_END && ActionType != ACTION_ENUM.APPLY_FORCE_END;
+
+    public void DeleteActionFrom(List<AssetActionSequence> actions)
+    {
+        //TODO (only Germán, Vittoria does not agree xD) for now the action is independent in every example, so we are not deleting this action from other examples than the currrentActiveExample
+        actions.Remove(this);
+        actions.Remove(this.associatedEndAction);
+
+        if (this.ActionType == ACTION_ENUM.APPLY_FORCE_START)
+        {
+            //TODO We need to also remove the arrows!
+        }
+    }
 }
 
 public class GestureSequence : Sequence

@@ -380,11 +380,12 @@ public class Recorder : MonoBehaviour
         Manager.Instance.currAppState = Manager.AppState.SIMULATING;
         
         InputManager.Instance.SetPlaybackObjectsActive(true);
+        AssetManager.Instance.HideMiscObjs();
 
         for (int frameIndex = 0; frameIndex < example.RecordedDataCount; frameIndex++)
         {
             DebugLogger.Instance.Log("Updating slider from SIMULATING " + frameIndex);
-            Recorder.Instance.playbackSlider.value = frameIndex;
+            playbackSlider.value = frameIndex;
 
             if (actionsToPerformGroupedByFrames.TryGetValue(frameIndex, out var actionsToSimulate))
             {
@@ -409,11 +410,11 @@ public class Recorder : MonoBehaviour
         }
         
         yield return new WaitForSeconds(0.01f);
-        //Set the frameEnd of all the unclosed collisions to the final frame of the recorded data
-        foreach (var collisionModelWithoutFrameEnd in example.CollisionModelsWithoutFrameEnd())
-        {
-            collisionModelWithoutFrameEnd.Length = (example.RecordedDataCount - 1) - collisionModelWithoutFrameEnd.StartIndex;
-        }
+        //TODO Set the frameEnd of all the unclosed collisions to the final frame of the recorded data
+        // foreach (var collisionModelWithoutFrameEnd in example.CollisionModelsWithoutFrameEnd())
+        // {
+        //     collisionModelWithoutFrameEnd.Length = (example.RecordedDataCount - 1) - collisionModelWithoutFrameEnd.StartIndex;
+        // }
         
         InputManager.Instance.SetPlaybackObjectsActive(false);
         Manager.Instance.currAppState = oldState;
@@ -435,14 +436,11 @@ public class Recorder : MonoBehaviour
 
     public void RecreateTimelineUI_AssetRowsAndCollisions()
     {
-        if (currentActiveExample.RecordedDataCount > 0)
+        UpdateAllAssetFramesAndCollisions(0, currentActiveExample, () =>
         {
-            UpdateAllAssetFramesAndCollisions(0, currentActiveExample, () =>
-            {
-                RecreateTimelineUI_Collisions();
-                RecreateTimelineUI_AssetRows();
-            });    
-        }
+            RecreateTimelineUI_Collisions();
+            RecreateTimelineUI_AssetRows();
+        });
     }
     
     public void RecreateTimelineUI_AssetRows()
