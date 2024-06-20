@@ -350,6 +350,9 @@ public class Recorder : MonoBehaviour
         
         //Create a dictionary where the key is an indexFrame and the value is the corresponding assetAction
         var allActionsGroupedByFrames = new Dictionary<int, List<AssetActionSequence>>();
+
+        example.prepareForSimulation();
+        
         allAssets.ForEach(asset => {
             //We bring back the asset to its initial state
             asset.ResetMainVisualValues();
@@ -358,6 +361,7 @@ public class Recorder : MonoBehaviour
                 {
                     allActionsGroupedByFrames[action.StartIndex] = new List<AssetActionSequence>();
                 }
+                
                 allActionsGroupedByFrames[action.StartIndex].Add(action);
             });
         });

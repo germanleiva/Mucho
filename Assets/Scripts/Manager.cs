@@ -491,7 +491,7 @@ public class Example
         }
         var newCollisionModel = new CollisionSequence();
         newCollisionModel.StartIndex = frameStart;
-        newCollisionModel.CollisionType = COLLISION_ENUM.COLLIDE; //TODO needed?
+        newCollisionModel.CollisionType = COLLISION_ENUM.COLLIDE; //TODO needed? 
         newCollisionModel.CollidingObject1 = assetGameObject;
         newCollisionModel.CollidingObject2 = anotherGameObject;
 
@@ -545,6 +545,30 @@ public class Example
     public List<CollisionSequence> CollisionModelsWithoutFrameEnd()
     {
         return CollisionModels.FindAll(collisionModel => collisionModel.Length == 0);
+    }
+
+    public void prepareForSimulation()
+    {
+        //This method reset/initialize/remove things that will be calculated during the simulation
+        
+        foreach (var keyValuePair in assetsDict.Values)
+        {
+            foreach (var action in keyValuePair.assetActions)
+            {
+                //We need to reopen the actions that are ApplyForce because their end is calculated from collisions
+                if (action.ActionType == ACTION_ENUM.APPLY_FORCE_START)
+                {
+                    action.Length = 0;
+                    action.associatedEndAction = null;
+                }
+            }
+            
+            //We need to remove all the actions ApplyForceEnd, they need to be recalculated
+            keyValuePair.assetActions.RemoveAll(action => action.ActionType == ACTION_ENUM.APPLY_FORCE_END);
+        }
+
+        
+        
     }
 }
 
@@ -646,7 +670,22 @@ public class CollisionSequence : Sequence {
     public COLLISION_ENUM CollisionType { get; set; } 
 
     public GameObject CollidingObject1 { get; set; }
-    public GameObject CollidingObject2 { get; set; }
+    private GameObject _collidingObject2;
+    public GameObject CollidingObject2 {
+        get
+        {
+            return _collidingObject2;
+        }
+        set
+        {
+            _collidingObject2 = value;
+            if (value.CompareTag("Untagged"))
+            {
+                DebugLogger.Instance.Log($"I'm ${CollidingObject1.name} colliding with an Unntagged: {_collidingObject2.name}");
+            }
+
+        }
+    }
 
     public Action<Frame> collisionDelegate { get; set; }
 

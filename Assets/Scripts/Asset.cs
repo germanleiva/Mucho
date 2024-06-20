@@ -495,8 +495,7 @@ public class Asset : MonoBehaviour
 
     GameObject collidedObjectDuringRecording;
 
-    //For assets
-    void OnCollisionEnter(Collision collision)
+    private void OnTriggerEnter(Collider other)
     {
         var currentFrameIndex = (int)Recorder.Instance.playbackSlider.value;
         
@@ -505,9 +504,9 @@ public class Asset : MonoBehaviour
             //If we are simulating we need to save the collision
             string[] UserHandsAndHeadTags = {"Head", "LeftHand", "RightHand"};
             
-            if(!collision.collider.gameObject.CompareTag("Untagged"))
+            if(!other.gameObject.CompareTag("Untagged"))
             {
-                if (!UserHandsAndHeadTags.Contains(collision.collider.gameObject.tag))
+                if (!UserHandsAndHeadTags.Contains(other.gameObject.tag))
                 {
                     List<AssetActionSequence> addedResetPhysicsActions = new();
 
@@ -542,14 +541,14 @@ public class Asset : MonoBehaviour
                 }
 
                 DebugLogger.Instance.Log("Asset.OnCollisionEnter: AddNewCollision >> collision between " 
-                                         + base.gameObject.name + " and " + collision.collider.name);
+                                         + base.gameObject.name + " and " + GetComponent<Collider>().name);
                 
-                Recorder.Instance.currentActiveExample.AddNewCollision((int)Recorder.Instance.playbackSlider.value,base.gameObject, collision.collider.gameObject);            
+                Recorder.Instance.currentActiveExample.AddNewCollision((int)Recorder.Instance.playbackSlider.value,base.gameObject, other.gameObject);            
             }
             
         }
         
-        InputManager.Instance.SaveCurrentCollision(base.gameObject, collision.collider.gameObject);
+        InputManager.Instance.SaveCurrentCollision(base.gameObject, GetComponent<Collider>().gameObject);
 
         //TODO Check if this is needed
         
@@ -577,6 +576,12 @@ public class Asset : MonoBehaviour
         //
         //     ResetPhysicsProperties();           
         // }
+    }
+
+    //For assets
+    void OnCollisionEnter(Collision collision)
+    {
+        OnTriggerEnter(collision.collider);
     }
 
     //For assets
@@ -625,22 +630,21 @@ public class Asset : MonoBehaviour
         }
     }
 
-    //For assets
-    void OnCollisionExit(Collision collision)
+    private void OnTriggerExit(Collider other)
     {
         if (Manager.Instance.currAppState == Manager.AppState.SIMULATING)
         {
-            if(!collision.collider.gameObject.CompareTag("Untagged"))
+            if(!other.gameObject.CompareTag("Untagged"))
             {
-                DebugLogger.Instance.Log("EndPreviousCollision >> collision ended between " + gameObject.name + " and " + collision.collider.name);
+                DebugLogger.Instance.Log("EndPreviousCollision >> collision ended between " + gameObject.name + " and " + other.name);
 
-                Recorder.Instance.currentActiveExample.EndPreviousCollision((int)Recorder.Instance.playbackSlider.value,base.gameObject, collision.collider.gameObject);
+                Recorder.Instance.currentActiveExample.EndPreviousCollision((int)Recorder.Instance.playbackSlider.value,base.gameObject, other.gameObject);
             }
         }
         
         if(Manager.Instance.currAppState != Manager.AppState.RECORDING)
         {
-            if(collision.collider.name == "LeftHandPinchContactSphere" || collision.collider.name == "RightHandPinchContactSphere" || collision.collider.name == "HeadContactSphere")
+            if(other.name == "LeftHandPinchContactSphere" || other.name == "RightHandPinchContactSphere" || other.name == "HeadContactSphere")
             {      
                 InputManager.Instance.SaveCurrentCollision(null,null);
             }          
@@ -650,6 +654,11 @@ public class Asset : MonoBehaviour
             //NotifyAsset(null); //Notify the asset that it has stopped colliding with another object during recording
             collidedObjectDuringRecording = null;
         }
+    }
+
+    void OnCollisionExit(Collision collision)
+    {
+        OnTriggerExit(collision.collider);
     }
 
     //For assets
