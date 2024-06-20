@@ -212,7 +212,8 @@ public class Asset : MonoBehaviour
         {
             StartIndex = frameStart,
             ActionType = actionType,
-            ActionDelegate = actionDelegate
+            ActionDelegate = actionDelegate,
+            TargetAsset = this
         };
         Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.Add(newAction);
 
@@ -225,7 +226,8 @@ public class Asset : MonoBehaviour
             {
                 StartIndex = frameEndForFollow,
                 ActionType = ACTION_ENUM.FOLLOW_END,
-                ActionDelegate = () => { GetComponent<Asset>().ApplyUnfollow(); }
+                ActionDelegate = () => { this.ApplyUnfollow(); },
+                TargetAsset = this
             };
 
             newAction.associatedEndAction = newEndAction;
@@ -522,7 +524,8 @@ public class Asset : MonoBehaviour
                             {
                                 StartIndex = currentFrameIndex,
                                 ActionType = ACTION_ENUM.APPLY_FORCE_END,
-                                ActionDelegate = ResetPhysicsPropertiesInLiveMode
+                                ActionDelegate = ResetPhysicsPropertiesInLiveMode,
+                                TargetAsset = this
                             };
 
                             action.associatedEndAction = newResetPhysicsAction;

@@ -421,8 +421,8 @@ public class Example
         {
             var assetFrames = new List<AssetFrame>(entry.Value.assetFrames.Select(item => (AssetFrame)item.Clone()));
             var assetActions = new List<AssetActionSequence>(entry.Value.assetActions.Select(item => (AssetActionSequence)item.Clone()));
-            
-            assetsDict.Add(entry.Key, (assetFrames, assetActions));
+
+            assetsDict[entry.Key] = (assetFrames, assetActions);
         }
         
     }
@@ -494,7 +494,6 @@ public class Example
         }
         var newCollisionModel = new CollisionSequence();
         newCollisionModel.StartIndex = frameStart;
-        newCollisionModel.CollisionType = COLLISION_ENUM.COLLIDE; //TODO needed? 
         newCollisionModel.CollidingObject1 = assetGameObject; //This is generally an asset
         newCollisionModel.CollidingObject2 = anotherGameObject;  //This is a playback object
 
@@ -572,25 +571,6 @@ public class Example
     }
 }
 
-public class CollisionModel
-{
-    public Action<Frame> collisionDelegate;
-
-    public CollisionModel(int frameStart, GameObject assetGameObject, GameObject anotherGameObject)
-    {
-        FrameStart = frameStart;
-        AssetGameObject = assetGameObject;
-        ColliderGameObject = anotherGameObject;
-    }
-
-    public GameObject ColliderGameObject { get; }
-
-    public GameObject AssetGameObject { get; }
-
-    public int FrameStart { get; }
-    public int FrameEnd { get; set;  }
-}
-
 public abstract class Sequence: ICloneable {
     public int StartIndex { get; set; }
     public int Length { get; set; }
@@ -662,13 +642,11 @@ public abstract class Sequence: ICloneable {
 
         return sequences;
     }
+
+    public abstract bool IsEquivalentSequence(Sequence other);
 }
 
-public enum COLLISION_ENUM { NONE, COLLIDE, UNDEFINED};
-
 public class CollisionSequence : Sequence {
-    public COLLISION_ENUM CollisionType { get; set; } 
-
     public GameObject CollidingObject1 { get; set; }
     public GameObject CollidingObject2 { get; set; }
 
@@ -699,7 +677,6 @@ public class CollisionSequence : Sequence {
         // Copy the properties of the current object
         clonedCollision.StartIndex = StartIndex;
         clonedCollision.Length = Length;
-        clonedCollision.CollisionType = CollisionType;
         clonedCollision.CollidingObject1 = CollidingObject1;
         clonedCollision.CollidingObject2 = CollidingObject2;
 
@@ -710,6 +687,16 @@ public class CollisionSequence : Sequence {
     public bool isCollidingWith(GameObject assetGameObject, GameObject anotherGameObject)
     {
         return (CollidingObject1 == assetGameObject && CollidingObject2 == anotherGameObject) || (CollidingObject1 == anotherGameObject && CollidingObject2 == assetGameObject);
+    }
+    
+    public override bool IsEquivalentSequence(Sequence other)
+    {
+        var otherCollisionSequence = other as CollisionSequence;
+        if (otherCollisionSequence == null)
+        {
+            return false;
+        }
+        return otherCollisionSequence.isCollidingWith(CollidingObject1,CollidingObject2);
     }
 }
 public enum ACTION_ENUM { 
@@ -741,6 +728,7 @@ public enum ACTION_ENUM {
 
 public class AssetActionSequence : Sequence
 {
+    public Asset TargetAsset { get; set; }
     public ACTION_ENUM ActionType { get; set; } //None, Physics, ApplyFollow, Show, Hide
 
     public Action ActionDelegate { get; set; }
@@ -801,11 +789,6 @@ public class AssetActionSequence : Sequence
         }
         return false;
     }
-    
-    public static bool IsAddForceAction(string actionName)
-    {
-        return actionName.Equals("ApplyForce()", StringComparison.OrdinalIgnoreCase);
-    }
 
     public override object Clone()
     {
@@ -816,7 +799,8 @@ public class AssetActionSequence : Sequence
         clonedAction.StartIndex = StartIndex;
         clonedAction.Length = Length;
         clonedAction.ActionType = ActionType;
-        clonedAction.ActionDelegate = ActionDelegate;  
+        clonedAction.ActionDelegate = ActionDelegate;
+        clonedAction.TargetAsset = TargetAsset;
 
         // Return the cloned object
         return clonedAction;
@@ -840,6 +824,17 @@ public class AssetActionSequence : Sequence
         {
             //TODO We need to also remove the arrows!
         }
+    }
+
+    public override bool IsEquivalentSequence(Sequence other)
+    {
+        var otherAssetActionSequence = other as AssetActionSequence;
+        if (otherAssetActionSequence == null)
+        {
+            return false;
+        }
+    
+        return ActionType == otherAssetActionSequence.ActionType && TargetAsset == otherAssetActionSequence.TargetAsset;
     }
 }
 
@@ -872,6 +867,16 @@ public class GestureSequence : Sequence
     {
         return InputManager.Instance.GestureToString(GestureType);
         //return $"GestureSequence {GestureType.ToString()}";
+    }
+    
+    public override bool IsEquivalentSequence(Sequence other)
+    {
+        var otherGestureSequence = other as GestureSequence;
+        if (otherGestureSequence == null)
+        {
+            return false;
+        }
+        return otherGestureSequence.GestureType == GestureType;
     }
 }
 
@@ -947,6 +952,16 @@ public class VoiceSequence : Sequence
         }
 
         return sequences;
+    }
+    
+    public override bool IsEquivalentSequence(Sequence other)
+    {
+        var otherVoiceSequence = other as VoiceSequence;
+        if (otherVoiceSequence == null)
+        {
+            return false;
+        }
+        return otherVoiceSequence.VoiceCommand == VoiceCommand;
     }
 }
 

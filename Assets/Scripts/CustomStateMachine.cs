@@ -71,10 +71,20 @@ public class StateMachineModel
     public State currentState;
     public List<State> states = new();
     
-    public void AddState(string name, State state)
+    public void AddState(State state)
     {
-        state.name = name;
         states.Add(state);
+    }
+
+    public List<Transition> transitionsTo(State state)
+    {
+        var allTransitions = new List<Transition>();
+        foreach (var myState in states)
+        {
+            allTransitions.AddRange(myState.transitions);
+        }
+        
+        return allTransitions.FindAll(x => x.to == state);
     }
 
     public void SetInitialState(State state)
@@ -121,8 +131,26 @@ public class StateMachineModel
         //onupdate()?? 
     }
 
-    public static StateMachineModel CombinedStateMachine(List<Example> examples)
+    public static void CombinedStateMachine(List<Example> examples)
     {
+        void addMissingActionsToState(State aStateToDelete,State aStateToStay)
+        {
+            foreach (var onEnterActionSequence in aStateToDelete.OnEnterActionsSequences)
+            {
+                if (!aStateToStay.OnEnterActionsSequences.Any(x => x.IsEquivalentSequence(onEnterActionSequence)))
+                {
+                    aStateToStay.OnEnterActionsSequences.Add(onEnterActionSequence);
+                }
+            }
+
+            foreach (var onExitActionSequence in aStateToDelete.OnExitActionsSequences)
+            {
+                if (!aStateToStay.OnExitActionsSequences.Any(x => x.IsEquivalentSequence(onExitActionSequence)))
+                {
+                    aStateToStay.OnExitActionsSequences.Add(onExitActionSequence);
+                }
+            }
+        }
         List<StateMachineModel> stateMachines = new ();
         foreach (var example in examples)
         {
@@ -137,16 +165,18 @@ public class StateMachineModel
         {
             for (int i = 0; i < stateMachineToDelete.states.Count; i++)
             {
-                var currentState = stateMachineToDelete.states.ElementAt(i);
+                var currentStateToDelete = stateMachineToDelete.states.ElementAt(i);
          
                 //Find if the state does not exist in the resultingStateMachine
                 var equivalentState = resultingStateMachine.states
-                    .Find(x => x.IsStateEqualTo(currentState));
+                    .Find(resultingState => resultingState.IsStateEquivalentTo(currentStateToDelete));
                 if (equivalentState != null)
                 {
                     //this state is represented in the resultingStateMachine
                     
                     //TODO Should we add the extra actions in this state if there are any?
+                    //For every onEnterActionSequence in currentStateToDelete that is not in equivalentState we need to add it to equivalentState
+                    addMissingActionsToState(currentStateToDelete,equivalentState);
 
                 } else {
                     //This state is not equal to any state in the resultingStateMachine
@@ -154,11 +184,16 @@ public class StateMachineModel
                     if (i == 0)
                     {
                         //This is the first state. The only option is to merge both initial states
+                        if (resultingStateMachine.states.Count > 0)
+                        {
+                            addMissingActionsToState(currentStateToDelete, resultingStateMachine.states.First());
+                        }
+
                     } else 
                     {
-                        var previousState = stateMachineToDelete.states.ElementAt(i - 1);
+                        var previousStateToDelete = stateMachineToDelete.states.ElementAt(i - 1);
                         var equivalentPreviousState = resultingStateMachine.states
-                            .Find(x => x.IsStateEqualTo(previousState));
+                            .Find(x => x.IsStateEquivalentTo(previousStateToDelete));
 
                         if (equivalentPreviousState == null)
                         {
@@ -171,31 +206,21 @@ public class StateMachineModel
                         previousState;
                         */
 
-                        var equivalentCurrentState = new State();
-                        equivalentCurrentState.name = currentState.name;
+                        var equivalentCurrentState = new State(currentStateToDelete.name, resultingStateMachine);
                         //Copy all onEnter/onUpdate/onExit/etc
-                        equivalentCurrentState.OnEnterActions = currentState.OnEnterActions;
-                        equivalentCurrentState.OnUpdateActions = currentState.OnUpdateActions;
-                        equivalentCurrentState.OnExitActions = currentState.OnExitActions;
-                        equivalentCurrentState.OnEnterActionsStr = currentState.OnEnterActionsStr;
-                        equivalentCurrentState.OnUpdateActionsStr = currentState.OnUpdateActionsStr;
-                        equivalentCurrentState.OnExitActionsStr = currentState.OnExitActionsStr;
-                        equivalentCurrentState.Gesture = currentState.Gesture;
-                        equivalentCurrentState.Collision = currentState.Collision;
-                        equivalentCurrentState.VoiceSequence = currentState.VoiceSequence;
-                        resultingStateMachine.AddState(currentState.name,currentState);
-                        
-                        var potentialTransitionsToAdd = previousState.transitions.FindAll(x => x.to.IsStateEqualTo(currentState));
+                        equivalentCurrentState.OnEnterActionsSequences.AddRange(currentStateToDelete.OnEnterActionsSequences);
+                        equivalentCurrentState.OnUpdateActionsSequences.AddRange(currentStateToDelete.OnUpdateActionsSequences);
+                        equivalentCurrentState.OnExitActionsSequences.AddRange(currentStateToDelete.OnExitActionsSequences);
+                        resultingStateMachine.AddState(equivalentCurrentState);
                         
                         //Could it be this a potentialTransitionToAdd is already in the resultingStateMachine?
                         //Technically no, because currentState is not on the resultingStateMachine so any transition to currentState should not be in the resultingStateMachine
-                        
-                        foreach (var transitionToAdd in potentialTransitionsToAdd)
+                        foreach (var transitionToAdd in currentStateToDelete.transitionsToMe())
                         {
                             
                             //This transition is not in the resultingStateMachine
                             //We need to add this transition to the resultingStateMachine
-                            equivalentPreviousState.AddTransitionTo(equivalentCurrentState, transitionToAdd.condition, transitionToAdd.textDescription);
+                            equivalentPreviousState.AddTransitionTo(equivalentCurrentState, transitionToAdd.condition, transitionToAdd.textDescription, transitionToAdd.triggers);
                         }
                         
                     }
@@ -205,8 +230,6 @@ public class StateMachineModel
 
         CustomStateMachine.Instance.stateMachineModel = resultingStateMachine;
         StateMachineModel.Instance = resultingStateMachine;
-
-        return resultingStateMachine;
     }
     
     public static StateMachineModel CreateStateMachine(Example example)
@@ -215,11 +238,10 @@ public class StateMachineModel
         
         var localStatesDict = new Dictionary<StateTimelineUIElement,State>();
 
-        foreach (var statePlaceholder in example.StatePlaceholders) {
-            var newState = new State {
-                name = "State " + stateMachine.states.Count
-            };
-            stateMachine.AddState(newState.name, newState);
+        foreach (var statePlaceholder in example.StatePlaceholders)
+        {
+            var newState = new State("State " + stateMachine.states.Count, stateMachine);
+            stateMachine.AddState(newState);
 
             localStatesDict.Add(statePlaceholder, newState);
         }
@@ -260,7 +282,7 @@ public class StateMachineModel
                         transitionDescription = transitionDescription + " && " + trigger.ToString();
                     }
                     //Let's add a transition between currentState and nextState
-                    currentState.AddTransitionTo(nextState, transitionConditionFunction, transitionDescription);
+                    currentState.AddTransitionTo(nextState, transitionConditionFunction, transitionDescription, actualTriggers);
                 }
             } else {
                 //currentStatePlaceholder is the last statePlaceholder
@@ -285,15 +307,13 @@ public class StateMachineModel
                         {
                             DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionType + " for state " +
                                                      currentState.name + " in OnEnterActions");
-                            currentState.OnEnterActions += () => assetSequence.ActionDelegate();
-                            currentState.OnEnterActionsStr += assetSequence.ActionType.ToString() + " ";
+                            currentState.OnEnterActionsSequences.Add(assetSequence);
                         }
                         else
                         {
                             DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionType + " for state " +
                                                      currentState.name + " in OnExitActions");
-                            currentState.OnExitActions += () => assetSequence.ActionDelegate();
-                            currentState.OnExitActionsStr += assetSequence.ActionType.ToString() + " ";
+                            currentState.OnExitActionsSequences.Add(assetSequence);
                         }
                     }
                 }
@@ -310,14 +330,78 @@ public class StateMachineModel
 [System.Serializable]
 public class State
 {
-    public string name;
-    public Action OnEnterActions { get; set; }
-    public Action OnUpdateActions { get; set; }
-    public Action OnExitActions { get; set; }
+    private string _name;
+    public string name
+    {
+        get => _name;
+    }
 
-    public string OnEnterActionsStr = "";
-    public string OnUpdateActionsStr = "";
-    public string OnExitActionsStr = "";
+
+    public List<AssetActionSequence> OnEnterActionsSequences = new();
+    public List<AssetActionSequence> OnUpdateActionsSequences = new();
+    public List<AssetActionSequence> OnExitActionsSequences = new();
+
+    public Action OnEnterActions
+    {
+        get
+        {
+            Action allOnEnterActions = null;
+            foreach (var onEnterActionSequence in OnEnterActionsSequences)
+            {
+                allOnEnterActions += onEnterActionSequence.ActionDelegate;
+            }
+
+            return allOnEnterActions;
+        }
+    }
+
+    public Action OnUpdateActions
+    {
+        get
+        {
+            Action allOUpdateActions = null;
+            foreach (var onUpdateActionSequence in OnUpdateActionsSequences)
+            {
+                allOUpdateActions += onUpdateActionSequence.ActionDelegate;
+            }
+
+            return allOUpdateActions;
+        }
+    }
+    public Action OnExitActions
+    {
+        get
+        {
+            Action allOnExitActions = null;
+            foreach (var onExitActionSequence in OnExitActionsSequences)
+            {
+                allOnExitActions += onExitActionSequence.ActionDelegate;
+            }
+
+            return allOnExitActions;
+        }
+    }
+
+    public string OnEnterActionsStr {
+        get
+        {
+            return string.Join(", ", OnEnterActionsSequences.Select(x => x.ActionType.ToString()));        
+        }
+    }
+    
+    public string OnUpdateActionsStr {
+        get
+        {
+            return string.Join(", ", OnUpdateActionsSequences.Select(x => x.ActionType.ToString()));        
+        }
+    }
+    
+    public string OnExitActionsStr {
+        get
+        {
+            return string.Join(", ", OnExitActionsSequences.Select(x => x.ActionType.ToString()));        
+        }
+    }
 
     public List<Transition> transitions = new();
 
@@ -326,10 +410,14 @@ public class State
     public GameObject stateGraphElement;
 
     Color originalColor = Color.white;
-    public GestureSequence Gesture { get; set; }
-    public AssetActionSequence Collision { get; set; }
+    
+    private StateMachineModel _stateMachine;
 
-    public VoiceSequence VoiceSequence { get; set; }
+    public State(String name, StateMachineModel stateMachine)
+    {
+        _name = name;
+        _stateMachine = stateMachine;
+    }
 
     public void ResetStateUIColor()
     {
@@ -355,20 +443,25 @@ public class State
         //OnUpdateActions?.Invoke();
     }
 
-    public bool IsStateEqualTo(State state) 
+    public bool IsStateEquivalentTo(State anotherStateInAnotherStateMachine)
     {
-        //Check if the state's actions and transitions are equal
+        //this is the state in the resultingStateMachine
         
-        if(OnEnterActionsStr == state.OnEnterActionsStr &&            
-           OnExitActionsStr == state.OnExitActionsStr && 
-           transitions.Select(t => t.textDescription).SequenceEqual(state.transitions.Select(t => t.textDescription)))
+        foreach (var transitionInTheOtherSm in anotherStateInAnotherStateMachine.transitionsToMe())
         {
-            return true;
+
+            if (!transitionsToMe().Any(t => t.HasSameTriggers(transitionInTheOtherSm)))
+            {
+                return false;
+            }
         }
-        else
-        {
-            return false;
-        }  
+
+        return true;
+    }
+
+    public List<Transition> transitionsToMe()
+    {
+        return _stateMachine.transitionsTo(this);
     }
 
     public void OnExit()
@@ -388,14 +481,15 @@ public class State
         return name;
     }
 
-    public void AddTransitionTo(State targetState, Func<Frame, bool> condition, string textDescription = "empty description")
+    public void AddTransitionTo(State targetState, Func<Frame, bool> condition, string textDescription = "empty description", List<Sequence> triggers = null)
     {
         transitions.Add(new Transition
         {
             from = this,
             to = targetState,
             condition = condition,
-            textDescription = textDescription
+            textDescription = textDescription,
+            triggers = triggers
         });
     }
 
@@ -432,23 +526,8 @@ public class State
     {
         DebugLogger.Instance.Log("State: " + name, VRConsoleEnabled);
         //Iterate and print OnEnter actions
-        if(OnEnterActions != null)
-        {    
-            DebugLogger.Instance.Log("OnEnter: " + OnEnterActionsStr, VRConsoleEnabled);
-        } 
-        else
-        {
-            //DebugLogger.Instance.Log("OnEnter: null", VRConsoleEnabled);
-        }
-        //Iterate and print OnExit actions    
-        if(OnExitActions != null)
-        {   
-            DebugLogger.Instance.Log("OnExit: " + OnExitActionsStr, VRConsoleEnabled);      
-        } 
-        else
-        {
-            //DebugLogger.Instance.Log("OnExit: null", VRConsoleEnabled);
-        }
+        DebugLogger.Instance.Log("OnEnter: " + OnEnterActionsStr, VRConsoleEnabled);
+        DebugLogger.Instance.Log("OnExit: " + OnExitActionsStr, VRConsoleEnabled);      
 
         foreach (var transition in transitions)
         {
@@ -479,10 +558,17 @@ public class Transition
     public Func<Frame, bool> condition;
 
     public string textDescription;
+    
+    public List<Sequence> triggers;
 
     public bool ShouldApply(Frame frame)
     {
         return condition.Invoke(frame);
+    }
+
+    public bool HasSameTriggers(Transition anotherTransition)
+    {
+        return anotherTransition.triggers.All( anotherTrigger => triggers.Any( trigger => trigger.IsEquivalentSequence(anotherTrigger)));
     }
 }
 

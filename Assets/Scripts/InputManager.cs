@@ -116,23 +116,23 @@ public class InputManager : MonoBehaviour
         StateMachineModel sm = StateMachineModel.Instance;
         sm.states.Clear();
 
-        State idleState = new()
+        State idleState = new("Idle", sm)
         {
             //OnEnterActions = () => { DebugLogger.Instance.Log("Idle OnEnter"); },
             //OnUpdateActions = () => { DebugLogger.Instance.Log("Idle OnUpdate"); },
             //OnExitActions = () => { DebugLogger.Instance.Log("Idle OnExit"); }
         };
 
-        State grabState = new()
+        State grabState = new("Grab", sm)
         {
-            OnEnterActions = () => { DebugLogger.Instance.Log("Grab OnEnter"); testBall.GetComponent<Asset>().ApplyFollow(rightHand.transform); },
+            //OnEnterActions = () => { DebugLogger.Instance.Log("Grab OnEnter"); testBall.GetComponent<Asset>().ApplyFollow(rightHand.transform); },
             //OnUpdateActions = () => { DebugLogger.Instance.Log("Grab OnUpdate"); },
-            OnExitActions = () => { DebugLogger.Instance.Log("State 2 OnExit"); testBall.GetComponent<Asset>().ApplyUnfollow(); }
+            //OnExitActions = () => { DebugLogger.Instance.Log("State 2 OnExit"); testBall.GetComponent<Asset>().ApplyUnfollow(); }
         };
 
-        State throwState = new()
+        State throwState = new("Throw", sm)
         {
-            OnEnterActions = () => { DebugLogger.Instance.Log("Throw OnEnter"); testBall.GetComponent<Asset>().ApplyForce(rightHand.transform.forward * 1); },
+            //OnEnterActions = () => { DebugLogger.Instance.Log("Throw OnEnter"); testBall.GetComponent<Asset>().ApplyForce(rightHand.transform.forward * 1); },
             //OnUpdateActions = () => { DebugLogger.Instance.Log("Throw OnUpdate"); },
             //OnExitActions = () => { DebugLogger.Instance.Log("Throw OnExit"); }
         };
@@ -157,9 +157,9 @@ public class InputManager : MonoBehaviour
         //throwState.AddTransitionTo(hitState, (frame) => { return frame.IsColliding(testBall, testTarget); } );
         //throwState.AddTransitionTo(missState, (frame) => { return frame.IsColliding(testBall, floor); });
 
-        sm.AddState("Idle", idleState);
-        sm.AddState("Grab", grabState);
-        sm.AddState("Throw", throwState);
+        sm.AddState(idleState);
+        sm.AddState(grabState);
+        sm.AddState(throwState);
         //sm.AddState("Hit", hitState);
         //sm.AddState("Miss", missState);
 

@@ -528,11 +528,10 @@ public class Recorder : MonoBehaviour
         
         var localStatesDict = new Dictionary<StateTimelineUIElement,State>();
 
-        foreach (var statePlaceholder in currentActiveExample.StatePlaceholders) {
-            var newState = new State {
-                name = "State " + StateMachine.states.Count()
-            };
-            StateMachine.AddState(newState.name, newState);
+        foreach (var statePlaceholder in currentActiveExample.StatePlaceholders)
+        {
+            var newState = new State("State " + StateMachine.states.Count(), StateMachine);
+            StateMachine.AddState(newState);
 
             localStatesDict.Add(statePlaceholder, newState);
         }
@@ -595,14 +594,12 @@ public class Recorder : MonoBehaviour
                         if(distanceToStateStart < distanceToStateEnd)
                         {
                             DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionType + " for state " + currentState.name + " in OnEnterActions");
-                            currentState.OnEnterActions += () => assetSequence.ActionDelegate();
-                            currentState.OnEnterActionsStr += assetSequence.ActionType.ToString()+ " ";
+                            currentState.OnEnterActionsSequences.Add(assetSequence);
                         }
                         else
                         {
                             DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionType + " for state " + currentState.name + " in OnExitActions");
-                            currentState.OnExitActions += () => assetSequence.ActionDelegate();
-                            currentState.OnExitActionsStr += assetSequence.ActionType.ToString() + " ";
+                            currentState.OnExitActionsSequences.Add(assetSequence);
                         }
                     }
                 }
@@ -694,7 +691,7 @@ public class Recorder : MonoBehaviour
         //     bool allStatesEqual = true;
         //     for (int j = 0; j < allStatesInExamples.Count; j++)
         //     {
-        //         if (!shortestList[i].IsStateEqualTo(allStatesInExamples[j][i]))
+        //         if (!shortestList[i].IsStateEquivalentTo(allStatesInExamples[j][i]))
         //         {
         //             allStatesEqual = false;
         //             break;
