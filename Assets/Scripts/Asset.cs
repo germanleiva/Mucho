@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Assets.OVR.Scripts;
 using Oculus.Interaction;
 using UnityEngine;
@@ -460,10 +461,11 @@ public class Asset : MonoBehaviour
 
     //For assets
     public void ApplyForce(Vector3 initialVelocity)
-    {        
-        GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
-        GetComponent<Rigidbody>().useGravity = true;
-        GetComponent<Rigidbody>().AddForce(initialVelocity, ForceMode.VelocityChange);
+    {
+        var rigidBody = GetComponent<Rigidbody>();
+        rigidBody.constraints = RigidbodyConstraints.None;
+        rigidBody.useGravity = true;
+        rigidBody.AddForce(initialVelocity, ForceMode.VelocityChange);
     }
 
 
@@ -501,9 +503,11 @@ public class Asset : MonoBehaviour
         if (Manager.Instance.currAppState == Manager.AppState.SIMULATING)
         {
             //If we are simulating we need to save the collision
+            string[] UserHandsAndHeadTags = {"Head", "LeftHand", "RightHand"};
+            
             if(!collision.collider.gameObject.CompareTag("Untagged"))
             {
-                if (!collision.collider.gameObject.CompareTag("Head") && !collision.collider.gameObject.CompareTag("LeftHand") && !collision.collider.gameObject.CompareTag("RightHand"))
+                if (!UserHandsAndHeadTags.Contains(collision.collider.gameObject.tag))
                 {
                     List<AssetActionSequence> addedResetPhysicsActions = new();
 
@@ -593,12 +597,12 @@ public class Asset : MonoBehaviour
     public void ResetPhysicsPropertiesInLiveMode()
     {
         //Recorder.Instance.isMainPlaybackOn = false;
-        DebugLogger.Instance.Log("Resetting physics properties in live mode");        
+        DebugLogger.Instance.Log("Resetting physics properties in live mode");    
 
-        GetComponent<Rigidbody>().mass = 0f;
-        GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
-        GetComponent<Rigidbody>().useGravity = false;
-
+        var rigidBody = GetComponent<Rigidbody>();
+        rigidBody.mass = 0f; //TODO Check we don't do this when ApplyForce
+        rigidBody.constraints = RigidbodyConstraints.FreezeAll;
+        rigidBody.useGravity = false;
     }
 
     //For assets

@@ -121,14 +121,14 @@ public class Manager : MonoBehaviour
         speechToTextEngine.StopListening();
     }
 
-    public void CreateCopyOfObject(GameObject obj)
+    public void CreateCopyOfObject(GameObject objectDragged)
     {
-        GameObject newObj = Instantiate(obj);
-        newObj.transform.SetParent(obj.transform.parent);
-        newObj.transform.SetLocalPositionAndRotation(obj.transform.localPosition, obj.transform.localRotation);
-        newObj.transform.localScale = obj.transform.localScale;
-        newObj.name = obj.name + "Copy";
-        DetachFromAllParents(obj.transform);
+        GameObject objectThatWillStayInTheMenu = Instantiate(objectDragged);
+        objectThatWillStayInTheMenu.transform.SetParent(objectDragged.transform.parent);
+        objectThatWillStayInTheMenu.transform.SetLocalPositionAndRotation(objectDragged.transform.localPosition, objectDragged.transform.localRotation);
+        objectThatWillStayInTheMenu.transform.localScale = objectDragged.transform.localScale;
+        //objectThatWillStayInTheMenu.name = objectDragged.name + "Copy";
+        DetachFromAllParents(objectDragged.transform);
     }
 
     //public void Create
@@ -140,27 +140,34 @@ public class Manager : MonoBehaviour
         //controlUI.transform.SetParent(null);
     }
 
-    public void DestroyCopyAndSpawnAsset(GameObject obj)
+    public void DestroyCopyAndSpawnAsset(GameObject copyObjectDragged)
     {
         if(Recorder.Instance.examples.Count == 0)
         {
             DebugLogger.Instance.Log("No examples to spawn asset in");
-            Destroy(obj);
+            Destroy(copyObjectDragged);
             return;
         }
 
         //TODO: only one prefab and change the parameter (for god sake)
-        if (obj.name.StartsWith("Sphere"))
+        if (copyObjectDragged.name.StartsWith("Sphere"))
         {
-            AssetManager.Instance.CreateAsset(obj.transform, spherePrefab);
+            var meshSelected = copyObjectDragged.GetComponent<MeshFilter>().sharedMesh;
+            var allMeshes = Recorder.Instance.allAssets.Select(asset => asset.GetComponent<MeshFilter>().sharedMesh);
+            var assetCount =
+                allMeshes.Count(mesh => mesh == meshSelected);
+            AssetManager.Instance.CreateAsset(copyObjectDragged, spherePrefab, $"Sphere {assetCount+1}", meshSelected);
         }
-        else if (obj.name.StartsWith("Cube"))
+        else if (copyObjectDragged.name.StartsWith("Cube"))
         {
-            AssetManager.Instance.CreateAsset(obj.transform, cubePrefab);
+            var meshSelected = copyObjectDragged.GetComponent<MeshFilter>().sharedMesh;
+            var assetCount =
+                Recorder.Instance.allAssets.Count(asset => asset.GetComponent<MeshFilter>().sharedMesh == meshSelected);
+            AssetManager.Instance.CreateAsset(copyObjectDragged, spherePrefab, $"Cube {assetCount+1}", meshSelected);
         }
-        else if (obj.name.StartsWith("Text"))
+        else if (copyObjectDragged.name.StartsWith("Text"))
         {
-            AssetManager.Instance.CreateAsset(obj.transform, textAssetPrefab);
+            AssetManager.Instance.CreateAsset(copyObjectDragged, textAssetPrefab, "Text");
         }        
         
         //if (obj.GetComponent<MeshCopy>() == null)
@@ -479,7 +486,7 @@ public class Example
     {
         if (CollisionModels.Exists(collision => collision.StartIndex == frameStart && collision.isCollidingWith(assetGameObject,anotherGameObject)))
         {
-            //We have a similar collision, so we ignore it
+            DebugLogger.Instance.Log($"We have a similar collision, so we ignore it: Frame{frameStart}, {assetGameObject.name} vs {anotherGameObject.name}"); 
             return;
         }
         var newCollisionModel = new CollisionSequence();

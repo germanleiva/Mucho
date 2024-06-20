@@ -111,28 +111,32 @@ public class AssetManager : MonoBehaviour
         }
     }
 
-    public void CreateAsset(Transform target, GameObject prefab)
+    public void CreateAsset(GameObject copyObjectDragged, GameObject prefab, string name, Mesh mesh = null)
     {
         DebugLogger.Instance.Log("Spawned Asset");
-        GameObject newAssetGameObject = Instantiate(prefab, target.position, Quaternion.identity);
+        GameObject newAssetPrefabCopyObject = Instantiate(prefab, copyObjectDragged.transform.position, Quaternion.identity);
+        
+        Destroy(copyObjectDragged);
 
-        Destroy(target.gameObject);
-
-        newAssetGameObject.SetActive(true);
-        var asset = newAssetGameObject.GetComponentInChildren<Asset>();
-        asset.SetInitialVisualMainValues();
-        Recorder.Instance.allAssets.Add(asset);
+        newAssetPrefabCopyObject.SetActive(true);
+        var newAsset = newAssetPrefabCopyObject.GetComponentInChildren<Asset>();
+        newAsset.name = name;
+        if (mesh != null) {
+            newAsset.GetComponent<MeshFilter>().mesh = mesh;
+        }
+        newAsset.SetInitialVisualMainValues();
+        Recorder.Instance.allAssets.Add(newAsset);
         
         foreach (var example in Recorder.Instance.examples)
         {
             example.RefreshAssetsInExample();
         }
 
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetsDict[asset].assetFrames;
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetsDict[newAsset].assetFrames;
         for (int i = 0; i < Recorder.Instance.currentActiveExample.RecordedDataCount; i++)
         {
-            //We need to generate the asset frames of the new asset if we alread have some recorded data
-            currentAssetRecordedData.Add(new(asset.transform.position, asset.transform.rotation, asset.isVisible, asset.CurrentColor));
+            //We need to generate the asset frames of the new asset if we already have some recorded data
+            currentAssetRecordedData.Add(new(newAsset.transform.position, newAsset.transform.rotation, newAsset.isVisible, newAsset.CurrentColor));
         }
 
         Recorder.Instance.RecreateTimelineUI_AssetRowsAndCollisions();
