@@ -89,19 +89,20 @@ public class Manager : MonoBehaviour
             DebugLogger.Instance.Log("No examples to change to live mode");
             return;
         }
-
-        currAppState = Manager.AppState.LIVE;
+        
         Recorder.Instance.playbackSlider.value = 0;
         Recorder.Instance.SetPlaybackObjectsVisibility(false);
         AssetManager.Instance.HideMiscObjs();
         AssetManager.Instance.SetAllAssetMenusPokeable(false);
         
-        CustomStateMachine.CombinedStateMachine(Recorder.Instance.examples);
+        StateMachineModel.CombinedStateMachine(Recorder.Instance.examples);
         
         // Recorder.Instance.ResetStateMachine();
         InputManager.Instance.SaveCurrentCollision(null,null);
-        CustomStateMachine.Instance.InvokeOnEnterActionsOfInitialState();
+        StateMachineModel.Instance.InvokeOnEnterActionsOfInitialState();
         speechToTextEngine.StartListening();
+        
+        currAppState = Manager.AppState.LIVE;
     }
 
     public void ChangeToAssetRecordingMode()
@@ -111,13 +112,15 @@ public class Manager : MonoBehaviour
 
     public void ChangeToPlaybackMode()
     {
+        
+        
         currAppState = Manager.AppState.PLAYBACK; 
         AssetManager.Instance.ResetMeshRendererForAllAssets();       
         Recorder.Instance.SetPlaybackObjectsVisibility(true);
         //AssetManager.Instance.ShowMiscObjs();
         AssetManager.Instance.SetAllAssetMenusPokeable(true);
-        AssetManager.Instance.ResetPhysicsForAllAssets();
-        Recorder.Instance.ResetStateMachine();
+        AssetManager.Instance.ResetPhysicsForAllAssetsAndStopFollowing();
+
         speechToTextEngine.StopListening();
     }
 
@@ -295,7 +298,7 @@ public class Example
         {
             return LeftHandGestureSequences.Concat(RightHandGestureSequences).ToList();
         }
-}
+    }
 
     public int RecordedDataCount
     {
@@ -492,8 +495,8 @@ public class Example
         var newCollisionModel = new CollisionSequence();
         newCollisionModel.StartIndex = frameStart;
         newCollisionModel.CollisionType = COLLISION_ENUM.COLLIDE; //TODO needed? 
-        newCollisionModel.CollidingObject1 = assetGameObject;
-        newCollisionModel.CollidingObject2 = anotherGameObject;
+        newCollisionModel.CollidingObject1 = assetGameObject; //This is generally an asset
+        newCollisionModel.CollidingObject2 = anotherGameObject;  //This is a playback object
 
         GameObject collidedObjectOnLiveMode;
 
@@ -527,7 +530,7 @@ public class Example
             collidedObjectOnLiveMode = anotherGameObject;
         }
         
-        newCollisionModel.collisionDelegate = (Frame frame) => { frame.IsColliding(assetGameObject, collidedObjectOnLiveMode);};
+        newCollisionModel.collisionDelegate = (Frame frame) => frame.IsColliding(assetGameObject, collidedObjectOnLiveMode);
         
         CollisionModels.Add(newCollisionModel);
     }
@@ -566,9 +569,6 @@ public class Example
             //We need to remove all the actions ApplyForceEnd, they need to be recalculated
             keyValuePair.assetActions.RemoveAll(action => action.ActionType == ACTION_ENUM.APPLY_FORCE_END);
         }
-
-        
-        
     }
 }
 
@@ -670,28 +670,13 @@ public class CollisionSequence : Sequence {
     public COLLISION_ENUM CollisionType { get; set; } 
 
     public GameObject CollidingObject1 { get; set; }
-    private GameObject _collidingObject2;
-    public GameObject CollidingObject2 {
-        get
-        {
-            return _collidingObject2;
-        }
-        set
-        {
-            _collidingObject2 = value;
-            if (value.CompareTag("Untagged"))
-            {
-                DebugLogger.Instance.Log($"I'm ${CollidingObject1.name} colliding with an Unntagged: {_collidingObject2.name}");
-            }
+    public GameObject CollidingObject2 { get; set; }
 
-        }
-    }
-
-    public Action<Frame> collisionDelegate { get; set; }
+    public Func<Frame, bool> collisionDelegate { get; set; }
 
     public override Func<Frame, bool> AddConditionToFunction(Func<Frame, bool> conditionFunction)
     {
-        return (Frame frame) => { return conditionFunction(frame) && frame.IsColliding(CollidingObject1,CollidingObject2);};
+        return (Frame frame) => { return conditionFunction(frame) && collisionDelegate(frame); };
     }
 
     public override bool CanTriggerAt(int stateStartIndex)
@@ -700,7 +685,9 @@ public class CollisionSequence : Sequence {
     }
 
     public override string ToString() {
-        return $"{CollidingObject1.tag} hit {CollidingObject2.tag}";
+        var text1 = CollidingObject1.GetComponent<Asset>() ? CollidingObject1.name : CollidingObject1.tag;
+        var text2 = CollidingObject2.GetComponent<Asset>() ? CollidingObject2.name : CollidingObject2.tag;
+        return $"{text1} hit {text2}";
     }
     
     

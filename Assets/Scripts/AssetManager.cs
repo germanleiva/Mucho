@@ -232,10 +232,11 @@ public class AssetManager : MonoBehaviour
         }
     }
 
-    public void ResetPhysicsForAllAssets()
+    public void ResetPhysicsForAllAssetsAndStopFollowing()
     {
         foreach (Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys)
         {
+            asset.ApplyUnfollow();
             asset.ResetPhysicsPropertiesInLiveMode();
         }
     }

@@ -502,11 +502,11 @@ public class Asset : MonoBehaviour
         if (Manager.Instance.currAppState == Manager.AppState.SIMULATING)
         {
             //If we are simulating we need to save the collision
-            string[] UserHandsAndHeadTags = {"Head", "LeftHand", "RightHand"};
+            string[] userHandsAndHeadTags = {"Head", "LeftHand", "RightHand"};
             
             if(!other.gameObject.CompareTag("Untagged"))
             {
-                if (!UserHandsAndHeadTags.Contains(other.gameObject.tag))
+                if (!userHandsAndHeadTags.Contains(other.gameObject.tag))
                 {
                     List<AssetActionSequence> addedResetPhysicsActions = new();
 
@@ -548,7 +548,7 @@ public class Asset : MonoBehaviour
             
         }
         
-        InputManager.Instance.SaveCurrentCollision(base.gameObject, GetComponent<Collider>().gameObject);
+        InputManager.Instance.SaveCurrentCollision(base.gameObject, other.gameObject);
 
         //TODO Check if this is needed
         

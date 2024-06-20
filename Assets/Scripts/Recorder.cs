@@ -229,46 +229,22 @@ public class Recorder : MonoBehaviour
     public void AlignPlaybackSlider()
     {
         int currentFrameNum = (int)playbackSlider.value;
-        int threshHold = (int)GetSizeOfMainRecordedData() / 50;
+        int threshHold = currentActiveExample.RecordedDataCount / 50;
 
-        int nearestRightHandGestureSequenceStartIndex = int.MaxValue;
-        int nearestRightHandGestureSequenceEndIndex = int.MaxValue;
+        int nearestStartIndex = int.MaxValue;
+        int nearestEndIndex = int.MaxValue;
 
-        foreach (var sequence in currentActiveExample.RightHandGestureSequences)
+        foreach (Sequence sequence in currentActiveExample.AllGestureSequences.Concat<Sequence>(currentActiveExample.CollisionModels.Concat<Sequence>(currentActiveExample.VoiceCommandSequences)))
         {
             if (Mathf.Abs(currentFrameNum - sequence.StartIndex) < threshHold)
             {
-                nearestRightHandGestureSequenceStartIndex = sequence.StartIndex;
+                nearestStartIndex = sequence.StartIndex;
             }
             if (Mathf.Abs(currentFrameNum - (sequence.StartIndex + sequence.Length)) < threshHold)
             {
-                nearestRightHandGestureSequenceEndIndex = sequence.StartIndex + sequence.Length;
+                nearestEndIndex = sequence.StartIndex + sequence.Length;
             }
         }
-
-        int nearestLeftHandGestureSequenceStartIndex = int.MaxValue;
-        int nearestLeftHandGestureSequenceEndIndex = int.MaxValue;
-
-        foreach (var sequence in currentActiveExample.LeftHandGestureSequences)
-        {
-            if (Mathf.Abs(currentFrameNum - sequence.StartIndex) < threshHold)
-            {
-                nearestLeftHandGestureSequenceStartIndex = sequence.StartIndex;
-            }
-            if (Mathf.Abs(currentFrameNum - (sequence.StartIndex + sequence.Length)) < threshHold)
-            {
-                nearestLeftHandGestureSequenceEndIndex = sequence.StartIndex + sequence.Length;
-            }
-        }
-
-        // Determine the closest start and end indices among right and left hand sequences
-        int nearestStartIndex = Mathf.Abs(currentFrameNum - nearestRightHandGestureSequenceStartIndex) < Mathf.Abs(currentFrameNum - nearestLeftHandGestureSequenceStartIndex)
-                                ? nearestRightHandGestureSequenceStartIndex
-                                : nearestLeftHandGestureSequenceStartIndex;
-
-        int nearestEndIndex = Mathf.Abs(currentFrameNum - nearestRightHandGestureSequenceEndIndex) < Mathf.Abs(currentFrameNum - nearestLeftHandGestureSequenceEndIndex)
-                            ? nearestRightHandGestureSequenceEndIndex
-                            : nearestLeftHandGestureSequenceEndIndex;
 
         // Determine if the start or end index is closer to the current frame number
         int nearestIndex = Mathf.Abs(currentFrameNum - nearestStartIndex) < Mathf.Abs(currentFrameNum - nearestEndIndex)
@@ -281,7 +257,6 @@ public class Recorder : MonoBehaviour
         }
 
         playbackSlider.value = nearestIndex;
-        //DebugLogger.Instance.Log("Aligning playback slider to nearest index: " + nearestIndex);
     }
 
 
@@ -548,14 +523,14 @@ public class Recorder : MonoBehaviour
     {
         int recordedFramesTotal = GetSizeOfMainRecordedData();
 
-        var StateMachine = CustomStateMachine.Instance;
-        StateMachine.DeleteAllStates();
+        var StateMachine = StateMachineModel.Instance;
+        StateMachine.states.Clear();
         
         var localStatesDict = new Dictionary<StateTimelineUIElement,State>();
 
         foreach (var statePlaceholder in currentActiveExample.StatePlaceholders) {
             var newState = new State {
-                name = "State " + StateMachine.GetSize()
+                name = "State " + StateMachine.states.Count()
             };
             StateMachine.AddState(newState.name, newState);
 
@@ -634,7 +609,7 @@ public class Recorder : MonoBehaviour
             }
         }
 
-        CustomStateMachine.Instance.SetInitialState(firstState);
+        StateMachineModel.Instance.SetInitialState(firstState);
 
         PrintDetailsOfStateMachine(localStatesDict.Values.ToList());    
     }
@@ -1009,7 +984,7 @@ public class Recorder : MonoBehaviour
         // currentActiveExample.StatesDict.Clear();
 
         //Delete all existing states
-        CustomStateMachine.Instance.DeleteAllStates();
+        StateMachineModel.Instance.states.Clear();
 
         //Delete all existing state timeline UI elements
         DeleteStatePlaceholders();
@@ -1022,14 +997,6 @@ public class Recorder : MonoBehaviour
             Destroy(currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
         }
         currentActiveExample.StatePlaceholders.Clear();
-    }
-
-    public void ResetStateMachine()
-    {
-        //Find the id of the first state in the state machine
-        
-        //CustomStateMachine.Instance.SetInitialState("State 0");
-        // CustomStateMachine.Instance.SetInitialState(currentActiveExample.StatesDict.First().Key.name);
     }
     
     public void PrintDetailsOfStateMachine(List<State> states)

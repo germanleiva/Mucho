@@ -77,7 +77,7 @@ public class InputManager : MonoBehaviour
     {
         if (Manager.Instance.currAppState == Manager.AppState.LIVE)
         {
-            ProcessEvents();    
+            ProcessEvents();
         }
         // Add the current positions to the queues
         rightHandPositions.Enqueue(rightHandPinchObj.transform.position);
@@ -113,8 +113,8 @@ public class InputManager : MonoBehaviour
     public void CreateTestStates()
     {
         Manager.Instance.currAppState = Manager.AppState.LIVE;
-        CustomStateMachine sm = CustomStateMachine.Instance;
-        sm.DeleteAllStates();
+        StateMachineModel sm = StateMachineModel.Instance;
+        sm.states.Clear();
 
         State idleState = new()
         {
@@ -218,9 +218,6 @@ public class InputManager : MonoBehaviour
 
     void ProcessEvents()
     {
-        CustomStateMachine sm = CustomStateMachine.Instance;
-
-
         //TODO : Processframe only if a change in gesture or collision has occured
 
         Frame frame = new()
@@ -238,7 +235,7 @@ public class InputManager : MonoBehaviour
 
         //if (Manager.Instance.currAppState == Manager.AppState.LIVE)
         //{
-            sm.ProcessFrame(frame);
+        CustomStateMachine.Instance.ProcessFrame(frame);
         //}
 
         /* if (Manager.Instance.currAppState == Manager.AppState.INIT)

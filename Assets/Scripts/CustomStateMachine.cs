@@ -10,9 +10,8 @@ public class CustomStateMachine : MonoBehaviour
 {
     public static CustomStateMachine Instance { get; private set; }
 
-    private State currentState;
-    private List<State> states = new();
-
+    public StateMachineModel stateMachineModel = new();
+    
     public TMPro.TMP_Text currentActiveStateText;
 
     void Awake()
@@ -27,6 +26,51 @@ public class CustomStateMachine : MonoBehaviour
         }
     }
 
+    public void PrintDetailsOfStateMachine(bool VRConsoleEnabled = false)
+    {
+        DebugLogger.Instance.Log("Printing details of state machine", VRConsoleEnabled);
+        foreach (var state in stateMachineModel.states)
+        {
+            state.PrintDetailsOfState(VRConsoleEnabled);
+        }
+        
+        DebugLogger.Instance.Log("END DETAILS", VRConsoleEnabled);
+
+    }
+
+
+    public void CreateStateGraph(GameObject stateElementPrefab, RectTransform parentTransform)
+    {
+        StateGraphUI.ResetStateGraph();
+        
+        for(int i = 2;i < parentTransform.childCount; i++)
+        {
+            Destroy(parentTransform.GetChild(i).gameObject);
+        }
+        
+        foreach (var state in stateMachineModel.states)
+        {
+            state.stateGraphElement = StateGraphUI.CreateStateGraphElement(stateElementPrefab, parentTransform, state);
+        }
+        //StateGraphUI.CreateStateGraphElement(stateElementPrefab, parentTransform, initialState);
+    }
+
+    public void ProcessFrame(Frame lastFrameObject)
+    {
+        //DebugLogger.Instance.Log("ProcessFrame in the StateMachine");
+        currentActiveStateText.text = "Current state: " + stateMachineModel.currentState.name;
+
+        stateMachineModel.ProcessFrame(lastFrameObject);
+    }
+}
+
+public class StateMachineModel
+{
+    public static StateMachineModel Instance { get; set; }
+    
+    public State currentState;
+    public List<State> states = new();
+    
     public void AddState(string name, State state)
     {
         state.name = name;
@@ -48,51 +92,9 @@ public class CustomStateMachine : MonoBehaviour
         DebugLogger.Instance.Log("Invoking OnEnter actions of initial state " + currentState.name,true);
         currentState.OnEnter();
     }
-
-    public int GetSize()
-    {
-        return states.Count;
-    }
-
-    public void DeleteAllStates()
-    {
-        states.Clear();
-    }
-
-    public void PrintDetailsOfStateMachine(bool VRConsoleEnabled = false)
-    {
-        DebugLogger.Instance.Log("Printing details of state machine", VRConsoleEnabled);
-        foreach (var state in states)
-        {
-            state.PrintDetailsOfState(VRConsoleEnabled);
-        }
-        
-        DebugLogger.Instance.Log("END DETAILS", VRConsoleEnabled);
-
-    }
-
-
-    public void CreateStateGraph(GameObject stateElementPrefab, RectTransform parentTransform)
-    {
-        StateGraphUI.ResetStateGraph();
-        
-        for(int i = 2;i < parentTransform.childCount; i++)
-        {
-            Destroy(parentTransform.GetChild(i).gameObject);
-        }
-        
-        foreach (var state in states)
-        {
-            state.stateGraphElement = StateGraphUI.CreateStateGraphElement(stateElementPrefab, parentTransform, state);
-        }
-        //StateGraphUI.CreateStateGraphElement(stateElementPrefab, parentTransform, initialState);
-    }
-
     public void ProcessFrame(Frame lastFrameObject)
     {                
-        //DebugLogger.Instance.Log("ProcessFrame in the StateMachine");
-        currentActiveStateText.text = "Current state: " + currentState.name;
-
+        
         foreach (var transition in currentState.transitions)
         {
             if (transition.ShouldApply(lastFrameObject))
@@ -119,9 +121,9 @@ public class CustomStateMachine : MonoBehaviour
         //onupdate()?? 
     }
 
-    public static void CombinedStateMachine(List<Example> examples)
+    public static StateMachineModel CombinedStateMachine(List<Example> examples)
     {
-        List<CustomStateMachine> stateMachines = new List<CustomStateMachine>();
+        List<StateMachineModel> stateMachines = new ();
         foreach (var example in examples)
         {
             stateMachines.Add(CreateStateMachine(example));
@@ -201,22 +203,23 @@ public class CustomStateMachine : MonoBehaviour
             }
         }
 
-        resultingStateMachine.PrintDetailsOfStateMachine();
-        CustomStateMachine.Instance = resultingStateMachine;
-        //return resultingStateMachine;
+        CustomStateMachine.Instance.stateMachineModel = resultingStateMachine;
+        StateMachineModel.Instance = resultingStateMachine;
+
+        return resultingStateMachine;
     }
     
-    public static CustomStateMachine CreateStateMachine(Example example)
+    public static StateMachineModel CreateStateMachine(Example example)
     {
-        CustomStateMachine StateMachine = new CustomStateMachine();
+        StateMachineModel stateMachine = new StateMachineModel();
         
         var localStatesDict = new Dictionary<StateTimelineUIElement,State>();
 
         foreach (var statePlaceholder in example.StatePlaceholders) {
             var newState = new State {
-                name = "State " + StateMachine.GetSize()
+                name = "State " + stateMachine.states.Count
             };
-            StateMachine.AddState(newState.name, newState);
+            stateMachine.AddState(newState.name, newState);
 
             localStatesDict.Add(statePlaceholder, newState);
         }
@@ -297,12 +300,11 @@ public class CustomStateMachine : MonoBehaviour
             }
         }
 
-        CustomStateMachine.Instance.SetInitialState(firstState);
+        stateMachine.SetInitialState(firstState);
 
         Recorder.Instance.PrintDetailsOfStateMachine(localStatesDict.Values.ToList());    
-        return StateMachine;
+        return stateMachine;
     }
-
 }
 
 [System.Serializable]
@@ -495,10 +497,7 @@ public class Frame
 
     public bool IsColliding(GameObject object1, GameObject object2)
     {
-        DebugLogger.Instance.Log("IsColliding?: " + object1 + " " + object2);
+        // DebugLogger.Instance.Log("IsColliding?: " + object1 + " " + object2);
         return (object1 == collidingObjectThisFrame_1 && object2 == collidingObjectThisFrame_2) || (object1 == collidingObjectThisFrame_2 && object2 == collidingObjectThisFrame_1);
     }
-
-
 }
-
