@@ -156,16 +156,13 @@ public class Manager : MonoBehaviour
         if (copyObjectDragged.name.StartsWith("Sphere"))
         {
             var meshSelected = copyObjectDragged.GetComponent<MeshFilter>().sharedMesh;
-            var allMeshes = Recorder.Instance.allAssets.Select(asset => asset.GetComponent<MeshFilter>().sharedMesh);
-            var assetCount =
-                allMeshes.Count(mesh => mesh == meshSelected);
+            var assetCount = Recorder.Instance.allAssets.Count(asset => asset.GetComponent<MeshFilter>().sharedMesh == meshSelected);
             AssetManager.Instance.CreateAsset(copyObjectDragged, spherePrefab, $"Sphere {assetCount+1}", meshSelected);
         }
         else if (copyObjectDragged.name.StartsWith("Cube"))
         {
             var meshSelected = copyObjectDragged.GetComponent<MeshFilter>().sharedMesh;
-            var assetCount =
-                Recorder.Instance.allAssets.Count(asset => asset.GetComponent<MeshFilter>().sharedMesh == meshSelected);
+            var assetCount = Recorder.Instance.allAssets.Count(asset => asset.GetComponent<MeshFilter>().sharedMesh == meshSelected);
             AssetManager.Instance.CreateAsset(copyObjectDragged, spherePrefab, $"Cube {assetCount+1}", meshSelected);
         }
         else if (copyObjectDragged.name.StartsWith("Text"))
@@ -173,6 +170,10 @@ public class Manager : MonoBehaviour
             AssetManager.Instance.CreateAsset(copyObjectDragged, textAssetPrefab, "Text");
         }        
         
+        //We need to check if we are colliding an existing asset
+        
+        
+        //We need to handle now if it's not an asset and it is an asset that we only care about 
         //if (obj.GetComponent<MeshCopy>() == null)
         {
            //Destroy(obj);

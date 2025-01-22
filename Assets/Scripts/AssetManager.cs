@@ -111,7 +111,7 @@ public class AssetManager : MonoBehaviour
         }
     }
 
-    public void CreateAsset(GameObject copyObjectDragged, GameObject prefab, string name, Mesh mesh = null)
+    public void CreateAsset(GameObject copyObjectDragged, GameObject prefab, string assetName, Mesh mesh = null)
     {
         DebugLogger.Instance.Log("Spawned Asset");
         GameObject newAssetPrefabCopyObject = Instantiate(prefab, copyObjectDragged.transform.position, Quaternion.identity);
@@ -120,7 +120,7 @@ public class AssetManager : MonoBehaviour
 
         newAssetPrefabCopyObject.SetActive(true);
         var newAsset = newAssetPrefabCopyObject.GetComponentInChildren<Asset>();
-        newAsset.name = name;
+        newAsset.name = assetName;
         if (mesh != null) {
             newAsset.GetComponent<MeshFilter>().mesh = mesh;
         }

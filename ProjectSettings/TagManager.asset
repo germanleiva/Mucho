@@ -13,6 +13,9 @@ TagManager:
   - Cube
   - Text
   - Head
+  - F_R
+  - F_L
+  - F_G
   layers:
   - Default
   - TransparentFX

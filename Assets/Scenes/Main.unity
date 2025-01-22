@@ -22774,7 +22774,7 @@ GameObject:
   - component: {fileID: 520477203}
   m_Layer: 0
   m_Name: focus_square_gaze
-  m_TagString: Untagged
+  m_TagString: F_G
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -46847,7 +46847,7 @@ GameObject:
   - component: {fileID: 917292530}
   m_Layer: 0
   m_Name: focus_square_right
-  m_TagString: Untagged
+  m_TagString: F_R
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -62896,7 +62896,7 @@ GameObject:
   - component: {fileID: 1193915811}
   m_Layer: 0
   m_Name: playback_focus_square_left
-  m_TagString: Untagged
+  m_TagString: F_L
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -70929,7 +70929,7 @@ GameObject:
   - component: {fileID: 1331537040}
   m_Layer: 0
   m_Name: playback_focus_square_right
-  m_TagString: Untagged
+  m_TagString: F_R
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -82798,7 +82798,7 @@ GameObject:
   - component: {fileID: 1564673913}
   m_Layer: 0
   m_Name: focus_square_left
-  m_TagString: Untagged
+  m_TagString: F_L
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -111007,7 +111007,7 @@ GameObject:
   - component: {fileID: 2077925080}
   m_Layer: 0
   m_Name: playback_focus_square_gaze
-  m_TagString: Untagged
+  m_TagString: F_G
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
