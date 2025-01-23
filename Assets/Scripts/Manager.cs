@@ -157,27 +157,29 @@ public class Manager : MonoBehaviour
         {
             var meshSelected = copyObjectDragged.GetComponent<MeshFilter>().sharedMesh;
             var assetCount = Recorder.Instance.allAssets.Count(asset => asset.GetComponent<MeshFilter>().sharedMesh == meshSelected);
-            AssetManager.Instance.CreateAsset(copyObjectDragged, spherePrefab, $"Sphere {assetCount+1}", meshSelected);
+            AssetManager.Instance.CreateAsset(copyObjectDragged.transform.position, spherePrefab, $"Sphere {assetCount+1}", meshSelected);
         }
         else if (copyObjectDragged.name.StartsWith("Cube"))
         {
             var meshSelected = copyObjectDragged.GetComponent<MeshFilter>().sharedMesh;
             var assetCount = Recorder.Instance.allAssets.Count(asset => asset.GetComponent<MeshFilter>().sharedMesh == meshSelected);
-            AssetManager.Instance.CreateAsset(copyObjectDragged, spherePrefab, $"Cube {assetCount+1}", meshSelected);
+            AssetManager.Instance.CreateAsset(copyObjectDragged.transform.position, spherePrefab, $"Cube {assetCount+1}", meshSelected);
         }
         else if (copyObjectDragged.name.StartsWith("Text"))
         {
-            AssetManager.Instance.CreateAsset(copyObjectDragged, textAssetPrefab, "Text");
-        }        
-        
-        //We need to check if we are colliding an existing asset
-        
-        
-        //We need to handle now if it's not an asset and it is an asset that we only care about 
-        //if (obj.GetComponent<MeshCopy>() == null)
-        {
-           //Destroy(obj);
+            AssetManager.Instance.CreateAsset(copyObjectDragged.transform.position, textAssetPrefab, "Text");
         }
+        else if (copyObjectDragged.name.StartsWith("Basketball"))
+        {
+            //We were dragging a PremadeAsset so we need to execute it's meshCopy component code
+            var meshCopyComponent = copyObjectDragged.GetComponent<MeshCopy>();
+            if (meshCopyComponent != null)
+            {
+                meshCopyComponent.ApplyMeshChange();
+            }
+        }
+
+        Destroy(copyObjectDragged);
     }
 
     public string CleanAssetName(string str)

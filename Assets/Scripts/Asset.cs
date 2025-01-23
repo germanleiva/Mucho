@@ -500,6 +500,12 @@ public class Asset : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         var currentFrameIndex = (int)Recorder.Instance.playbackSlider.value;
+
+        //Added to save the PotentialAssetToChange while dragging a PremadeAsset such as the Basketball
+        if (Manager.Instance.currAppState == Manager.AppState.PLAYBACK && other.gameObject.name.StartsWith("Basketball"))
+        {
+            other.gameObject.GetComponent<MeshCopy>().PotentialAssetToChange = gameObject;
+        }
         
         if (Manager.Instance.currAppState == Manager.AppState.SIMULATING)
         {
@@ -635,6 +641,12 @@ public class Asset : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
+        //Added to remove the PotentialAssetToChange while dragging a PremadeAsset such as the Basketball
+        if (Manager.Instance.currAppState == Manager.AppState.PLAYBACK && other.gameObject.name.StartsWith("Basketball"))
+        {
+            other.gameObject.GetComponent<MeshCopy>().PotentialAssetToChange = null;
+        }
+        
         if (Manager.Instance.currAppState == Manager.AppState.SIMULATING)
         {
             if(!other.gameObject.CompareTag("Untagged"))
