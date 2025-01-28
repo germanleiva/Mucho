@@ -502,7 +502,7 @@ public class Asset : MonoBehaviour
         var currentFrameIndex = (int)Recorder.Instance.playbackSlider.value;
 
         //Added to save the PotentialAssetToChange while dragging a PremadeAsset such as the Basketball
-        if (Manager.Instance.currAppState == Manager.AppState.PLAYBACK && other.gameObject.name.StartsWith("Basketball"))
+        if (Manager.Instance.currAppState == Manager.AppState.PLAYBACK && other.gameObject.name.StartsWith("Premade"))
         {
             other.gameObject.GetComponent<MeshCopy>().PotentialAssetToChange = gameObject;
         }
@@ -551,8 +551,16 @@ public class Asset : MonoBehaviour
 
                 DebugLogger.Instance.Log("Asset.OnCollisionEnter: AddNewCollision >> collision between " 
                                          + base.gameObject.name + " and " + GetComponent<Collider>().name);
-                
-                Recorder.Instance.currentActiveExample.AddNewCollision((int)Recorder.Instance.playbackSlider.value,base.gameObject, other.gameObject);            
+                if (!base.gameObject.CompareTag("Floor") &&
+                    !other.gameObject.CompareTag("Floor") &&
+                    !other.gameObject.CompareTag("F_L") &&
+                    !base.gameObject.CompareTag("F_L") &&
+                    !other.gameObject.CompareTag("F_R") &&
+                    !base.gameObject.CompareTag("F_R"))
+                {
+                    Recorder.Instance.currentActiveExample.AddNewCollision((int)Recorder.Instance.playbackSlider.value,
+                        base.gameObject, other.gameObject);
+                }
             }
             
         }

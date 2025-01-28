@@ -84,6 +84,8 @@ public class Head : MonoBehaviour
             {
                 string currentRecognisedText = InputManager.Instance.currentVoiceCommand;
                 string cleanedVoiceCommand = currentRecognisedText;
+                //TODO Virtual Museum forced
+                cleanedVoiceCommand = "red";
                 InsertVoiceCommand(cleanedVoiceCommand);                
 
                 

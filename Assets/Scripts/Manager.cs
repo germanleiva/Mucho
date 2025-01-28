@@ -169,7 +169,7 @@ public class Manager : MonoBehaviour
         {
             AssetManager.Instance.CreateAsset(copyObjectDragged.transform.position, textAssetPrefab, "Text");
         }
-        else if (copyObjectDragged.name.StartsWith("Basketball"))
+        else if (copyObjectDragged.name.StartsWith("Premade"))
         {
             //We were dragging a PremadeAsset so we need to execute it's meshCopy component code
             var meshCopyComponent = copyObjectDragged.GetComponent<MeshCopy>();
@@ -903,7 +903,8 @@ public class VoiceSequence : Sequence
         List<VoiceSequence> sequences = new();
 
         int startIndex = -1;
-        string currentVoiceCommand = null;
+        //TODO Virtual Museum forced
+        string currentVoiceCommand = "red";
 
         for (int i = 0; i < voiceCommands.Count; i++)
         {

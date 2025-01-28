@@ -16,6 +16,7 @@ TagManager:
   - F_R
   - F_L
   - F_G
+  - HeadGaze
   layers:
   - Default
   - TransparentFX
