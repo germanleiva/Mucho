@@ -129,7 +129,24 @@ public class AssetManager : MonoBehaviour
         {
             example.RefreshAssetsInExample();
         }
-
+        
+        //START Added an implicit show at the beginning
+        var newAction = new AssetActionSequence
+        {
+            StartIndex = 0,
+            ActionType = ACTION_ENUM.SHOW,
+            ActionDelegate = () =>
+            {
+                newAsset.isVisible = true;
+            },
+            TargetAsset = newAsset
+        };
+        foreach (var example in Recorder.Instance.examples)
+        {
+            example.assetsDict[newAsset].assetActions.Add(newAction);
+        }
+        //END Added an implicit show at the beginning
+        
         var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetsDict[newAsset].assetFrames;
         for (int i = 0; i < Recorder.Instance.currentActiveExample.RecordedDataCount; i++)
         {
