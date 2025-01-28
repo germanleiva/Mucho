@@ -3,6 +3,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
 
 public class TimelineUIElement : MonoBehaviour
 {
@@ -15,6 +16,10 @@ public class TimelineUIElement : MonoBehaviour
     float defaultY;
     [SerializeField]
     TMPro.TMP_Text eventText;
+    [SerializeField]
+    Image eventImage; //only for collision events
+    
+    public Sprite leftHandSprite, rightHandSprite, headFocusSquareSprite, rightHandFocusSquareSprite, leftHandFocusSquareSprite;
 
     //Store startindex and length
     public int StartIndex;
@@ -167,6 +172,34 @@ public class TimelineUIElement : MonoBehaviour
         if (length == 0)
         {
             SetTimeLineElementWidthAccordingToText(timelineElement);
+        }
+        
+        //if it is a collision event, set the child image with the corresponding sprite
+        if (sequence is CollisionSequence collisionSequence && timelineElementScript.eventImage != null)
+        {
+            Debug.Log("Is collision sequence");
+            Sprite sprite = null;
+            // cast sequence to collision sequence
+            switch (collisionSequence.GetCollidingObject2Name())
+            {
+                case "RightHand":
+                    sprite = timelineElementScript.rightHandSprite;
+                    break;
+                case "LeftHand":
+                    sprite = timelineElementScript.leftHandSprite;
+                    break;
+                case "F_L":
+                    sprite = timelineElementScript.leftHandFocusSquareSprite;
+                    break;
+                case "F_R":
+                    sprite = timelineElementScript.rightHandFocusSquareSprite;
+                    break;
+                case "HeadGaze":
+                    sprite = timelineElementScript.headFocusSquareSprite;
+                    break;
+            }
+            timelineElementScript.eventImage.sprite = sprite;
+            timelineElementScript.eventText.text = collisionSequence.GetCollidingObject1Name();
         }
     }
     

@@ -670,28 +670,21 @@ public class CollisionSequence : Sequence {
     }
 
     public override string ToString() {
-        var text1 = CollidingObject1.GetComponent<Asset>() ? CollidingObject1.name : CollidingObject1.tag;
-        var text2 = CollidingObject2.GetComponent<Asset>() ? CollidingObject2.name : CollidingObject2.tag;
-
-        switch (text2)
-        {
-            case "RightHand":
-                text2 = "🖑";
-                break;
-            case "LeftHand":
-                text2 = "🖐";
-                break;
-            case "F_L" or "F_R":
-                text2 = "⯐";
-                break;
-            case "HeadGaze":
-                text2 = "👁";
-                break;
-        }
+        var text1 = GetCollidingObject1Name();
+        var text2 = GetCollidingObject2Name();
         
         return $"{text1} hit {text2}";
     }
     
+    public string GetCollidingObject1Name()
+    {
+        return CollidingObject1.GetComponent<Asset>() ? CollidingObject1.name : CollidingObject1.tag;
+    }
+    
+    public string GetCollidingObject2Name()
+    {
+        return CollidingObject2.GetComponent<Asset>() ? CollidingObject2.name : CollidingObject2.tag;
+    }
     
     public override object Clone()
     {
