@@ -490,16 +490,18 @@ public class Example
 
     public void AddNewCollision(int frameStart, GameObject assetGameObject, GameObject anotherGameObject)
     {
-        if (CollisionModels.Exists(collision => collision.StartIndex == frameStart && collision.isCollidingWith(assetGameObject,anotherGameObject)))
+        
+        if (CollisionModels.Exists(existingCollision => (existingCollision.StartIndex == frameStart && existingCollision.isCollidingWith(assetGameObject,anotherGameObject))))
         {
             DebugLogger.Instance.Log($"We have a similar collision, so we ignore it: Frame{frameStart}, {assetGameObject.name} vs {anotherGameObject.name}"); 
             return;
         }
+     
         var newCollisionModel = new CollisionSequence();
         newCollisionModel.StartIndex = frameStart;
         newCollisionModel.CollidingObject1 = assetGameObject; //This is generally an asset
-        newCollisionModel.CollidingObject2 = anotherGameObject;  //This is a playback object
-
+        newCollisionModel.CollidingObject2 = anotherGameObject;  //This is a playback object   
+       
         GameObject collidedObjectOnLiveMode;
 
         if (anotherGameObject == InputManager.Instance.leftHandPinchObj || anotherGameObject == InputManager.Instance.playbackLeftHandPinchObj)
@@ -660,14 +662,33 @@ public class CollisionSequence : Sequence {
         return (Frame frame) => { return conditionFunction(frame) && collisionDelegate(frame); };
     }
 
+    //We check if stateStartIndex is within the boundaries of this sequence 
     public override bool CanTriggerAt(int stateStartIndex)
     {
+        //TODO Does it need to be <= the last sign?
         return StartIndex == stateStartIndex || (stateStartIndex > StartIndex && stateStartIndex < (StartIndex + Length));
     }
 
     public override string ToString() {
         var text1 = CollidingObject1.GetComponent<Asset>() ? CollidingObject1.name : CollidingObject1.tag;
         var text2 = CollidingObject2.GetComponent<Asset>() ? CollidingObject2.name : CollidingObject2.tag;
+
+        switch (text2)
+        {
+            case "RightHand":
+                text2 = "🖑";
+                break;
+            case "LeftHand":
+                text2 = "🖐";
+                break;
+            case "F_L" or "F_R":
+                text2 = "⯐";
+                break;
+            case "HeadGaze":
+                text2 = "👁";
+                break;
+        }
+        
         return $"{text1} hit {text2}";
     }
     
@@ -690,6 +711,32 @@ public class CollisionSequence : Sequence {
     public bool isCollidingWith(GameObject assetGameObject, GameObject anotherGameObject)
     {
         return (CollidingObject1 == assetGameObject && CollidingObject2 == anotherGameObject) || (CollidingObject1 == anotherGameObject && CollidingObject2 == assetGameObject);
+    }
+    
+    public bool IsOverridenBy(CollisionSequence anotherCollision)
+    {
+        if (!anotherCollision.CanTriggerAt(StartIndex) || !anotherCollision.CanTriggerAt(StartIndex+Length))
+        {
+            return false;
+        }
+
+        //If we have a collision between an asset and the hand,
+        //that overrides a collision between the same asset and the focus area of the same hand
+        
+        if (CollidingObject1 == anotherCollision.CollidingObject1 || CollidingObject2 == anotherCollision.CollidingObject1)
+        {
+            //That means we are talking about the same asset
+            //It only overrides if the parameter collision is a hand and I am a focus area hand
+            if ( (CollidingObject2.CompareTag("F_L") && anotherCollision.CollidingObject2.CompareTag("LeftHand")) ||
+                 (CollidingObject2.CompareTag("F_R") && anotherCollision.CollidingObject2.CompareTag("RightHand") ||
+                 (CollidingObject1.CompareTag("F_L") && anotherCollision.CollidingObject2.CompareTag("LeftHand"))) ||
+                 (CollidingObject1.CompareTag("F_R") && anotherCollision.CollidingObject2.CompareTag("RightHand")))
+            {
+                Debug.Log("Detected collision override: " + anotherCollision.CollidingObject1.name + " and " + anotherCollision.CollidingObject2.name);
+                return true;
+            }
+        }
+        return false;
     }
     
     public override bool IsEquivalentSequence(Sequence other)
@@ -904,7 +951,7 @@ public class VoiceSequence : Sequence
 
         int startIndex = -1;
         //TODO Virtual Museum forced
-        string currentVoiceCommand = "red";
+        string currentVoiceCommand = null;//= "red";
 
         for (int i = 0; i < voiceCommands.Count; i++)
         {

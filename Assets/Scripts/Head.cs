@@ -39,7 +39,10 @@ public class Head : MonoBehaviour
                 
                 //Raycast from ray starting point, in the direction of the ray to intersect with layer 6
                 //Debug.DrawRay(firstPoint, (secondPoint - firstPoint).normalized * 100, Color.blue);
-                if (Physics.Raycast(firstPoint, (secondPoint - firstPoint).normalized, out RaycastHit hit, 10, 1 << 6))        
+
+                // int layerMask = 1 << 6; //This was only considering InteractableSurface
+                int layerMask = LayerMask.GetMask("InteractableSurface", "RecordableAsset");
+                if (Physics.Raycast(firstPoint, (secondPoint - firstPoint).normalized, out RaycastHit hit, 10, layerMask))        
                 {
                     //hit.transform.gameObject.GetComponent<EnvironmentContext>().contextName;
 
@@ -85,7 +88,7 @@ public class Head : MonoBehaviour
                 string currentRecognisedText = InputManager.Instance.currentVoiceCommand;
                 string cleanedVoiceCommand = currentRecognisedText;
                 //TODO Virtual Museum forced
-                cleanedVoiceCommand = "red";
+                //cleanedVoiceCommand = "red";
                 InsertVoiceCommand(cleanedVoiceCommand);                
 
                 

@@ -37,7 +37,9 @@ public class ForceArrow : MonoBehaviour
 
     public GameObject forceMagnitudeUI;
 
+    //LayerMask.GetMask("InteractableSurface");
     readonly int layerMask = 1 << 6;
+    
     Vector3 previousArrowHeadPosition;
     Vector3 previousArrowGhostHeadPosition;
 

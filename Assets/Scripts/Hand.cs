@@ -101,7 +101,9 @@ public class Hand : MonoBehaviour
                 
                 //Raycast from ray starting point, in the direction of the ray to intersect with layer 6
                 //Debug.DrawRay(firstPoint, (secondPoint - firstPoint).normalized * 100, Color.blue);
-                if (Physics.Raycast(firstPoint, (secondPoint - firstPoint).normalized, out RaycastHit hit, 10, 1 << 6))        
+                int layerMask = LayerMask.GetMask("InteractableSurface", "RecordableAsset");
+
+                if (Physics.Raycast(firstPoint, (secondPoint - firstPoint).normalized, out RaycastHit hit, 10, layerMask))        
                 {
                     //hit.transform.gameObject.GetComponent<EnvironmentContext>().contextName;
 

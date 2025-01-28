@@ -363,7 +363,7 @@ public class Recorder : MonoBehaviour
 
         for (int frameIndex = 0; frameIndex < example.RecordedDataCount; frameIndex++)
         {
-            DebugLogger.Instance.Log("Updating slider from SIMULATING " + frameIndex);
+            //DebugLogger.Instance.Log("Updating slider from SIMULATING " + frameIndex);
             playbackSlider.value = frameIndex;
 
             if (actionsToPerformGroupedByFrames.TryGetValue(frameIndex, out var actionsToSimulate))
@@ -375,7 +375,7 @@ public class Recorder : MonoBehaviour
                 }
             } else 
             {
-                Debug.Log("There were no actions to simulate on frame " + frameIndex);
+                //Debug.Log("There were no actions to simulate on frame " + frameIndex);
             }
             //We pause the execution of this routine to let Unity send the collision events: OnCollisionEnter, OnCollisionStay, OnCollisionExit
             //Collisions are saved in the corresponding model Example
@@ -399,6 +399,21 @@ public class Recorder : MonoBehaviour
         Manager.Instance.currAppState = oldState;
         currentActiveExample = oldActiveExample;
 
+        //Let's clean up collision that override other collisions
+        var CollisionsToRemove = new List<CollisionSequence>();
+        foreach (var currentCollision in currentActiveExample.CollisionModels)
+        {
+            if ( currentActiveExample.CollisionModels.Exists(existingCollision => existingCollision != currentCollision && currentCollision.IsOverridenBy(existingCollision)))
+            {
+                CollisionsToRemove.Add(currentCollision);
+            }
+        }
+
+        foreach (var collisionToRemove in CollisionsToRemove)
+        {
+            currentActiveExample.CollisionModels.Remove(collisionToRemove);
+        }
+        
         if (onCompletionDelegate != null)
         { 
             onCompletionDelegate();
