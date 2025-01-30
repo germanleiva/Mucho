@@ -1,14 +1,9 @@
 fileFormatVersion: 2
-guid: a5d3f5e3c555b8c4abb4b87b89196151
+guid: 89632470c1c06bf4c9ad0ba5f011e796
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: MAT_Statue_Mermaid_Sitting
-    second: {fileID: 2100000, guid: 4ce1505c0f66d544083d49d8dd6afe74, type: 2}
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0
