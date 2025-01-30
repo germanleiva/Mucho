@@ -234,7 +234,7 @@ public class Recorder : MonoBehaviour
         int nearestStartIndex = int.MaxValue;
         int nearestEndIndex = int.MaxValue;
 
-        foreach (Sequence sequence in currentActiveExample.AllGestureSequences.Concat<Sequence>(currentActiveExample.CollisionModels.Concat<Sequence>(currentActiveExample.VoiceCommandSequences)))
+        foreach (Sequence sequence in currentActiveExample.AllGestureSequences.Concat<Sequence>(currentActiveExample.activeCollisionModels.Concat<Sequence>(currentActiveExample.VoiceCommandSequences)))
         {
             if (Mathf.Abs(currentFrameNum - sequence.StartIndex) < threshHold)
             {
@@ -518,7 +518,7 @@ public class Recorder : MonoBehaviour
         }
         
         //Generate collision sequences
-        foreach (var collisionModel in currentActiveExample.CollisionModels)
+        foreach (var collisionModel in currentActiveExample.activeCollisionModels)
         {
             var collisionTimelinePanelTransform =
                 currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>();
@@ -565,7 +565,7 @@ public class Recorder : MonoBehaviour
         }
 
         var gestures = currentActiveExample.AllGestureSequences;
-        var collisions = currentActiveExample.CollisionModels;
+        var collisions = currentActiveExample.activeCollisionModels; //TODO check if it needs to be only the active collisions or all
         var voiceCommands = currentActiveExample.VoiceCommandSequences;
 
         List<Sequence> allPotentialTriggers = gestures.Cast<Sequence>()
@@ -804,7 +804,7 @@ public class Recorder : MonoBehaviour
         DeleteStatePlaceholders();
         int recordedFramesTotal = GetSizeOfMainRecordedData();
         var gestures = currentActiveExample.AllGestureSequences;
-        var collisions = currentActiveExample.CollisionModels;
+        var collisions = currentActiveExample.activeCollisionModels;
         var voiceCommands = currentActiveExample.VoiceCommandSequences;
         // Create a list of events (start or end of a sequence)
         var eventsThatStartStates = new List<(int Index, string Type, GestureSequence Gesture, CollisionSequence Collision, VoiceSequence VoiceCommand)>();

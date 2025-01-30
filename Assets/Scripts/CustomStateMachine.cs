@@ -247,7 +247,7 @@ public class StateMachineModel
         }
 
         var gestures = example.AllGestureSequences;
-        var collisions = example.CollisionModels;
+        var collisions = example.activeCollisionModels;
         var voiceCommands = example.VoiceCommandSequences;
 
         List<Sequence> allPotentialTriggers = gestures.Cast<Sequence>()

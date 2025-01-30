@@ -554,12 +554,12 @@ public class Asset : MonoBehaviour
 
                 DebugLogger.Instance.Log("Asset.OnCollisionEnter: AddNewCollision >> collision between " 
                                          + base.gameObject.name + " and " + GetComponent<Collider>().name);
-                if (!base.gameObject.CompareTag("Floor") &&
-                    !other.gameObject.CompareTag("Floor"))
-                {
+                // if (!base.gameObject.CompareTag("Floor") &&
+                //     !other.gameObject.CompareTag("Floor"))
+                // {
                     Recorder.Instance.currentActiveExample.AddNewCollision((int)Recorder.Instance.playbackSlider.value,
                         base.gameObject, other.gameObject);
-                }
+                // }
             }
             
         }
@@ -649,9 +649,12 @@ public class Asset : MonoBehaviour
     private void OnTriggerExit(Collider other)
     {
         //Added to remove the PotentialAssetToChange while dragging a PremadeAsset such as the Basketball
-        if (Manager.Instance.currAppState == Manager.AppState.PLAYBACK && other.gameObject.name.StartsWith("Basketball"))
+        if (Manager.Instance.currAppState == Manager.AppState.PLAYBACK && other.gameObject.name.StartsWith("Premade"))
         {
-            other.gameObject.GetComponent<MeshCopy>().PotentialAssetToChange = null;
+            var meshCopy = other.gameObject.GetComponent<MeshCopy>();
+            if (meshCopy != null) {
+                meshCopy.PotentialAssetToChange = null;
+            }
         }
         
         if (Manager.Instance.currAppState == Manager.AppState.SIMULATING)

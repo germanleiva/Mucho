@@ -225,6 +225,17 @@ public class Manager : MonoBehaviour
 
         Recorder.Instance.RecreateTimelineUI_Gestures();
     }
+    
+    public void ToggleCollisionEventRow(Boolean focusAreaCollisionsOn) {
+        foreach (var collisionModel in Recorder.Instance.currentActiveExample.CollisionModels)
+        {
+            if (collisionModel.IsACollisionWithAFocusArea()) {
+                collisionModel.IsActive = !collisionModel.IsActive;
+            }
+        }
+
+        Recorder.Instance.RecreateTimelineUI_Collisions();
+    }
 
     public void PressedRecreateStatePlaceholders() {
        Recorder.Instance.RecreateTimelineUI_StatePlaceholders();
@@ -256,6 +267,14 @@ public class Example
         }
     }
     public List<HeadFrame> headFrames;
+
+    public List<CollisionSequence> activeCollisionModels
+    {
+        get
+        {
+            return CollisionModels.Where(collisionModel => collisionModel.IsActive).ToList();
+        }
+    }
 
     public RectTransform examplePlaybackPanel;
     public RectTransform rightHandTimelinePanel;    
@@ -653,7 +672,9 @@ public abstract class Sequence: ICloneable {
     public abstract bool IsEquivalentSequence(Sequence other);
 }
 
-public class CollisionSequence : Sequence {
+public class CollisionSequence : Sequence
+{
+    public bool IsActive = true;
     public GameObject CollidingObject1 { get; set; }
     public GameObject CollidingObject2 { get; set; }
 
@@ -742,6 +763,19 @@ public class CollisionSequence : Sequence {
             return false;
         }
         return otherCollisionSequence.isCollidingWith(CollidingObject1,CollidingObject2);
+    }
+
+    public bool IsACollisionWithAFocusArea()
+    {
+        foreach (var collidingObject in new List<GameObject> { CollidingObject1, CollidingObject2 })
+        {
+            if ((new List<string> { "F_L","F_R","HeadGaze" }).Exists(x => collidingObject.CompareTag(x)))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 public enum ACTION_ENUM { 
