@@ -5,6 +5,7 @@ using System.Linq;
 using Unity.VisualScripting.Dependencies.NCalc;
 using System.ComponentModel;
 using System.Reflection;
+using Assets.OVR.Scripts;
 using Oculus.Interaction;
 using Unity.VisualScripting;
 
@@ -226,7 +227,9 @@ public class Manager : MonoBehaviour
         Recorder.Instance.RecreateTimelineUI_Gestures();
     }
     
-    public void ToggleCollisionEventRow(Boolean focusAreaCollisionsOn) {
+    public void ToggleCollisionEventRow(Boolean focusAreaCollisionsOn)
+    {
+        Recorder.Instance.currentActiveExample.areFocusAreaCollisionsActivated = !Recorder.Instance.currentActiveExample.areFocusAreaCollisionsActivated;
         foreach (var collisionModel in Recorder.Instance.currentActiveExample.CollisionModels)
         {
             if (collisionModel.IsACollisionWithAFocusArea()) {
@@ -268,6 +271,7 @@ public class Example
     }
     public List<HeadFrame> headFrames;
 
+    public bool areFocusAreaCollisionsActivated = true;
     public List<CollisionSequence> activeCollisionModels
     {
         get
@@ -522,7 +526,7 @@ public class Example
         newCollisionModel.StartIndex = frameStart;
         newCollisionModel.CollidingObject1 = assetGameObject; //This is generally an asset
         newCollisionModel.CollidingObject2 = anotherGameObject;  //This is a playback object   
-       
+        
         GameObject collidedObjectOnLiveMode;
 
         if (anotherGameObject == InputManager.Instance.leftHandPinchObj || anotherGameObject == InputManager.Instance.playbackLeftHandPinchObj)
@@ -556,6 +560,11 @@ public class Example
         }
         
         newCollisionModel.collisionDelegate = (Frame frame) => frame.IsColliding(assetGameObject, collidedObjectOnLiveMode);
+
+        if (newCollisionModel.IsACollisionWithAFocusArea() && !areFocusAreaCollisionsActivated)
+        {
+            newCollisionModel.IsActive = false;
+        }
         
         CollisionModels.Add(newCollisionModel);
     }
