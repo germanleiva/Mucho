@@ -18,7 +18,7 @@ public class SphereColliderVisualizer : MonoBehaviour
 
     void Update()
     {
-        if (visualizerSphere != null && sphereCollider != null && colliderBoundaryGizmo != null)
+        /*if (visualizerSphere != null && sphereCollider != null && colliderBoundaryGizmo != null)
         {
             float visualizerRadius = Vector3.Distance(visualizerSphere.transform.localPosition, colliderBoundaryGizmo.transform.localPosition) - colliderBoundaryGizmo.transform.localScale.x / 2;
             visualizerSphere.transform.localScale = new Vector3(visualizerRadius * 2, visualizerRadius * 2, visualizerRadius * 2);
@@ -29,7 +29,7 @@ public class SphereColliderVisualizer : MonoBehaviour
             sphereCollider.radius = visualizerSphere.transform.localScale.x / 2;
             sphereCollider.center = visualizerSphere.transform.localPosition;
             //visualizerSphere.transform.position = transform.position;
-        }
+        }*/
     }
 
 }

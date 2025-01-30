@@ -176,6 +176,8 @@ public class Manager : MonoBehaviour
             if (meshCopyComponent != null)
             {
                 meshCopyComponent.ApplyMeshChange();
+                // Update the timeline asset row name
+                Recorder.Instance.RecreateTimelineUI_AssetRows();
             }
         }
 

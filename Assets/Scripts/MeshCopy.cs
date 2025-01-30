@@ -58,8 +58,10 @@ public class MeshCopy : MonoBehaviour
         
     
     }*/
-
-    public void ApplyMeshChange()
+    
+    //Old version for basketball example only
+    /* 
+     public void ApplyMeshChange()
     {
         if (PotentialAssetToChange != null)
         {
@@ -95,6 +97,71 @@ public class MeshCopy : MonoBehaviour
             
             PotentialAssetToChange.gameObject.GetComponent<Asset>().defaultMaterial = thisMeshRenderer.material;
         }
+    }*/
+
+
+    public void ApplyMeshChange()
+    {
+        // PotentialAsset: Sphere/Cube that will be changed
+        // gameObject: Premade object that will be copied
+        if(PotentialAssetToChange == null)
+        {
+            DebugLogger.Instance.Log("MeshCopy: No potential asset to change");
+            return;
+        }
+        // MESH
+        //Copy the mesh from this object to the other object 
+        MeshFilter sphereMeshFilter = PotentialAssetToChange.gameObject.GetComponent<MeshFilter>();
+        // Try to get the mesh filter from the gameobject
+        MeshFilter premadeAssetMeshFilter = gameObject.GetComponent<MeshFilter>();
+        sphereMeshFilter.mesh =  premadeAssetMeshFilter.mesh;
+        
+        // ROTATION AND SCALE
+        Quaternion rotation = gameObject.transform.rotation;
+        PotentialAssetToChange.gameObject.transform.rotation = rotation; 
+        Vector3 sizeScaleFactor =  gameObject.transform.localScale * 2f;
+        PotentialAssetToChange.gameObject.transform.localScale = sizeScaleFactor;
+        
+        //MATERIAL
+        MeshRenderer otherMeshRenderer = PotentialAssetToChange.gameObject.GetComponent<MeshRenderer>();
+        MeshRenderer thisMeshRenderer = gameObject.GetComponent<MeshRenderer>();
+        otherMeshRenderer.material = thisMeshRenderer.material;
+        PotentialAssetToChange.gameObject.GetComponent<Asset>().defaultMaterial = thisMeshRenderer.material;
+        
+        // COLLIDER
+        SphereCollider sphereCollider = PotentialAssetToChange.gameObject.GetComponent<SphereCollider>();
+        SphereCollider premadeAssetSphereCollider = gameObject.GetComponent<SphereCollider>();
+        if (sphereCollider != null)
+        {
+            float radius = 0.0f;
+            Vector3 center = Vector3.zero;
+            if(premadeAssetSphereCollider == null)
+            {
+                MeshCollider premadeAssetMeshCollider = gameObject.GetComponent<MeshCollider>();
+                if (premadeAssetMeshCollider != null)
+                {
+                    Bounds bounds = premadeAssetMeshCollider.bounds;
+                    radius = bounds.extents.magnitude;
+                    center = bounds.center;
+                }
+            }
+            else
+            {
+                radius = premadeAssetSphereCollider.radius;
+                center = premadeAssetSphereCollider.center;
+            }
+            // New radius
+            sphereCollider.radius = radius;
+            
+            // Center of the sphere collider
+            sphereCollider.center = center;
+        }
+        //NAME
+        PotentialAssetToChange.gameObject.name = gameObject.name.Replace("Premade", "");
+        
+        //Update the rotation of the asset
+        Asset potentialAsset = PotentialAssetToChange.gameObject.GetComponent<Asset>();
+        potentialAsset.InitialRotation = rotation;
     }
 
 }
