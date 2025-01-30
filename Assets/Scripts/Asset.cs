@@ -467,7 +467,10 @@ public class Asset : MonoBehaviour
         var rigidBody = GetComponent<Rigidbody>();
         rigidBody.constraints = RigidbodyConstraints.None;
         rigidBody.useGravity = true;
-        rigidBody.AddForce(initialVelocity, ForceMode.VelocityChange);
+        
+        //Added Time.fixedDeltaTime to account when we run the simulation at 10x
+        //0.02f should be the default fixedDeltaTime
+        rigidBody.AddForce(initialVelocity / Time.fixedDeltaTime * 0.02f, ForceMode.VelocityChange);
     }
 
 

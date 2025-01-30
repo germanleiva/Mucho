@@ -353,6 +353,13 @@ public class Recorder : MonoBehaviour
     {
         var oldState = Manager.Instance.currAppState;
         var oldActiveExample = currentActiveExample;
+        var oldTimeScale = Time.timeScale;
+        var oldPlaybackSliderValue = playbackSlider.value;
+        var oldGravity = Physics.gravity;
+
+        Time.timeScale = 10f; // Moderate speed boost (10x)
+        Time.fixedDeltaTime = 0.02f / Time.timeScale; // Adjust physics step
+        Physics.gravity = oldGravity * (0.02f / Time.fixedDeltaTime) * Time.timeScale;
         
         currentActiveExample = example;
         
@@ -380,7 +387,7 @@ public class Recorder : MonoBehaviour
             //We pause the execution of this routine to let Unity send the collision events: OnCollisionEnter, OnCollisionStay, OnCollisionExit
             //Collisions are saved in the corresponding model Example
             
-            yield return new WaitForSeconds(0.01f);
+            yield return new WaitForFixedUpdate(); //new WaitForSeconds(0.01f);
             
             allAssets.ForEach(asset =>
             {
@@ -388,7 +395,7 @@ public class Recorder : MonoBehaviour
             });
         }
         
-        yield return new WaitForSeconds(0.01f);
+        yield return new WaitForFixedUpdate(); //new WaitForSeconds(0.01f);
         //TODO Set the frameEnd of all the unclosed collisions to the final frame of the recorded data
         // foreach (var collisionModelWithoutFrameEnd in example.CollisionModelsWithoutFrameEnd())
         // {
@@ -399,6 +406,12 @@ public class Recorder : MonoBehaviour
         Manager.Instance.currAppState = oldState;
         currentActiveExample = oldActiveExample;
 
+        Time.timeScale = oldTimeScale; // Default (1x)
+        Time.fixedDeltaTime = 0.02f / Time.timeScale; // Adjust physics step
+        Physics.gravity = oldGravity;
+        
+        playbackSlider.value = oldPlaybackSliderValue;
+        
         //Let's clean up collision that override other collisions
         var CollisionsToRemove = new List<CollisionSequence>();
         foreach (var currentCollision in currentActiveExample.CollisionModels)
