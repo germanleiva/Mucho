@@ -18,6 +18,8 @@ public class TimelineUIElement : MonoBehaviour
     TMPro.TMP_Text eventText;
     [SerializeField]
     Image eventImage; //only for collision events
+    [SerializeField]
+    TMPro.TMP_Text secondEventText;
     
     public Sprite leftHandSprite, rightHandSprite, headFocusSquareSprite, rightHandFocusSquareSprite, leftHandFocusSquareSprite;
 
@@ -179,6 +181,8 @@ public class TimelineUIElement : MonoBehaviour
         {
             Debug.Log("Is collision sequence");
             Sprite sprite = null;
+            string collidingObject1Name = collisionSequence.GetCollidingObject1Name();
+            string collidingObject2Name = collisionSequence.GetCollidingObject2Name();
             // cast sequence to collision sequence
             switch (collisionSequence.GetCollidingObject2Name())
             {
@@ -197,9 +201,18 @@ public class TimelineUIElement : MonoBehaviour
                 case "HeadGaze":
                     sprite = timelineElementScript.headFocusSquareSprite;
                     break;
+                default:
+                    timelineElementScript.secondEventText.gameObject.SetActive(true);
+                    timelineElementScript.secondEventText.text = collidingObject2Name;
+                    timelineElementScript.eventImage.gameObject.SetActive(false);
+                    break;
             }
-            timelineElementScript.eventImage.sprite = sprite;
-            timelineElementScript.eventText.text = collisionSequence.GetCollidingObject1Name();
+            if (sprite != null)
+            {
+                timelineElementScript.eventImage.sprite = sprite;
+            }
+            
+            timelineElementScript.eventText.text = collidingObject1Name;
         }
     }
     
