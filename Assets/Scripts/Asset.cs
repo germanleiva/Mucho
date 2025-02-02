@@ -55,7 +55,19 @@ public class Asset : MonoBehaviour
 
     public bool isVisible
     {
-        get => gameObject.GetComponent<MeshRenderer>().material == defaultMaterial;
+        get {
+            MeshRenderer meshRenderer = gameObject.GetComponent<MeshRenderer>();
+            // Any time we access material or materials on a renderer, that actually creates a copy
+            // of the materials assigned just to that renderer. So we cannot use == operator
+            String baseMaterialName = defaultMaterial.name;
+            String assignedMaterialName = meshRenderer.sharedMaterial.name;
+
+            if (assignedMaterialName.Contains(baseMaterialName) ) {
+                // here is your Match
+                return true;
+            }
+            return false;
+        } 
         set
         {
             //DebugLogger.Instance.Log("SetVisibility: true for " + gameObject.name + " at index " + (int)Recorder.Instance.playbackSlider.value);
@@ -107,6 +119,42 @@ public class Asset : MonoBehaviour
             _grabbable.WhenPointerEventRaised += HandlePointerEventRaised;
         }
     }
+
+    public bool IsAnimated
+    {
+        get => gameObject.GetComponent<Light>() != null && gameObject.GetComponent<ParticleSystem>() != null;
+        set
+        {
+            if (value)
+            {
+                // if gameObject name is Lamp then add a light component 
+                if(gameObject.name.Contains("Lamp"))
+                {
+                    gameObject.AddComponent<Light>();
+                    // Set the light component to be a point light
+                    gameObject.GetComponent<Light>().type = LightType.Point;
+                    // Set the intensity of the light to 1
+                    gameObject.GetComponent<Light>().intensity = 1;
+                }
+                // if gameObject name is Book then remove the particle system component
+                else if(gameObject.name.Contains("Book"))
+                {
+                    Destroy(gameObject.GetComponent<ParticleSystem>());
+                }
+            }
+            else
+            {
+                if(gameObject.name.Contains("Lamp"))
+                {
+                    if (gameObject.GetComponent<Light>() != null)
+                    {
+                        Destroy(gameObject.GetComponent<Light>());
+                    }
+                }
+            }
+        }
+    }
+
 
     private void OnDestroy()
     {
@@ -184,6 +232,7 @@ public class Asset : MonoBehaviour
                 transform.rotation = currentAssetRecordedData[currentFrameNum].rootRotation; 
                 CurrentColor = currentAssetRecordedData[currentFrameNum].color;
                 isVisible = currentAssetRecordedData[currentFrameNum].isVisible;
+                IsAnimated = currentAssetRecordedData[currentFrameNum].IsAnimated;
                 /*if (data[currentFrameNum].isVisible)
                 {
                     //DebugLogger.Instance.Log("Showing " + recordable.playbackObject.name + " at " + currentFrameNum);
@@ -249,6 +298,7 @@ public class Asset : MonoBehaviour
         assetFrame.color = CurrentColor;
         // assetFrame.isVisible = gameObject.GetComponent<MeshRenderer>().enabled;
         assetFrame.isVisible = isVisible;
+        assetFrame.IsAnimated = IsAnimated;
     }
 
     public void ResetMainVisualValues()
@@ -257,6 +307,7 @@ public class Asset : MonoBehaviour
         transform.rotation = InitialRotation;
         CurrentColor = Color.gray;
         isVisible = true;
+        IsAnimated = false;
     }
 
     //For assets
@@ -326,6 +377,22 @@ public class Asset : MonoBehaviour
         }
 
         SetVisibility(true);*/
+    }
+
+    public void RecordAnimate()
+    {
+        RecordAction(ACTION_ENUM.ANIMATE, () =>
+        {
+            GetComponent<Asset>().IsAnimated = true;
+        });
+    }
+    
+    public void RecordStopAnimate()
+    {
+        RecordAction(ACTION_ENUM.ANIMATE, () =>
+        {
+            GetComponent<Asset>().IsAnimated = false;
+        });
     }
 
     public void RecordColorChange(UnityEngine.UI.Image buttonImage)
@@ -727,6 +794,8 @@ public class AssetFrame : ICloneable
 
     public Color color;
 
+    public bool IsAnimated = false;
+
     //public string voiceCommand = "None";
 
     //public Vector3 force;
@@ -735,12 +804,14 @@ public class AssetFrame : ICloneable
     public AssetFrame(Vector3 _position, 
     Quaternion _rotation, 
     bool _showStatus, 
-    Color _color)
+    Color _color, 
+    bool _isAnimated)
     {
         rootPosition = _position;
         rootRotation = _rotation;
         isVisible = _showStatus;
         color = _color;
+        IsAnimated = _isAnimated;
     }
 
     public object Clone()
@@ -751,7 +822,8 @@ public class AssetFrame : ICloneable
             this.rootPosition,
             this.rootRotation,
             this.isVisible,
-            this.color
+            this.color, 
+            this.IsAnimated
         );
 
         // Return the cloned object

@@ -99,7 +99,7 @@ public class AssetManager : MonoBehaviour
                 foreach(Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys)
                 {
                     var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetsDict[asset].assetFrames;
-                    currentAssetRecordedData.Add(new(asset.transform.position, asset.transform.rotation, asset.isVisible, asset.CurrentColor));
+                    currentAssetRecordedData.Add(new(asset.transform.position, asset.transform.rotation, asset.isVisible, asset.CurrentColor, asset.IsAnimated));
                 }
                 break;
             case Manager.AppState.PLAYBACK:
@@ -119,6 +119,8 @@ public class AssetManager : MonoBehaviour
         newAssetPrefabCopyObject.SetActive(true);
         var newAsset = newAssetPrefabCopyObject.GetComponentInChildren<Asset>();
         newAsset.name = assetName;
+        newAsset.isVisible = true;
+        newAsset.IsAnimated = false;
         if (mesh != null) {
             newAsset.GetComponent<MeshFilter>().mesh = mesh;
         }
@@ -151,7 +153,7 @@ public class AssetManager : MonoBehaviour
         for (int i = 0; i < Recorder.Instance.currentActiveExample.RecordedDataCount; i++)
         {
             //We need to generate the asset frames of the new asset if we already have some recorded data
-            currentAssetRecordedData.Add(new(newAsset.transform.position, newAsset.transform.rotation, newAsset.isVisible, newAsset.CurrentColor));
+            currentAssetRecordedData.Add(new(newAsset.transform.position, newAsset.transform.rotation, newAsset.isVisible, newAsset.CurrentColor, newAsset.IsAnimated));
         }
 
         Recorder.Instance.RecreateTimelineUI_AssetRowsAndCollisions();
