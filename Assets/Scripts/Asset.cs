@@ -53,7 +53,7 @@ public class Asset : MonoBehaviour
         //DebugLogger.Instance.Log("Setting color to " + _color + " for " + gameObject.name);
     }
 
-    public bool isVisible
+    public bool IsVisible
     {
         get {
             MeshRenderer meshRenderer = gameObject.GetComponent<MeshRenderer>();
@@ -63,7 +63,6 @@ public class Asset : MonoBehaviour
             String assignedMaterialName = meshRenderer.sharedMaterial.name;
 
             if (assignedMaterialName.Contains(baseMaterialName) ) {
-                // here is your Match
                 return true;
             }
             return false;
@@ -120,39 +119,49 @@ public class Asset : MonoBehaviour
         }
     }
 
-    public bool IsAnimated
+    public bool _IsAnimated = false;
+    
+    public void LightOn()
     {
-        get => gameObject.GetComponent<Light>() != null && gameObject.GetComponent<ParticleSystem>() != null;
-        set
+        Light lightComponent = gameObject.GetComponent<Light>();
+        if (lightComponent != null)
         {
-            if (value)
-            {
-                // if gameObject name is Lamp then add a light component 
-                if(gameObject.name.Contains("Lamp"))
-                {
-                    gameObject.AddComponent<Light>();
-                    // Set the light component to be a point light
-                    gameObject.GetComponent<Light>().type = LightType.Point;
-                    // Set the intensity of the light to 1
-                    gameObject.GetComponent<Light>().intensity = 1;
-                }
-                // if gameObject name is Book then remove the particle system component
-                else if(gameObject.name.Contains("Book"))
-                {
-                    Destroy(gameObject.GetComponent<ParticleSystem>());
-                }
-            }
-            else
-            {
-                if(gameObject.name.Contains("Lamp"))
-                {
-                    if (gameObject.GetComponent<Light>() != null)
-                    {
-                        Destroy(gameObject.GetComponent<Light>());
-                    }
-                }
-            }
+            lightComponent.enabled = true;
         }
+        else
+        {
+            gameObject.AddComponent<Light>();
+            // Set the light component to be a point light
+            gameObject.GetComponent<Light>().type = LightType.Point;
+            // Set the intensity of the light to 1
+            gameObject.GetComponent<Light>().intensity = 1;
+        }
+    }
+
+    public void DustOn()
+    {
+        ParticleSystem dustParticleSystem = gameObject.AddComponent<ParticleSystem>();
+        var main = dustParticleSystem.main;
+        main.startLifetime = 2f;               // Duration
+        main.startSize = 0.5f;                 // Dimension
+        main.startSpeed = 1f;                  // Velocity
+        main.startColor = new Color(0.6f, 0.6f, 0.6f);  // Color
+        main.startRotation = 0f;               // Rotation
+
+        var shape = dustParticleSystem.shape;
+        shape.shapeType = ParticleSystemShapeType.Cone;  
+        shape.angle = 30f;                            
+        shape.radius = 0.5f;                          
+        
+        //Set render material to DustMaterial
+        var renderer = gameObject.GetComponent<ParticleSystemRenderer>();
+        renderer.material = AssetManager.Instance.translucentMaterial;
+
+        var velocityOverLifetime = dustParticleSystem.velocityOverLifetime;
+        velocityOverLifetime.y = -0.5f;  
+
+        // Start the particle system immediatelys
+        dustParticleSystem.Play();
     }
 
 
@@ -231,9 +240,19 @@ public class Asset : MonoBehaviour
                 transform.position = currentAssetRecordedData[currentFrameNum].rootPosition;
                 transform.rotation = currentAssetRecordedData[currentFrameNum].rootRotation; 
                 CurrentColor = currentAssetRecordedData[currentFrameNum].color;
-                isVisible = currentAssetRecordedData[currentFrameNum].isVisible;
-                IsAnimated = currentAssetRecordedData[currentFrameNum].IsAnimated;
-                /*if (data[currentFrameNum].isVisible)
+                IsVisible = currentAssetRecordedData[currentFrameNum].isVisible;
+                _IsAnimated = currentAssetRecordedData[currentFrameNum].isAnimated;
+
+                if (_IsAnimated)
+                {
+                    StartAnimation();
+                }
+                else
+                {
+                    StopAnimation();
+                }
+                
+                /*if (data[currentFrameNum].IsVisible)
                 {
                     //DebugLogger.Instance.Log("Showing " + recordable.playbackObject.name + " at " + currentFrameNum);
                     recordable.gameObject.GetComponent<MeshRenderer>().material = AssetManager.Instance.defaultMaterial;
@@ -296,9 +315,9 @@ public class Asset : MonoBehaviour
         assetFrame.rootPosition = transform.position;
         assetFrame.rootRotation = transform.rotation;
         assetFrame.color = CurrentColor;
-        // assetFrame.isVisible = gameObject.GetComponent<MeshRenderer>().enabled;
-        assetFrame.isVisible = isVisible;
-        assetFrame.IsAnimated = IsAnimated;
+        // assetFrame.IsVisible = gameObject.GetComponent<MeshRenderer>().enabled;
+        assetFrame.isVisible = IsVisible;
+        assetFrame.isAnimated = _IsAnimated;
     }
 
     public void ResetMainVisualValues()
@@ -306,8 +325,8 @@ public class Asset : MonoBehaviour
         transform.position = InitialPosition;
         transform.rotation = InitialRotation;
         CurrentColor = Color.gray;
-        isVisible = true;
-        IsAnimated = false;
+        IsVisible = true;
+        _IsAnimated = false;
     }
 
     //For assets
@@ -315,7 +334,7 @@ public class Asset : MonoBehaviour
     {
         RecordAction(ACTION_ENUM.HIDE, () =>
         {
-            GetComponent<Asset>().isVisible = false;
+            GetComponent<Asset>().IsVisible = false;
         });
 
         /*
@@ -336,7 +355,7 @@ public class Asset : MonoBehaviour
             int _frameStart = (int)Recorder.Instance.playbackSlider.value;
             for (int i = _frameStart; i < currentAssetRecordedData.Count; i++)
             {
-                currentAssetRecordedData[i].isVisible = false;
+                currentAssetRecordedData[i].IsVisible = false;
             }
         }
 
@@ -351,7 +370,7 @@ public class Asset : MonoBehaviour
     {
         RecordAction(ACTION_ENUM.SHOW, () =>
         {
-            GetComponent<Asset>().isVisible = true;
+            GetComponent<Asset>().IsVisible = true;
         });
         
         /*var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetFramesDict[this];
@@ -372,7 +391,7 @@ public class Asset : MonoBehaviour
             int _frameStart = (int)Recorder.Instance.playbackSlider.value;
             for (int i = _frameStart; i < currentAssetRecordedData.Count; i++)
             {
-                currentAssetRecordedData[i].isVisible = true;
+                currentAssetRecordedData[i].IsVisible = true;
             }
         }
 
@@ -383,16 +402,74 @@ public class Asset : MonoBehaviour
     {
         RecordAction(ACTION_ENUM.ANIMATE, () =>
         {
-            GetComponent<Asset>().IsAnimated = true;
+            this.StartAnimation();
+            this._IsAnimated = true;
+            
         });
     }
     
     public void RecordStopAnimate()
     {
-        RecordAction(ACTION_ENUM.ANIMATE, () =>
+        RecordAction(ACTION_ENUM.STOP_ANIMATE, () =>
         {
-            GetComponent<Asset>().IsAnimated = false;
+            this.StopAnimation();
+            this._IsAnimated = false;
         });
+    }
+
+    private void StartAnimation()
+    {
+            // if gameObject name is Lamp then add a light component 
+            if(gameObject.name.Contains("Lamp"))
+            {
+                Light lightComponent = gameObject.GetComponent<Light>();
+
+                if (lightComponent != null)
+                {
+                    lightComponent.enabled = true;
+                }
+                else
+                {
+                    LightOn();
+                }
+            }
+            // if gameObject name is Book then remove the particle system component
+            else if (gameObject.name.Contains("Book"))
+            {
+                ParticleSystem dustParticleSystem = gameObject.GetComponent<ParticleSystem>();
+                if (dustParticleSystem != null)
+                {
+                    if (!dustParticleSystem.isPlaying)
+                        dustParticleSystem.Play();
+                }
+                else
+                {
+                    DustOn();
+                }
+            }
+    }
+
+    private void StopAnimation()
+    {
+        if(gameObject.name.Contains("Lamp"))
+        {
+            Light lightComponent = gameObject.GetComponent<Light>();
+
+            if (lightComponent != null)
+            {
+                lightComponent.enabled = false;
+            }
+        }
+        else if (gameObject.name.Contains("Book"))
+        {
+
+            ParticleSystem dustParticleSystem = gameObject.GetComponent<ParticleSystem>();
+            if (dustParticleSystem != null)
+            {
+                dustParticleSystem.Stop();
+                //Destroy(dustParticleSystem);
+            }
+        }
     }
 
     public void RecordColorChange(UnityEngine.UI.Image buttonImage)
@@ -739,6 +816,8 @@ public class Asset : MonoBehaviour
             if(other.name == "LeftHandPinchContactSphere" || other.name == "RightHandPinchContactSphere" || other.name == "HeadContactSphere")
             {      
                 InputManager.Instance.SaveCurrentCollision(null,null);
+                InputManager.Instance.SaveCurrentCollision(null,null);
+                InputManager.Instance.SaveCurrentCollision(null,null);
             }          
         }
         else //Recording
@@ -794,7 +873,7 @@ public class AssetFrame : ICloneable
 
     public Color color;
 
-    public bool IsAnimated = false;
+    public bool isAnimated = false;
 
     //public string voiceCommand = "None";
 
@@ -811,7 +890,7 @@ public class AssetFrame : ICloneable
         rootRotation = _rotation;
         isVisible = _showStatus;
         color = _color;
-        IsAnimated = _isAnimated;
+        isAnimated = _isAnimated;
     }
 
     public object Clone()
@@ -823,7 +902,7 @@ public class AssetFrame : ICloneable
             this.rootRotation,
             this.isVisible,
             this.color, 
-            this.IsAnimated
+            this.isAnimated
         );
 
         // Return the cloned object

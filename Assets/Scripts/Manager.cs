@@ -814,6 +814,8 @@ public enum ACTION_ENUM {
     APPLY_FORCE_END,
     [Description("Animate()")]
     ANIMATE,
+    [Description("StopAnimate()")]
+    STOP_ANIMATE
     };
 
 public class AssetActionSequence : Sequence
