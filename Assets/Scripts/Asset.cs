@@ -86,7 +86,10 @@ public class Asset : MonoBehaviour
                 }
                 else
                 {
-                    gameObject.GetComponent<MeshRenderer>().material = defaultMaterial;
+                    MeshRenderer meshRenderer = gameObject.GetComponent<MeshRenderer>();
+                    Color color = meshRenderer.material.color;
+                    meshRenderer.material = defaultMaterial;
+                    meshRenderer.material.color = color;
                 }
             }
             else

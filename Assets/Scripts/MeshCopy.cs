@@ -156,6 +156,10 @@ public class MeshCopy : MonoBehaviour
             // Center of the sphere collider
             sphereCollider.center = center;
         }
+        
+        PotentialAssetToChange.gameObject.GetComponent<SphereColliderVisualizer>().visualizerSphere.transform.localScale = new Vector3(1, 1, 1);
+
+        
         //NAME
         PotentialAssetToChange.gameObject.name = gameObject.name.Replace("Premade", "");
         
