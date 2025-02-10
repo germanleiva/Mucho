@@ -227,7 +227,7 @@ public class Manager : MonoBehaviour
         Recorder.Instance.RecreateTimelineUI_Gestures();
     }
     
-    public void ToggleCollisionEventRow(Boolean focusAreaCollisionsOn)
+    /*public void ToggleCollisionEventRow(Boolean focusAreaCollisionsOn)
     {
         Recorder.Instance.currentActiveExample.areFocusAreaCollisionsActivated = !Recorder.Instance.currentActiveExample.areFocusAreaCollisionsActivated;
         foreach (var collisionModel in Recorder.Instance.currentActiveExample.CollisionModels)
@@ -238,11 +238,56 @@ public class Manager : MonoBehaviour
         }
 
         Recorder.Instance.RecreateTimelineUI_Collisions();
+    }*/
+    
+    public void ToggleCollisionFilters(GameObject gameObject)
+    {
+        // Put the gameobject in the hierarchy as the last element
+        gameObject.transform.SetAsLastSibling();
+        gameObject.SetActive(!gameObject.activeSelf);
     }
 
     public void PressedRecreateStatePlaceholders() {
        Recorder.Instance.RecreateTimelineUI_StatePlaceholders();
     }
+    
+    public void FilterFocusAreaCollisionEventRow(string collisionType)
+    {
+        switch (collisionType)
+        {
+            case "LeftHand":
+                Recorder.Instance.currentActiveExample.isLeftHandFocusAreaActivated = !Recorder.Instance.currentActiveExample.isLeftHandFocusAreaActivated;
+                break;
+            case "RightHand":
+                Recorder.Instance.currentActiveExample.isRightHandFocusAreaActivated = !Recorder.Instance.currentActiveExample.isRightHandFocusAreaActivated;
+                break;
+            case "F_G":
+                Recorder.Instance.currentActiveExample.isGazeFocusAreaActivated = !Recorder.Instance.currentActiveExample.isGazeFocusAreaActivated;
+                break;
+            case "Head":
+                Recorder.Instance.currentActiveExample.isHeadActivated = !Recorder.Instance.currentActiveExample.isHeadActivated;
+                break;
+            case "F_L":
+                Recorder.Instance.currentActiveExample.isLeftHandPinchActivated = !Recorder.Instance.currentActiveExample.isLeftHandPinchActivated;
+                break;
+            case "F_R":
+                Recorder.Instance.currentActiveExample.isRightHandPinchActivated = !Recorder.Instance.currentActiveExample.isRightHandPinchActivated;
+                break;
+        }
+
+        foreach (var eachCollisionData in Recorder.Instance.currentActiveExample.CollisionModels)
+        {
+            if (eachCollisionData.IsACollisionWith(collisionType))
+            {
+                eachCollisionData.IsActive = !eachCollisionData.IsActive;
+            }
+        }
+
+        Recorder.Instance.RecreateTimelineUI_Collisions();
+    }
+    
+    
+
 }
 
 public class Example
@@ -271,7 +316,14 @@ public class Example
     }
     public List<HeadFrame> headFrames;
 
-    public bool areFocusAreaCollisionsActivated = true;
+
+    public bool isLeftHandFocusAreaActivated = false;
+    public bool isRightHandFocusAreaActivated = false;
+    public bool isGazeFocusAreaActivated = false;
+    public bool isHeadActivated = true;
+    public bool isLeftHandPinchActivated = true;
+    public bool isRightHandPinchActivated = true;
+    
     public List<CollisionSequence> activeCollisionModels
     {
         get
@@ -295,6 +347,7 @@ public class Example
     public GameObject collisionTimelineElementPrefab;    
     public GameObject hideTimelinePanelPrefab;   
     public GameObject showTimelinePanelPrefab;
+    /*public GameObject filterCollisionElements;*/
 
     public List<GestureSequence> LeftHandGestureSequences {
         get
@@ -383,6 +436,7 @@ public class Example
         collisionTimelineElementPrefab = collisionTimelinePanel.transform.GetChild(0).gameObject;
         hideTimelinePanelPrefab = assetTimelinePanelPrefab.transform.GetChild(2).gameObject;
         showTimelinePanelPrefab = assetTimelinePanelPrefab.transform.GetChild(3).gameObject;
+        /*filterCollisionElements = collisionTimelinePanel.transform.GetChild(2).gameObject;*/
         
         StatePlaceholders = new();
         // StatesDict = new Dictionary<State, StateTimelineUIElement>();
@@ -410,6 +464,11 @@ public class Example
 
         DebugLogger.Instance.Log("Created example " + exampleId);
     }
+    
+    /*public void ToggleCollisionFilters()
+    {
+        filterCollisionElements.SetActive(!filterCollisionElements.activeSelf);
+    }*/
 
     public List<GameObject> GetTimelineAssetRows()
     {
@@ -561,10 +620,31 @@ public class Example
         
         newCollisionModel.collisionDelegate = (Frame frame) => frame.IsColliding(assetGameObject, collidedObjectOnLiveMode);
 
-        if (newCollisionModel.IsACollisionWithAFocusArea() && !areFocusAreaCollisionsActivated)
+        if (newCollisionModel.IsACollisionWith("LeftHand") && !isLeftHandPinchActivated)
         {
             newCollisionModel.IsActive = false;
         }
+        if (newCollisionModel.IsACollisionWith("RightHand") && !isRightHandPinchActivated)
+        {
+            newCollisionModel.IsActive = false;
+        }
+        if (newCollisionModel.IsACollisionWith("F_G") && !isGazeFocusAreaActivated)
+        {
+            newCollisionModel.IsActive = false;
+        }
+        if (newCollisionModel.IsACollisionWith("Head") && !isHeadActivated)
+        {
+            newCollisionModel.IsActive = false;
+        }
+        if (newCollisionModel.IsACollisionWith("F_L") && !isLeftHandFocusAreaActivated)
+        {
+            newCollisionModel.IsActive = false;
+        }
+        if (newCollisionModel.IsACollisionWith("F_R") && !isRightHandFocusAreaActivated)
+        {
+            newCollisionModel.IsActive = false;
+        }
+
         
         CollisionModels.Add(newCollisionModel);
     }
@@ -778,12 +858,24 @@ public class CollisionSequence : Sequence
     {
         foreach (var collidingObject in new List<GameObject> { CollidingObject1, CollidingObject2 })
         {
-            if ((new List<string> { "F_L","F_R","HeadGaze" }).Exists(x => collidingObject.CompareTag(x)))
+            if ((new List<string> { "F_L","F_R","F_G" }).Exists(x => collidingObject.CompareTag(x)))
             {
                 return true;
             }
         }
 
+        return false;
+    }
+    
+    public bool IsACollisionWith(string colliderTag)
+    {
+        foreach (var collidingObject in new List<GameObject> { CollidingObject1, CollidingObject2 })
+        {
+            if (collidingObject.CompareTag(colliderTag))
+            {
+                return true;
+            }
+        }
         return false;
     }
 }

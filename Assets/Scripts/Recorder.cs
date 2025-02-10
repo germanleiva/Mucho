@@ -521,8 +521,8 @@ public class Recorder : MonoBehaviour
         foreach (var collisionModel in currentActiveExample.activeCollisionModels)
         {
             var collisionTimelinePanelTransform =
-                currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>();
-            TimelineUIElement.CreateTimelineElement(currentActiveExample.collisionTimelineElementPrefab, collisionTimelinePanelTransform, GetSizeOfMainRecordedData(), collisionModel);
+                    currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>();
+                TimelineUIElement.CreateTimelineElement(currentActiveExample.collisionTimelineElementPrefab, collisionTimelinePanelTransform, GetSizeOfMainRecordedData(), collisionModel);
         }
     }
 

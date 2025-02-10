@@ -198,7 +198,7 @@ public class TimelineUIElement : MonoBehaviour
                 case "F_R":
                     sprite = timelineElementScript.rightHandFocusSquareSprite;
                     break;
-                case "HeadGaze":
+                case "F_G":
                     sprite = timelineElementScript.headFocusSquareSprite;
                     break;
                 default:
