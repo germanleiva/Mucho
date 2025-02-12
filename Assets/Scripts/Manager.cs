@@ -168,7 +168,8 @@ public class Manager : MonoBehaviour
         }
         else if (copyObjectDragged.name.StartsWith("Text"))
         {
-            AssetManager.Instance.CreateAsset(copyObjectDragged.transform.position, textAssetPrefab, "Text");
+            var meshSelected = copyObjectDragged.GetComponent<MeshFilter>().sharedMesh;
+            AssetManager.Instance.CreateAsset(copyObjectDragged.transform.position, textAssetPrefab, "Text", meshSelected);
         }
         else if (copyObjectDragged.name.StartsWith("Premade"))
         {
