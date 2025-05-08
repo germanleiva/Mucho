@@ -1,4 +1,4 @@
-# ProtoXR
+# Mucho
 Experimental XR prototype to enable easy rapid prototyping of XR interaction scenarios.
 
 
