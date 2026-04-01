@@ -318,6 +318,7 @@ public class ForceArrow : MonoBehaviour
             }
         }
 
+        //TODO this change of AppState happens in the RecordAction, you should make this clear in the name of the RecordAction method and remove this line
         Manager.Instance.currAppState = Manager.AppState.SIMULATING;
 
         associatedAsset.RecordAction(ACTION_ENUM.APPLY_FORCE_START, () =>

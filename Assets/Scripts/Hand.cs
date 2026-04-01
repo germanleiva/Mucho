@@ -197,6 +197,7 @@ public class HandFrame
 
     public Action ActionDelegate;
 
+    //TODO Remove unused variable
     public Action<Frame> CollisionDelegate;
 
     public GameObject CollidedObject;
