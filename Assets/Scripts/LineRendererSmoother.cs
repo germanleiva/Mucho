@@ -2,6 +2,8 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
+/** TODO J - This script is attached to initially disabled objects [HMDPlaybackLine, LeftControllerPlaybackLine, LeftHandLine, RightControllerPlaybackLine, RightHandLine].
+Do they get enabled soon or later?*/
 [RequireComponent(typeof(LineRenderer))]
 public class LineRendererSmoother : MonoBehaviour
 {

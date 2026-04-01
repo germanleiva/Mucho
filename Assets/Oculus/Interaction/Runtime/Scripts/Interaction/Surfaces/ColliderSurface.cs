@@ -59,7 +59,7 @@ namespace Oculus.Interaction.Surfaces
             Vector3 closest = _collider.ClosestPoint(point);
 
             Vector3 delta = closest - point;
-            if (delta.x == 0f && delta.y == 0f && delta.z == 0f)
+            if (delta.x == 0f && delta.y == 0f && delta.z == 0f) //TODO J -  Should be less than epsilon
             {
                 Vector3 direction = _collider.bounds.center - point;
                 return Raycast(new Ray(point - direction,

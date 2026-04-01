@@ -6,15 +6,23 @@ using UnityEngine.UI;
 
 public class Keyboard : MonoBehaviour
 {
-
+    [Header("Input")]
     public TMPro.TMP_InputField inputField;
 
-    public Button key_a, key_b, key_c, key_d, key_e, key_f, key_g, key_h, key_i, key_j, key_k, key_l, key_m, key_n, key_o, key_p, key_q, key_r, key_s, key_t, key_u, key_v, key_w, key_x, key_y, key_z;
-    public Button key_0, key_1, key_2, key_3, key_4, key_5, key_6, key_7, key_8, key_9;
+    [Header("Letter Keys")]
+    public Button key_a, key_b, key_c, key_d, key_e, key_f, key_g, key_h, key_i, key_j, key_k, key_l, key_m, key_n, key_o, key_p, key_q, key_r, key_s, key_t, key_u, key_v, key_w, key_x, key_y, key_z; //TODO J - It could be used an array of buttons, but then we should reassign them in the inspector, so I think it's better to just have them as separate variables, but it could be refactored later if we want to add more keys or change the layout of the keyboard
+    
+    [Header("Number Keys")]
+    public Button key_0, key_1, key_2, key_3, key_4, key_5, key_6, key_7, key_8, key_9; //TODO J - Idem
+    
+    [Header("Special Keys")]
     public Button key_space, key_backspace, key_enter;
 
+    [Header("Placement")]
     public Transform targetTransform;
-
+    [SerializeField] private float forwardOffset = 0.3f;
+    [SerializeField] private float verticalOffset = -0.2f;
+    
     public Action submitCallback;
 
 
@@ -73,11 +81,11 @@ public class Keyboard : MonoBehaviour
         gameObject.SetActive(true);
         //inputField.Select(); inputField.ActivateInputField();
         //Orient the keyboard towards the target transform and position it in front of the camera
-        transform.position = targetTransform.position + targetTransform.forward * 0.3f - targetTransform.up * 0.2f;
+        transform.position = targetTransform.position + (targetTransform.forward * forwardOffset) + (targetTransform.up * verticalOffset);
         //Set rotation so that the keyboard faces the target transform with an upward tilt of 45 degree along the x axis
         //transform.rotation = Quaternion.LookRotation(targetTransform.position - transform.position, Vector3.up) * Quaternion.Euler(45, 0, 0);
-        transform.LookAt(targetTransform);
-
+        
+        transform.LookAt(targetTransform); // TODO J - Often world-space UI is backwards or rotated by default, so we may need to handle that?
     }
 
     public void Submit()
