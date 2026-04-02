@@ -549,94 +549,98 @@ public class Recorder : MonoBehaviour
 
     public void CreateStateMachine()
     {
-        int recordedFramesTotal = GetSizeOfMainRecordedData();
+        var stateMachineModel = StateMachineModel.CreateStateMachine(currentActiveExample);
+        CustomStateMachine.Instance.stateMachineModel = stateMachineModel;
+        StateMachineModel.Instance = stateMachineModel;
 
-        var StateMachine = StateMachineModel.Instance;
-        StateMachine.states.Clear();
-        
-        var localStatesDict = new Dictionary<StateTimelineUIElement,State>();
-
-        foreach (var statePlaceholder in currentActiveExample.StatePlaceholders)
-        {
-            var newState = new State("State " + StateMachine.states.Count(), StateMachine);
-            StateMachine.AddState(newState);
-
-            localStatesDict.Add(statePlaceholder, newState);
-        }
-
-        var gestures = currentActiveExample.AllGestureSequences;
-        var collisions = currentActiveExample.activeCollisionModels; //TODO check if it needs to be only the active collisions or all
-        var voiceCommands = currentActiveExample.VoiceCommandSequences;
-
-        List<Sequence> allPotentialTriggers = gestures.Cast<Sequence>()
-                                  .Concat(collisions.Cast<Sequence>())
-                                  .Concat(voiceCommands.Cast<Sequence>())
-                                  .ToList();
-
-        var allActions = currentActiveExample.assetsDict.Select(keyValuePair => keyValuePair.Value.assetActions).ToList();
-
-        State firstState = null;
-
-        for (int i = 0; i < currentActiveExample.StatePlaceholders.Count; i++) {
-            var currentStatePlaceholder = currentActiveExample.StatePlaceholders[i];
-            var nexStatePlaceholder = i < currentActiveExample.StatePlaceholders.Count - 1 ? currentActiveExample.StatePlaceholders[i + 1] : null;
-
-            var currentState = localStatesDict[currentStatePlaceholder];
-            if (i == 0) {
-                firstState = currentState;
-            }
-
-            if (nexStatePlaceholder != null) {
-                var nextState = localStatesDict[nexStatePlaceholder];
-
-                //Find transitions between currentStatePlaceholder to nexStatePlaceholder
-                var actualTriggers = allPotentialTriggers.FindAll(x => x.CanTriggerAt(nexStatePlaceholder.StartIndex));
-                if (actualTriggers.Count > 0) {
-                    //Let's build the transition
-                    Func<Frame, bool> transitionConditionFunction = (Frame frame) => {return true;};
-                    string transitionDescription = "" + currentState.name + "->" + nextState.name + ":";
-                    foreach (var trigger in actualTriggers) {
-                        transitionConditionFunction = trigger.AddConditionToFunction(transitionConditionFunction);
-                        transitionDescription = transitionDescription + " && " + trigger.ToString();
-                    }
-                    //Let's add a transition between currentState and nextState
-                    currentState.AddTransitionTo(nextState, transitionConditionFunction, transitionDescription);
-                }
-            } else {
-                //currentStatePlaceholder is the last statePlaceholder
-            }
-
-            DebugLogger.Instance.Log("Adding OnEnter and OnExit actions to state " + currentState.name);
-
-            //var stateInTimeline = currentActiveExample.StatesDict.First().Key;
-            foreach (var assetSequences in allActions)
-            {
-                foreach (var assetSequence in assetSequences)
-                {
-                    if (assetSequence.StartIndex >= currentStatePlaceholder.StartIndex && 
-                        assetSequence.StartIndex < currentStatePlaceholder.StartIndex+currentStatePlaceholder.Length)
-                    {
-                        int distanceToStateStart = Math.Abs(assetSequence.StartIndex - currentStatePlaceholder.StartIndex);
-                        int distanceToStateEnd = Math.Abs(currentStatePlaceholder.StartIndex + currentStatePlaceholder.Length - assetSequence.StartIndex - 1);
-
-                        if(distanceToStateStart < distanceToStateEnd)
-                        {
-                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionType + " for state " + currentState.name + " in OnEnterActions");
-                            currentState.OnEnterActionsSequences.Add(assetSequence);
-                        }
-                        else
-                        {
-                            DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionType + " for state " + currentState.name + " in OnExitActions");
-                            currentState.OnExitActionsSequences.Add(assetSequence);
-                        }
-                    }
-                }
-            }
-        }
-
-        StateMachineModel.Instance.SetInitialState(firstState);
-
-        PrintDetailsOfStateMachine(localStatesDict.Values.ToList());    
+        // int recordedFramesTotal = GetSizeOfMainRecordedData();
+        //
+        // var StateMachine = StateMachineModel.Instance;
+        // StateMachine.states.Clear();
+        //
+        // var localStatesDict = new Dictionary<StateTimelineUIElement,State>();
+        //
+        // foreach (var statePlaceholder in currentActiveExample.StatePlaceholders)
+        // {
+        //     var newState = new State("State " + StateMachine.states.Count(), StateMachine);
+        //     StateMachine.AddState(newState);
+        //
+        //     localStatesDict.Add(statePlaceholder, newState);
+        // }
+        //
+        // var gestures = currentActiveExample.AllGestureSequences;
+        // var collisions = currentActiveExample.activeCollisionModels; //TODO check if it needs to be only the active collisions or all
+        // var voiceCommands = currentActiveExample.VoiceCommandSequences;
+        //
+        // List<Sequence> allPotentialTriggers = gestures.Cast<Sequence>()
+        //                           .Concat(collisions.Cast<Sequence>())
+        //                           .Concat(voiceCommands.Cast<Sequence>())
+        //                           .ToList();
+        //
+        // var allActions = currentActiveExample.assetsDict.Select(keyValuePair => keyValuePair.Value.assetActions).ToList();
+        //
+        // State firstState = null;
+        //
+        // for (int i = 0; i < currentActiveExample.StatePlaceholders.Count; i++) {
+        //     var currentStatePlaceholder = currentActiveExample.StatePlaceholders[i];
+        //     var nexStatePlaceholder = i < currentActiveExample.StatePlaceholders.Count - 1 ? currentActiveExample.StatePlaceholders[i + 1] : null;
+        //
+        //     var currentState = localStatesDict[currentStatePlaceholder];
+        //     if (i == 0) {
+        //         firstState = currentState;
+        //     }
+        //
+        //     if (nexStatePlaceholder != null) {
+        //         var nextState = localStatesDict[nexStatePlaceholder];
+        //
+        //         //Find transitions between currentStatePlaceholder to nexStatePlaceholder
+        //         var actualTriggers = allPotentialTriggers.FindAll(x => x.CanTriggerAt(nexStatePlaceholder.StartIndex));
+        //         if (actualTriggers.Count > 0) {
+        //             //Let's build the transition
+        //             Func<Frame, bool> transitionConditionFunction = (Frame frame) => {return true;};
+        //             string transitionDescription = "" + currentState.name + "->" + nextState.name + ":";
+        //             foreach (var trigger in actualTriggers) {
+        //                 transitionConditionFunction = trigger.AddConditionToFunction(transitionConditionFunction);
+        //                 transitionDescription = transitionDescription + " && " + trigger.ToString();
+        //             }
+        //             //Let's add a transition between currentState and nextState
+        //             currentState.AddTransitionTo(nextState, transitionConditionFunction, transitionDescription);
+        //         }
+        //     } else {
+        //         //currentStatePlaceholder is the last statePlaceholder
+        //     }
+        //
+        //     DebugLogger.Instance.Log("Adding OnEnter and OnExit actions to state " + currentState.name);
+        //
+        //     //var stateInTimeline = currentActiveExample.StatesDict.First().Key;
+        //     foreach (var assetSequences in allActions)
+        //     {
+        //         foreach (var assetSequence in assetSequences)
+        //         {
+        //             if (assetSequence.StartIndex >= currentStatePlaceholder.StartIndex && 
+        //                 assetSequence.StartIndex < currentStatePlaceholder.StartIndex+currentStatePlaceholder.Length)
+        //             {
+        //                 int distanceToStateStart = Math.Abs(assetSequence.StartIndex - currentStatePlaceholder.StartIndex);
+        //                 int distanceToStateEnd = Math.Abs(currentStatePlaceholder.StartIndex + currentStatePlaceholder.Length - assetSequence.StartIndex - 1);
+        //
+        //                 if(distanceToStateStart < distanceToStateEnd)
+        //                 {
+        //                     DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionType + " for state " + currentState.name + " in OnEnterActions");
+        //                     currentState.OnEnterActionsSequences.Add(assetSequence);
+        //                 }
+        //                 else
+        //                 {
+        //                     DebugLogger.Instance.Log("Adding action(s) " + assetSequence.ActionType + " for state " + currentState.name + " in OnExitActions");
+        //                     currentState.OnExitActionsSequences.Add(assetSequence);
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        //
+        // StateMachineModel.Instance.SetInitialState(firstState);
+        //
+        // PrintDetailsOfStateMachine(localStatesDict.Values.ToList()); 
     }
 
     // public void AddActionsToAllStates()

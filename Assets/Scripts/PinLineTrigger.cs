@@ -62,7 +62,7 @@ public class PinLineTrigger : MonoBehaviour
 
         if(pinLine != null)
         {
-            //followLine.ResetFollowLine();
+            //followLine.InitializeFollowLine();
             renderer.material = defaultMaterial;
             pinLine.UndoHighlightingOfAssetIfAny = null;
         }
