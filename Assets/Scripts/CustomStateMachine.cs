@@ -10,7 +10,7 @@ public class CustomStateMachine : MonoBehaviour
 {
     public static CustomStateMachine Instance { get; private set; }
 
-    public StateMachineModel stateMachineModel = new();
+    public StateMachineModel stateMachineModel;
     
     public TMPro.TMP_Text currentActiveStateText;
 
@@ -66,12 +66,36 @@ public class CustomStateMachine : MonoBehaviour
 
 public class StateMachineModel
 {
+    public Example myExample;
     public static StateMachineModel Instance { get; set; }
-    
-    public State currentState;
+
+    private State _currentState;
+
+    public State currentState
+    {
+        get => _currentState;
+        set
+        {
+            //Notify the UI so we highlight the corresponding StateTimelineUIElement
+
+            Recorder.Instance.HighlightStateTimelineUIElement(value._id);
+
+            _currentState = value;
+        }
+    }
+
     public List<State> states = new();
-    
-    public void AddState(State state)
+
+    public StateMachineModel(Example example)
+    {
+        if (example == null)
+        {
+            throw new NotImplementedException();
+        }
+        myExample = example;
+    }
+
+public void AddState(State state)
     {
         states.Add(state);
     }
@@ -103,18 +127,26 @@ public class StateMachineModel
         currentState.OnEnter();
     }
     public void ProcessFrame(Frame lastFrameObject)
-    {                
+    {             
+        // Debug.Log("**** Entering Process Frame");
+        // Debug.Log("---------------------------");
+        // Debug.Log("Analyzing frame: ");
+        // Debug.Log("Frame leftHandGesture: " +  lastFrameObject.leftHandGesture);
+        // Debug.Log("Frame rightHandGesture: " + lastFrameObject.rightHandGesture);
+        // Debug.Log("Frame collidingObjectThisFrame_1: "  + lastFrameObject.collidingObjectThisFrame_1);
+        // Debug.Log("Frame collidingObjectThisFrame_2: "  + lastFrameObject.collidingObjectThisFrame_2);
+        // Debug.Log("Frame voiceCommand: " + lastFrameObject.voiceCommand);
         
         foreach (var transition in currentState.transitions)
         {
             if (transition.ShouldApply(lastFrameObject))
             {
-                //DebugLogger.Instance.Log("Transition applied from" + transition.from + " to " + transition.to);
+                DebugLogger.Instance.Log("Transition applied from" + transition.from + " to " + transition.to);
                 ApplyTransition(transition);
             }
             else
             {
-                //DebugLogger.Instance.Log("Transition NOT applied from " + transition.from + " to " + transition.to);
+                DebugLogger.Instance.Log("Transition NOT applied from " + transition.from + " to " + transition.to);
             }
         }
 
@@ -177,6 +209,14 @@ public class StateMachineModel
                     //TODO Should we add the extra actions in this state if there are any?
                     //For every onEnterActionSequence in currentStateToDelete that is not in equivalentState we need to add it to equivalentState
                     addMissingActionsToState(currentStateToDelete,equivalentState);
+                    
+                    //We need to change the id of the corresponding StatePlaceHolder/StateUIElementSequence to be the id of this currentStateToDelete
+                    //because we need to highlight thing in example 2-3-4... even if the stateplaceholder is in example 1
+
+                    var statePlaceholderCorrespondingToTheCurrentStateToDelete =
+                        stateMachineToDelete.myExample.StatePlaceholders.Find(statePlaceHolder =>
+                            statePlaceHolder.stateModelId == currentStateToDelete._id);
+                    statePlaceholderCorrespondingToTheCurrentStateToDelete.stateModelId = equivalentState._id;
 
                 } else {
                     //This state is not equal to any state in the resultingStateMachine
@@ -206,7 +246,7 @@ public class StateMachineModel
                         previousState;
                         */
 
-                        var equivalentCurrentState = new State(currentStateToDelete.name, resultingStateMachine);
+                        var equivalentCurrentState = new State(currentStateToDelete.name, resultingStateMachine, currentStateToDelete._id);
                         //Copy all onEnter/onUpdate/onExit/etc
                         equivalentCurrentState.OnEnterActionsSequences.AddRange(currentStateToDelete.OnEnterActionsSequences);
                         equivalentCurrentState.OnUpdateActionsSequences.AddRange(currentStateToDelete.OnUpdateActionsSequences);
@@ -234,7 +274,7 @@ public class StateMachineModel
     
     public static StateMachineModel CreateStateMachine(Example example)
     {
-        StateMachineModel stateMachine = new StateMachineModel();
+        StateMachineModel stateMachine = new StateMachineModel(example);
         
         var localStatesDict = new Dictionary<StateTimelineUIElement,State>();
 
@@ -243,6 +283,7 @@ public class StateMachineModel
             var newState = new State("State " + stateMachine.states.Count, stateMachine);
             stateMachine.AddState(newState);
 
+            statePlaceholder.stateModelId = newState._id;
             localStatesDict.Add(statePlaceholder, newState);
         }
 
@@ -330,6 +371,7 @@ public class StateMachineModel
 [System.Serializable]
 public class State
 {
+    public string _id { get; private set; }
     private string _name;
     public string name
     {
@@ -413,8 +455,9 @@ public class State
     
     private StateMachineModel _stateMachine;
 
-    public State(String name, StateMachineModel stateMachine)
+    public State(String name, StateMachineModel stateMachine, String id = null)
     {
+        _id = id == null ? System.Guid.NewGuid().ToString() : id;
         _name = name;
         _stateMachine = stateMachine;
     }
@@ -579,11 +622,13 @@ public class Frame
 
     public string voiceCommand;
 
-    public GameObject collidingObjectThisFrame_1, collidingObjectThisFrame_2;
+    public Dictionary<GameObject,HashSet<GameObject>> collisions;
 
     public bool IsColliding(GameObject object1, GameObject object2)
     {
         // DebugLogger.Instance.Log("IsColliding?: " + object1 + " " + object2);
-        return (object1 == collidingObjectThisFrame_1 && object2 == collidingObjectThisFrame_2) || (object1 == collidingObjectThisFrame_2 && object2 == collidingObjectThisFrame_1);
+        return (collisions.TryGetValue(object1, out var list1) && list1.Contains(object2)) ||
+               (collisions.TryGetValue(object2, out var list2) && list2.Contains(object1));
+
     }
 }

@@ -6,7 +6,8 @@ using UnityEngine;
 
 public class StateTimelineUIElement : TimelineUIElement
 {
-
+    [HideInInspector]
+    public string stateModelId;
     public void OnClick()
     {
         DebugLogger.Instance.Log("StateTimelineUIElement clicked");

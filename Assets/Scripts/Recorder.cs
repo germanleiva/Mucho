@@ -63,6 +63,7 @@ public class Recorder : MonoBehaviour
         SetPlaybackObjectsVisibility(false);
         examplePlaybackPanelPrefab.gameObject.SetActive(false);
         AddExample();
+        CustomStateMachine.Instance.stateMachineModel = new StateMachineModel(currentActiveExample);
     }
 
 
@@ -1155,6 +1156,27 @@ public class Recorder : MonoBehaviour
         }
     }
 
+    public void HighlightStateTimelineUIElement(string stateModelId)
+    {
+        //Unhighlight all the other states and highlight this one
+        foreach (var example in examples)
+        {
+            foreach (var stateTimelineUIElement in example.StatePlaceholders)
+            {
+                var imageComponent = stateTimelineUIElement.GetComponent<Image>();
+                if (stateTimelineUIElement.stateModelId == stateModelId)
+                {
+                    //Highlight this one
+                    imageComponent.color = Color.red;
+                }
+                else
+                {
+                    //Unhighlight all the others
+                    imageComponent.color = new Color(255, 193,97);
+                }
+            }
+        }
+    }
 }
 
 

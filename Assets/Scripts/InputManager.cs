@@ -29,7 +29,9 @@ public class InputManager : MonoBehaviour
     public GameObject testBall, testTarget, floor, testHitMessage, testMissMessage;
 
     [Header("Collision (last notified)")]
-    public GameObject collidingObjectNotified_1, collidingObjectNotified_2;
+    //public GameObject collidingObjectNotified_1, collidingObjectNotified_2;
+
+    public Dictionary<GameObject, HashSet<GameObject>> currentCollisions = new Dictionary<GameObject, HashSet<GameObject>>();
 
     [Header("Voice Command")]
     public string currentVoiceCommand;
@@ -210,9 +212,33 @@ public class InputManager : MonoBehaviour
             DebugLogger.Instance.Log("Collision between " + object1.name + " and " + object2.name);
         }
 
-        collidingObjectNotified_1 = object1;
-        collidingObjectNotified_2 = object2;
+        if (!currentCollisions.TryGetValue(object1, out var listOfCollidingObjects))
+        {
+            listOfCollidingObjects = new HashSet<GameObject>();
+            currentCollisions[object1] = listOfCollidingObjects;
+        }
+        
+        listOfCollidingObjects.Add(object2);
     }
+
+    public void UnsaveCurrentCollision(GameObject object1, GameObject object2)
+    {
+        if (currentCollisions.TryGetValue(object1, out var potentialCollisions1))
+        {
+            potentialCollisions1.Remove(object2);
+        }
+        
+        if (currentCollisions.TryGetValue(object2, out var potentialCollisions2))
+        {
+            potentialCollisions2.Remove(object1);
+        }
+    }
+
+    public void ResetCurrentCollisions()
+    {
+        currentCollisions.Clear();
+    }
+
 
     //TODO J - Unused?
     // bool rightHandHoldingObject = false;
@@ -226,8 +252,7 @@ public class InputManager : MonoBehaviour
         {
             leftHandGesture = leftHand.currentGesture,
             rightHandGesture = rightHand.currentGesture,
-            collidingObjectThisFrame_1 = collidingObjectNotified_1,
-            collidingObjectThisFrame_2 = collidingObjectNotified_2,
+            collisions = currentCollisions,
             voiceCommand = currentVoiceCommand
         };
         

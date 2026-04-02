@@ -739,7 +739,7 @@ public class Asset : MonoBehaviour
         InputManager.Instance.leftHandPinchObj.SetActive(true);
         InputManager.Instance.rightHandPinchObj.SetActive(true);
 
-        InputManager.Instance.SaveCurrentCollision(null, null);
+        InputManager.Instance.ResetCurrentCollisions();
 
         var rb = EnsureRigidbody();
         rb.constraints = RigidbodyConstraints.FreezeAll;
@@ -802,9 +802,7 @@ public class Asset : MonoBehaviour
         {
             if (other.name == "LeftHandPinchContactSphere" || other.name == "RightHandPinchContactSphere" || other.name == "HeadContactSphere")
             {
-                InputManager.Instance.SaveCurrentCollision(null, null);
-                InputManager.Instance.SaveCurrentCollision(null, null);
-                InputManager.Instance.SaveCurrentCollision(null, null);
+                InputManager.Instance.UnsaveCurrentCollision(base.gameObject, other.transform.gameObject);
             }
         }
         else //Recording

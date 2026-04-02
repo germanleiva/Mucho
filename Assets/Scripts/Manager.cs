@@ -95,9 +95,9 @@ public class Manager : MonoBehaviour
         StateMachineModel.CombinedStateMachine(Recorder.Instance.examples);
 
         // Recorder.Instance.ResetStateMachine();
-        InputManager.Instance.SaveCurrentCollision(null, null);
+        InputManager.Instance.ResetCurrentCollisions();
         StateMachineModel.Instance.InvokeOnEnterActionsOfInitialState();
-        speechToTextEngine.StartListening();
+        // speechToTextEngine.StartListening();
 
         currAppState = Manager.AppState.LIVE;
     }
