@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Oculus.Interaction.Surfaces;
 using UnityEditor.Rendering;
 using UnityEngine;
 
@@ -109,6 +110,7 @@ public class MeshCopy : MonoBehaviour
             DebugLogger.Instance.Log("MeshCopy: No potential asset to change");
             return;
         }
+        DebugLogger.Instance.Log("MeshCopy: :) Potential asset to change: " + PotentialAssetToChange.gameObject.name);
         // MESH
         //Copy the mesh from this object to the other object 
         MeshFilter sphereMeshFilter = PotentialAssetToChange.gameObject.GetComponent<MeshFilter>();
@@ -119,9 +121,9 @@ public class MeshCopy : MonoBehaviour
         // ROTATION AND SCALE
         Quaternion rotation = gameObject.transform.rotation;
         PotentialAssetToChange.gameObject.transform.rotation = rotation; 
-        Vector3 sizeScaleFactor =  gameObject.transform.localScale * 2f;
+        Vector3 sizeScaleFactor =  gameObject.transform.localScale * 2f; //TODO J - Why 2f?
         PotentialAssetToChange.gameObject.transform.localScale = sizeScaleFactor;
-        
+        // PotentialAssetToChange.GetComponentInChildren<BoundsClipper>().Size *= 2; //TODO J Added this comment - Check here
         //MATERIAL
         MeshRenderer otherMeshRenderer = PotentialAssetToChange.gameObject.GetComponent<MeshRenderer>();
         MeshRenderer thisMeshRenderer = gameObject.GetComponent<MeshRenderer>();

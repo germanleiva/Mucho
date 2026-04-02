@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Assets.OVR.Scripts;
 using Oculus.Interaction;
 using Oculus.Interaction.HandGrab;
+using Oculus.Interaction.Surfaces;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -110,7 +111,7 @@ public class AssetManager : MonoBehaviour
                 break;
         }
     }
-
+    
     public void CreateAsset(Vector3 initialPosition, GameObject prefab, string assetName, Mesh mesh = null)
     {
         DebugLogger.Instance.Log("Spawned Asset");
@@ -265,7 +266,6 @@ public class AssetManager : MonoBehaviour
             Destroy(obj);
         }*/ 
 
-        //GameObject obj = Instantiate(cubePrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
         GameObject forceArrow = Instantiate(forceArrowPrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);   
         forceArrow.SetActive(true);     
         ForceArrow forceArrowScript = forceArrow.GetComponent<ForceArrow>();
@@ -288,7 +288,6 @@ public class AssetManager : MonoBehaviour
         //Recorder.Instance.RecreateTimelineAssetRows(null);
         
     }
-   
 }
 
 

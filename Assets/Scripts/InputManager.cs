@@ -35,7 +35,7 @@ public class InputManager : MonoBehaviour
     public string currentVoiceCommand;
 
     [Header("Live Contact Objects")]
-    public GameObject leftHandPinchObj;
+    public GameObject leftHandPinchObj; // set { }
     public GameObject rightHandPinchObj;
     public GameObject headContactObj;
 
@@ -214,8 +214,9 @@ public class InputManager : MonoBehaviour
         collidingObjectNotified_2 = object2;
     }
 
-    bool rightHandHoldingObject = false;
-    bool leftHandHoldingObject = false;
+    //TODO J - Unused?
+    // bool rightHandHoldingObject = false;
+    // bool leftHandHoldingObject = false;
 
     void ProcessEvents()
     {
