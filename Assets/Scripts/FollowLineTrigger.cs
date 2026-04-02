@@ -69,7 +69,7 @@ public class FollowLineTrigger : MonoBehaviour
 
         if(followLine != null)
         {
-            //followLine.ResetFollowLine();
+            //followLine.InitializeFollowLine();
             renderer.material = defaultMaterial;
             followLine.FollowLineAction = null;
         }

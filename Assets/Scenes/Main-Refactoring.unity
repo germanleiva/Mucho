@@ -59001,7 +59001,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1723312803}
         m_TargetAssemblyTypeName: FollowLine, Assembly-CSharp
-        m_MethodName: ResetFollowLine
+        m_MethodName: InitializeFollowLine
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

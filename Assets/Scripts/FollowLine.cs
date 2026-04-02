@@ -48,7 +48,7 @@ public class FollowLine : MonoBehaviour
         //followGuide.gameObject.SetActive(false);
     }
 
-    public void ResetFollowLine()
+    public void InitializeFollowLine()
     {
         //targetTransform = _targetTransform;
         isInitialized = true;
