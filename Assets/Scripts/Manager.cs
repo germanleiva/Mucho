@@ -288,18 +288,42 @@ public class Manager : MonoBehaviour
         Recorder.Instance.RecreateTimelineUI_Collisions();
     }
 
-
+    static int gui_idx = 0;
     private void OnGUI()
     {
         if (GUI.Button(new Rect(10, 10, 150, 30), "CreateAsset"))
         {
+            GameObject.Find("b_l_forearm_stub").transform.Find("LeftHandMenu").gameObject.SetActive(true);
             IEnumerator I_GUI()
             {
-                var objName = "Sphere";
+                string GetNameByIdx(int idx) =>
+                    idx switch
+                    {
+                        0 => "Sphere",
+                        1 => "PremadeLamp",
+                        2 => "PremadePen", 
+                        3 => "PremadeBasketball",  
+                        4 => "PremadeWig",
+                        5 => "PremadeBook", 
+                        // 6 => "对象001", //TODO J -  It seems an old object...they are inactive
+                        // 7 => "PremadeTrashbin", //TODO J - It seems an old object...they are inactive
+                        _ => "Cube" // The discard (_) acts as the default case
+                    };
+                string objName = GetNameByIdx(gui_idx);
                 this.CreateCopyOfObject(GameObject.Find(objName));
                 yield return null;
+                
+                if (gui_idx > 0)
+                {
+                    GameObject.Find(objName).GetComponentInChildren<MeshCopy>().PotentialAssetToChange =
+                        GameObject.Find(gui_idx == 1 ? "AssetPrefab(Clone)" : GetNameByIdx(gui_idx - 1).Replace("Premade","")).GetComponentInChildren<Asset>().gameObject;
+                }
+                
                 // Create an asset and print its components and its children components to debug log
-                // this.DestroyCopyAndSpawnAsset(GameObject.Find(objName));
+                this.DestroyCopyAndSpawnAsset(GameObject.Find(objName));
+                yield return null;
+                
+                gui_idx++;
             }
             
             StartCoroutine(I_GUI());

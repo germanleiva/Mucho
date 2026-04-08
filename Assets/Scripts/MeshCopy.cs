@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Oculus.Interaction.Surfaces;
@@ -7,6 +8,9 @@ using UnityEngine;
 public class MeshCopy : MonoBehaviour
 {
     public GameObject PotentialAssetToChange;
+    [Header("Bounds Clipper Settings")]
+    public Vector3 boundsClipperPosition = new Vector3(0, 0, 0);
+    public Vector3 boundsClipperSize = new Vector3(1, 1, 1);
     //Disable script at start
     /*void Start()
     {
@@ -121,7 +125,7 @@ public class MeshCopy : MonoBehaviour
         // ROTATION AND SCALE
         Quaternion rotation = gameObject.transform.rotation;
         PotentialAssetToChange.gameObject.transform.rotation = rotation; 
-        Vector3 sizeScaleFactor =  gameObject.transform.localScale * 2f; //TODO J - Why 2f?
+        Vector3 sizeScaleFactor =  gameObject.transform.localScale; //TODO J - Why 2f?
         PotentialAssetToChange.gameObject.transform.localScale = sizeScaleFactor;
         // PotentialAssetToChange.GetComponentInChildren<BoundsClipper>().Size *= 2; //TODO J Added this comment - Check here
         //MATERIAL
@@ -129,6 +133,14 @@ public class MeshCopy : MonoBehaviour
         MeshRenderer thisMeshRenderer = gameObject.GetComponent<MeshRenderer>();
         otherMeshRenderer.material = thisMeshRenderer.material;
         PotentialAssetToChange.gameObject.GetComponent<Asset>().defaultMaterial = thisMeshRenderer.material;
+        
+        //TODO J Added
+        var boundsClipper = PotentialAssetToChange.gameObject.GetComponentInChildren<BoundsClipper>(); 
+        if (boundsClipper == null)
+        {
+            throw new Exception("Bounds Clipper shouldn't be null in the Asset");
+        }
+        boundsClipper.Size = this.boundsClipperSize;
         
         // COLLIDER
         SphereCollider sphereCollider = PotentialAssetToChange.gameObject.GetComponent<SphereCollider>();
