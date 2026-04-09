@@ -69,10 +69,6 @@ public class SpeechToText : MonoBehaviour
 
         print($"Segment finished: {segment.Result}");
         InputManager.Instance.NotifyVoiceCommand(outputText.text);
-        //if(isRecording)
-        {
-            //currentRecognisedText = segment.Result;            
-        }
 
         //Call coroutine to clear outputText.text after 2 seconds
         StartCoroutine(ClearOutputText());
@@ -94,6 +90,4 @@ public class SpeechToText : MonoBehaviour
     {
         print("Stream finished!");
     }
-
-    //public void 
 }

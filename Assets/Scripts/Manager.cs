@@ -27,7 +27,6 @@ public class Manager : MonoBehaviour
         set { _currAppState = value; }
     }
 
-    public SpeechToText speechToTextEngine;
     [FormerlySerializedAs("spherePrefab")] public GameObject assetPrefab;
     public GameObject textAssetPrefab;
 
@@ -97,7 +96,7 @@ public class Manager : MonoBehaviour
         // Recorder.Instance.ResetStateMachine();
         InputManager.Instance.ResetCurrentCollisions();
         StateMachineModel.Instance.InvokeOnEnterActionsOfInitialState();
-        // speechToTextEngine.StartListening();
+        InputManager.Instance.StartVoiceRecord();
 
         currAppState = Manager.AppState.LIVE;
     }
@@ -116,7 +115,7 @@ public class Manager : MonoBehaviour
         AssetManager.Instance.SetAllAssetMenusPokeable(true);
         AssetManager.Instance.ResetPhysicsForAllAssetsAndStopFollowing();
 
-        speechToTextEngine.StopListening();
+        InputManager.Instance.speechToTextEngine.StopListening();
     }
 
     public void CreateCopyOfObject(GameObject objectDragged)

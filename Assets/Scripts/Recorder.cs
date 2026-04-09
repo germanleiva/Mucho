@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Oculus.Interaction;
 using Unity.VisualScripting;
 using UnityEditor;
 //using UnityEditor.VersionControl;
@@ -106,7 +107,7 @@ public class Recorder : MonoBehaviour
         numberButton.SetActive(true);
         //clone _examplePlaybackPanel
         RectTransform examplePlaybackPanel_clone = Instantiate(examplePlaybackPanelPrefab, examplePlaybackPanelPrefab.parent);
-        
+
         Example example = new(numberButton.GetComponent<Button>(), examplePlaybackPanel_clone);
         examples.Add(example);
         //example.button.GetComponentInChildren<TMPro.TMP_Text>().text = (examples.Count + 1).ToString();
@@ -146,6 +147,8 @@ public class Recorder : MonoBehaviour
         recordStartFrame = 0;//Time.time;
         _latestRecordedFrameIndex = 0;
         //RefreshTimelineAndStates(); 
+        
+        InputManager.Instance.StartVoiceRecord();
     }
 
 
@@ -169,11 +172,7 @@ public class Recorder : MonoBehaviour
 
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
         
-        //Stop voice record if active
-        if (head.voiceRecordStarted)
-        {
-            head.StopVoiceRecord();
-        }
+        InputManager.Instance.StopVoiceRecord();
 
         //AssetManager.Instance.ShowMiscObjs();
         AssetManager.Instance.SetAllAssetMenusPokeable(true);
