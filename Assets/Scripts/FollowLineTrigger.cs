@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 public class FollowLineTrigger : MonoBehaviour
@@ -14,70 +10,51 @@ public class FollowLineTrigger : MonoBehaviour
     new public Renderer renderer; //TODO J - Is this normal
     
     [SerializeField] private Material highlightMaterial;
-    Material defaultMaterial;
+    private Material defaultMaterial;
 
     // Start is called before the first frame update
     void Start()
     {
         SaveDefaultColorThisTrigger();
-        // this.SetHighLightThisTrigger(false);
     }
     
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
     
     void OnCollisionEnter(Collision collision)
     {
         //DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerEnter, collision with " + collision.gameObject.name);
-        //Check if the parent of the other collider has the FollowLine component
         
         if(collision.gameObject.name != "FollowGuideSphere")
         {
             //DebugLogger.Instance.Log("FollowGuideSphere not found");
             return;
         }
-        
+
+        //Check if the parent of the other collider has the FollowLine component
         FollowLine followLine = collision.gameObject.transform.parent.parent.GetComponentInChildren<FollowLine>();
 
         if(followLine != null)
         {
             followLine.Register_FLT(this);
-            // renderer.material = highlightMaterial;
-
-
-            // var asset = followLine.asset.GetComponent<Asset>();
-
-            // followLine.FollowLineAction = () =>
-            // {
-            //     asset.RecordFollow(followTargetType); 
-            //     renderer.material = defaultMaterial;
-            // };
         }
     }
 
     void OnCollisionExit(Collision collision)
     {
         //DebugLogger.Instance.Log("FollowLineTrigger: OnTriggerExit, collision with " + collision.gameObject.name);
-        //Check if the parent of the other collider has the FollowLine component
 
         if(collision.gameObject.name != "FollowGuideSphere")
         {
             //DebugLogger.Instance.Log("FollowGuideSphere not found");
             return;
         }
-        
+
+        //Check if the parent of the other collider has the FollowLine component
         FollowLine followLine = collision.gameObject.transform.parent.parent.GetComponentInChildren<FollowLine>();
 
         if (followLine != null)
         {
             followLine.UnRegister_FLT(this);
         }
-        // UnHighLightThisTrigger();
-        
     }
 
     public void SetHighLightThisTrigger(bool doHighlight)
@@ -89,14 +66,4 @@ public class FollowLineTrigger : MonoBehaviour
     {
         defaultMaterial = renderer.material;
     }
-    
-    // public void UnHighLightThisTrigger()
-    // {
-    //     // if(followLine != null)
-    //     // {
-    //         //followLine.InitializeFollowLine();
-    //         renderer.material = defaultMaterial;
-    //         // followLine.FollowLineAction = null;
-    //     // }
-    // }
 }
