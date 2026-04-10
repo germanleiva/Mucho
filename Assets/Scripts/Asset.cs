@@ -305,19 +305,7 @@ public class Asset : MonoBehaviour
         if (newAction.IsFollow())
         {
             var frameEndForFollow = FindFollowEndIndex((int)Recorder.Instance.playbackSlider.value);
-            newAction.Length = frameEndForFollow - frameStart;
-
-            var newEndAction = new AssetActionSequence
-            {
-                StartIndex = frameEndForFollow,
-                ActionType = ACTION_ENUM.FOLLOW_END,
-                ActionDelegate = () => { this.ApplyUnfollow(); },
-                TargetAsset = this
-            };
-
-            newAction.associatedEndAction = newEndAction;
-
-            Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.Add(newEndAction);
+            CreateFollowEndAction(newAction, frameEndForFollow, frameStart);
         }
 
         Recorder.Instance.UpdateAllAssetFramesAndCollisions(frameStart, Recorder.Instance.currentActiveExample, () =>
@@ -325,6 +313,31 @@ public class Asset : MonoBehaviour
             Recorder.Instance.RecreateTimelineUI_Collisions();
             Recorder.Instance.RecreateTimelineUI_ActionsForAsset(this);
         });
+    }
+
+    public void CreateFollowEndAction(AssetActionSequence followAction, int frameEndForFollow, int frameStart)
+    {
+        followAction.Length = frameEndForFollow - frameStart;
+
+        if (followAction.associatedEndAction != null)
+        {
+            followAction.associatedEndAction.StartIndex = frameEndForFollow;
+        }
+        else
+        {
+
+            var newEndAction = new AssetActionSequence
+            {
+                StartIndex = frameEndForFollow,
+                ActionType = ACTION_ENUM.FOLLOW_END,
+                ActionDelegate = ApplyUnfollow,
+                TargetAsset = this
+            };
+
+            followAction.associatedEndAction = newEndAction;
+
+            Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.Add(newEndAction);
+        }
     }
 
     public void SaveMainVisualValuesIn(AssetFrame assetFrame)
@@ -576,16 +589,34 @@ public class Asset : MonoBehaviour
     }
 
     // //For assets
-    // public void Detach()
-    // {
-    //     RecordUnfollow((int)Recorder.Instance.playbackSlider.value);
-    // }
-    //
-    // public void RecordUnfollow(int startFrame)
-    // {
-    //     //TODO delete
-    //     throw new Exception("DEPRECATED");
-    // }
+    public void Detach()
+    {
+        RecordUnfollow((int)Recorder.Instance.playbackSlider.value);
+    }
+    
+    public void RecordUnfollow(int startFrame)
+    {
+        var currentFrame = (int)Recorder.Instance.playbackSlider.value;
+        //Find the associated Follow action
+        var associatedFollowAction = Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.OrderBy(x => x.StartIndex).LastOrDefault(assetAction =>
+            assetAction.IsFollow() && assetAction.StartIndex < currentFrame) ?? null;
+        
+        if (associatedFollowAction == null)
+        {
+            return;
+        }
+
+        var frameStart = associatedFollowAction.StartIndex;
+        
+        CreateFollowEndAction(associatedFollowAction, currentFrame, frameStart);
+        
+        Recorder.Instance.UpdateAllAssetFramesAndCollisions(frameStart, Recorder.Instance.currentActiveExample, () =>
+        {
+            Recorder.Instance.RecreateTimelineUI_Collisions();
+            Recorder.Instance.RecreateTimelineUI_ActionsForAsset(this);
+        });
+        
+    }
 
     private Rigidbody EnsureRigidbody()
     {

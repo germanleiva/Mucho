@@ -12,19 +12,11 @@ public class Head : MonoBehaviour
 
     public Vector3 initPosBeforePhysicsSimulation;
     public Quaternion initRotBeforePhysicsSimulation;
-
-    public SpeechToText speechToTextEngine;
-
-    public GameObject startRecordingButton;
-    public GameObject stopRecordingButton;
-
-
+    
     [Header("Recordable Ray and Focus squares")]
     public LineRenderer ray;
     public GameObject focusSquare;
     public GameObject playbackFocusSquare; 
-
-    public bool voiceRecordStarted = false;
     
     private void Update()
     {
@@ -66,66 +58,7 @@ public class Head : MonoBehaviour
             }
         }
     }
-
-    public void StartVoiceRecord()
-    {
-        stopRecordingButton.SetActive(true);
-        startRecordingButton.SetActive(false); 
-        speechToTextEngine.StartListening();
-
-        voiceRecordStarted = true;
-        StartCoroutine(InsertVoiceCommandCoroutine());
-    }
-
-    //bool voiceCommandNotInserted = true;
-
-    IEnumerator<WaitForSeconds> InsertVoiceCommandCoroutine()
-    {
-        while(voiceRecordStarted)
-        {
-            if(InputManager.Instance.currentVoiceCommand != "")
-            {
-                string currentRecognisedText = InputManager.Instance.currentVoiceCommand;
-                string cleanedVoiceCommand = currentRecognisedText;
-                //TODO Virtual Museum forced
-                //cleanedVoiceCommand = "red";
-                InsertVoiceCommand(cleanedVoiceCommand);                
-
-                
-            }
-            yield return new WaitForSeconds(0.1f);
-        }
-    }
-
-    public void StopVoiceRecord()
-    {
-        stopRecordingButton.SetActive(false);
-        startRecordingButton.SetActive(true);
-        voiceRecordStarted = false;
-        speechToTextEngine.StopListening();
-        
-        //voiceCommandNotInserted = false;
-    }
-
-    public void InsertVoiceCommand(string _voiceCommand)
-    {
-        
-        int frameNumber = (int)Recorder.Instance.playbackSlider.value;
-        if(Recorder.Instance.currentActiveExample.headFrames.Count == 0 || frameNumber >= Recorder.Instance.currentActiveExample.headFrames.Count)
-        {
-            return;
-        }
-        var currentHeadRecordedData = Recorder.Instance.currentActiveExample.headFrames;
-
-        currentHeadRecordedData[frameNumber].voiceCommand = _voiceCommand;
-
-        DebugLogger.Instance.Log("Voice command inserted: " + _voiceCommand);
-
-        StopVoiceRecord();
-
-        Recorder.Instance.RecreateTimelineUI_VoiceCommands();
-    }
-
+    
     public void PrintAllVoiceCommands()
     {
         //Iterate through all the headFrames in all the examples and print the voice commands
@@ -146,7 +79,7 @@ public class Head : MonoBehaviour
 
     public void Record(int frameNum)
     {
-        Recorder.Instance.currentActiveExample.headFrames.Add(new HeadFrame(transform.position, transform.rotation, focusSquare.transform.position, focusSquare.transform.rotation, null, frameNum));       
+        Recorder.Instance.currentActiveExample.headFrames.Add(new HeadFrame(transform.position, transform.rotation, focusSquare.transform.position, focusSquare.transform.rotation, null, frameNum));
     }
 
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class InputManager : MonoBehaviour
@@ -18,6 +19,34 @@ public class InputManager : MonoBehaviour
         RIGHTHANDOPEN, 
         RIGHTHANDPINCH
         };
+    
+    [Header("Voice record")]
+
+    public GameObject startRecordingButton;
+    public GameObject stopRecordingButton;
+    
+    public bool voiceRecordStarted = false;
+
+    public SpeechToText speechToTextEngine;
+
+
+    public void StartVoiceRecord()
+    {
+        stopRecordingButton.SetActive(true);
+        startRecordingButton.SetActive(false); 
+        speechToTextEngine.StartListening();
+        voiceRecordStarted = true;
+    }
+
+    public void StopVoiceRecord()
+    {
+        stopRecordingButton.SetActive(false);
+        startRecordingButton.SetActive(true);
+        voiceRecordStarted = false;
+        speechToTextEngine.StopListening();
+    }
+
+
 
     [Header("Hands")]
     public Hand leftHand, rightHand;
@@ -203,6 +232,39 @@ public class InputManager : MonoBehaviour
     {
         DebugLogger.Instance.Log("Voice Command: " + command);
         currentVoiceCommand = command;
+
+        if (command == "")
+        {
+            return;
+        }
+
+        switch (Manager.Instance.currAppState)
+        {
+            case Manager.AppState.RECORDING:
+                Recorder.Instance.currentActiveExample.headFrames.Last().voiceCommand = command;
+                break;
+            case Manager.AppState.PLAYBACK:
+                int frameNumber = (int)Recorder.Instance.playbackSlider.value;
+                var currentHeadRecordedData = Recorder.Instance.currentActiveExample.headFrames;
+
+                if(currentHeadRecordedData.Count == 0 || frameNumber >= currentHeadRecordedData.Count)
+                {
+                    return;
+                }
+
+                currentHeadRecordedData[frameNumber].voiceCommand = command;
+
+                DebugLogger.Instance.Log("Voice command inserted: " + command);
+
+                // StopVoiceRecord();
+
+                Recorder.Instance.RecreateTimelineUI_VoiceCommands();
+                break;
+            case Manager.AppState.LIVE:
+                break;
+            default:
+                return;
+        }
     }
 
     public void SaveCurrentCollision(GameObject object1, GameObject object2)
