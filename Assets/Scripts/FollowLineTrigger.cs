@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 public class FollowLineTrigger : MonoBehaviour
@@ -14,21 +10,14 @@ public class FollowLineTrigger : MonoBehaviour
     new public Renderer renderer; //TODO J - Is this normal
     
     [SerializeField] private Material highlightMaterial;
-    Material defaultMaterial;
+    private Material defaultMaterial;
 
     // Start is called before the first frame update
     void Start()
     {
         SaveDefaultColorThisTrigger();
-        // this.SetHighLightThisTrigger(false);
     }
     
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
     
     void OnCollisionEnter(Collision collision)
     {
