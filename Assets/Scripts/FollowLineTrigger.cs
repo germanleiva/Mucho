@@ -6,19 +6,23 @@ using UnityEngine;
 
 public class FollowLineTrigger : MonoBehaviour
 {
+    // Warning: altering this enum will break the CalculateNewBestTrigger() in FollowLine.cs, which relies on the enum values to decide which trigger is the "best" one to follow.
     public enum FollowTargetType { LEFTHAND, RIGHTHAND, LEFTFOCUS, RIGHTFOCUS, GAZEFOCUS};
 
     public FollowTargetType followTargetType;
 
-    new public Renderer renderer;
-    public Material highlightMaterial;
+    new public Renderer renderer; //TODO J - Is this normal
+    
+    [SerializeField] private Material highlightMaterial;
     Material defaultMaterial;
 
     // Start is called before the first frame update
     void Start()
     {
-        defaultMaterial = renderer.material;
+        SaveDefaultColorThisTrigger();
+        // this.SetHighLightThisTrigger(false);
     }
+    
 
     // Update is called once per frame
     void Update()
@@ -41,16 +45,17 @@ public class FollowLineTrigger : MonoBehaviour
 
         if(followLine != null)
         {
-            //DebugLogger.Instance.Log("FollowLineTrigger: FollowLine found in " + collision.gameObject.transform.parent.parent.name);
-            //followLine.DeactivateFollowLine();
-            renderer.material = highlightMaterial;
-            var asset = followLine.asset.GetComponent<Asset>();
-            
-            followLine.FollowLineAction = () =>
-            {
-                asset.RecordFollow(followTargetType); 
-                renderer.material = defaultMaterial;
-            };
+            followLine.Register_FLT(this);
+            // renderer.material = highlightMaterial;
+
+
+            // var asset = followLine.asset.GetComponent<Asset>();
+
+            // followLine.FollowLineAction = () =>
+            // {
+            //     asset.RecordFollow(followTargetType); 
+            //     renderer.material = defaultMaterial;
+            // };
         }
     }
 
@@ -67,11 +72,31 @@ public class FollowLineTrigger : MonoBehaviour
         
         FollowLine followLine = collision.gameObject.transform.parent.parent.GetComponentInChildren<FollowLine>();
 
-        if(followLine != null)
+        if (followLine != null)
         {
-            //followLine.InitializeFollowLine();
-            renderer.material = defaultMaterial;
-            followLine.FollowLineAction = null;
+            followLine.UnRegister_FLT(this);
         }
+        // UnHighLightThisTrigger();
+        
     }
+
+    public void SetHighLightThisTrigger(bool doHighlight)
+    {
+        renderer.material = doHighlight ? highlightMaterial : defaultMaterial;
+    }
+
+    private void SaveDefaultColorThisTrigger()
+    {
+        defaultMaterial = renderer.material;
+    }
+    
+    // public void UnHighLightThisTrigger()
+    // {
+    //     // if(followLine != null)
+    //     // {
+    //         //followLine.InitializeFollowLine();
+    //         renderer.material = defaultMaterial;
+    //         // followLine.FollowLineAction = null;
+    //     // }
+    // }
 }

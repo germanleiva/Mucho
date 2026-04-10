@@ -27158,8 +27158,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 9.21, y: 10.075526, z: 5.860431}
-  m_Center: {x: 0, y: 0.7572382, z: -2.243202}
+  m_Size: {x: 9.8, y: 9.8, z: 1}
+  m_Center: {x: 0, y: 0, z: -0.4}
 --- !u!1 &524883501
 GameObject:
   m_ObjectHideFlags: 0
@@ -53821,8 +53821,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 9.21, y: 10.075527, z: 5.860431}
-  m_Center: {x: 0, y: 0.7572382, z: -2.8302197}
+  m_Size: {x: 9.75, y: 9.8, z: 1}
+  m_Center: {x: -0.2, y: 0.76, z: -0.4}
 --- !u!114 &918506284
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -77090,6 +77090,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PotentialAssetToChange: {fileID: 0}
+  boundsClipperPosition: {x: 0, y: 0, z: 0}
+  boundsClipperSize: {x: 1, y: 1, z: 1}
 --- !u!1 &1235205893
 GameObject:
   m_ObjectHideFlags: 0
@@ -87510,6 +87512,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PotentialAssetToChange: {fileID: 0}
+  boundsClipperPosition: {x: 0, y: 0, z: 0}
+  boundsClipperSize: {x: 1, y: 1, z: 1}
 --- !u!114 &1426860505
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -96587,8 +96591,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 9.21, y: 10.075527, z: 5.860431}
-  m_Center: {x: 0, y: 0.7572382, z: -2.8302197}
+  m_Size: {x: 9.3, y: 9.8, z: 1}
+  m_Center: {x: 0, y: 0.76, z: -0.4}
 --- !u!1 &1568147532
 GameObject:
   m_ObjectHideFlags: 0
@@ -104683,6 +104687,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PotentialAssetToChange: {fileID: 0}
+  boundsClipperPosition: {x: 0, y: 0, z: 0}
+  boundsClipperSize: {x: 1, y: 1, z: 1}
 --- !u!1 &1695415584
 GameObject:
   m_ObjectHideFlags: 0
@@ -155279,6 +155285,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PotentialAssetToChange: {fileID: 0}
+  boundsClipperPosition: {x: 0, y: 0, z: 0}
+  boundsClipperSize: {x: 1, y: 1, z: 1}
 --- !u!114 &4931218027661853466
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -161583,6 +161591,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PotentialAssetToChange: {fileID: 0}
+  boundsClipperPosition: {x: 0, y: 0, z: 0}
+  boundsClipperSize: {x: 1, y: 1, z: 1}
 --- !u!114 &7517623261387535409
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -161871,6 +161881,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PotentialAssetToChange: {fileID: 0}
+  boundsClipperPosition: {x: 0, y: 0, z: 0}
+  boundsClipperSize: {x: 1, y: 1, z: 1}
 --- !u!114 &8511139731100910208
 MonoBehaviour:
   m_ObjectHideFlags: 0
