@@ -97759,6 +97759,7 @@ GameObject:
   - component: {fileID: 1695415587}
   - component: {fileID: 1695415586}
   - component: {fileID: 1695415585}
+  - component: {fileID: 1695415589}
   m_Layer: 8
   m_Name: Play
   m_TagString: Untagged
@@ -97904,6 +97905,22 @@ RectTransform:
   m_AnchoredPosition: {x: -215.12, y: -18.9}
   m_SizeDelta: {x: 65.473, y: 62.75}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1695415589
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1695415584}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf6eac9c282ebcd40ada1d5d4cc36369, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  recording: 1
+  playback: 1
+  simulating: 1
+  live: 0
 --- !u!1 &1695714602
 GameObject:
   m_ObjectHideFlags: 0

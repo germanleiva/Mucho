@@ -5029,44 +5029,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 107431190}
   m_CullTransparentMesh: 1
---- !u!21 &107472384
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Line 2D Transparent [CAP_ROUND] (instance)
-  m_Shader: {fileID: 4800000, guid: 08972cbecdebc6944b65c598dec5cb43, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
-  - CAP_ROUND
-  m_InvalidKeywords: []
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 1
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs: []
-    m_Ints: []
-    m_Floats:
-    - _ColorMask: -1
-    - _StencilComp: 8
-    - _StencilID: 0
-    - _StencilOp: 0
-    - _StencilOpPass: 0
-    - _StencilReadMask: 255
-    - _StencilWriteMask: 255
-    - _ZOffsetFactor: 0
-    - _ZOffsetUnits: 0
-    - _ZTest: 4
-    m_Colors: []
-  m_BuildTextureStacks: []
 --- !u!1 &111966439
 GameObject:
   m_ObjectHideFlags: 0
@@ -35724,7 +35686,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 107472384}
+  - {fileID: 1537698081}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -45022,7 +44984,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   leftHandMenu: {fileID: 447131886}
-  speechToTextEngine: {fileID: 4443345514525557374}
   assetPrefab: {fileID: 515536004}
   textAssetPrefab: {fileID: 1994460217}
   VRDebugText: {fileID: 1669592570}
@@ -45091,6 +45052,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca66f73ed13e9334aa1726ecac82a0f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  startRecordingButton: {fileID: 0}
+  stopRecordingButton: {fileID: 0}
+  voiceRecordStarted: 0
+  speechToTextEngine: {fileID: 0}
   leftHand: {fileID: 2143258139134134107}
   rightHand: {fileID: 8662184561369271894}
   leftFocus: {fileID: 1564673910}
@@ -64052,7 +64017,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   followLineStart: {fileID: 1542800650}
   followGuide: {fileID: 1760421404}
-  asset: {fileID: 1526634871}
+  assetScript: {fileID: 0}
 --- !u!23 &1228213474
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -78510,6 +78475,44 @@ Transform:
   - {fileID: 1926971689}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!21 &1537698081
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Line 2D Transparent [CAP_ROUND] (instance)
+  m_Shader: {fileID: 4800000, guid: 08972cbecdebc6944b65c598dec5cb43, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - CAP_ROUND
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _ColorMask: -1
+    - _StencilComp: 8
+    - _StencilID: 0
+    - _StencilOp: 0
+    - _StencilOpPass: 0
+    - _StencilReadMask: 255
+    - _StencilWriteMask: 255
+    - _ZOffsetFactor: 0
+    - _ZOffsetUnits: 0
+    - _ZTest: 4
+    m_Colors: []
+  m_BuildTextureStacks: []
 --- !u!1 &1539747228
 GameObject:
   m_ObjectHideFlags: 0
@@ -87259,6 +87262,7 @@ GameObject:
   - component: {fileID: 1695415587}
   - component: {fileID: 1695415586}
   - component: {fileID: 1695415585}
+  - component: {fileID: 1695415589}
   m_Layer: 8
   m_Name: Play
   m_TagString: Untagged
@@ -87404,6 +87408,22 @@ RectTransform:
   m_AnchoredPosition: {x: -215.12, y: -18.9}
   m_SizeDelta: {x: 65.473, y: 62.75}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1695415589
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1695415584}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf6eac9c282ebcd40ada1d5d4cc36369, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  recording: 1
+  playback: 1
+  simulating: 1
+  live: 0
 --- !u!1 &1695714602
 GameObject:
   m_ObjectHideFlags: 0
@@ -88098,7 +88118,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   followLineStart: {fileID: 1928596465}
   followGuide: {fileID: 1226543252}
-  asset: {fileID: 558477656}
+  assetScript: {fileID: 0}
 --- !u!1 &1726376413
 GameObject:
   m_ObjectHideFlags: 0
@@ -93444,13 +93464,9 @@ MonoBehaviour:
   positionCorrection: {x: 0, y: 0, z: 0}
   initPosBeforePhysicsSimulation: {x: 0, y: 0, z: 0}
   initRotBeforePhysicsSimulation: {x: 0, y: 0, z: 0, w: 0}
-  speechToTextEngine: {fileID: 4443345514525557374}
-  startRecordingButton: {fileID: 487145766}
-  stopRecordingButton: {fileID: 1838045455}
   ray: {fileID: 1806977783}
   focusSquare: {fileID: 520477200}
   playbackFocusSquare: {fileID: 2077925075}
-  voiceRecordStarted: 0
 --- !u!114 &1809399750
 MonoBehaviour:
   m_ObjectHideFlags: 0

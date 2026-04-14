@@ -46,6 +46,12 @@ public class AppStateListenerUpdateSelectable : MonoBehaviour
 
     void UpdateButtonInteractableState(Manager.AppState state)
     {
+        if (_selectable == null || !_selectable.gameObject.activeInHierarchy)
+        {
+            Debug.LogWarning($"[UIAppStateListener] [{this.gameObject.name}] Selectable component is null or inactive. Skipping interactable update.");
+            return;
+        }
+        
         switch (state)
         {
             case Manager.AppState.RECORDING:
