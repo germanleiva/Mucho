@@ -19,12 +19,27 @@ public class Manager : MonoBehaviour
 {
     public GameObject leftHandMenu;
 
+    // Notifies subscribers: old state, new state
+    public event Action<AppState, AppState> OnAppStateChanged;
+    
     private AppState _currAppState;
-
     public AppState currAppState
     {
-        get { return _currAppState; }
-        set { _currAppState = value; }
+        get => _currAppState;
+        set
+        {
+            if (_currAppState == value)
+            {
+                return;
+            }
+
+            AppState previousState = _currAppState;
+            _currAppState = value;
+
+            DebugLogger.Instance.Log($"App state changed from {previousState} to {_currAppState}");
+            OnAppStateChanged?.Invoke(previousState, _currAppState);
+            
+        }
     }
 
     [FormerlySerializedAs("spherePrefab")] public GameObject assetPrefab;
