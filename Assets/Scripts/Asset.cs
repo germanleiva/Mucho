@@ -11,6 +11,7 @@ public class Asset : MonoBehaviour
 {
     GameObject collidedObjectDuringRecording; // TODO J - What is this?
    
+    public event Action<Asset> OnMeshUpdated;
     
     // -------------------------
     // Cached components
@@ -117,6 +118,13 @@ public class Asset : MonoBehaviour
         }
     }
 
+    
+    public void NotifyMeshUpdated()
+    {
+        DebugLogger.Instance.Log($"Asset {gameObject.name}: mesh updated");
+        OnMeshUpdated?.Invoke(this);
+    }
+    
     private void Awake()
     {
         _meshRenderer = GetComponent<MeshRenderer>();

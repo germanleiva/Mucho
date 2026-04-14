@@ -1,8 +1,5 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Oculus.Interaction.Surfaces;
-using UnityEditor.Rendering;
 using UnityEngine;
 
 public class MeshCopy : MonoBehaviour
@@ -180,6 +177,9 @@ public class MeshCopy : MonoBehaviour
         //Update the rotation of the asset
         Asset potentialAsset = PotentialAssetToChange.gameObject.GetComponent<Asset>();
         potentialAsset.InitialRotation = rotation;
+        
+        // Notify listeners after the whole mesh update is complete
+        potentialAsset.NotifyMeshUpdated();
     }
 
 }
