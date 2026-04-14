@@ -15,6 +15,12 @@ public class FollowLineTrigger : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        void SaveDefaultColorThisTrigger()
+        {
+            defaultMaterial = renderer.material;
+        }
+        
+        
         SaveDefaultColorThisTrigger();
     }
     
@@ -60,10 +66,5 @@ public class FollowLineTrigger : MonoBehaviour
     public void SetHighLightThisTrigger(bool doHighlight)
     {
         renderer.material = doHighlight ? highlightMaterial : defaultMaterial;
-    }
-
-    private void SaveDefaultColorThisTrigger()
-    {
-        defaultMaterial = renderer.material;
     }
 }

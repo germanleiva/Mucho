@@ -21,12 +21,41 @@ public class FollowLine : MonoBehaviour
         
         if (assetScript == null)
             throw new Exception("FollowLine: assetScript is not assigned in the inspector. Add 'Asset' component.");
+        return;
+
+        void PositionAndScaleLineBody()
+        {
+            //lineHead.position = targetTransform.position;
+
+            // Position the cylinder
+            transform.position = Vector3.Lerp(followLineStart.position, followGuide.position, 0.5f);
+
+            // Scale the cylinder
+            float distance = Vector3.Distance(followLineStart.position, followGuide.position);
+            transform.localScale = new Vector3(transform.localScale.x, distance / 2, transform.localScale.z);
+
+            // Rotate the cylinder
+            Vector3 direction = followGuide.position - followLineStart.position;
+            Quaternion rotation = Quaternion.FromToRotation(Vector3.up, direction);
+            transform.rotation = rotation;
+        }
     }
 
     private List<FollowLineTrigger> FLT_List = new();
     FollowLineTrigger winningTrigger = null;
+    
+    public void OnStartDraggingFollowGuideSphere()
+    {
+        FLT_List = new();
+        winningTrigger = null;
 
-    public void TriggerFollowLineAction()
+        //targetTransform = _targetTransform;
+        isInitialized = true;
+        gameObject.SetActive(true);
+        followGuide.gameObject.SetActive(true);
+        followGuide.position = followLineStart.position;
+    }
+    public void OnStopDraggingFollowGuideSphere()
     {
         if (winningTrigger != null)
         {
@@ -36,6 +65,50 @@ public class FollowLine : MonoBehaviour
 
         gameObject.SetActive(false);
         followGuide.transform.position = followLineStart.position;
+    }
+
+
+    public bool Register_FLT(FollowLineTrigger followLineTrigger)
+    {
+        // If the trigger is already in the list, return false
+        if (FLT_List.Contains(followLineTrigger))
+            return false;
+
+        // If we are here, the trigger is new and needs to be added
+        
+        // Add the new trigger to the list and highlight it
+        FLT_List.Add(followLineTrigger);
+
+        CalculateNewBestTrigger(); // This updates the internal variable winningTrigger to the new best trigger, but does not highlight it
+        
+        
+        // Update the UI: De-highlight the old triggers and highlight the new winning trigger
+        foreach (var FLT in FLT_List)
+            FLT.SetHighLightThisTrigger(FLT == winningTrigger);
+        
+        return true;
+    }
+
+    public bool UnRegister_FLT(FollowLineTrigger followLineTrigger)
+    {
+        // Loop and find the trigger in the list, remove it and de-highlight it
+        for (int i = 0; i < FLT_List.Count; i++)
+        {
+            if (FLT_List[i] != followLineTrigger) continue;
+            
+            FLT_List[i].SetHighLightThisTrigger(false);
+            FLT_List.RemoveAt(i);
+
+            if (FLT_List.Count > 0)
+            {
+                CalculateNewBestTrigger();  // This updates the internal variable winningTrigger to the new best trigger, but does not highlight it
+                winningTrigger.SetHighLightThisTrigger(true);
+            }
+
+            return true;
+        }
+        // Didn't find the trigger in the list, return false
+        return false;
     }
 
     private void CalculateNewBestTrigger()
@@ -59,80 +132,11 @@ public class FollowLine : MonoBehaviour
         }
     }
 
-    public bool Register_FLT(FollowLineTrigger followLineTrigger)
-    {
-        // If the trigger is already in the list, return false
-        if (FLT_List.Contains(followLineTrigger))
-            return false;
-
-        // De-highlight old triggers
-        foreach (var FLT in FLT_List)
-            FLT.SetHighLightThisTrigger(false);
-        
-        // Add the new trigger to the list and highlight it
-        FLT_List.Add(followLineTrigger);
-
-        CalculateNewBestTrigger(); // This updates the internal variable winningTrigger to the new best trigger, but does not highlight it
-        winningTrigger.SetHighLightThisTrigger(true);
-        
-        return true;
-    }
-
-    public bool UnRegister_FLT(FollowLineTrigger followLineTrigger)
-    {
-        // Find the trigger in the list, remove it and de-highlight it
-        for (int i = 0; i < FLT_List.Count; i++)
-        {
-            if (FLT_List[i] != followLineTrigger) continue;
-            
-            FLT_List[i].SetHighLightThisTrigger(false);
-            FLT_List.RemoveAt(i);
-
-            if (FLT_List.Count > 0)
-            {
-                CalculateNewBestTrigger();  // This updates the internal variable winningTrigger to the new best trigger, but does not highlight it
-                winningTrigger.SetHighLightThisTrigger(true);
-            }
-
-            return true;
-        }
-        // Didn't find the trigger in the list, return false
-        return false;
-    }
-
-    public void InitializeFollowLine()
-    {
-        FLT_List = new();
-        winningTrigger = null;
-
-        //targetTransform = _targetTransform;
-        isInitialized = true;
-        gameObject.SetActive(true);
-        followGuide.gameObject.SetActive(true);
-        followGuide.position = followLineStart.position;
-    }
 
     //TODO J Is this used?
     public void DeactivateFollowLine()
     {
         isInitialized = false;
         gameObject.SetActive(false);
-    }
-
-    private void PositionAndScaleLineBody()
-    {
-        //lineHead.position = targetTransform.position;
-
-        // Position the cylinder
-        transform.position = Vector3.Lerp(followLineStart.position, followGuide.position, 0.5f);
-
-        // Scale the cylinder
-        float distance = Vector3.Distance(followLineStart.position, followGuide.position);
-        transform.localScale = new Vector3(transform.localScale.x, distance / 2, transform.localScale.z);
-
-        // Rotate the cylinder
-        Vector3 direction = followGuide.position - followLineStart.position;
-        Quaternion rotation = Quaternion.FromToRotation(Vector3.up, direction);
-        transform.rotation = rotation;
     }
 }

@@ -63982,7 +63982,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1723312803}
         m_TargetAssemblyTypeName: FollowLine, Assembly-CSharp
-        m_MethodName: InitializeFollowLine
+        m_MethodName: OnStartDraggingFollowGuideSphere
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -63997,7 +63997,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1723312803}
         m_TargetAssemblyTypeName: FollowLine, Assembly-CSharp
-        m_MethodName: TriggerFollowLineAction
+        m_MethodName: OnStopDraggingFollowGuideSphere
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -90059,7 +90059,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1228213473}
         m_TargetAssemblyTypeName: FollowLine, Assembly-CSharp
-        m_MethodName: InitializeFollowLine
+        m_MethodName: OnStartDraggingFollowGuideSphere
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -90074,7 +90074,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1228213473}
         m_TargetAssemblyTypeName: FollowLine, Assembly-CSharp
-        m_MethodName: TriggerFollowLineAction
+        m_MethodName: OnStopDraggingFollowGuideSphere
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
