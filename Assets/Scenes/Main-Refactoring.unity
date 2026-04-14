@@ -358,7 +358,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1503750826}
         m_TargetAssemblyTypeName: AssetMenu, Assembly-CSharp
-        m_MethodName: toggleAssetMenu
+        m_MethodName: ToggleAssetMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -27287,7 +27287,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 2081547320}
         m_TargetAssemblyTypeName: AssetMenu, Assembly-CSharp
-        m_MethodName: toggleAssetMenu
+        m_MethodName: ToggleAssetMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -38190,7 +38190,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 477055251}
         m_TargetAssemblyTypeName: AssetMenu, Assembly-CSharp
-        m_MethodName: toggleAssetMenu
+        m_MethodName: ToggleAssetMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -40524,7 +40524,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 585419592}
         m_TargetAssemblyTypeName: AssetMenu, Assembly-CSharp
-        m_MethodName: toggleAssetMenu
+        m_MethodName: ToggleAssetMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -48519,7 +48519,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1872402036}
         m_TargetAssemblyTypeName: AssetMenu, Assembly-CSharp
-        m_MethodName: toggleAssetMenu
+        m_MethodName: ToggleAssetMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -93996,7 +93996,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1079669627}
         m_TargetAssemblyTypeName: AssetMenu, Assembly-CSharp
-        m_MethodName: toggleAssetMenu
+        m_MethodName: ToggleAssetMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -97962,7 +97962,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1948797665}
         m_TargetAssemblyTypeName: AssetMenu, Assembly-CSharp
-        m_MethodName: toggleAssetMenu
+        m_MethodName: ToggleAssetMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -130885,7 +130885,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1159954571}
         m_TargetAssemblyTypeName: AssetMenu, Assembly-CSharp
-        m_MethodName: toggleAssetMenu
+        m_MethodName: ToggleAssetMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
