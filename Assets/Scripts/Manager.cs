@@ -21,8 +21,9 @@ public class Manager : MonoBehaviour
 
     // Notifies subscribers: old state, new state
     public event Action<AppState, AppState> OnAppStateChanged;
-    
+
     private AppState _currAppState;
+
     public AppState currAppState
     {
         get => _currAppState;
@@ -38,7 +39,6 @@ public class Manager : MonoBehaviour
 
             DebugLogger.Instance.Log($"App state changed from {previousState} to {_currAppState}");
             OnAppStateChanged?.Invoke(previousState, _currAppState);
-            
         }
     }
 
@@ -99,6 +99,13 @@ public class Manager : MonoBehaviour
         {
             DebugLogger.Instance.Log("No examples to change to live mode");
             return;
+        }
+
+        if (!Recorder.Instance.currentActiveExample.AreStatesUpToDate())
+        {
+            DebugLogger.Instance.Log("States are outdated. Regenerating state machine before entering live mode.");
+            this.PressedRecreateStatePlaceholders();
+            // Recorder.Instance.CreateStateMachine();
         }
 
         Recorder.Instance.playbackSlider.value = 0;
@@ -303,11 +310,13 @@ public class Manager : MonoBehaviour
     }
 
     static int gui_idx = 0;
+
     private void OnGUI()
     {
         if (GUI.Button(new Rect(10, 10, 150, 30), "CreateAsset"))
         {
             GameObject.Find("b_l_forearm_stub").transform.Find("LeftHandMenu").gameObject.SetActive(true);
+
             IEnumerator I_GUI()
             {
                 string GetNameByIdx(int idx) =>
@@ -315,31 +324,33 @@ public class Manager : MonoBehaviour
                     {
                         0 => "Sphere",
                         1 => "PremadeLamp",
-                        2 => "PremadePen", 
-                        3 => "PremadeBasketball",  
+                        2 => "PremadePen",
+                        3 => "PremadeBasketball",
                         4 => "PremadeWig",
-                        5 => "PremadeBook", 
+                        5 => "PremadeBook",
                         // 6 => "对象001", //TODO J -  It seems an old object...they are inactive
                         // 7 => "PremadeTrashbin", //TODO J - It seems an old object...they are inactive
                         _ => "Cube" // The discard (_) acts as the default case
                     };
+
                 string objName = GetNameByIdx(gui_idx);
                 this.CreateCopyOfObject(GameObject.Find(objName));
                 yield return null;
-                
+
                 if (gui_idx > 0)
                 {
                     GameObject.Find(objName).GetComponentInChildren<MeshCopy>().PotentialAssetToChange =
-                        GameObject.Find(gui_idx == 1 ? "AssetPrefab(Clone)" : GetNameByIdx(gui_idx - 1).Replace("Premade","")).GetComponentInChildren<Asset>().gameObject;
+                        GameObject.Find(gui_idx == 1 ? "AssetPrefab(Clone)" : GetNameByIdx(gui_idx - 1).Replace("Premade", "")).GetComponentInChildren<Asset>()
+                            .gameObject;
                 }
-                
+
                 // Create an asset and print its components and its children components to debug log
                 this.DestroyCopyAndSpawnAsset(GameObject.Find(objName));
                 yield return null;
-                
+
                 gui_idx++;
             }
-            
+
             StartCoroutine(I_GUI());
         }
     }
@@ -458,7 +469,65 @@ public class Example
     public readonly List<CollisionSequence> CollisionModels = new();
     // public readonly Dictionary<Asset,List<AssetActionSequence>> AssetActions = new ();
 
-    public readonly Dictionary<Asset, (List<AssetFrame> assetFrames, List<AssetActionSequence> assetActions)> assetsDict = new();
+    #region Asset Data Structure
+    //TODO 1 - Do we need a UnregisterFrame?
+    //TODO 2 - Where and when do we create new pairs in the dictionary?
+    private readonly Dictionary<Asset, (List<AssetFrame> assetFrames, List<AssetActionSequence> assetActions)> assetsDict = new();
+
+    public void RegisterFrameForGivenAsset(Asset asset, AssetFrame aFrame)
+    {
+        this.assetsDict[asset].assetFrames.Add(aFrame);
+        // MarkStatesDirty();
+    }
+    public void RegisterActionForGivenAsset(Asset asset, AssetActionSequence aAction)
+    {
+        assetsDict[asset].assetActions.Add(aAction);
+        MarkStatesDirty();
+    }
+
+    public void UnregisterActionForGivenAsset(Asset asset, AssetActionSequence aAction)
+    {
+        if (aAction == null) return;
+        if (aAction.associatedEndAction != null) assetsDict[asset].assetActions.Remove(aAction.associatedEndAction);
+        assetsDict[asset].assetActions.Remove(aAction);
+        MarkStatesDirty();
+    }
+    public void UnregisterAllActionsFromAssetSatisfying(Asset asset, Predicate<AssetActionSequence> predicate)
+    {
+        var copiedActions = new List<AssetActionSequence>(assetsDict[asset].assetActions);
+
+        foreach (var action in copiedActions)
+        {
+            if (predicate(action))
+            {
+                UnregisterActionForGivenAsset(asset, action);
+            }
+        }
+        MarkStatesDirty();
+    }
+    public IEnumerable<Asset>  GetAssets_Volatile()
+    {
+        return assetsDict.Keys;
+    }
+    public IReadOnlyList<AssetFrame> GetAssetFramesReadOnly(Asset asset)
+    {
+        return assetsDict[asset].assetFrames;
+    }
+
+    public IReadOnlyList<AssetActionSequence> GetAssetActionsReadOnly(Asset asset)
+    {
+        return assetsDict[asset].assetActions;
+    }
+    
+    public IReadOnlyList<IReadOnlyList<AssetActionSequence>> GetAllAssetActionListsReadOnly()
+    {
+        return assetsDict.Values
+            .Select(x => x.assetActions)
+            .ToList();
+    }
+
+    #endregion
+
 
     public Example(Button _button, RectTransform _examplePlaybackPanel)
     {
@@ -745,6 +814,32 @@ public class Example
             keyValuePair.assetActions.RemoveAll(action => action.ActionType == ACTION_ENUM.APPLY_FORCE_END);
         }
     }
+
+
+    #region Dirty States
+    
+    public event Action<Example, int, int, bool> OnStateVersionUpdated;
+    
+    private int _stateInputsVersion = 0;
+    private int _generatedStatesVersion = -1;
+
+    public bool AreStatesUpToDate() => _generatedStatesVersion == _stateInputsVersion;
+
+    public void MarkStatesDirty()
+    {
+        _stateInputsVersion++;
+        DebugLogger.Instance.Log($"Example {exampleId}: states marked dirty. New version = {_stateInputsVersion}");
+        OnStateVersionUpdated?.Invoke(this, _stateInputsVersion, _generatedStatesVersion, AreStatesUpToDate());
+    }
+
+    public void MarkStatesGenerated()
+    {
+        _generatedStatesVersion = _stateInputsVersion;
+        DebugLogger.Instance.Log($"Example {exampleId}: states generated at version = {_generatedStatesVersion}");
+        OnStateVersionUpdated?.Invoke(this, _stateInputsVersion, _generatedStatesVersion, AreStatesUpToDate());
+    }
+
+    #endregion
 }
 
 public abstract class Sequence : ICloneable
@@ -1060,17 +1155,18 @@ public class AssetActionSequence : Sequence
 
     public bool shouldShowInTimeline => ActionType != ACTION_ENUM.FOLLOW_END && ActionType != ACTION_ENUM.APPLY_FORCE_END;
 
-    public void DeleteActionFrom(List<AssetActionSequence> actions)
-    {
-        //TODO (only Germán, Vittoria does not agree xD) for now the action is independent in every example, so we are not deleting this action from other examples than the currrentActiveExample
-        actions.Remove(this);
-        actions.Remove(this.associatedEndAction);
-
-        if (this.ActionType == ACTION_ENUM.APPLY_FORCE_START)
-        {
-            //TODO We need to also remove the arrows!
-        }
-    }
+    // CHECKIFSAFETODELETE 140426
+    // public void DeleteActionFrom(IReadOnlyList<AssetActionSequence> actions)
+    // {
+    //     //TODO (only Germán, Vittoria does not agree xD) for now the action is independent in every example, so we are not deleting this action from other examples than the currrentActiveExample
+    //     actions.Remove(this);
+    //     actions.Remove(this.associatedEndAction);
+    //
+    //     if (this.ActionType == ACTION_ENUM.APPLY_FORCE_START)
+    //     {
+    //         //TODO We need to also remove the arrows!
+    //     }
+    // }
 
     public override bool IsEquivalentSequence(Sequence other)
     {

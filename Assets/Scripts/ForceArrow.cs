@@ -308,15 +308,18 @@ public class ForceArrow : MonoBehaviour
         
         int currentFrame = (int)Recorder.Instance.playbackSlider.value;
         
-        var assetActions = Recorder.Instance.currentActiveExample.assetsDict[associatedAsset].assetActions;
-        var copiedActions = new List<AssetActionSequence>(assetActions);
-        foreach (var action in copiedActions)
-        {
-            if (action.ActionType == ACTION_ENUM.APPLY_FORCE_START && action.StartIndex == currentFrame)
-            {
-                action.DeleteActionFrom(assetActions);
-            }
-        }
+        // CHECKIFSAFETODELETE 140426
+        // var assetActions = Recorder.Instance.currentActiveExample.assetsDict[associatedAsset].assetActions;
+        // var copiedActions = new List<AssetActionSequence>(assetActions);
+        // foreach (var action in copiedActions)
+        // {
+        //     if (action.ActionType == ACTION_ENUM.APPLY_FORCE_START && action.StartIndex == currentFrame)
+        //     {
+        //         action.DeleteActionFrom(assetActions);
+        //     }
+        // }
+        Recorder.Instance.currentActiveExample.UnregisterAllActionsFromAssetSatisfying(associatedAsset, a => 
+            a.ActionType == ACTION_ENUM.APPLY_FORCE_START && a.StartIndex == currentFrame);
 
         Manager.Instance.currAppState = Manager.AppState.SIMULATING;
 

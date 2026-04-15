@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class AssetManager : MonoBehaviour
-{   
+{
     public static AssetManager Instance { get; private set; }
 
     public static Boolean isForceArrowGhostActive = false;
@@ -30,7 +30,6 @@ public class AssetManager : MonoBehaviour
     public Material transparentMaterial, translucentMaterial;
 
 
-    
     private void Awake()
     {
         if (Instance == null)
@@ -42,28 +41,28 @@ public class AssetManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
-    
+
     void Start()
     {
         //lastAssetPosition = transform.position;
     }
 
 
-
-    public bool DoRecordSizesMatch()
-    {
-        int size = Recorder.Instance.GetSizeOfMainRecordedData(); //Get size of head in main recorder
-        foreach(Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys)
-        {
-            if(Recorder.Instance.currentActiveExample.assetsDict[asset].assetFrames.Count != size)
-            {
-                DebugLogger.Instance.Log("Asset recording sizes are different from main recording size");
-                return false;
-            }
-        }
-        DebugLogger.Instance.Log("Asset recording sizes are same as main recording size");
-        return true;
-    }
+    //TODO J - It was called once, but the return value was never used. If needed, re-implement the function inside the class Example
+    // public bool DoRecordSizesMatch()
+    // {
+    //     int size = Recorder.Instance.GetSizeOfMainRecordedData(); //Get size of head in main recorder
+    //     foreach(Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys)
+    //     {
+    //         if(Recorder.Instance.currentActiveExample.assetsDict[asset].assetFrames.Count != size)
+    //         {
+    //             DebugLogger.Instance.Log("Asset recording sizes are different from main recording size");
+    //             return false;
+    //         }
+    //     }
+    //     DebugLogger.Instance.Log("Asset recording sizes are same as main recording size");
+    //     return true;
+    // }
 
     public void ExpandRecordFramesForAssets(int size)
     {
@@ -73,12 +72,12 @@ public class AssetManager : MonoBehaviour
         }*/
     }
 
-   public float movementRecordThreshold;
-   public float playbackSpeed;
+    public float movementRecordThreshold;
+    public float playbackSpeed;
 
-   public void SetPlaybackSpeed(int speed)
+    public void SetPlaybackSpeed(int speed)
     {
-         playbackSpeed = speed;
+        playbackSpeed = speed;
     }
 
     public void SetDistanceFromHand(float distance)
@@ -88,30 +87,38 @@ public class AssetManager : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if(Manager.Instance.currAppState == Manager.AppState.LIVE) return;
-        
-        if(Recorder.Instance.currentActiveExample == null) return;
+        if (Manager.Instance.currAppState == Manager.AppState.LIVE) return;
+
+        if (Recorder.Instance.currentActiveExample == null) return;
 
         //DebugLogger.Instance.Log("Size of assetDataDict: " + Recorder.Instance.currentActiveExample.assetDataDict.Count);
-        
+
         switch (Manager.Instance.currAppState)
         {
             case Manager.AppState.RECORDING:
-                foreach(Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys)
+                // foreach(Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys) // CHECKIFSAFETODELETE 140426
+                foreach (Asset asset in Recorder.Instance.currentActiveExample.GetAssets_Volatile())
                 {
-                    var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetsDict[asset].assetFrames;
-                    currentAssetRecordedData.Add(new(asset.transform.position, asset.transform.rotation, asset.IsVisible, asset.CurrentColor, asset._IsAnimated));
+                    // var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetsDict[asset].assetFrames; // CHECKIFSAFETODELETE 140426
+                    // currentAssetRecordedData.Add(new(asset.transform.position, asset.transform.rotation, asset.IsVisible, asset.CurrentColor, asset._IsAnimated));
+                    Recorder.Instance.currentActiveExample.RegisterFrameForGivenAsset(
+                        asset,
+                        new AssetFrame(asset.transform.position, asset.transform.rotation, asset.IsVisible, asset.CurrentColor, asset._IsAnimated)
+                    );
                 }
+
                 break;
             case Manager.AppState.PLAYBACK:
-                foreach(Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys)
+                // foreach(Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys)
+                foreach (Asset asset in Recorder.Instance.currentActiveExample.GetAssets_Volatile()) // CHECKIFSAFETODELETE 140426
                 {
                     asset.PlaybackAssetFrame();
                 }
+
                 break;
         }
     }
-    
+
     public void CreateAsset(Vector3 initialPosition, GameObject prefab, string assetName, Mesh mesh = null)
     {
         DebugLogger.Instance.Log("Spawned Asset");
@@ -122,39 +129,42 @@ public class AssetManager : MonoBehaviour
         newAsset.name = assetName;
         newAsset.IsVisible = true;
         newAsset._IsAnimated = false;
-        if (mesh != null) {
+        if (mesh != null)
+        {
             newAsset.GetComponent<MeshFilter>().mesh = mesh;
         }
+
         newAsset.SetInitialVisualMainValues();
         Recorder.Instance.allAssets.Add(newAsset);
-        
+
         foreach (var example in Recorder.Instance.examples)
         {
             example.RefreshAssetsInExample();
         }
-        
+
         //START Added an implicit show at the beginning
         var newAction = new AssetActionSequence
         {
             StartIndex = 0,
             ActionType = ACTION_ENUM.SHOW,
-            ActionDelegate = () =>
-            {
-                newAsset.IsVisible = true;
-            },
+            ActionDelegate = () => { newAsset.IsVisible = true; },
             TargetAsset = newAsset
         };
         foreach (var example in Recorder.Instance.examples)
         {
-            example.assetsDict[newAsset].assetActions.Add(newAction);
+            // example.assetsDict[newAsset].assetActions.Add(newAction); // CHECKIFSAFETODELETE 140426
+            example.RegisterActionForGivenAsset(newAsset, newAction);
         }
         //END Added an implicit show at the beginning
-        
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetsDict[newAsset].assetFrames;
+
+        // var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetsDict[newAsset].assetFrames;
         for (int i = 0; i < Recorder.Instance.currentActiveExample.RecordedDataCount; i++)
         {
             //We need to generate the asset frames of the new asset if we already have some recorded data
-            currentAssetRecordedData.Add(new(newAsset.transform.position, newAsset.transform.rotation, newAsset.IsVisible, newAsset.CurrentColor, newAsset._IsAnimated));
+            // currentAssetRecordedData.Add(new(newAsset.transform.position, newAsset.transform.rotation, newAsset.IsVisible, newAsset.CurrentColor, newAsset._IsAnimated)); // CHECKIFSAFETODELETE 140426
+            Recorder.Instance.currentActiveExample.RegisterFrameForGivenAsset(
+                newAsset,
+                new(newAsset.transform.position, newAsset.transform.rotation, newAsset.IsVisible, newAsset.CurrentColor, newAsset._IsAnimated));
         }
 
         Recorder.Instance.RecreateTimelineUI_AssetRowsAndCollisions();
@@ -196,9 +206,9 @@ public class AssetManager : MonoBehaviour
 
     public void DeleteAsset(GameObject obj)
     {
-        DebugLogger.Instance.Log("Deleted " + obj.name);        
+        DebugLogger.Instance.Log("Deleted " + obj.name);
         Recorder.Instance.allAssets.Remove(obj.GetComponentInChildren<Asset>());
-        
+
         //Update the model in all the examples
         for (int i = 0; i < Recorder.Instance.examples.Count; i++)
         {
@@ -209,12 +219,12 @@ public class AssetManager : MonoBehaviour
             if (i == Recorder.Instance.examples.Count - 1)
             {
                 //Only for the last example
-                onCompletion = Recorder.Instance.RecreateTimelineUI_AssetRowsAndCollisions;    
+                onCompletion = Recorder.Instance.RecreateTimelineUI_AssetRowsAndCollisions;
             }
-            Recorder.Instance.UpdateAllAssetFramesAndCollisions(0, example, onCompletion);    
 
+            Recorder.Instance.UpdateAllAssetFramesAndCollisions(0, example, onCompletion);
         }
-        
+
         Destroy(obj);
     }
 
@@ -228,15 +238,17 @@ public class AssetManager : MonoBehaviour
 
     public void HideMiscObjs()
     {
-        foreach (Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys)
+        // foreach (Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys) // CHECKIFSAFETODELETE 140426
+        foreach (Asset asset in Recorder.Instance.currentActiveExample.GetAssets_Volatile())
         {
             asset.assetMenu.SetActive(false);
         }
     }
-    
+
     public void ResetMeshRendererForAllAssets()
     {
-        foreach (Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys)
+        // foreach (Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys) // CHECKIFSAFETODELETE 140426
+        foreach (Asset asset in Recorder.Instance.currentActiveExample.GetAssets_Volatile())
         {
             asset.GetComponent<MeshRenderer>().enabled = true;
         }
@@ -244,7 +256,8 @@ public class AssetManager : MonoBehaviour
 
     public void SetAllAssetMenusPokeable(bool status)
     {
-        foreach (Asset recordable in Recorder.Instance.currentActiveExample.assetsDict.Keys)
+        // foreach (Asset recordable in Recorder.Instance.currentActiveExample.assetsDict.Keys) // CHECKIFSAFETODELETE 140426
+        foreach (Asset recordable in Recorder.Instance.currentActiveExample.GetAssets_Volatile())
         {
             recordable.GetComponent<PokeInteractable>().enabled = status;
         }
@@ -252,7 +265,8 @@ public class AssetManager : MonoBehaviour
 
     public void ResetPhysicsForAllAssetsAndStopFollowing()
     {
-        foreach (Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys)
+        // foreach (Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys) // CHECKIFSAFETODELETE 140426
+        foreach (Asset asset in Recorder.Instance.currentActiveExample.GetAssets_Volatile()) 
         {
             asset.ApplyUnfollow();
             asset.ResetPhysicsPropertiesInLiveMode();
@@ -264,30 +278,31 @@ public class AssetManager : MonoBehaviour
         /*foreach (GameObject obj in recordable.forceArrows)
         {
             Destroy(obj);
-        }*/ 
+        }*/
 
-        GameObject forceArrow = Instantiate(forceArrowPrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);   
-        forceArrow.SetActive(true);     
+        GameObject forceArrow = Instantiate(forceArrowPrefab, hmd.transform.position + hmd.transform.forward * 0.5f, Quaternion.identity);
+        forceArrow.SetActive(true);
         ForceArrow forceArrowScript = forceArrow.GetComponent<ForceArrow>();
-        forceArrowScript.indexWhereArrowIsVisible = (int) Recorder.Instance.playbackSlider.value;
+        forceArrowScript.indexWhereArrowIsVisible = (int)Recorder.Instance.playbackSlider.value;
         forceArrowScript.associatedExample = Recorder.Instance.currentActiveExample;
         asset.forceArrows.Add(forceArrowScript);
         forceArrowScript.associatedAsset = asset;
         //forceArrowScript.arrowHead should be positioned 1 unit above the arrowEnd in the y axis
-        if (!AssetManager.isForceArrowGhostActive) {
-            forceArrowScript.arrowHeadReal.position = asset.gameObject.transform.position + new Vector3(0f,0.2f,0.2f);
+        if (!AssetManager.isForceArrowGhostActive)
+        {
+            forceArrowScript.arrowHeadReal.position = asset.gameObject.transform.position + new Vector3(0f, 0.2f, 0.2f);
             forceArrowScript.ReOrientArrow();
-            forceArrowScript.DrawTrajectory(10);     
-        } else {
-            forceArrowScript.arrowHeadGhost.position = forceArrowScript.arrowHeadReal.position; // recordable.gameObject.transform.position + new Vector3(0f,0.2f,0.2f);
+            forceArrowScript.DrawTrajectory(10);
+        }
+        else
+        {
+            forceArrowScript.arrowHeadGhost.position =
+                forceArrowScript.arrowHeadReal.position; // recordable.gameObject.transform.position + new Vector3(0f,0.2f,0.2f);
             forceArrowScript.OrientForceArrow();
         }
         //forceArrowScript.arrowHeadGhost.transform.position = forceArrowScript.arrowHeadReal.transform.position;
         //forceArrowScript.DrawTrajectory();     
         //TODO check if it is not really needed (as german said....) I don't think he has right though
         //Recorder.Instance.RecreateTimelineAssetRows(null);
-        
     }
 }
-
-

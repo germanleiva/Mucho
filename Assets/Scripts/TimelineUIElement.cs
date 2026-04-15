@@ -99,7 +99,8 @@ public class TimelineUIElement : MonoBehaviour
         }
 
         AssetActionSequence actionToDelete = (AssetActionSequence)sequenceModelObject;
-        actionToDelete.DeleteActionFrom(Recorder.Instance.currentActiveExample.assetsDict[correspondingAsset].assetActions);
+        // actionToDelete.DeleteActionFrom(Recorder.Instance.currentActiveExample.assetsDict[correspondingAsset].assetActions); // CHECKIFSAFETODELETE 140426
+        Recorder.Instance.currentActiveExample.UnregisterActionForGivenAsset(correspondingAsset, actionToDelete);
         if (actionToDelete.ActionType == ACTION_ENUM.APPLY_FORCE_START)
         {
             foreach (var correspondingAssetForceArrow in correspondingAsset.forceArrows)

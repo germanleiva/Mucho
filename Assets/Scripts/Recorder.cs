@@ -15,8 +15,7 @@ using Debug = UnityEngine.Debug;
 public class Recorder : MonoBehaviour
 {
     public static Recorder Instance { get; private set; }
-    [Header("Record & Playback")]
-    public GameObject rootPlaybackArea;
+    [Header("Record & Playback")] public GameObject rootPlaybackArea;
     public Slider playbackSlider;
     public GameObject playButton;
     public Head head;
@@ -28,17 +27,16 @@ public class Recorder : MonoBehaviour
     public bool isAutomaticPlayback = false;
 
     readonly List<float> handGuideTimePoints = new();
-    [Header("Timeline UI")]
-    [SerializeField]
+
+    [Header("Timeline UI")] [SerializeField]
     public RectTransform examplePlaybackPanelPrefab;
 
-    [SerializeField]
-    RectTransform stateGraphPanel;
-    [SerializeField]
-    GameObject stateGraphElementPrefab;   
+    [SerializeField] RectTransform stateGraphPanel;
+    [SerializeField] GameObject stateGraphElementPrefab;
 
     // Everytime this variable changes we need to update timelineAssetsRow and assetFramesDict
-    [FormerlySerializedAs("assetsInScene")] public List<Asset> allAssets = new();
+    [FormerlySerializedAs("assetsInScene")]
+    public List<Asset> allAssets = new();
 
     public GameObject firstExampleButtonObj;
     public Button addExampleButton;
@@ -71,7 +69,7 @@ public class Recorder : MonoBehaviour
     public void SelectExample(Example _currentActiveExample)
     {
         DebugLogger.Instance.Log("Selecting example " + _currentActiveExample.exampleId);
-        
+
         currentActiveExample = _currentActiveExample;
         foreach (var ex in examples)
         {
@@ -81,15 +79,15 @@ public class Recorder : MonoBehaviour
 
         currentActiveExample.examplePlaybackPanel.gameObject.SetActive(true);
         currentActiveExample.button.GetComponent<Image>().color = Color.green;
-        
+
         RecreateTimeline();
     }
-    
+
     public void RecreateTimeline()
     {
         //Delete all existing timeline elements in the input and create the new ones
         RecreateTimelineUI_Inputs();
-        
+
         //Delete all existing asset rows and create the new ones
         RecreateTimelineUI_AssetRows();
     }
@@ -100,9 +98,25 @@ public class Recorder : MonoBehaviour
         RecreateTimelineUI_VoiceCommands();
         RecreateTimelineUI_Collisions();
     }
+
+    public event Action<Example, int, int, bool> OnAnyExampleStateVersionUpdated;
+    private void HandleExampleStateVersionUpdated(
+        Example example,
+        int inputVersion,
+        int generatedVersion,
+        bool areUpToDate)
+    {
+        OnAnyExampleStateVersionUpdated?.Invoke(example, inputVersion, generatedVersion, areUpToDate);
+    }
+    public bool AreAllExamplesUpToDate()
+    {
+        if (examples == null || examples.Count == 0) return true;
+
+        return examples.All(example => example != null && example.AreStatesUpToDate());
+    }
     
     public void AddExample()
-    {        
+    {
         var numberButton = Instantiate(firstExampleButtonObj, firstExampleButtonObj.transform.parent);
         numberButton.SetActive(true);
         //clone _examplePlaybackPanel
@@ -110,12 +124,17 @@ public class Recorder : MonoBehaviour
 
         Example example = new(numberButton.GetComponent<Button>(), examplePlaybackPanel_clone);
         examples.Add(example);
+        example.OnStateVersionUpdated += HandleExampleStateVersionUpdated;
+
+        
         //example.button.GetComponentInChildren<TMPro.TMP_Text>().text = (examples.Count + 1).ToString();
         //Place the button 20 units below the previous button
-        example.button.GetComponent<RectTransform>().anchoredPosition = new Vector2(example.button.GetComponent<RectTransform>().anchoredPosition.x, example.button.GetComponent<RectTransform>().anchoredPosition.y - examples.Count * 20);
-        addExampleButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(addExampleButton.GetComponent<RectTransform>().anchoredPosition.x, addExampleButton.GetComponent<RectTransform>().anchoredPosition.y - 20);
-        example.button.onClick.AddListener(() => SelectExample(example));       
-        
+        example.button.GetComponent<RectTransform>().anchoredPosition = new Vector2(example.button.GetComponent<RectTransform>().anchoredPosition.x,
+            example.button.GetComponent<RectTransform>().anchoredPosition.y - examples.Count * 20);
+        addExampleButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(addExampleButton.GetComponent<RectTransform>().anchoredPosition.x,
+            addExampleButton.GetComponent<RectTransform>().anchoredPosition.y - 20);
+        example.button.onClick.AddListener(() => SelectExample(example));
+
 
         if (examples.Count >= 2)
         {
@@ -123,19 +142,19 @@ public class Recorder : MonoBehaviour
             example.CopyExampleDataFrom(examples[examples.Count - 2]);
             //PreparePlayback();
         }
-        
-        SelectExample(example);  
-        //CreateTimelineAndStatePlaceholders(false); 
 
+        SelectExample(example);
+        //CreateTimelineAndStatePlaceholders(false); 
     }
 
     // Start recording.
     public void StartRecording()
     {
-        if(examples.Count == 0)
+        if (examples.Count == 0)
         {
             return;
         }
+
         Manager.Instance.currAppState = Manager.AppState.RECORDING;
         rootPlaybackArea.SetActive(false);
         DebugLogger.Instance.Log("StartRecording");
@@ -144,13 +163,12 @@ public class Recorder : MonoBehaviour
         //AssetManager.Instance.ShowMiscObjs();
         AssetManager.Instance.SetAllAssetMenusPokeable(false);
 
-        recordStartFrame = 0;//Time.time;
+        recordStartFrame = 0; //Time.time;
         _latestRecordedFrameIndex = 0;
         //RefreshTimelineAndStates(); 
-        
+
         InputManager.Instance.StartVoiceRecord();
     }
-
 
 
     // Stop recording.
@@ -162,27 +180,31 @@ public class Recorder : MonoBehaviour
         DebugLogger.Instance.Log("Size of recordedData leftHand: " + currentActiveExample.leftHandFrames.Count);
         DebugLogger.Instance.Log("Size of recordedData rightHand: " + currentActiveExample.rightHandFrames.Count);
 
-        foreach(var asset in currentActiveExample.assetsDict.Keys)
+        // foreach(var asset in currentActiveExample.assetsDict.Keys) // CHECKIFSAFETODELETE 140426
+        foreach (var asset in currentActiveExample.GetAssets_Volatile())
         {
-            DebugLogger.Instance.Log("Size of recordedData asset: " + asset.name + ", " + currentActiveExample.assetsDict[asset].assetFrames.Count);
+            DebugLogger.Instance.Log("Size of recordedData asset: " + asset.name + ", " + currentActiveExample.GetAssetFramesReadOnly(asset).Count);
         }
-        
+       
         //TODO: If sizes do no match raise an error
-        
+
 
         Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
-        
+
         InputManager.Instance.StopVoiceRecord();
 
         //AssetManager.Instance.ShowMiscObjs();
         AssetManager.Instance.SetAllAssetMenusPokeable(true);
- 
-        AssetManager.Instance.DoRecordSizesMatch();
-        RecreateTimelineUIAndStatePlaceholders();   
+
+        // AssetManager.Instance.DoRecordSizesMatch(); TODO J ... the return value was never used
+        RecreateTimelineUIAndStatePlaceholders();
 
         PreparePlayback();
-        
+
         UpdateAllAssetFramesAndCollisions(0, currentActiveExample, RecreateTimelineUI_Collisions);
+
+        // Invalidate the cached states
+        this.currentActiveExample.MarkStatesDirty();
     }
 
     public void SetAutomaticPlayMode(bool isAutomatic)
@@ -198,7 +220,7 @@ public class Recorder : MonoBehaviour
         try
         {
             if (Manager.Instance.currAppState == Manager.AppState.RECORDING) return; // Don't allow playback while recording.
-            
+
             DebugLogger.Instance.Log("StartPlayback");
             // Determine the duration of the recording.
             //int framesTotal = 0;
@@ -217,8 +239,7 @@ public class Recorder : MonoBehaviour
 
             //isMainPlaybackOn = true;
             isAutomaticPlayback = false;
-            recordStartFrame = 0;//Time.time;
-            
+            recordStartFrame = 0; //Time.time;
         }
         catch (System.Exception e)
         {
@@ -234,12 +255,14 @@ public class Recorder : MonoBehaviour
         int nearestStartIndex = int.MaxValue;
         int nearestEndIndex = int.MaxValue;
 
-        foreach (Sequence sequence in currentActiveExample.AllGestureSequences.Concat<Sequence>(currentActiveExample.activeCollisionModels.Concat<Sequence>(currentActiveExample.VoiceCommandSequences)))
+        foreach (Sequence sequence in currentActiveExample.AllGestureSequences.Concat<Sequence>(
+                     currentActiveExample.activeCollisionModels.Concat<Sequence>(currentActiveExample.VoiceCommandSequences)))
         {
             if (Mathf.Abs(currentFrameNum - sequence.StartIndex) < threshHold)
             {
                 nearestStartIndex = sequence.StartIndex;
             }
+
             if (Mathf.Abs(currentFrameNum - (sequence.StartIndex + sequence.Length)) < threshHold)
             {
                 nearestEndIndex = sequence.StartIndex + sequence.Length;
@@ -248,8 +271,8 @@ public class Recorder : MonoBehaviour
 
         // Determine if the start or end index is closer to the current frame number
         int nearestIndex = Mathf.Abs(currentFrameNum - nearestStartIndex) < Mathf.Abs(currentFrameNum - nearestEndIndex)
-                        ? nearestStartIndex
-                        : nearestEndIndex;
+            ? nearestStartIndex
+            : nearestEndIndex;
 
         if (nearestIndex == int.MaxValue)
         {
@@ -258,7 +281,6 @@ public class Recorder : MonoBehaviour
 
         playbackSlider.value = nearestIndex;
     }
-
 
 
     // Stop playback.
@@ -272,12 +294,13 @@ public class Recorder : MonoBehaviour
     {
         rootPlaybackArea.SetActive(status);
     }
-    
+
     public int GetSizeOfMainRecordedData()
     {
         //return objectsToRecord[0].recordedData.Count;
         return currentActiveExample.RecordedDataCount;
     }
+
     public void ExpandRecordedData(int size)
     {
         // For each recordable object, expand the recordedData list to the given size by copying the last element
@@ -293,11 +316,11 @@ public class Recorder : MonoBehaviour
         AssetPoseRecorder.Instance.DoRecordSizesMatch();*/
     }
 
-    public void RecreateTimelineUIAndStatePlaceholders(bool startHidden=true)
+    public void RecreateTimelineUIAndStatePlaceholders(bool startHidden = true)
     {
         RecreateTimelineUI_Inputs();
         RecreateTimelineUI_AssetRows();
-        
+
         RecreateTimelineUI_StatePlaceholders(startHidden);
     }
 
@@ -310,44 +333,60 @@ public class Recorder : MonoBehaviour
         {
             Destroy(currentActiveExample.voiceTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
         }
-        
+
         foreach (VoiceSequence sequence in currentActiveExample.VoiceCommandSequences)
         {
             DebugLogger.Instance.Log("Voice sequence name: " + sequence.VoiceCommand + ", StartIndex : " + sequence.StartIndex + ", Length:" + sequence.Length);
-            TimelineUIElement.CreateTimelineElement(currentActiveExample.voiceCommandTimelineElementPrefab, currentActiveExample.voiceTimelinePanel, GetSizeOfMainRecordedData(), sequence);
+            TimelineUIElement.CreateTimelineElement(currentActiveExample.voiceCommandTimelineElementPrefab, currentActiveExample.voiceTimelinePanel,
+                GetSizeOfMainRecordedData(), sequence);
         }
     }
-    
+
     public void UpdateAllAssetFramesAndCollisions(int updateFrameStart, Example example, Action onCompletionDelegate = null)
     {
         //TODO for now this update should focus on the receiver asset values and not other assets, but physic simulations might make this action to affect other assets
         //TODO use the updateFrameStart so we update only the FrameStart > updateFrameStart
-        
+
         //Create a dictionary where the key is an indexFrame and the value is the corresponding assetAction
         var allActionsGroupedByFrames = new Dictionary<int, List<AssetActionSequence>>();
 
         example.prepareForSimulation();
-        
-        allAssets.ForEach(asset => {
+
+        allAssets.ForEach(asset =>
+        {
             //We bring back the asset to its initial state
             asset.ResetMainVisualValues();
-            example.assetsDict[asset].assetActions.ForEach(action => {
+            
+            // CHECKIFSAFETODELETE 140426
+            // example.assetsDict[asset].assetActions.ForEach(action =>
+            // {
+            //     if (!allActionsGroupedByFrames.ContainsKey(action.StartIndex))
+            //     {
+            //         allActionsGroupedByFrames[action.StartIndex] = new List<AssetActionSequence>();
+            //     }
+            //
+            //     allActionsGroupedByFrames[action.StartIndex].Add(action);
+            // });
+            foreach (var action in example.GetAssetActionsReadOnly(asset))
+            {
                 if (!allActionsGroupedByFrames.ContainsKey(action.StartIndex))
                 {
                     allActionsGroupedByFrames[action.StartIndex] = new List<AssetActionSequence>();
                 }
-                
+
                 allActionsGroupedByFrames[action.StartIndex].Add(action);
-            });
+            }
         });
 
         //We clear the collision models before simulating the frames
         example.CollisionModels.Clear();
-        
+
         StartCoroutine(SimulateAssetFramesAndCollisions(example, allActionsGroupedByFrames, onCompletionDelegate));
         
+        // Invalidate the cached states
+        Recorder.Instance.currentActiveExample.MarkStatesDirty();
     }
-    
+
     private IEnumerator SimulateAssetFramesAndCollisions(Example example,
         Dictionary<int, List<AssetActionSequence>> actionsToPerformGroupedByFrames, Action onCompletionDelegate)
     {
@@ -360,11 +399,11 @@ public class Recorder : MonoBehaviour
         Time.timeScale = 10f; // Moderate speed boost (10x)
         Time.fixedDeltaTime = 0.02f / Time.timeScale; // Adjust physics step
         Physics.gravity = oldGravity * (0.02f / Time.fixedDeltaTime) * Time.timeScale;
-        
+
         currentActiveExample = example;
-        
+
         Manager.Instance.currAppState = Manager.AppState.SIMULATING;
-        
+
         InputManager.Instance.SetPlaybackObjectsActive(true);
         AssetManager.Instance.HideMiscObjs();
 
@@ -380,28 +419,27 @@ public class Recorder : MonoBehaviour
                     // if (frameIndex == anAction.FrameStart) This check should be unnecesary
                     anAction.ActionDelegate(); //This will execute the action and any related collision
                 }
-            } else 
+            }
+            else
             {
                 //Debug.Log("There were no actions to simulate on frame " + frameIndex);
             }
             //We pause the execution of this routine to let Unity send the collision events: OnCollisionEnter, OnCollisionStay, OnCollisionExit
             //Collisions are saved in the corresponding model Example
-            
+
             yield return new WaitForFixedUpdate(); //new WaitForSeconds(0.01f);
-            
-            allAssets.ForEach(asset =>
-            {
-                asset.SaveMainVisualValuesIn(example.assetsDict[asset].assetFrames[frameIndex]);
-            });
+
+            // allAssets.ForEach(asset => { asset.SaveMainVisualValuesIn(example.assetsDict[asset].assetFrames[frameIndex]); }); // CHECKIFSAFETODELETE 140426
+            allAssets.ForEach(asset => { asset.SaveMainVisualValuesIn(example.GetAssetFramesReadOnly(asset)[frameIndex]); });
         }
-        
+
         yield return new WaitForFixedUpdate(); //new WaitForSeconds(0.01f);
         //TODO Set the frameEnd of all the unclosed collisions to the final frame of the recorded data
         // foreach (var collisionModelWithoutFrameEnd in example.CollisionModelsWithoutFrameEnd())
         // {
         //     collisionModelWithoutFrameEnd.Length = (example.RecordedDataCount - 1) - collisionModelWithoutFrameEnd.StartIndex;
         // }
-        
+
         InputManager.Instance.SetPlaybackObjectsActive(false);
         Manager.Instance.currAppState = oldState;
         currentActiveExample = oldActiveExample;
@@ -409,14 +447,15 @@ public class Recorder : MonoBehaviour
         Time.timeScale = oldTimeScale; // Default (1x)
         Time.fixedDeltaTime = 0.02f / Time.timeScale; // Adjust physics step
         Physics.gravity = oldGravity;
-        
+
         playbackSlider.value = oldPlaybackSliderValue;
-        
+
         //Let's clean up collision that override other collisions
         var CollisionsToRemove = new List<CollisionSequence>();
         foreach (var currentCollision in currentActiveExample.CollisionModels)
         {
-            if ( currentActiveExample.CollisionModels.Exists(existingCollision => existingCollision != currentCollision && currentCollision.IsOverridenBy(existingCollision)))
+            if (currentActiveExample.CollisionModels.Exists(existingCollision =>
+                    existingCollision != currentCollision && currentCollision.IsOverridenBy(existingCollision)))
             {
                 CollisionsToRemove.Add(currentCollision);
             }
@@ -426,9 +465,9 @@ public class Recorder : MonoBehaviour
         {
             currentActiveExample.CollisionModels.Remove(collisionToRemove);
         }
-        
+
         if (onCompletionDelegate != null)
-        { 
+        {
             onCompletionDelegate();
         }
         // Manager.Instance.currAppState = Manager.AppState.PLAYBACK;
@@ -438,7 +477,6 @@ public class Recorder : MonoBehaviour
         // Recorder.Instance.RecreateTimelineAssetRows();
         //     
         // Recorder.Instance.RecreateCollisionsInTimeline();
-
     }
 
     public void RecreateTimelineUI_AssetRowsAndCollisions()
@@ -449,7 +487,7 @@ public class Recorder : MonoBehaviour
             RecreateTimelineUI_AssetRows();
         });
     }
-    
+
     public void RecreateTimelineUI_AssetRows()
     {
         //Refresh action events in the timeline
@@ -474,30 +512,34 @@ public class Recorder : MonoBehaviour
     {
         GameObject assetRow = Instantiate(currentActiveExample.assetTimelinePanelPrefab, currentActiveExample.examplePlaybackPanel);
         assetRow.GetComponent<TimelineAssetRow>().AssetInstanceID = asset.GetInstanceID();
-        assetRow.GetComponent<RectTransform>().anchoredPosition = new Vector2(assetRow.GetComponent<RectTransform>().anchoredPosition.x, assetRow.GetComponent<RectTransform>().anchoredPosition.y - assetsCounter * 100);
+        assetRow.GetComponent<RectTransform>().anchoredPosition = new Vector2(assetRow.GetComponent<RectTransform>().anchoredPosition.x,
+            assetRow.GetComponent<RectTransform>().anchoredPosition.y - assetsCounter * 100);
         assetRow.SetActive(true);
-        assetRow.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text = Manager.Instance.CleanAssetName(asset.name); //Assign asset name
+        assetRow.GetComponent<RectTransform>().GetChild(0).GetComponent<TMPro.TMP_Text>().text =
+            Manager.Instance.CleanAssetName(asset.name); //Assign asset name
 
-        CreateTimelineUI_ActionsForAsset(asset, currentActiveExample.assetsDict[asset].assetActions);
+        // CreateTimelineUI_ActionsForAsset(asset, currentActiveExample.assetsDict[asset].assetActions); // CHECKIFSAFETODELETE 140426
+        CreateTimelineUI_ActionsForAsset(asset, currentActiveExample.GetAssetActionsReadOnly(asset));
     }
 
     public void RecreateTimelineUI_ActionsForAsset(Asset asset)
     {
         var assetRow = currentActiveExample.GetTimelineRowFor(asset);
-        
+
         //Delete all existing action timeline elements
         for (int i = 4; i < assetRow.transform.childCount; i++)
         {
             Destroy(assetRow.transform.GetChild(i).gameObject);
         }
 
-        CreateTimelineUI_ActionsForAsset(asset, currentActiveExample.assetsDict[asset].assetActions);
+        // CreateTimelineUI_ActionsForAsset(asset, currentActiveExample.assetsDict[asset].assetActions); // CHECKIFSAFETODELETE 140426
+        CreateTimelineUI_ActionsForAsset(asset, currentActiveExample.GetAssetActionsReadOnly(asset));
     }
 
-    public void CreateTimelineUI_ActionsForAsset(Asset asset, List<AssetActionSequence> assetActions)
+    public void CreateTimelineUI_ActionsForAsset(Asset asset, IReadOnlyList<AssetActionSequence> assetActions)
     {
         var assetRow = currentActiveExample.GetTimelineRowFor(asset);
-        
+
         var timelinePanel = assetRow.GetComponent<RectTransform>();
         foreach (var assetAction in assetActions)
         {
@@ -516,13 +558,14 @@ public class Recorder : MonoBehaviour
         {
             Destroy(currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
         }
-        
+
         //Generate collision sequences
         foreach (var collisionModel in currentActiveExample.activeCollisionModels)
         {
             var collisionTimelinePanelTransform =
-                    currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>();
-                TimelineUIElement.CreateTimelineElement(currentActiveExample.collisionTimelineElementPrefab, collisionTimelinePanelTransform, GetSizeOfMainRecordedData(), collisionModel);
+                currentActiveExample.collisionTimelinePanel.GetComponent<RectTransform>();
+            TimelineUIElement.CreateTimelineElement(currentActiveExample.collisionTimelineElementPrefab, collisionTimelinePanelTransform,
+                GetSizeOfMainRecordedData(), collisionModel);
         }
     }
 
@@ -532,18 +575,22 @@ public class Recorder : MonoBehaviour
         {
             Destroy(currentActiveExample.leftHandTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
         }
+
         for (int i = 2; i < currentActiveExample.rightHandTimelinePanel.GetComponent<RectTransform>().childCount; i++)
         {
             Destroy(currentActiveExample.rightHandTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
         }
-        
+
         foreach (GestureSequence sequence in currentActiveExample.LeftHandGestureSequences)
         {
-            TimelineUIElement.CreateTimelineElement(currentActiveExample.handTimelineElementPrefab, currentActiveExample.leftHandTimelinePanel, GetSizeOfMainRecordedData(), sequence);
+            TimelineUIElement.CreateTimelineElement(currentActiveExample.handTimelineElementPrefab, currentActiveExample.leftHandTimelinePanel,
+                GetSizeOfMainRecordedData(), sequence);
         }
+
         foreach (GestureSequence sequence in currentActiveExample.RightHandGestureSequences)
         {
-            TimelineUIElement.CreateTimelineElement(currentActiveExample.handTimelineElementPrefab, currentActiveExample.rightHandTimelinePanel, GetSizeOfMainRecordedData(), sequence);
+            TimelineUIElement.CreateTimelineElement(currentActiveExample.handTimelineElementPrefab, currentActiveExample.rightHandTimelinePanel,
+                GetSizeOfMainRecordedData(), sequence);
         }
     }
 
@@ -552,7 +599,7 @@ public class Recorder : MonoBehaviour
         var stateMachineModel = StateMachineModel.CreateStateMachine(currentActiveExample);
         CustomStateMachine.Instance.stateMachineModel = stateMachineModel;
         StateMachineModel.Instance = stateMachineModel;
-
+        currentActiveExample.MarkStatesGenerated(); // CHECKIFSAFETODELETE 140426
         // int recordedFramesTotal = GetSizeOfMainRecordedData();
         //
         // var StateMachine = StateMachineModel.Instance;
@@ -697,7 +744,6 @@ public class Recorder : MonoBehaviour
     // }
 
 
-
     public void CombineExamples()
     {
         // DebugLogger.Instance.ClearVRDebugText();
@@ -708,7 +754,7 @@ public class Recorder : MonoBehaviour
         // {
         //     allStatesInExamples.Add(example.StatesDict.Keys.ToList());
         // }
-       
+
         // allStatesInExamples = allStatesInExamples.OrderBy(x => x.Count).ToList();
 
         // var shortestList = allStatesInExamples.First();
@@ -729,7 +775,7 @@ public class Recorder : MonoBehaviour
         //             break;
         //         }
         //     }
-            
+
         //     if (allStatesEqual)
         //     {
         //         commonStates.Add(shortestList[i]);
@@ -786,16 +832,15 @@ public class Recorder : MonoBehaviour
 
 
         //     //Print the common states          
-            
+
 
         //     CustomStateMachine.Instance.CreateStateGraph(stateGraphElementPrefab, stateGraphPanel.GetComponent<RectTransform>());
 
         // }
-        
+
         // CustomStateMachine.Instance.PrintDetailsOfStateMachine(VRConsoleEnabled : true);
 
         // //CustomStateMachine.Instance.SetInitialState(commonStates.First().id);
-
     }
 
     public void RefreshStatePlaceholders()
@@ -803,8 +848,9 @@ public class Recorder : MonoBehaviour
         //TODO
         RecreateTimelineUI_StatePlaceholders();
     }
-    
-    public void RecreateTimelineUI_StatePlaceholders(bool startHidden=false) {
+
+    public void RecreateTimelineUI_StatePlaceholders(bool startHidden = false)
+    {
         DeleteStatePlaceholders();
         int recordedFramesTotal = GetSizeOfMainRecordedData();
         var gestures = currentActiveExample.AllGestureSequences;
@@ -816,21 +862,26 @@ public class Recorder : MonoBehaviour
         {
             eventsThatStartStates.Add((gesture.StartIndex, "start", gesture, null, null));
         }
+
         foreach (var collision in collisions)
         {
             eventsThatStartStates.Add((collision.StartIndex, "start", null, collision, null));
         }
+
         foreach (var voiceCommand in voiceCommands)
         {
             eventsThatStartStates.Add((voiceCommand.StartIndex, "start", null, null, voiceCommand));
         }
+
         // Sort the events by their index
         eventsThatStartStates = eventsThatStartStates.OrderBy(e => e.Index).ToList();
         int lastIndex = 0;
         // Iterate over events to create states
-        for (int i = 0; i < eventsThatStartStates.Count; i++) {
+        for (int i = 0; i < eventsThatStartStates.Count; i++)
+        {
             var currentEvent = eventsThatStartStates[i];
-            if (lastIndex != currentEvent.Index) {
+            if (lastIndex != currentEvent.Index)
+            {
                 var startIndex = lastIndex;
                 var length = currentEvent.Index - lastIndex;
                 var stateTimelineElement = StateTimelineUIElement.CreateStateTimelineElement(
@@ -842,10 +893,13 @@ public class Recorder : MonoBehaviour
                     "State " + currentActiveExample.StatePlaceholders.Count);
                 this.currentActiveExample.StatePlaceholders.Add(stateTimelineElement.GetComponent<StateTimelineUIElement>());
             }
+
             lastIndex = currentEvent.Index;
         }
+
         // Last state
-        if (lastIndex < recordedFramesTotal) {
+        if (lastIndex < recordedFramesTotal)
+        {
             var startIndex = lastIndex;
             var length = recordedFramesTotal - lastIndex;
             var stateTimelineElement = StateTimelineUIElement.CreateStateTimelineElement(
@@ -857,15 +911,15 @@ public class Recorder : MonoBehaviour
                 "State " + currentActiveExample.StatePlaceholders.Count);
             this.currentActiveExample.StatePlaceholders.Add(stateTimelineElement.GetComponent<StateTimelineUIElement>());
         }
+
         if (startHidden)
         {
-            foreach (var statePlaceholder in  this.currentActiveExample.StatePlaceholders)
+            foreach (var statePlaceholder in this.currentActiveExample.StatePlaceholders)
             {
                 statePlaceholder.gameObject.SetActive(false);
             }
         }
-
-    }        
+    }
 
     //Dictionary<State, StateTimelineUIElement> StatesDict = new();
     // State CreateState(int startIndex, int length)
@@ -879,7 +933,7 @@ public class Recorder : MonoBehaviour
 
     //     var stateUI = StateTimelineUIElement.CreateStateTimelineElement(currentActiveExample.stateTimelineElementPrefab, currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>(),
     //                                                     startIndex, length, GetSizeOfMainRecordedData(), state);
-        
+
     //     state.timelineElement = stateUI;
 
     //     currentActiveExample.StatesDict.Add(state, stateUI.GetComponent<StateTimelineUIElement>());
@@ -890,121 +944,121 @@ public class Recorder : MonoBehaviour
     State MergeStates(State state1, State state2)
     {
         return null;
-    //     var state1UIElement = currentActiveExample.StatesDict[state1];
-    //     var state2UIElement = currentActiveExample.StatesDict[state2];
+        //     var state1UIElement = currentActiveExample.StatesDict[state1];
+        //     var state2UIElement = currentActiveExample.StatesDict[state2];
 
 
-    //     var StateMachine = CustomStateMachine.Instance;
-    //     var newState = new State
-    //     {
-    //         name = "tempState" + StateMachine.GetSize()
-    //     };
+        //     var StateMachine = CustomStateMachine.Instance;
+        //     var newState = new State
+        //     {
+        //         name = "tempState" + StateMachine.GetSize()
+        //     };
 
-    //     //Get the index of state1 in the StatesInTimeline dictionary
-    //     int state1Index = currentActiveExample.StatesDict.Keys.ToList().IndexOf(state1);
-    //     //Find the state before state1 in the StatesInTimeline dictionary if the index of state1 is not 0
-    //     State previousState = null;
-    //     if (state1Index > 0)
-    //     {
-    //         previousState = currentActiveExample.StatesDict.Keys.ToList()[state1Index - 1];
-    //         DebugLogger.Instance.Log("The state before state " + state1.name + " is state " + previousState.name);
-    //         //Add a transition from the previous state to the new state
-    //         previousState.ModifyTransitionTo(newState);
-    //         //previousState.transitions.Clear();  
-    //     }
-    //     else
-    //     {
-    //         DebugLogger.Instance.Log("State " + state1.name + " is the first state");
-    //     }
+        //     //Get the index of state1 in the StatesInTimeline dictionary
+        //     int state1Index = currentActiveExample.StatesDict.Keys.ToList().IndexOf(state1);
+        //     //Find the state before state1 in the StatesInTimeline dictionary if the index of state1 is not 0
+        //     State previousState = null;
+        //     if (state1Index > 0)
+        //     {
+        //         previousState = currentActiveExample.StatesDict.Keys.ToList()[state1Index - 1];
+        //         DebugLogger.Instance.Log("The state before state " + state1.name + " is state " + previousState.name);
+        //         //Add a transition from the previous state to the new state
+        //         previousState.ModifyTransitionTo(newState);
+        //         //previousState.transitions.Clear();  
+        //     }
+        //     else
+        //     {
+        //         DebugLogger.Instance.Log("State " + state1.name + " is the first state");
+        //     }
 
-    //     State nextState = null;
-    //     //Find the state after state2 in the StatesInTimeline dictionary if the index of state2 is not the last index
-    //     if (state1Index < currentActiveExample.StatesDict.Keys.Count - 1)
-    //     {
-    //         nextState = currentActiveExample.StatesDict.Keys.ToList()[state1Index + 1];
-    //         DebugLogger.Instance.Log("The state after state " + state2.name + " is state " + nextState.name);
+        //     State nextState = null;
+        //     //Find the state after state2 in the StatesInTimeline dictionary if the index of state2 is not the last index
+        //     if (state1Index < currentActiveExample.StatesDict.Keys.Count - 1)
+        //     {
+        //         nextState = currentActiveExample.StatesDict.Keys.ToList()[state1Index + 1];
+        //         DebugLogger.Instance.Log("The state after state " + state2.name + " is state " + nextState.name);
 
-    //         newState.ClearTransitions();
-    //         newState.CopyTransitionFromState(state2);
+        //         newState.ClearTransitions();
+        //         newState.CopyTransitionFromState(state2);
 
-    //         //Add a transition from the new state to the next state
-    //         newState.ModifyTransitionTo(nextState);
-    //         //newState.transitions.Clear();
-    //     }
-    //     else
-    //     {
-    //         DebugLogger.Instance.Log("State " + state2.name + " is the last state");
-    //     }
-
-
-    //     newState.OnEnterActions = state1.OnEnterActions;
-    //     newState.OnEnterActions = state2.OnEnterActions;
-    //     newState.OnExitActions = state1.OnExitActions; //We only have unfollow so this is fine for now TODO: Fix this for other use cases
-    //     newState.OnExitActions = state2.OnExitActions;
+        //         //Add a transition from the new state to the next state
+        //         newState.ModifyTransitionTo(nextState);
+        //         //newState.transitions.Clear();
+        //     }
+        //     else
+        //     {
+        //         DebugLogger.Instance.Log("State " + state2.name + " is the last state");
+        //     }
 
 
-    //     //Assign state.id as "State" plus the digits present in state1.id and state2.id
-    //     string state1ID = state1.name;
-    //     string state2ID = state2.name;
-    //     string stateID = "State";
-    //     foreach (char c in state1ID)
-    //     {
-    //         if (char.IsDigit(c))
-    //         {
-    //             stateID += c;
-    //         }
-    //     }
-    //     foreach (char c in state2ID)
-    //     {
-    //         if (char.IsDigit(c))
-    //         {
-    //             stateID += c;
-    //         }
-    //     }
-    //     newState.name = stateID;
+        //     newState.OnEnterActions = state1.OnEnterActions;
+        //     newState.OnEnterActions = state2.OnEnterActions;
+        //     newState.OnExitActions = state1.OnExitActions; //We only have unfollow so this is fine for now TODO: Fix this for other use cases
+        //     newState.OnExitActions = state2.OnExitActions;
 
-    //     var stateUI = StateTimelineUIElement.CreateStateTimelineElement(currentActiveExample.stateTimelineElementPrefab, currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>(),
-    //                                                     state1UIElement.StartIndex, state1UIElement.Length + state2UIElement.Length, GetSizeOfMainRecordedData(), newState);
 
-    //     newState.timelineElement = stateUI;
-    //     state1UIElement = stateUI.GetComponent<StateTimelineUIElement>();
+        //     //Assign state.id as "State" plus the digits present in state1.id and state2.id
+        //     string state1ID = state1.name;
+        //     string state2ID = state2.name;
+        //     string stateID = "State";
+        //     foreach (char c in state1ID)
+        //     {
+        //         if (char.IsDigit(c))
+        //         {
+        //             stateID += c;
+        //         }
+        //     }
+        //     foreach (char c in state2ID)
+        //     {
+        //         if (char.IsDigit(c))
+        //         {
+        //             stateID += c;
+        //         }
+        //     }
+        //     newState.name = stateID;
 
-    //     DebugLogger.Instance.Log("Merged states " + state1.name + " and " + state2.name + " to create state " + newState.name);
-    //     //DebugLogger.Instance.Log("Size of new state: " + state1UIElement.Length);
+        //     var stateUI = StateTimelineUIElement.CreateStateTimelineElement(currentActiveExample.stateTimelineElementPrefab, currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>(),
+        //                                                     state1UIElement.StartIndex, state1UIElement.Length + state2UIElement.Length, GetSizeOfMainRecordedData(), newState);
 
-    //     //Remove state1 and state2 from the state machine
-    //     StateMachine.DeleteState(state1.name);
-    //     StateMachine.DeleteState(state2.name);
-    //     //Remove state1 and state2 from the state timeline
-    //     Destroy(currentActiveExample.StatesDict[state1].gameObject);
-    //     Destroy(currentActiveExample.StatesDict[state2].gameObject);
-    //     currentActiveExample.StatesDict.Remove(state1);
-    //     currentActiveExample.StatesDict.Remove(state2);
+        //     newState.timelineElement = stateUI;
+        //     state1UIElement = stateUI.GetComponent<StateTimelineUIElement>();
 
-    //     //Insert the new state into the location of state1
+        //     DebugLogger.Instance.Log("Merged states " + state1.name + " and " + state2.name + " to create state " + newState.name);
+        //     //DebugLogger.Instance.Log("Size of new state: " + state1UIElement.Length);
 
-    //     //StatesInTimeline.Add(state, stateUI.GetComponent<StateTimelineUIElement>());
+        //     //Remove state1 and state2 from the state machine
+        //     StateMachine.DeleteState(state1.name);
+        //     StateMachine.DeleteState(state2.name);
+        //     //Remove state1 and state2 from the state timeline
+        //     Destroy(currentActiveExample.StatesDict[state1].gameObject);
+        //     Destroy(currentActiveExample.StatesDict[state2].gameObject);
+        //     currentActiveExample.StatesDict.Remove(state1);
+        //     currentActiveExample.StatesDict.Remove(state2);
 
-    //     //Iterate through the StatesInTimeline dictionary keys and change the key to be "State" + index of the key
-    //     /*Dictionary<State, StateTimelineUIElement> newStatesInTimeline = new Dictionary<State, StateTimelineUIElement>();
-    //     foreach (var stateInTimeline in StatesInTimeline)
-    //     {
-    //         State newState = new State();
-    //         newState.id = "State" + newStatesInTimeline.Count;
-    //         newStatesInTimeline.Add(newState, stateInTimeline.Value);
-    //     }
-    //     StatesInTimeline = newStatesInTimeline;*/
+        //     //Insert the new state into the location of state1
 
-    //     //state.id = "State" + StatesInTimeline.Count;
-    //     currentActiveExample.StatesDict.Add(newState, stateUI.GetComponent<StateTimelineUIElement>());
-    //     StateMachine.AddState(newState.name, newState);
+        //     //StatesInTimeline.Add(state, stateUI.GetComponent<StateTimelineUIElement>());
 
-    //     //StateMachine.SetInitialState(currentActiveExample.StatesDict.First().Key.id);
-    //     AddActionsToAllStates();
-    //     CombineExamples();
-    //     StateMachine.SetInitialState(currentActiveExample.StatesDict.First().Key.name);
+        //     //Iterate through the StatesInTimeline dictionary keys and change the key to be "State" + index of the key
+        //     /*Dictionary<State, StateTimelineUIElement> newStatesInTimeline = new Dictionary<State, StateTimelineUIElement>();
+        //     foreach (var stateInTimeline in StatesInTimeline)
+        //     {
+        //         State newState = new State();
+        //         newState.id = "State" + newStatesInTimeline.Count;
+        //         newStatesInTimeline.Add(newState, stateInTimeline.Value);
+        //     }
+        //     StatesInTimeline = newStatesInTimeline;*/
 
-    //     return newState;
+        //     //state.id = "State" + StatesInTimeline.Count;
+        //     currentActiveExample.StatesDict.Add(newState, stateUI.GetComponent<StateTimelineUIElement>());
+        //     StateMachine.AddState(newState.name, newState);
+
+        //     //StateMachine.SetInitialState(currentActiveExample.StatesDict.First().Key.id);
+        //     AddActionsToAllStates();
+        //     CombineExamples();
+        //     StateMachine.SetInitialState(currentActiveExample.StatesDict.First().Key.name);
+
+        //     return newState;
     }
 
 
@@ -1025,14 +1079,15 @@ public class Recorder : MonoBehaviour
         {
             Destroy(currentActiveExample.statesTimelinePanel.GetComponent<RectTransform>().GetChild(i).gameObject);
         }
+
         currentActiveExample.StatePlaceholders.Clear();
     }
-    
+
     public void PrintDetailsOfStateMachine(List<State> states)
     {
         DebugLogger.Instance.ClearVRDebugText();
 
-        CustomStateMachine.Instance.PrintDetailsOfStateMachine(VRConsoleEnabled : true);
+        CustomStateMachine.Instance.PrintDetailsOfStateMachine(VRConsoleEnabled: true);
 
         DebugLogger.Instance.Log("Printing details of state machine");
 
@@ -1054,29 +1109,34 @@ public class Recorder : MonoBehaviour
     {
         var previousIndex = currentActiveExample.StatePlaceholders.IndexOf(selectedStateUIElement) - 1;
 
-        if (previousIndex > 0 && previousIndex < currentActiveExample.StatePlaceholders.Count) {
+        if (previousIndex > 0 && previousIndex < currentActiveExample.StatePlaceholders.Count)
+        {
             var previousStateUIElement = currentActiveExample.StatePlaceholders[previousIndex];
             DebugLogger.Instance.Log("Merging state " + selectedStateUIElement.name + " with state " + previousStateUIElement.name);
             previousStateUIElement.MergeWithStateUIElement(selectedStateUIElement);
-        } else {
+        }
+        else
+        {
             DebugLogger.Instance.Log("Cannot merge state " + selectedStateUIElement.name + " with state to the left because it is the first state");
         }
     }
- 
+
     public void MergeToRightState(StateTimelineUIElement selectedStateUIElement)
     {
         var nextIndex = currentActiveExample.StatePlaceholders.IndexOf(selectedStateUIElement) + 1;
 
-        if (nextIndex > 0 && nextIndex < currentActiveExample.StatePlaceholders.Count) {
+        if (nextIndex > 0 && nextIndex < currentActiveExample.StatePlaceholders.Count)
+        {
             var nextStateUIElement = currentActiveExample.StatePlaceholders[nextIndex];
             DebugLogger.Instance.Log("Merging state " + selectedStateUIElement.name + " with state " + nextStateUIElement.name);
             selectedStateUIElement.MergeWithStateUIElement(nextStateUIElement);
-
-        } else {
+        }
+        else
+        {
             DebugLogger.Instance.Log("Cannot merge state " + selectedStateUIElement.name + " with state to the left because it is the first state");
         }
     }
-    
+
     int _latestRecordedFrameIndex = 0;
 
     private void FixedUpdate()
@@ -1097,7 +1157,7 @@ public class Recorder : MonoBehaviour
             {
                 if (isAutomaticPlayback)
                 {
-                    playbackSlider.value += 1;//Time.deltaTime;
+                    playbackSlider.value += 1; //Time.deltaTime;
                     if (playbackSlider.value >= currentActiveExample.RecordedDataCount)
                     {
                         playbackSlider.value = 0;
@@ -1105,7 +1165,7 @@ public class Recorder : MonoBehaviour
                 }
 
                 UpdatePlaybackObjects((int)playbackSlider.value);
-                
+
                 break;
             }
             default:
@@ -1114,7 +1174,6 @@ public class Recorder : MonoBehaviour
                 return;
             }
         }
-
     }
 
     private void UpdatePlaybackObjects(int currentFrameNum)
@@ -1123,35 +1182,43 @@ public class Recorder : MonoBehaviour
         {
             return;
         }
-        
+
         if (head.playbackObject != null)
         {
-            head.playbackObject.transform.SetLocalPositionAndRotation(currentActiveExample.headFrames[currentFrameNum].rootPosition, currentActiveExample.headFrames[currentFrameNum].rootRotation);
-            head.playbackFocusSquare.transform.SetPositionAndRotation(currentActiveExample.headFrames[currentFrameNum].focusSquarePosition, currentActiveExample.headFrames[currentFrameNum].focusSquareRotation);
+            head.playbackObject.transform.SetLocalPositionAndRotation(currentActiveExample.headFrames[currentFrameNum].rootPosition,
+                currentActiveExample.headFrames[currentFrameNum].rootRotation);
+            head.playbackFocusSquare.transform.SetPositionAndRotation(currentActiveExample.headFrames[currentFrameNum].focusSquarePosition,
+                currentActiveExample.headFrames[currentFrameNum].focusSquareRotation);
         }
 
         if (leftHand.playbackObject != null)
         {
-            leftHand.playbackObject.transform.SetLocalPositionAndRotation(currentActiveExample.leftHandFrames[currentFrameNum].rootPosition, currentActiveExample.leftHandFrames[currentFrameNum].rootRotation * Quaternion.Euler(leftHand.rotationCorrection));
+            leftHand.playbackObject.transform.SetLocalPositionAndRotation(currentActiveExample.leftHandFrames[currentFrameNum].rootPosition,
+                currentActiveExample.leftHandFrames[currentFrameNum].rootRotation * Quaternion.Euler(leftHand.rotationCorrection));
             if (leftHand.playbackObject.GetComponent<HandPlaybackObjectScript>() != null)
             {
-                leftHand.playbackObject.GetComponent<HandPlaybackObjectScript>().SetPoseForAllFingerJoints(currentActiveExample.leftHandFrames[currentFrameNum]);
+                leftHand.playbackObject.GetComponent<HandPlaybackObjectScript>()
+                    .SetPoseForAllFingerJoints(currentActiveExample.leftHandFrames[currentFrameNum]);
                 leftHand.playbackGestureText.text = InputManager.Instance.GestureToString(currentActiveExample.leftHandFrames[currentFrameNum].gesture);
             }
 
-            leftHand.playbackFocusSquare.transform.SetPositionAndRotation(currentActiveExample.leftHandFrames[currentFrameNum].focusSquarePosition, currentActiveExample.leftHandFrames[currentFrameNum].focusSquareRotation);
+            leftHand.playbackFocusSquare.transform.SetPositionAndRotation(currentActiveExample.leftHandFrames[currentFrameNum].focusSquarePosition,
+                currentActiveExample.leftHandFrames[currentFrameNum].focusSquareRotation);
         }
 
         if (rightHand.playbackObject != null)
         {
-            rightHand.playbackObject.transform.SetLocalPositionAndRotation(currentActiveExample.rightHandFrames[currentFrameNum].rootPosition, currentActiveExample.rightHandFrames[currentFrameNum].rootRotation * Quaternion.Euler(rightHand.rotationCorrection));
+            rightHand.playbackObject.transform.SetLocalPositionAndRotation(currentActiveExample.rightHandFrames[currentFrameNum].rootPosition,
+                currentActiveExample.rightHandFrames[currentFrameNum].rootRotation * Quaternion.Euler(rightHand.rotationCorrection));
             if (rightHand.playbackObject.GetComponent<HandPlaybackObjectScript>() != null)
             {
-                rightHand.playbackObject.GetComponent<HandPlaybackObjectScript>().SetPoseForAllFingerJoints(currentActiveExample.rightHandFrames[currentFrameNum]);
+                rightHand.playbackObject.GetComponent<HandPlaybackObjectScript>()
+                    .SetPoseForAllFingerJoints(currentActiveExample.rightHandFrames[currentFrameNum]);
                 rightHand.playbackGestureText.text = InputManager.Instance.GestureToString(currentActiveExample.rightHandFrames[currentFrameNum].gesture);
             }
 
-            rightHand.playbackFocusSquare.transform.SetPositionAndRotation(currentActiveExample.rightHandFrames[currentFrameNum].focusSquarePosition, currentActiveExample.rightHandFrames[currentFrameNum].focusSquareRotation);
+            rightHand.playbackFocusSquare.transform.SetPositionAndRotation(currentActiveExample.rightHandFrames[currentFrameNum].focusSquarePosition,
+                currentActiveExample.rightHandFrames[currentFrameNum].focusSquareRotation);
         }
     }
 
@@ -1171,14 +1238,9 @@ public class Recorder : MonoBehaviour
                 else
                 {
                     //Unhighlight all the others
-                    imageComponent.color = new Color(255, 193,97);
+                    imageComponent.color = new Color(255, 193, 97);
                 }
             }
         }
     }
 }
-
-
-
-
-

@@ -10,9 +10,9 @@ using UnityEngine.Serialization;
 public class Asset : MonoBehaviour
 {
     GameObject collidedObjectDuringRecording; // TODO J - What is this?
-   
+
     public event Action<Asset> OnMeshUpdated;
-    
+
     // -------------------------
     // Cached components
     // -------------------------
@@ -25,17 +25,17 @@ public class Asset : MonoBehaviour
     // -------------------------
     // Public state
     // -------------------------
-    
+
     public Quaternion InitialRotation { get; set; }
     public Vector3 InitialPosition { get; set; }
 
     [NonSerialized] public List<ForceArrow> forceArrows = new();
-    
+
     [SerializeField] private Collider grabCollider;
     [SerializeField] public GameObject assetMenu;
     [SerializeField] private GameObject followLineObj;
     [SerializeField] private GameObject colliderVisualizerObj, colliderBoundaryGizmoObj1;
-    
+
     [NonSerialized] public Material defaultMaterial;
 
     private int firstFrameOfManualRecording, lastFrameOfManualRecording;
@@ -57,7 +57,7 @@ public class Asset : MonoBehaviour
         get
         {
             // MeshRenderer meshRenderer = gameObject.GetComponent<MeshRenderer>();
-            
+
             // Any time we access material or materials on a renderer, that actually creates a copy
             // of the materials assigned just to that renderer. So we cannot use == operator
             String baseMaterialName = defaultMaterial.name;
@@ -105,6 +105,7 @@ public class Asset : MonoBehaviour
                     {
                         _meshRenderer.material = AssetManager.Instance.translucentMaterial;
                     }
+
                     if (gameObject.GetComponentInChildren<TextAsset>() != null)
                     {
                         gameObject.GetComponent<TextAsset>().SetTextVisibility(false);
@@ -118,13 +119,13 @@ public class Asset : MonoBehaviour
         }
     }
 
-    
+
     public void NotifyMeshUpdated()
     {
         DebugLogger.Instance.Log($"Asset {gameObject.name}: mesh updated");
         OnMeshUpdated?.Invoke(this);
     }
-    
+
     private void Awake()
     {
         _meshRenderer = GetComponent<MeshRenderer>();
@@ -152,8 +153,8 @@ public class Asset : MonoBehaviour
         if (_light == null)
         {
             _light = gameObject.AddComponent<Light>();
-            _light .type = LightType.Point;
-            _light .intensity = 1;
+            _light.type = LightType.Point;
+            _light.intensity = 1;
         }
         else
         {
@@ -186,6 +187,7 @@ public class Asset : MonoBehaviour
             var velocityOverLifetime = _dust.velocityOverLifetime;
             velocityOverLifetime.y = -0.5f;
         }
+
         // Start the particle system immediatelys
         if (!_dust.isPlaying) _dust.Play();
     }
@@ -254,7 +256,8 @@ public class Asset : MonoBehaviour
     public void PlaybackAssetFrame()
     {
         int currentFrameNum = (int)Recorder.Instance.playbackSlider.value;
-        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetsDict[this].assetFrames;
+        // var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetsDict[this].assetFrames; // CHECKIFSAFETODELETE 140426
+        var currentAssetRecordedData = Recorder.Instance.currentActiveExample.GetAssetFramesReadOnly(this);
 
         //foreach (var recordable in Recorder.Instance.currentActiveExample.assetDataDict.Keys)
         //{
@@ -308,7 +311,8 @@ public class Asset : MonoBehaviour
             ActionDelegate = actionDelegate,
             TargetAsset = this
         };
-        Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.Add(newAction);
+        // Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.Add(newAction);// CHECKIFSAFETODELETE 140426
+        Recorder.Instance.currentActiveExample.RegisterActionForGivenAsset(this, newAction);
 
         if (newAction.IsFollow())
         {
@@ -333,7 +337,6 @@ public class Asset : MonoBehaviour
         }
         else
         {
-
             var newEndAction = new AssetActionSequence
             {
                 StartIndex = frameEndForFollow,
@@ -344,7 +347,8 @@ public class Asset : MonoBehaviour
 
             followAction.associatedEndAction = newEndAction;
 
-            Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.Add(newEndAction);
+            // Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.Add(newEndAction); // CHECKIFSAFETODELETE 140426
+            Recorder.Instance.currentActiveExample.RegisterActionForGivenAsset(this, newEndAction);
         }
     }
 
@@ -459,7 +463,7 @@ public class Asset : MonoBehaviour
             // }
             // else
             // {
-                LightOn();
+            LightOn();
             // }
         }
         // if gameObject name is Book then remove the particle system component
@@ -473,7 +477,7 @@ public class Asset : MonoBehaviour
             // }
             // else
             // {
-                DustOn();
+            DustOn();
             // }
         }
     }
@@ -496,7 +500,7 @@ public class Asset : MonoBehaviour
     {
         var color = buttonImage.color;
         RecordAction(ACTION_ENUM.CHANGE_COLOR, () => CurrentColor = color);
-        
+
         // RecordAction(ACTION_ENUM.CHANGE_COLOR, () =>
         // {
         //     //TODO this is not considering live vs other modes
@@ -509,10 +513,10 @@ public class Asset : MonoBehaviour
         //Replace the mesh of the current gameObject with the mesh of newMeshObj
         var mf = gameObject.GetComponent<MeshFilter>();
         if (mf == null) return;
-        
+
         var otherMf = newMeshObj.GetComponent<MeshFilter>();
         if (otherMf == null) return;
-        
+
         mf.mesh = otherMf.mesh;
     }
 
@@ -530,7 +534,7 @@ public class Asset : MonoBehaviour
     private int FindFollowEndIndex(int frameStart)
     {
         if (Recorder.Instance == null || Recorder.Instance.currentActiveExample == null) return 0;
-        
+
         var placeholders = Recorder.Instance.currentActiveExample.StatePlaceholders;
         foreach (var sp in placeholders)
         {
@@ -584,7 +588,7 @@ public class Asset : MonoBehaviour
             bool isLive = Manager.Instance != null && Manager.Instance.currAppState == Manager.AppState.LIVE;
             var target = isLive ? liveTarget : playbackTarget;
             if (target != null) ApplyFollow(target.transform);
-            
+
             // if (Manager.Instance.currAppState == Manager.AppState.LIVE)
             // {
             //     GetComponent<Asset>().ApplyFollow(liveTarget.transform);
@@ -601,29 +605,30 @@ public class Asset : MonoBehaviour
     {
         RecordUnfollow((int)Recorder.Instance.playbackSlider.value);
     }
-    
+
     public void RecordUnfollow(int startFrame)
     {
         var currentFrame = (int)Recorder.Instance.playbackSlider.value;
         //Find the associated Follow action
-        var associatedFollowAction = Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.OrderBy(x => x.StartIndex).LastOrDefault(assetAction =>
-            assetAction.IsFollow() && assetAction.StartIndex < currentFrame) ?? null;
-        
+        // var associatedFollowAction = Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.OrderBy(x => x.StartIndex).LastOrDefault(assetAction => // CHECKIFSAFETODELETE 140426
+        var associatedFollowAction = Recorder.Instance.currentActiveExample.GetAssetActionsReadOnly(this)
+            .OrderBy(x => x.StartIndex).LastOrDefault(assetAction =>
+                assetAction.IsFollow() && assetAction.StartIndex < currentFrame) ?? null;
+
         if (associatedFollowAction == null)
         {
             return;
         }
 
         var frameStart = associatedFollowAction.StartIndex;
-        
+
         CreateFollowEndAction(associatedFollowAction, currentFrame, frameStart);
-        
+
         Recorder.Instance.UpdateAllAssetFramesAndCollisions(frameStart, Recorder.Instance.currentActiveExample, () =>
         {
             Recorder.Instance.RecreateTimelineUI_Collisions();
             Recorder.Instance.RecreateTimelineUI_ActionsForAsset(this);
         });
-        
     }
 
     private Rigidbody EnsureRigidbody()
@@ -691,7 +696,8 @@ public class Asset : MonoBehaviour
                 {
                     List<AssetActionSequence> addedResetPhysicsActions = new();
 
-                    foreach (var action in Recorder.Instance.currentActiveExample.assetsDict[this].assetActions)
+                    // foreach (var action in Recorder.Instance.currentActiveExample.assetsDict[this].assetActions) // CHECKIFSAFETODELETE 140426
+                    foreach (var action in Recorder.Instance.currentActiveExample.GetAssetActionsReadOnly(this))
                     {
                         if (action.ActionType == ACTION_ENUM.APPLY_FORCE_START && action.Length == 0 &&
                             action.StartIndex <= currentFrameIndex)
@@ -717,8 +723,8 @@ public class Asset : MonoBehaviour
 
                     foreach (var resetPhysicsActionToAdd in addedResetPhysicsActions)
                     {
-                        Recorder.Instance.currentActiveExample.assetsDict[this].assetActions
-                            .Add(resetPhysicsActionToAdd);
+                        // Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.Add(resetPhysicsActionToAdd); // CHECKIFSAFETODELETE 140426
+                        Recorder.Instance.currentActiveExample.RegisterActionForGivenAsset(this, resetPhysicsActionToAdd);
                     }
                 }
 
