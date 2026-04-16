@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class StatesStatusUIManager : MonoBehaviour
 {
-    public static StatesStatusUIManager Instance { get; private set; }
+    private static StatesStatusUIManager Instance { get; set; }
     
     [SerializeField] private TMP_Text currentExampleText;
     [SerializeField] private TMP_Text allExamplesText;
