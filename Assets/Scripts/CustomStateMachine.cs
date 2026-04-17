@@ -69,6 +69,8 @@ public class StateMachineModel
     public Example myExample;
     public static StateMachineModel Instance { get; set; }
 
+    public string InitialStateId { get; private set; } // todo 160426 DTO
+
     private State _currentState;
 
     public State currentState
@@ -95,7 +97,7 @@ public class StateMachineModel
         myExample = example;
     }
 
-public void AddState(State state)
+    public void AddState(State state)
     {
         states.Add(state);
     }
@@ -118,8 +120,20 @@ public void AddState(State state)
         // foreach (var state in states)
         // {
         //     state.Value.ResetStateUIColor();
-        // }        
+        // }
+        InitialStateId = state._id; // todo 160426 DTO
     }
+    
+    // // todo 160426 DTO
+    // public void ResetToInitialState()
+    // {
+    //     var initial = states.Find(s => s._id == InitialStateId);
+    //     if (initial != null)
+    //     {
+    //         currentState = initial;
+    //     }
+    // }
+    // Unchanged
 
     public void InvokeOnEnterActionsOfInitialState()
     {
@@ -448,9 +462,8 @@ public class State
 
     public List<Transition> transitions = new();
 
-    public GameObject timelineElement;
-
-    public GameObject stateGraphElement;
+    [NonSerialized] public GameObject timelineElement;
+    [NonSerialized] public GameObject stateGraphElement;
 
     Color originalColor = Color.white;
     
@@ -520,7 +533,7 @@ public class State
         }
     }
 
-    override public string ToString()
+    public override string ToString()
     {
         return name;
     }
@@ -536,7 +549,26 @@ public class State
             triggers = triggers
         });
     }
-
+    
+    // todo 160426 DTO
+    // public void AddTransitionTo(
+    //     State targetState,
+    //     Func<Frame, bool> condition,
+    //     string textDescription = "empty description",
+    //     List<Sequence> triggers = null,
+    //     ConditionData serializedCondition = null)
+    // {
+    //     transitions.Add(new Transition
+    //     {
+    //         from = this,
+    //         to = targetState,
+    //         condition = condition,
+    //         serializedCondition = serializedCondition,
+    //         textDescription = textDescription,
+    //         triggers = triggers ?? new List<Sequence>()
+    //     });
+    // }
+    
     public void ClearTransitions()
     {
         transitions.Clear();
@@ -591,7 +623,6 @@ public class State
             }
         }
     }
-    
 }
 
 public class Transition
@@ -601,6 +632,8 @@ public class Transition
 
     public Func<Frame, bool> condition;
 
+    // public ConditionData serializedCondition; // Serialization purposes
+    
     public string textDescription;
     
     public List<Sequence> triggers;
