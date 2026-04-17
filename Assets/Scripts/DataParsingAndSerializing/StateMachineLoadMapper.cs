@@ -12,9 +12,9 @@ public static class StateMachineLoadMapper
         {
             State state = new State(stateSaveData.name, model, stateSaveData.id);
 
-            state.OnEnterActionsSequences = AssetActionSequenceSaveMapper.FromSaveDataList(stateSaveData.onEnterActions, resolver);
-            state.OnUpdateActionsSequences = AssetActionSequenceSaveMapper.FromSaveDataList(stateSaveData.onUpdateActions, resolver);
-            state.OnExitActionsSequences = AssetActionSequenceSaveMapper.FromSaveDataList(stateSaveData.onExitActions, resolver);
+            state.OnEnterActionsSequences = AssetActionSequenceLoadMapper.FromSaveDataList(stateSaveData.onEnterActions, resolver);
+            state.OnUpdateActionsSequences = AssetActionSequenceLoadMapper.FromSaveDataList(stateSaveData.onUpdateActions, resolver);
+            state.OnExitActionsSequences = AssetActionSequenceLoadMapper.FromSaveDataList(stateSaveData.onExitActions, resolver);
 
             model.AddState(state);
             statesById[state._id] = state;

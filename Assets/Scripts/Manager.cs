@@ -1066,6 +1066,8 @@ public enum ACTION_ENUM
 
 public class AssetActionSequence : Sequence
 {
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+    
     public Asset TargetAsset { get; set; }
     public ACTION_ENUM ActionType { get; set; } //None, Physics, ApplyFollow, Show, Hide
 
@@ -1073,6 +1075,11 @@ public class AssetActionSequence : Sequence
 
     public AssetActionSequence associatedEndAction;
 
+    // Extra payload for actions that need parameters
+    public Color? StoredColor { get; set; }
+    public Vector3? StoredPinPosition { get; set; }
+    public Vector3? StoredInitialVelocity { get; set; }
+    
     public override Func<Frame, bool> AddConditionToFunction(Func<Frame, bool> conditionFunction)
     {
         throw new NotImplementedException();
@@ -1142,6 +1149,11 @@ public class AssetActionSequence : Sequence
         clonedAction.ActionDelegate = ActionDelegate;
         clonedAction.TargetAsset = TargetAsset;
 
+        clonedAction.Id = Id;
+        clonedAction.StoredColor = StoredColor;
+        clonedAction.StoredPinPosition = StoredPinPosition;
+        clonedAction.StoredInitialVelocity = StoredInitialVelocity;
+        
         // Return the cloned object
         return clonedAction;
     }

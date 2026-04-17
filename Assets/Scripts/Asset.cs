@@ -297,7 +297,7 @@ public class Asset : MonoBehaviour
         //}
     }
 
-    public void RecordAction(ACTION_ENUM actionType, Action actionDelegate, int frameStart = -1)
+    public AssetActionSequence RecordAction(ACTION_ENUM actionType, Action actionDelegate, int frameStart = -1)
     {
         if (frameStart == -1)
         {
@@ -325,6 +325,8 @@ public class Asset : MonoBehaviour
             Recorder.Instance.RecreateTimelineUI_Collisions();
             Recorder.Instance.RecreateTimelineUI_ActionsForAsset(this);
         });
+
+        return newAction;
     }
 
     public void CreateFollowEndAction(AssetActionSequence followAction, int frameEndForFollow, int frameStart)
@@ -451,7 +453,7 @@ public class Asset : MonoBehaviour
         });
     }
 
-    private void StartAnimation()
+    public void StartAnimation()
     {
         // if gameObject name is Lamp then add a light component 
         if (gameObject.name.Contains("Lamp"))
@@ -499,8 +501,8 @@ public class Asset : MonoBehaviour
     public void RecordColorChange(UnityEngine.UI.Image buttonImage)
     {
         var color = buttonImage.color;
-        RecordAction(ACTION_ENUM.CHANGE_COLOR, () => CurrentColor = color);
-
+        var assetActionSequence = RecordAction(ACTION_ENUM.CHANGE_COLOR, () => CurrentColor = color);
+        assetActionSequence.StoredColor = this.CurrentColor;
         // RecordAction(ACTION_ENUM.CHANGE_COLOR, () =>
         // {
         //     //TODO this is not considering live vs other modes
@@ -523,7 +525,8 @@ public class Asset : MonoBehaviour
     public void RecordPin(Vector3 position)
     {
         //TODO For now, this behaviour is the same for all the modes of the app
-        RecordAction(ACTION_ENUM.PIN, () => Pin(position));
+        var assetActionSequence = RecordAction(ACTION_ENUM.PIN, () => Pin(position));
+        assetActionSequence.StoredPinPosition = position;
     }
 
     public void Pin(Vector3 location)

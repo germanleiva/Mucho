@@ -1,0 +1,207 @@
+{
+  "initialStateId": "bb0e963f-08f9-4269-928d-bef5cac53a3c",
+  "states": [
+    {
+      "id": "bb0e963f-08f9-4269-928d-bef5cac53a3c",
+      "name": "State 0",
+      "onEnterActions": [
+        {
+          "id": "dd3aab4a-010d-4304-84c8-90ff16842c9f",
+          "startIndex": 0,
+          "length": 0,
+          "actionType": "SHOW",
+          "targetAssetId": null,
+          "associatedEndActionId": null,
+          "color": {
+            "r": 0.5,
+            "g": 0.5,
+            "b": 0.5,
+            "a": 1.0
+          },
+          "pinPosition": null,
+          "initialVelocity": null
+        },
+        {
+          "id": "96f384bb-4088-44ab-8ead-293d4f786f15",
+          "startIndex": 0,
+          "length": 0,
+          "actionType": "SHOW",
+          "targetAssetId": null,
+          "associatedEndActionId": null,
+          "color": {
+            "r": 0.5,
+            "g": 0.5,
+            "b": 0.5,
+            "a": 1.0
+          },
+          "pinPosition": null,
+          "initialVelocity": null
+        }
+      ],
+      "onUpdateActions": [],
+      "onExitActions": []
+    },
+    {
+      "id": "5978c560-b36e-43cb-a464-c1f92429040d",
+      "name": "State 1",
+      "onEnterActions": [
+        {
+          "id": "ec989ecd-fb9f-47bd-9764-160874a12fe4",
+          "startIndex": 109,
+          "length": 253,
+          "actionType": "FOLLOW_LEFT_HAND",
+          "targetAssetId": null,
+          "associatedEndActionId": "eaff0fa7-bd3a-41b1-aee8-01c71219527c",
+          "color": null,
+          "pinPosition": null,
+          "initialVelocity": null
+        }
+      ],
+      "onUpdateActions": [],
+      "onExitActions": []
+    },
+    {
+      "id": "12270ca8-9baf-4564-a7f9-3003714dad81",
+      "name": "State 2",
+      "onEnterActions": [
+        {
+          "id": "eaff0fa7-bd3a-41b1-aee8-01c71219527c",
+          "startIndex": 362,
+          "length": 0,
+          "actionType": "FOLLOW_END",
+          "targetAssetId": null,
+          "associatedEndActionId": null,
+          "color": null,
+          "pinPosition": null,
+          "initialVelocity": null
+        },
+        {
+          "id": "f9800f79-765e-4286-b971-a2247f4ee483",
+          "startIndex": 366,
+          "length": 8,
+          "actionType": "APPLY_FORCE_START",
+          "targetAssetId": null,
+          "associatedEndActionId": "2f2f0fe2-7c8e-4b35-ae95-12e517dc9bb7",
+          "color": null,
+          "pinPosition": null,
+          "initialVelocity": {
+            "x": -1.24180055,
+            "y": 0.811653137,
+            "z": 1.41371012
+          }
+        }
+      ],
+      "onUpdateActions": [],
+      "onExitActions": [
+        {
+          "id": "2f2f0fe2-7c8e-4b35-ae95-12e517dc9bb7",
+          "startIndex": 374,
+          "length": 0,
+          "actionType": "APPLY_FORCE_END",
+          "targetAssetId": null,
+          "associatedEndActionId": null,
+          "color": null,
+          "pinPosition": null,
+          "initialVelocity": null
+        }
+      ]
+    },
+    {
+      "id": "4059f668-6d17-48cf-911e-9c6d572a8136",
+      "name": "State 3",
+      "onEnterActions": [
+        {
+          "id": "14dad736-de1f-4412-a0f9-10bda32ab2d4",
+          "startIndex": 375,
+          "length": 0,
+          "actionType": "CHANGE_COLOR",
+          "targetAssetId": null,
+          "associatedEndActionId": null,
+          "color": {
+            "r": 0.5,
+            "g": 0.5,
+            "b": 0.5,
+            "a": 1.0
+          },
+          "pinPosition": null,
+          "initialVelocity": null
+        }
+      ],
+      "onUpdateActions": [],
+      "onExitActions": []
+    }
+  ],
+  "transitions": [
+    {
+      "fromStateId": "bb0e963f-08f9-4269-928d-bef5cac53a3c",
+      "toStateId": "5978c560-b36e-43cb-a464-c1f92429040d",
+      "textDescription": "State 0->State 1: && Pinch && Sphere 1 hit LeftHand",
+      "triggers": [
+        {
+          "kind": 0,
+          "startIndex": 109,
+          "length": 250,
+          "gestureType": "LEFTHANDPINCH",
+          "voiceCommand": null,
+          "isActive": false,
+          "collidingObject1Id": null,
+          "collidingObject2Id": null
+        },
+        {
+          "kind": 2,
+          "startIndex": 103,
+          "length": 262,
+          "gestureType": null,
+          "voiceCommand": null,
+          "isActive": true,
+          "collidingObject1Id": null,
+          "collidingObject2Id": null
+        }
+      ]
+    },
+    {
+      "fromStateId": "5978c560-b36e-43cb-a464-c1f92429040d",
+      "toStateId": "12270ca8-9baf-4564-a7f9-3003714dad81",
+      "textDescription": "State 1->State 2: && Open && Sphere 1 hit LeftHand",
+      "triggers": [
+        {
+          "kind": 0,
+          "startIndex": 362,
+          "length": 68,
+          "gestureType": "LEFTHANDOPEN",
+          "voiceCommand": null,
+          "isActive": false,
+          "collidingObject1Id": null,
+          "collidingObject2Id": null
+        },
+        {
+          "kind": 2,
+          "startIndex": 103,
+          "length": 262,
+          "gestureType": null,
+          "voiceCommand": null,
+          "isActive": true,
+          "collidingObject1Id": null,
+          "collidingObject2Id": null
+        }
+      ]
+    },
+    {
+      "fromStateId": "12270ca8-9baf-4564-a7f9-3003714dad81",
+      "toStateId": "4059f668-6d17-48cf-911e-9c6d572a8136",
+      "textDescription": "State 2->State 3: && Cube 1 hit Sphere 1",
+      "triggers": [
+        {
+          "kind": 2,
+          "startIndex": 375,
+          "length": 0,
+          "gestureType": null,
+          "voiceCommand": null,
+          "isActive": true,
+          "collidingObject1Id": null,
+          "collidingObject2Id": null
+        }
+      ]
+    }
+  ]
+}

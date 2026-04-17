@@ -148,7 +148,8 @@ public class AssetManager : MonoBehaviour
             StartIndex = 0,
             ActionType = ACTION_ENUM.SHOW,
             ActionDelegate = () => { newAsset.IsVisible = true; },
-            TargetAsset = newAsset
+            TargetAsset = newAsset,
+            StoredColor = newAsset.CurrentColor
         };
         foreach (var example in Recorder.Instance.examples)
         {
