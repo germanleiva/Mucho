@@ -67,7 +67,8 @@ public class StatesStatusUIManager : MonoBehaviour
         else
         {
             currentExampleText.text = "<color=\"red\">dirty";
-            allExamplesText.text = "<color=\"red\">(one or more) dirty";
+            // allExamplesText.text = "<color=\"red\">(one or more) dirty";
+            allExamplesText.text = "<color=\"red\">dirty";
         }
     }
 }

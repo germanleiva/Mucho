@@ -357,25 +357,17 @@ public class Recorder : MonoBehaviour
             //We bring back the asset to its initial state
             asset.ResetMainVisualValues();
             
-            // CHECKIFSAFETODELETE 140426
-            // example.assetsDict[asset].assetActions.ForEach(action =>
-            // {
-            //     if (!allActionsGroupedByFrames.ContainsKey(action.StartIndex))
-            //     {
-            //         allActionsGroupedByFrames[action.StartIndex] = new List<AssetActionSequence>();
-            //     }
-            //
-            //     allActionsGroupedByFrames[action.StartIndex].Add(action);
-            // });
             foreach (var action in example.GetAssetActionsReadOnly(asset))
+            // example.assetsDict[asset].assetActions.ForEach(action => // CHECKIFSAFETODELETE 140426
             {
                 if (!allActionsGroupedByFrames.ContainsKey(action.StartIndex))
                 {
                     allActionsGroupedByFrames[action.StartIndex] = new List<AssetActionSequence>();
                 }
-
+            
                 allActionsGroupedByFrames[action.StartIndex].Add(action);
             }
+            // ); // CHECKIFSAFETODELETE 140426
         });
 
         //We clear the collision models before simulating the frames
@@ -594,12 +586,11 @@ public class Recorder : MonoBehaviour
         }
     }
 
-    public void CreateStateMachine()
+    public void CreateStateMachine_DebugOnly()
     {
         var stateMachineModel = StateMachineModel.CreateStateMachine(currentActiveExample);
         CustomStateMachine.Instance.stateMachineModel = stateMachineModel;
         StateMachineModel.Instance = stateMachineModel;
-        currentActiveExample.MarkStatesGenerated(); // CHECKIFSAFETODELETE 140426
         // int recordedFramesTotal = GetSizeOfMainRecordedData();
         //
         // var StateMachine = StateMachineModel.Instance;
@@ -919,6 +910,8 @@ public class Recorder : MonoBehaviour
                 statePlaceholder.gameObject.SetActive(false);
             }
         }
+        
+        currentActiveExample.MarkStatesGenerated(); // CHECKIFSAFETODELETE 140426
     }
 
     //Dictionary<State, StateTimelineUIElement> StatesDict = new();

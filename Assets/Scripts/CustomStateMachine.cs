@@ -310,7 +310,7 @@ public class StateMachineModel
                                   .Concat(voiceCommands.Cast<Sequence>())
                                   .ToList();
 
-        // var allActions = example.assetsDict.Select(keyValuePair => keyValuePair.Value.assetActions).ToList();         foreach (Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys)
+        // var allActions = example.assetsDict.Select(keyValuePair => keyValuePair.Value.assetActions).ToList(); // CHECKIFSAFETODELETE 140426
         var allActions = example.GetAllAssetActionListsReadOnly();
 
         State firstState = null;

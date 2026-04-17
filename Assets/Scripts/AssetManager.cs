@@ -99,18 +99,18 @@ public class AssetManager : MonoBehaviour
                 // foreach(Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys) // CHECKIFSAFETODELETE 140426
                 foreach (Asset asset in Recorder.Instance.currentActiveExample.GetAssets_Volatile())
                 {
-                    // var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetsDict[asset].assetFrames; // CHECKIFSAFETODELETE 140426
-                    // currentAssetRecordedData.Add(new(asset.transform.position, asset.transform.rotation, asset.IsVisible, asset.CurrentColor, asset._IsAnimated));
+                    // CHECKIFSAFETODELETE 140426
+                    // Recorder.Instance.currentActiveExample.assetsDict[asset].assetFrames.Add(new(asset.transform.position, asset.transform.rotation, asset.IsVisible, asset.CurrentColor, asset._IsAnimated));
                     Recorder.Instance.currentActiveExample.RegisterFrameForGivenAsset(
-                        asset,
-                        new AssetFrame(asset.transform.position, asset.transform.rotation, asset.IsVisible, asset.CurrentColor, asset._IsAnimated)
+                    asset,
+                    new AssetFrame(asset.transform.position, asset.transform.rotation, asset.IsVisible, asset.CurrentColor, asset._IsAnimated)
                     );
                 }
 
                 break;
             case Manager.AppState.PLAYBACK:
-                // foreach(Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys)
-                foreach (Asset asset in Recorder.Instance.currentActiveExample.GetAssets_Volatile()) // CHECKIFSAFETODELETE 140426
+                // foreach(Asset asset in Recorder.Instance.currentActiveExample.assetsDict.Keys) // CHECKIFSAFETODELETE 140426
+                foreach (Asset asset in Recorder.Instance.currentActiveExample.GetAssets_Volatile()) 
                 {
                     asset.PlaybackAssetFrame();
                 }
@@ -157,14 +157,13 @@ public class AssetManager : MonoBehaviour
         }
         //END Added an implicit show at the beginning
 
-        // var currentAssetRecordedData = Recorder.Instance.currentActiveExample.assetsDict[newAsset].assetFrames;
         for (int i = 0; i < Recorder.Instance.currentActiveExample.RecordedDataCount; i++)
         {
             //We need to generate the asset frames of the new asset if we already have some recorded data
-            // currentAssetRecordedData.Add(new(newAsset.transform.position, newAsset.transform.rotation, newAsset.IsVisible, newAsset.CurrentColor, newAsset._IsAnimated)); // CHECKIFSAFETODELETE 140426
+            // Recorder.Instance.currentActiveExample.assetsDict[newAsset].assetFrames.Add(new(newAsset.transform.position, newAsset.transform.rotation, newAsset.IsVisible, newAsset.CurrentColor, newAsset._IsAnimated)); // CHECKIFSAFETODELETE 140426
             Recorder.Instance.currentActiveExample.RegisterFrameForGivenAsset(
-                newAsset,
-                new(newAsset.transform.position, newAsset.transform.rotation, newAsset.IsVisible, newAsset.CurrentColor, newAsset._IsAnimated));
+            newAsset,
+            new(newAsset.transform.position, newAsset.transform.rotation, newAsset.IsVisible, newAsset.CurrentColor, newAsset._IsAnimated));
         }
 
         Recorder.Instance.RecreateTimelineUI_AssetRowsAndCollisions();

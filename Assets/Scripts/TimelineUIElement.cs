@@ -107,7 +107,14 @@ public class TimelineUIElement : MonoBehaviour
             {
                 if (correspondingAssetForceArrow.indexWhereArrowIsVisible == actionToDelete.StartIndex)
                 {
-                    Destroy(correspondingAssetForceArrow.gameObject);
+                    try
+                    {
+                        Destroy(correspondingAssetForceArrow.gameObject);
+                    }
+                    catch (MissingReferenceException e)
+                    {
+                        DebugLogger.Instance.LogException(e);
+                    }
                 }                
             }
         }

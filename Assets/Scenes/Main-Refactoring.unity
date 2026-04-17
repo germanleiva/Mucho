@@ -108242,7 +108242,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 916638712}
         m_TargetAssemblyTypeName: Recorder, Assembly-CSharp
-        m_MethodName: CreateStateMachine
+        m_MethodName: CreateStateMachine_DebugOnly
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

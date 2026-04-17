@@ -28,7 +28,7 @@ public class SpeechToTextUIManager : MonoBehaviour
     private void OnEnable()
     {
         if (SpeechToText.Instance != null) 
-            SpeechToText.Instance.OnListeningStateChanged -= HandleWhisperChangeInListening;
+            SpeechToText.Instance.OnListeningStateChanged += HandleWhisperChangeInListening;
     }
 
     private void OnDisable()

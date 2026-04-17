@@ -610,9 +610,9 @@ public class Asset : MonoBehaviour
     {
         var currentFrame = (int)Recorder.Instance.playbackSlider.value;
         //Find the associated Follow action
-        // var associatedFollowAction = Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.OrderBy(x => x.StartIndex).LastOrDefault(assetAction => // CHECKIFSAFETODELETE 140426
+        // var associatedFollowAction = Recorder.Instance.currentActiveExample.assetsDict[this].assetActions.OrderBy(x => x.StartIndex).LastOrDefault(assetAction => assetAction.IsFollow() && assetAction.StartIndex < currentFrame) ?? null; // CHECKIFSAFETODELETE 140426
         var associatedFollowAction = Recorder.Instance.currentActiveExample.GetAssetActionsReadOnly(this)
-            .OrderBy(x => x.StartIndex).LastOrDefault(assetAction =>
+            .OrderBy(x => x.StartIndex).LastOrDefault(assetAction => 
                 assetAction.IsFollow() && assetAction.StartIndex < currentFrame) ?? null;
 
         if (associatedFollowAction == null)

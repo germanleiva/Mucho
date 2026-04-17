@@ -313,14 +313,14 @@ public class ForceArrow : MonoBehaviour
         // var copiedActions = new List<AssetActionSequence>(assetActions);
         // foreach (var action in copiedActions)
         // {
-        //     if (action.ActionType == ACTION_ENUM.APPLY_FORCE_START && action.StartIndex == currentFrame)
-        //     {
-        //         action.DeleteActionFrom(assetActions);
-        //     }
+            // if (action.ActionType == ACTION_ENUM.APPLY_FORCE_START && action.StartIndex == currentFrame)
+            // {
+                // action.DeleteActionFrom(assetActions);
+            // }
         // }
-        Recorder.Instance.currentActiveExample.UnregisterAllActionsFromAssetSatisfying(associatedAsset, a => 
-            a.ActionType == ACTION_ENUM.APPLY_FORCE_START && a.StartIndex == currentFrame);
+        Recorder.Instance.currentActiveExample.UnregisterAllActionsFromAssetSatisfying(associatedAsset, a => a.ActionType == ACTION_ENUM.APPLY_FORCE_START && a.StartIndex == currentFrame);
 
+        //TODO this change of AppState happens in the RecordAction, you should make this clear in the name of the RecordAction method and remove this line
         Manager.Instance.currAppState = Manager.AppState.SIMULATING;
 
         associatedAsset.RecordAction(ACTION_ENUM.APPLY_FORCE_START, () =>

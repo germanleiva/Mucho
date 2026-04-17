@@ -32515,7 +32515,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 631210734}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0.0000077893}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -32523,8 +32523,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -53.63, y: -0}
-  m_SizeDelta: {x: 165.83, y: 36}
+  m_AnchoredPosition: {x: -47.145, y: -0}
+  m_SizeDelta: {x: 178.8, y: 36}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &631210736
 MonoBehaviour:
@@ -32546,7 +32546,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Current Example STATES:'
+  m_text: 'Current Example STATES (Plh):'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -32573,8 +32573,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 14
-  m_fontSizeBase: 14
+  m_fontSize: 12
+  m_fontSizeBase: 12
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -37189,7 +37189,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &722708413
 RectTransform:
   m_ObjectHideFlags: 0
@@ -63563,7 +63563,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1109381470
 RectTransform:
   m_ObjectHideFlags: 0
@@ -65063,7 +65063,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 916638712}
         m_TargetAssemblyTypeName: Recorder, Assembly-CSharp
-        m_MethodName: CreateStateMachine
+        m_MethodName: CreateStateMachine_DebugOnly
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -68500,7 +68500,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1209583927
 RectTransform:
   m_ObjectHideFlags: 0
@@ -75257,7 +75257,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1312851074}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0.000019174}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -75265,8 +75265,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -53.63, y: -0}
-  m_SizeDelta: {x: 165.83, y: 36}
+  m_AnchoredPosition: {x: -46.925, y: -0}
+  m_SizeDelta: {x: 179.24, y: 36}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1312851076
 MonoBehaviour:
@@ -75288,7 +75288,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'All Example STATES:'
+  m_text: 'All Example STATES (Plh):'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -75315,8 +75315,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 14
-  m_fontSizeBase: 14
+  m_fontSize: 12
+  m_fontSizeBase: 12
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -77134,7 +77134,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1344631430}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.000026925}
+  m_LocalPosition: {x: 0, y: 0, z: 0.000016889}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -77142,8 +77142,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 60.345, y: 0.0000018353}
-  m_SizeDelta: {x: 62.119, y: 36}
+  m_AnchoredPosition: {x: 76.347, y: 0}
+  m_SizeDelta: {x: 67.305, y: 36}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1344631432
 MonoBehaviour:
@@ -91843,7 +91843,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1582656224}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.000026925}
+  m_LocalPosition: {x: 0, y: 0, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -91851,8 +91851,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 60.345, y: 0.0000018353}
-  m_SizeDelta: {x: 62.119, y: 36}
+  m_AnchoredPosition: {x: 76.13, y: 0}
+  m_SizeDelta: {x: 67.75, y: 36}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1582656226
 MonoBehaviour:
@@ -122605,7 +122605,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2065214294
 RectTransform:
   m_ObjectHideFlags: 0
@@ -122672,7 +122672,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 916638712}
         m_TargetAssemblyTypeName: Recorder, Assembly-CSharp
-        m_MethodName: CreateStateMachine
+        m_MethodName: CreateStateMachine_DebugOnly
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -146870,7 +146870,7 @@ Transform:
   m_GameObject: {fileID: 4653662570418556383}
   serializedVersion: 2
   m_LocalRotation: {x: 0.05875269, y: -0.64003104, z: 0.049185887, w: 0.7645189}
-  m_LocalPosition: {x: -0.293, y: 0.83, z: 1.187}
+  m_LocalPosition: {x: -0.39, y: 1.004, z: 0.8}
   m_LocalScale: {x: 0.5181132, y: 0.51811314, z: 0.51811314}
   m_ConstrainProportionsScale: 0
   m_Children:
