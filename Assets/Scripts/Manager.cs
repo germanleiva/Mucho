@@ -104,7 +104,7 @@ public class Manager : MonoBehaviour
         if (!Recorder.Instance.currentActiveExample.AreStatesUpToDate())
         {
             DebugLogger.Instance.Log("States are outdated. Regenerating state machine before entering live mode.");
-            this.PressedRecreateStatePlaceholders();
+            // this.PressedRecreateStatePlaceholders(); //TODO Do not re-create the states
             // Recorder.Instance.CreateStateMachine_DebugOnly();
         }
 
