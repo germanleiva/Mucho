@@ -1102,7 +1102,7 @@ public class Recorder : MonoBehaviour
     {
         var previousIndex = currentActiveExample.StatePlaceholders.IndexOf(selectedStateUIElement) - 1;
 
-        if (previousIndex > 0 && previousIndex < currentActiveExample.StatePlaceholders.Count)
+        if (previousIndex >= 0 && previousIndex < currentActiveExample.StatePlaceholders.Count)
         {
             var previousStateUIElement = currentActiveExample.StatePlaceholders[previousIndex];
             DebugLogger.Instance.Log("Merging state " + selectedStateUIElement.name + " with state " + previousStateUIElement.name);

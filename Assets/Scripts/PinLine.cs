@@ -34,7 +34,7 @@ public class PinLine : MonoBehaviour
 
     public void TriggerPinAction()
     {
-        asset.GetComponent<Asset>().RecordPin(pinGuide.position);
+        asset.GetComponent<Asset>().RecordPin(pinGuide.position); //TODO J Possible problem? Shouldn't be some checks?
         
         if(UndoHighlightingOfAssetIfAny != null)
         {
