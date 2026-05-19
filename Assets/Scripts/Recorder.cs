@@ -1,16 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using Oculus.Interaction;
-using Unity.VisualScripting;
-using UnityEditor;
 //using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
-using Debug = UnityEngine.Debug;
 
 public class Recorder : MonoBehaviour
 {
@@ -881,7 +876,8 @@ public class Recorder : MonoBehaviour
                     startIndex,
                     length,
                     GetSizeOfMainRecordedData(),
-                    "State " + currentActiveExample.StatePlaceholders.Count);
+                    "State " + currentActiveExample.StatePlaceholders.Count
+                );
                 this.currentActiveExample.StatePlaceholders.Add(stateTimelineElement.GetComponent<StateTimelineUIElement>());
             }
 

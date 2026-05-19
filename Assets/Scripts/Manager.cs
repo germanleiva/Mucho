@@ -700,7 +700,14 @@ public class Example
     public void AddNewCollision(int frameStart, GameObject assetGameObject, GameObject anotherGameObject)
     {
         if (CollisionModels.Exists(existingCollision =>
-                (existingCollision.StartIndex == frameStart && existingCollision.isCollidingWith(assetGameObject, anotherGameObject))))
+                // existingCollision.StartIndex == frameStart && existingCollision.isCollidingWith(assetGameObject, anotherGameObject)
+                // TODO J - Check for length = 0
+                existingCollision.isCollidingWith(assetGameObject, anotherGameObject) &&
+                (
+                    existingCollision.Length == 0 ||
+                    (frameStart >= existingCollision.StartIndex &&
+                     frameStart < existingCollision.StartIndex + existingCollision.Length)
+                )))
         {
             DebugLogger.Instance.Log($"We have a similar collision, so we ignore it: Frame{frameStart}, {assetGameObject.name} vs {anotherGameObject.name}");
             return;

@@ -317,6 +317,7 @@ public class Asset : MonoBehaviour
         if (newAction.IsFollow())
         {
             var frameEndForFollow = FindFollowEndIndex((int)Recorder.Instance.playbackSlider.value);
+            // TODO frameEndForFollow can be 0 if there is no end action. Knowing that later will do a clipLength = frameEnd - frameStart = 0 - frameStart, are we creating a negative length?
             CreateFollowEndAction(newAction, frameEndForFollow, frameStart);
         }
 
@@ -609,7 +610,7 @@ public class Asset : MonoBehaviour
         RecordUnfollow((int)Recorder.Instance.playbackSlider.value);
     }
 
-    public void RecordUnfollow(int startFrame)
+    public void RecordUnfollow(int startFrame) //TODO Why is startFrame ignored?
     {
         var currentFrame = (int)Recorder.Instance.playbackSlider.value;
         //Find the associated Follow action
@@ -732,7 +733,7 @@ public class Asset : MonoBehaviour
                 }
 
                 DebugLogger.Instance.Log("Asset.OnCollisionEnter: AddNewCollision >> collision between "
-                                         + base.gameObject.name + " and " + GetComponent<Collider>().name);
+                                         + base.gameObject.name + " and " + other.gameObject.name);
                 // if (!base.gameObject.CompareTag("Floor") &&
                 //     !other.gameObject.CompareTag("Floor"))
                 // {
