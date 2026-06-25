@@ -8,6 +8,7 @@ const MOCK_TRANSCRIPTS: Record<string, string> = {
     "The ball should follow my hand. When I release, throw it. If it hits the cube, make the text appear.",
 };
 
+//TODO This should use real OpenAI's Whisper API
 export function obtainTranscript(
   state: AnalyzeRecordingState
 ): AnalyzeRecordingState {
@@ -26,7 +27,6 @@ export function obtainTranscript(
     };
     return state;
   }
-
   state.errors.push(
     "No transcript provided and useMockTranscript is false. Please provide a transcript or set useMockTranscript to true."
   );

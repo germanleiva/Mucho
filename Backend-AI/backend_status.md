@@ -1,6 +1,6 @@
 # Mucho AI Backend Status
 
-Last updated: 2026-05-19
+Last updated: 2026-06-10
 
 This document summarizes the current status of the Mucho AI backend in this
 workspace. It uses `mucho_ai_backend_implementation_plan (4).md` as the product
@@ -14,15 +14,20 @@ where a designer records an interaction, reviews frame-based events, and adds
 effects such as `follow`, `unfollow`, `throwAsset`, `show`, `hide`, and
 `changeColor`.
 
-The current implementation follows the intended v1 scope from the plan:
+The current implementation now has two backend surfaces:
 
-- It does not generate full Mucho states.
-- It focuses on proposing timeline actions/effects.
-- It expects Unity/Mucho to provide structured scene and simulation context.
-- It validates requests with Zod.
-- It exposes Express endpoints.
-- It runs a simple LangGraph-style pipeline.
-- It uses mock transcript/action-generation logic rather than a real model.
+- The original `/api/v1/effects/propose` heuristic prototype remains available
+  for backward compatibility and focused debugging.
+- The new `/api/v1/workflows/iterate` endpoint implements the stateless,
+  iterative Unity/AI workflow for action patches, physics resimulation
+  handoffs, and final state-placeholder merging.
+- OpenAI-backed action and state providers use structured outputs, with
+  deterministic mock providers available for tests and local development.
+- Action planning uses the versioned `action-v1` prompt and an internal
+  normalized context containing only enabled action evidence.
+- Audio transcription uses the OpenAI transcription API.
+- Unity remains authoritative for applying actions, recalculating physics,
+  reporting the resulting timeline, and constructing raw state placeholders.
 
 Repository note: the backend project structure has been restored. `src` now
 contains TypeScript source and tests, while generated JavaScript/declaration
@@ -110,7 +115,7 @@ src/graph/nodes/buildResponse.node.js
 src/schemas/*.js
 ```
 
-The pipeline currently runs in this order:
+The legacy proposal pipeline currently runs in this order:
 
 ```text
 analyzeRecording(request)
@@ -123,8 +128,22 @@ analyzeRecording(request)
   7. buildResponse
 ```
 
-This matches the planned v1 shape, but the implementation is still a mock
-heuristic system rather than a true LangGraph.js graph with model-backed nodes.
+The iterative workflow uses a typed manual orchestrator rather than LangGraph:
+
+```text
+validate request and placeholder boundaries
+extract deterministic transcript chapters
+run action-planning provider
+validate anchors, targets, force candidates, confidence, and duplicates
+return patch and optional physics-resimulation instruction
+or, when actions are complete:
+run state-merge provider
+validate ordered adjacent placeholder groups
+return final named state ranges
+```
+
+The backend is stateless. Unity resends the original transcript and complete
+latest timeline on every iteration.
 
 ## Current Endpoints
 
@@ -166,14 +185,35 @@ Status:
 
 Purpose:
 
-- Accept raw audio bytes with `application/octet-stream`.
-- Return a mock transcript.
+- Accept raw audio bytes in supported audio content types.
+- Transcribe using `OPENAI_TRANSCRIPTION_MODEL`.
 
 Status:
 
-- Implemented as a mock.
-- Does not call a real transcription provider.
+- Implemented with the OpenAI SDK.
+- `whisper-1` returns segment timestamps for chaptering.
+- `gpt-4o-mini-transcribe` returns the lower-cost text response.
 - Correctly uses route-specific `express.raw()` before JSON middleware.
+
+### POST `/api/v1/workflows/iterate`
+
+Purpose:
+
+- Accept the complete current Unity timeline snapshot.
+- Return missing validated actions as an idempotent patch.
+- Distinguish normal action application from action application followed by
+  Unity physics resimulation.
+- Return a final merged and named state plan after actions are complete.
+
+Status:
+
+- Implemented.
+- Uses stable scene, sequence, placeholder, and force-candidate IDs.
+- Validates that state placeholders exactly cover all enabled timeline
+  boundaries.
+- Supports separate OpenAI action and state models.
+- Supports deterministic mock providers without API usage.
+- Returns `422` for semantic timeline errors and `502` for provider failures.
 
 ### GET `/dev`
 
@@ -602,12 +642,14 @@ Chapter extraction:
 - Splits transcript on `.`, `!`, `?`, and line breaks.
 - Preserves trailing fragments without final punctuation.
 - Removes empty fragments.
-- Assigns frame windows evenly across recording duration.
+- Uses timestamped transcript segments, speech pauses, and lightweight topic
+  changes when timestamps are available.
+- Uses word-weighted frame distribution for text-only transcripts.
 - Attaches overlapping sequence IDs and observation indexes.
 
 Known limitation:
 
-- Chapter timing is approximate. It does not use transcript timestamps yet.
+- Text-only transcript timing remains approximate.
 
 ## Developer Console Status
 
@@ -704,17 +746,22 @@ Not implemented:
 
 - `/api/v1/recordings/analyze` production endpoint.
 - Multipart audio plus JSON payload endpoint.
-- Real transcription provider.
-- OpenAI or model-backed action generation.
-- AI provider abstraction.
-- Effect catalog/capability validation per asset.
+- Full parameterized Unity effect-catalog ingestion.
 - Persistent storage by `analysisId`.
 - Proposal refinement endpoint.
 - Full Unity preview/accept/reject loop.
-- State generation.
-- State merging.
 - Real force-vector inference for throws.
 - Confidence calibration from model output.
+
+Newly implemented:
+
+- Real OpenAI transcription provider.
+- OpenAI and mock provider abstractions for action planning and state merging.
+- Stateless iterative workflow endpoint.
+- Canonical `applyForce` actions selected from Unity-provided force candidates.
+- Explicit `apply_actions_and_resimulate` workflow handoff.
+- Final merged state plans with names, ranges, confidence, and source
+  placeholder IDs.
 
 ## Current Repository Health
 
@@ -754,11 +801,11 @@ Known maintenance notes:
 
 ### Short Term
 
-1. Add this status document and the implementation plan to version control.
-2. Decide whether to keep the current heuristic generator or replace it with a
-   model-backed provider behind an interface.
-3. Expand fixtures/examples for Unity integration payloads.
-4. Address npm audit findings deliberately, without blind forced upgrades.
+1. Implement the Unity HTTP coordinator for `/api/v1/workflows/iterate`.
+2. Map returned canonical actions to native `AssetActionSequence` instances.
+3. Resimulate after `applyForce`, rebuild collisions/placeholders, and submit
+   the next complete snapshot.
+4. Render and apply the final state plan in Unity.
 
 ### Medium Term
 
@@ -782,18 +829,17 @@ Known maintenance notes:
 Current backend status:
 
 ```text
-Prototype logic exists and the local TypeScript project structure is restored.
+Backend-first iterative action and state workflow implemented and tested.
 ```
 
 Product readiness:
 
 ```text
-Not production-ready.
-Useful as a prototype/reference implementation for the v1 action-proposal flow.
+Not production-ready until Unity integration and real-scene evaluations pass.
 ```
 
 Most important next action:
 
 ```text
-Commit the restored source/test/package files and docs before adding new backend features.
+Integrate the stateless workflow contract into Unity.
 ```

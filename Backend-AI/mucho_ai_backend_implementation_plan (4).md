@@ -1,5 +1,10 @@
 # Mucho AI Backend Implementation Plan
 
+> **Update, 2026-06-10:** The decision in this document to defer state merging
+> has been superseded by `iterative_workflow.md`. The implemented backend now
+> supports a stateless Unity/AI action loop followed by semantic state
+> placeholder merging. This document remains the original architecture guide.
+
 This document is a Codex-ready implementation brief for a first Mucho AI backend. It focuses on automating the boring manual step where a designer inspects the Mucho timeline, moves keyframes, and adds effects to objects after recording/miming an XR interaction.
 
 The scope is deliberately narrow: **generate timeline effect proposals from a recorded Mucho example plus the designer's spoken description**. State generation and state merging are acknowledged but deferred.

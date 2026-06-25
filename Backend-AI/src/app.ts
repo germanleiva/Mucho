@@ -1,12 +1,34 @@
 import express, { Express, Request, Response } from "express";
-import { ZodError } from "zod";
+import { z, ZodError } from "zod";
 import { analyzeRecording } from "./graph/analyzeRecording.graph.js";
+import { extractChapters } from "./graph/nodes/extractChapters.node.js";
+import { initializeState } from "./graph/state.js";
+import { renderChapterTestPage } from "./html/chapter-test.page.js";
+import { renderDeveloperConsolePage } from "./html/developer-console.page.js";
 import { AnalyzeRecordingRequestSchema } from "./schemas/request.schema.js";
+import { transcribeAudio } from "./services/transcription.service.js";
+import { iterateWorkflow } from "./workflow/iterate-workflow.js";
+import {
+  WorkflowProviderError,
+  WorkflowSemanticError,
+} from "./workflow/workflow.errors.js";
+import { createWorkflowProviders } from "./workflow/workflow-provider.factory.js";
+import {
+  WorkflowIterationRequestSchema,
+  type WorkflowIterationRequest,
+  type WorkflowIterationResponse,
+} from "./workflow/workflow.schema.js";
 
 const app: Express = express();
 
 const mockTranscriptText =
-  "I pinch the ball and it follows my right hand. When I open my hand, throw the ball. When it hits the cube, show the hit text.";
+  "So, when I pinch the ball, I want the ball to follow my hand. And then, I am aiming at the lamp. And when I open my hand and I set the word jump, I expect the ball to go from my hand and hit the lamp. Because I don't have a trash bin ball, whatever. So...";
+
+const ChapterTestRequestSchema = z.object({
+  text: z.string().trim().min(1),
+  frameRate: z.number().positive().default(30),
+  durationFrames: z.number().int().positive().default(300),
+});
 
 function normalizeRequestBody(body: unknown): unknown {
   if (!body || typeof body !== "object" || Array.isArray(body)) {
@@ -27,13 +49,112 @@ function normalizeRequestBody(body: unknown): unknown {
 
 app.use(
   "/api/v1/audio/transcribe",
-  express.raw({ type: "application/octet-stream", limit: "10mb" })
+  express.raw({
+    type: ["application/octet-stream", "audio/*", "video/mp4"],
+    limit: "25mb",
+  })
 );
 app.use(express.json({ limit: "10mb" }));
 app.use(express.static("public"));
 
 app.get("/api/v1/health", (_req: Request, res: Response) => {
   res.json({ status: "ok" });
+});
+
+app.post(
+  "/api/v1/workflows/iterate",
+  async (req: Request, res: Response): Promise<void> => {
+    let request: WorkflowIterationRequest;
+    try {
+      request = WorkflowIterationRequestSchema.parse(req.body);
+    } catch (error) {
+      res.status(400).json({
+        error: "Invalid workflow request format",
+        details: error instanceof ZodError ? error.errors : [String(error)],
+      });
+      return;
+    }
+
+    try {
+      const response = await iterateWorkflow(
+        request,
+        createWorkflowProviders()
+      );
+      res.json(response);
+    } catch (error) {
+      if (error instanceof WorkflowSemanticError) {
+        res.status(422).json({
+          error: error.message,
+          details: error.details,
+        });
+        return;
+      }
+
+      if (error instanceof WorkflowProviderError || error instanceof ZodError) {
+        res.status(502).json(
+          failedWorkflowResponse(
+            request,
+            error instanceof Error ? error.message : String(error)
+          )
+        );
+        return;
+      }
+
+      res.status(500).json({
+        error: "Workflow iteration failed",
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+);
+
+app.post("/api/v1/chapters/test", (req: Request, res: Response) => {
+  try {
+    const input = ChapterTestRequestSchema.parse(req.body);
+    const request = AnalyzeRecordingRequestSchema.parse({
+      recordingId: "chapter-test",
+      recording: {
+        frameRate: input.frameRate,
+        durationFrames: input.durationFrames,
+        recordingMode: "voice_during_miming",
+      },
+      transcript: {
+        text: input.text,
+        language: "unknown",
+        segments: [],
+      },
+      scene: {
+        assets: [],
+        contextObjects: [],
+      },
+      sequences: [],
+      contextObservations: [],
+      options: {},
+    });
+    const state = initializeState(request, "chapter-test");
+    state.transcript = request.transcript ?? null;
+    const result = extractChapters(state);
+
+    res.json({
+      text: input.text,
+      frameRate: input.frameRate,
+      durationFrames: input.durationFrames,
+      chapters: result.chapters,
+    });
+  } catch (error) {
+    if (error instanceof ZodError) {
+      res.status(400).json({
+        error: "Invalid chapter test request",
+        details: error.errors,
+      });
+      return;
+    }
+
+    res.status(500).json({
+      error: "Chapter extraction failed",
+      message: error instanceof Error ? error.message : String(error),
+    });
+  }
 });
 
 app.post("/api/v1/effects/propose", async (req: Request, res: Response) => {
@@ -70,15 +191,32 @@ app.post(
         return;
       }
 
+      const languageHeader = req.header("x-audio-language");
+      const language =
+        languageHeader && /^[a-z]{2}$/i.test(languageHeader)
+          ? languageHeader.toLowerCase()
+          : undefined;
+      const mimeType = normalizeAudioMimeType(req.header("content-type"));
+      const filename = getAudioFilename(
+        req.header("x-audio-filename"),
+        mimeType,
+        audioBytes
+      );
+      const transcript = await transcribeAudio({
+        bytes: audioBytes,
+        filename,
+        mimeType,
+        language,
+      });
+
       res.json({
-        transcript: {
-          text: mockTranscriptText,
-          language: "en",
-          segments: [],
-        },
+        transcript,
       });
     } catch (error) {
-      res.status(500).json({
+      const missingApiKey =
+        error instanceof Error &&
+        error.message === "OPENAI_API_KEY is not configured.";
+      res.status(missingApiKey ? 503 : 502).json({
         error: "Audio transcription failed.",
         message: error instanceof Error ? error.message : String(error),
       });
@@ -86,237 +224,97 @@ app.post(
   }
 );
 
-app.get("/dev", (_req: Request, res: Response) => {
-  res.send(`
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mucho AI Backend - Developer Console</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: #f5f5f5;
-    }
-    .container { max-width: 1400px; margin: 0 auto; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .panel {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      padding: 20px;
-    }
-    textarea {
-      width: 100%;
-      height: 400px;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-family: 'Monaco', 'Menlo', monospace;
-      font-size: 12px;
-      resize: vertical;
-    }
-    button {
-      background: #0066cc;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-      margin-top: 10px;
-      width: 100%;
-    }
-    .controls { display: flex; gap: 10px; margin-bottom: 15px; }
-    .controls button { margin-top: 0; flex: 1; padding: 8px 16px; }
-    .small-button { background: #666; }
-    .status { margin-top: 10px; padding: 10px; border-radius: 4px; font-size: 12px; }
-    .loading { background: #e3f2fd; color: #1976d2; }
-    .success { background: #e8f5e9; color: #388e3c; }
-    .error { background: #ffebee; color: #c62828; }
-    #response { resize: none; background: #f9f9f9; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Mucho AI Backend - Developer Console</h1>
-    <div class="row">
-      <div class="panel">
-        <h2>Input: JSON Payload</h2>
-        <div class="controls">
-          <button class="small-button" onclick="loadExample()">Load example</button>
-          <button class="small-button" onclick="clearInput()">Clear input</button>
-          <button class="small-button" onclick="clearOutput()">Clear output</button>
-        </div>
-        <textarea id="input" placeholder="Paste your JSON request here..."></textarea>
-        <div style="margin-top:10px">
-          <h3 style="margin:6px 0 8px 0">Mock voice transcript</h3>
-          <textarea id="transcript" style="height:120px" placeholder="Paste or edit a mock transcript here..."></textarea>
-        </div>
-        <button id="proposeBtn" onclick="sendRequest()">Propose effects</button>
-        <div id="inputStatus" class="status" style="display: none;"></div>
-      </div>
-      <div class="panel">
-        <h2>Output: Backend Response</h2>
-        <textarea id="response" readonly placeholder="Backend response will appear here..."></textarea>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const defaultMockTranscript = ${JSON.stringify(mockTranscriptText)};
-    const examples = {
-      basketball: {
-        "projectId": "demo-project",
-        "recordingId": "recording-001",
-        "languageHint": "auto",
-        "recording": {
-          "frameRate": 60,
-          "durationFrames": 420,
-          "audioStartFrame": 0,
-          "recordingMode": "voice_during_miming"
-        },
-        "useMockTranscript": true,
-        "scene": {
-          "assets": [
-            { "assetName": "Basketball(Clone)", "displayName": "Basketball", "assetKind": "basketball" },
-            { "assetName": "Cube(Clone)", "displayName": "Cube", "assetKind": "cube" },
-            { "assetName": "HitText(Clone)", "displayName": "Hit Text", "assetKind": "text" }
-          ],
-          "contextObjects": [
-            { "objectName": "RIGHTHAND", "displayName": "Right Hand", "objectKind": "rightHand" },
-            { "objectName": "RIGHTFOCUS", "displayName": "Right Focus", "objectKind": "rightFocus" },
-            { "objectName": "GAZEFOCUS", "displayName": "Gaze Focus", "objectKind": "gazeFocus" }
-          ]
-        },
-        "sequences": [
-          {
-            "sequenceId": "gesture-001",
-            "sequenceKind": "gesture",
-            "startFrame": 40,
-            "length": 55,
-            "rawGesture": "Gesture.RIGHTHANDPINCH",
-            "gestureLabel": "Pinch",
-            "hand": "right"
-          },
-          {
-            "sequenceId": "gesture-002",
-            "sequenceKind": "gesture",
-            "startFrame": 96,
-            "length": 34,
-            "rawGesture": "Gesture.RIGHTHANDOPEN",
-            "gestureLabel": "Open",
-            "hand": "right"
-          },
-          {
-            "sequenceId": "collision-ball-cube",
-            "sequenceKind": "collision",
-            "startFrame": 210,
-            "length": 8,
-            "objectAName": "Basketball(Clone)",
-            "objectBName": "Cube(Clone)"
-          },
-          {
-            "sequenceId": "existing-show-ball",
-            "sequenceKind": "existingAction",
-            "startFrame": 0,
-            "length": 420,
-            "actionType": "show",
-            "targetAssetName": "Basketball(Clone)",
-            "params": {},
-            "source": "default"
-          },
-          {
-            "sequenceId": "existing-show-text",
-            "sequenceKind": "existingAction",
-            "startFrame": 0,
-            "length": 420,
-            "actionType": "show",
-            "targetAssetName": "HitText(Clone)",
-            "params": {},
-            "source": "default"
-          }
-        ],
-        "contextObservations": [],
-        "options": {
-          "confidenceThreshold": 0.85,
-          "includeDebugChapters": true,
-          "allowDefaultTextHide": true
-        }
-      }
-    };
-
-    function loadExample(name) {
-      const example = name ? examples[name] : examples.basketball;
-      document.getElementById('input').value = JSON.stringify(example, null, 2);
-      document.getElementById('transcript').value = defaultMockTranscript;
-    }
-
-    function clearInput() {
-      document.getElementById('input').value = '';
-      document.getElementById('inputStatus').style.display = 'none';
-    }
-
-    function clearOutput() {
-      document.getElementById('response').value = '';
-      document.getElementById('inputStatus').style.display = 'none';
-    }
-
-    async function sendRequest() {
-      const statusEl = document.getElementById('inputStatus');
-      const responseEl = document.getElementById('response');
-      let payload;
-
-      try {
-        payload = JSON.parse(document.getElementById('input').value);
-      } catch (_error) {
-        statusEl.className = 'status error';
-        statusEl.textContent = 'Invalid JSON';
-        statusEl.style.display = 'block';
-        responseEl.value = '';
-        return;
-      }
-
-      payload.transcript = {
-        text: document.getElementById('transcript').value || '',
-        language: 'en',
-        segments: []
-      };
-
-      statusEl.className = 'status loading';
-      statusEl.textContent = 'Sending request...';
-      statusEl.style.display = 'block';
-
-      try {
-        const response = await fetch('/api/v1/effects/propose', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const text = await response.text();
-        let parsed = null;
-        try { parsed = JSON.parse(text); } catch (_error) {}
-        responseEl.value = parsed ? JSON.stringify(parsed, null, 2) : text;
-        statusEl.className = response.ok ? 'status success' : 'status error';
-        statusEl.textContent = response.ok
-          ? 'Request successful'
-          : 'Request failed: ' + response.status + ' ' + response.statusText;
-      } catch (error) {
-        statusEl.className = 'status error';
-        statusEl.textContent = 'Network error: ' + (error && error.message ? error.message : String(error));
-        responseEl.value = '';
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => loadExample('basketball'));
-  </script>
-</body>
-</html>
-  `);
+app.get("/chapters", (_req: Request, res: Response) => {
+  res.type("html").send(renderChapterTestPage(mockTranscriptText));
 });
+
+app.get("/dev", (_req: Request, res: Response) => {
+  res.type("html").send(renderDeveloperConsolePage(mockTranscriptText));
+});
+
+function normalizeAudioMimeType(contentType?: string): string | undefined {
+  const mimeType = contentType?.split(";", 1)[0].trim().toLowerCase();
+  return mimeType && mimeType !== "application/octet-stream"
+    ? mimeType
+    : undefined;
+}
+
+function getAudioFilename(
+  requestedFilename: string | undefined,
+  mimeType: string | undefined,
+  audioBytes: Buffer
+): string {
+  const safeFilename = requestedFilename
+    ?.split(/[\\/]/)
+    .pop()
+    ?.replace(/[^a-zA-Z0-9._-]/g, "_");
+
+  if (safeFilename && /\.[a-z0-9]+$/i.test(safeFilename)) {
+    return safeFilename;
+  }
+
+  return `recording.${detectAudioExtension(mimeType, audioBytes)}`;
+}
+
+function detectAudioExtension(
+  mimeType: string | undefined,
+  audioBytes: Buffer
+): string {
+  const extensionsByMimeType: Record<string, string> = {
+    "audio/m4a": "m4a",
+    "audio/mp4": "mp4",
+    "audio/mpeg": "mp3",
+    "audio/ogg": "ogg",
+    "audio/wav": "wav",
+    "audio/webm": "webm",
+    "audio/x-m4a": "m4a",
+    "audio/x-wav": "wav",
+    "video/mp4": "mp4",
+  };
+
+  if (mimeType && extensionsByMimeType[mimeType]) {
+    return extensionsByMimeType[mimeType];
+  }
+  if (audioBytes.subarray(0, 4).toString("ascii") === "RIFF") {
+    return "wav";
+  }
+  if (audioBytes.subarray(0, 3).toString("ascii") === "ID3") {
+    return "mp3";
+  }
+  if (
+    audioBytes.length >= 4 &&
+    audioBytes[0] === 0x1a &&
+    audioBytes[1] === 0x45 &&
+    audioBytes[2] === 0xdf &&
+    audioBytes[3] === 0xa3
+  ) {
+    return "webm";
+  }
+
+  return "wav";
+}
+
+function failedWorkflowResponse(
+  request: WorkflowIterationRequest,
+  message: string
+): WorkflowIterationResponse {
+  return {
+    workflowId: request.workflowId,
+    iteration: request.iteration,
+    workflowStatus: "failed",
+    actionsComplete: false,
+    nextStep: "none",
+    chapters: [],
+    timelinePatch: { operations: [] },
+    statePlan: null,
+    warnings: [
+      {
+        code: "PROVIDER_FAILURE",
+        message,
+      },
+    ],
+    unresolvedIntents: [],
+  };
+}
 
 export default app;

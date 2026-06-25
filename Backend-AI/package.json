@@ -8,11 +8,13 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
-    "test": "vitest"
+    "test": "vitest",
+    "eval:action-prompt": "tsx src/evals/action-prompt.eval.ts"
   },
   "dependencies": {
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "openai": "^6.42.0",
     "uuid": "^9.0.0",
     "zod": "^3.22.4"
   },
